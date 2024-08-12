@@ -1,4 +1,4 @@
-module github.com/np-guard/nsx-api-demo
+module github.com/np-guard/vmware-analyzer
 
 go 1.21
 

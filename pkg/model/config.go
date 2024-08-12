@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/np-guard/nsx-api-demo/pkg/model/dfw"
-	"github.com/np-guard/nsx-api-demo/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 // capture nsx config to analyze

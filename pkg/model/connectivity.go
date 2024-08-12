@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
-	"github.com/np-guard/nsx-api-demo/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 type connMap map[*endpoints.VM]map[*endpoints.VM]*connection.Set

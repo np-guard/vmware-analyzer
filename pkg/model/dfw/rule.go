@@ -4,7 +4,7 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/connection"
-	"github.com/np-guard/nsx-api-demo/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 type ruleAction string
