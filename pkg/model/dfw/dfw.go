@@ -1,6 +1,8 @@
 package dfw
 
 import (
+	"strings"
+
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -46,4 +48,17 @@ func (d *DFW) AnalyzeDFW(src, dst *endpoints.VM) (allowedConns *connection.Set) 
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
 	return allAllowedConns
+}
+
+// return a string rep that shows the fw-rules in all categories
+func (d *DFW) String() string {
+	categoriesStrings := make([]string, len(d.categoriesSpecs))
+	for i := range d.categoriesSpecs {
+		categoriesStrings[i] = d.categoriesSpecs[i].string()
+	}
+	return strings.Join(categoriesStrings, lineSeparatorStr)
+}
+
+func (d *DFW) AddRule(src, dst *endpoints.VM, conn *connection.Set, category string) {
+
 }

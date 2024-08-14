@@ -1,4 +1,4 @@
-REPOSITORY := github.com/np-guard/nsx-api-demo
+REPOSITORY := github.com/np-guard/vmware-analyzer
 EXE:= nsxanalyzer
 COVERAGE:=nsxanalyzer.coverprofile
 

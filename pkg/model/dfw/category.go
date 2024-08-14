@@ -1,6 +1,9 @@
 package dfw
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -17,6 +20,25 @@ const (
 	appCategoty
 	emptyCategory
 )
+
+func (d dfwCategory) string() string {
+	switch d {
+	case ethernetCategory:
+		return "Ethernet"
+	case emergencyCategory:
+		return "Emergency"
+	case infrastructureCategory:
+		return "Infrastructure"
+	case envCategory:
+		return "Environment"
+	case appCategoty:
+		return "Application"
+	case emptyCategory:
+		return "<Empty>"
+	default:
+		return ""
+	}
+}
 
 type categorySpec struct {
 	category      dfwCategory
@@ -56,4 +78,12 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM) (allowedConns, ju
 	default:
 		return nil, nil, nil, nil // invalid default action (todo: add err? )
 	}
+}
+
+func (c *categorySpec) string() string {
+	rulesStr := make([]string, len(c.rules))
+	for i := range c.rules {
+		rulesStr[i] = c.rules[i].string()
+	}
+	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }

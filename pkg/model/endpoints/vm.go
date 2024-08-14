@@ -9,3 +9,9 @@ type VM struct {
 func (v *VM) Name() string {
 	return v.name
 }
+
+func NewVM(name string) *VM {
+	return &VM{
+		name: name,
+	}
+}
