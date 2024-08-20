@@ -21,4 +21,7 @@ bin/
 # IDE settings
 .vscode/
 
+# For auto-generated sdk
+schemas/*.json
+
 

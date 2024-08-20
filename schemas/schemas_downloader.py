@@ -1,30 +1,32 @@
+
+
 from html.parser import HTMLParser
 import urllib.request
 import sys
 
-parser_schemas = set()
+parsed_schemas = set()
 
 class NSXSchemasParser(HTMLParser):
     def __init__(self, baseurl: str):
         super(NSXSchemasParser, self).__init__()
-        self.insideSchema = False
+        self.inside_schema = False
         self.schema = ""
         self.baseurl = baseurl
 
     def handle_starttag(self, tag, attrs):
         if tag == "pre":
-            self.insideSchema = True
-        elif tag == "a" and self.insideSchema:
+            self.inside_schema = True
+        elif tag == "a" and self.inside_schema:
             for attr in attrs:
                 if attr[0] == "href":
-                    processSchemaFromHtml(self.baseurl+"/" + attr[1])
+                    process_schema_from_url(self.baseurl+"/" + attr[1])
 
     def handle_endtag(self, tag):
         if tag == "pre":
-            self.insideSchema = False
+            self.inside_schema = False
 
     def handle_data(self, data):
-        if self.insideSchema:
+        if self.inside_schema:
             self.schema += data
 
     def fix_schema(self):
@@ -45,17 +47,16 @@ class NSXSchemasParser(HTMLParser):
         self.schema = lines
 
 
-def processSchemaFromHtml(url: str):
+def process_schema_from_url(url: str):
     print(f'fetching schema from {url}')
 
-    urlParts = url.split('/')
-    baseurl = '/'.join(urlParts[:-1])
-    schemaName = urlParts[-1]
-    schemaName = schemaName[8:-5]  # chopping "schemas_" prefix and ".html" suffix
-    if schemaName in parser_schemas:
-        print(f'schema {schemaName} was already parsed')
-        return
-    parser_schemas.add(schemaName)
+    url_parts = url.split('/')
+    baseurl = '/'.join(url_parts[:-1])
+    schema_name = url_parts[-1]
+    schema_name = schema_name[8:-5]  # chopping "schemas_" prefix and ".html" suffix
+    if schema_name in parsed_schemas:
+        return  # already parsed
+    parsed_schemas.add(schema_name)
 
     parser = NSXSchemasParser(baseurl=baseurl)
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
@@ -69,8 +70,12 @@ def processSchemaFromHtml(url: str):
 
     parser.fix_schema()
 
-    with open(schemaName, 'w') as outScheme:
+    with open(schema_name + '.json', 'w') as outScheme:
         outScheme.write(parser.schema)
 
 if __name__ == "__main__":
-    sys.exit(processSchemaFromHtml(sys.argv[1]))
+    with open(sys.argv[1]) as schemas_file:
+        for schema in schemas_file:
+            schema = schema.strip()
+            url = f'https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/schemas_{schema}.html'
+            process_schema_from_url(url)
