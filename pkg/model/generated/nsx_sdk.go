@@ -586,6 +586,44 @@ func (j *Condition) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type DiscoveredResourceScope struct {
+	// Specifies the scope id of discovered resource.
+	ScopeId *string `json:"scope_id,omitempty" yaml:"scope_id,omitempty" mapstructure:"scope_id,omitempty"`
+
+	// Type of the scope for the discovered resource.
+	ScopeType *DiscoveredResourceScopeScopeType `json:"scope_type,omitempty" yaml:"scope_type,omitempty" mapstructure:"scope_type,omitempty"`
+}
+
+type DiscoveredResourceScopeScopeType string
+
+const DiscoveredResourceScopeScopeTypeCONTAINERCLUSTER DiscoveredResourceScopeScopeType = "CONTAINER_CLUSTER"
+const DiscoveredResourceScopeScopeTypeVPC DiscoveredResourceScopeScopeType = "VPC"
+
+var enumValues_DiscoveredResourceScopeScopeType = []interface{}{
+	"CONTAINER_CLUSTER",
+	"VPC",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DiscoveredResourceScopeScopeType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DiscoveredResourceScopeScopeType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DiscoveredResourceScopeScopeType, v)
+	}
+	*j = DiscoveredResourceScopeScopeType(v)
+	return nil
+}
+
 type EpochMsTimestamp int
 
 // Represents the list of members that need to be excluded
@@ -1033,6 +1071,17 @@ func (j *Group) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Guest virtual machine details include OS name and computer name of guest VM.
+type GuestInfo struct {
+	// Computer name of guest virtual machine, which is set inside guest OS. Currently
+	// this is supported for guests on ESXi that have VMware Tools installed.
+	ComputerName *string `json:"computer_name,omitempty" yaml:"computer_name,omitempty" mapstructure:"computer_name,omitempty"`
+
+	// OS name of guest virtual machine. Currently this is supported for guests on
+	// ESXi that have VMware Tools installed.
+	OsName *string `json:"os_name,omitempty" yaml:"os_name,omitempty" mapstructure:"os_name,omitempty"`
+}
+
 // Represents IP address expressions in the form of an array, to support addition
 // of IP addresses in a group.If duplicate IP Addresses are provided these will be
 // filtered out and only unique IP Addresses will be considered. Avoid creating
@@ -1450,6 +1499,45 @@ type ResourceLink struct {
 
 	// Custom relation type (follows RFC 5988 where appropriate definitions exist)
 	Rel *string `json:"rel,omitempty" yaml:"rel,omitempty" mapstructure:"rel,omitempty"`
+}
+
+// A weak reference to an NSX resource.
+type ResourceReference struct {
+	// Will be set to false if the referenced NSX resource has been deleted.
+	IsValid *bool `json:"is_valid,omitempty" yaml:"is_valid,omitempty" mapstructure:"is_valid,omitempty"`
+
+	// Display name of the NSX resource.
+	TargetDisplayName *string `json:"target_display_name,omitempty" yaml:"target_display_name,omitempty" mapstructure:"target_display_name,omitempty"`
+
+	// Identifier of the NSX resource.
+	TargetId *string `json:"target_id,omitempty" yaml:"target_id,omitempty" mapstructure:"target_id,omitempty"`
+
+	// Type of the NSX resource.
+	TargetType *string `json:"target_type,omitempty" yaml:"target_type,omitempty" mapstructure:"target_type,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ResourceReference) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain ResourceReference
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.TargetDisplayName != nil && len(*plain.TargetDisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "target_display_name", 255)
+	}
+	if plain.TargetId != nil && len(*plain.TargetId) > 64 {
+		return fmt.Errorf("field %s length: must be <= %d", "target_id", 64)
+	}
+	if plain.TargetType != nil && len(*plain.TargetType) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "target_type", 255)
+	}
+	*j = ResourceReference(plain)
+	return nil
 }
 
 // A rule indicates the action to be performed for various types of traffic flowing
@@ -2410,5 +2498,218 @@ func (j *Tag) UnmarshalJSON(b []byte) error {
 		plain.Tag = ""
 	}
 	*j = Tag(plain)
+	return nil
+}
+
+type VirtualMachine struct {
+	// Timestamp of last modification
+	LastSyncTime *EpochMsTimestamp `json:"_last_sync_time,omitempty" yaml:"_last_sync_time,omitempty" mapstructure:"_last_sync_time,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// ComputeIds corresponds to the JSON schema field "compute_ids".
+	ComputeIds []string `json:"compute_ids,omitempty" yaml:"compute_ids,omitempty" mapstructure:"compute_ids,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// ExternalId corresponds to the JSON schema field "external_id".
+	ExternalId *string `json:"external_id,omitempty" yaml:"external_id,omitempty" mapstructure:"external_id,omitempty"`
+
+	// Guest virtual machine details include OS name, computer name of guest VM.
+	// Currently this is supported for guests on ESXi that have VMware Tools
+	// installed.
+	GuestInfo *GuestInfo `json:"guest_info,omitempty" yaml:"guest_info,omitempty" mapstructure:"guest_info,omitempty"`
+
+	// HostId corresponds to the JSON schema field "host_id".
+	HostId *string `json:"host_id,omitempty" yaml:"host_id,omitempty" mapstructure:"host_id,omitempty"`
+
+	// LocalIdOnHost corresponds to the JSON schema field "local_id_on_host".
+	LocalIdOnHost *string `json:"local_id_on_host,omitempty" yaml:"local_id_on_host,omitempty" mapstructure:"local_id_on_host,omitempty"`
+
+	// PowerState corresponds to the JSON schema field "power_state".
+	PowerState *VirtualMachinePowerState `json:"power_state,omitempty" yaml:"power_state,omitempty" mapstructure:"power_state,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Specifies runtime details of virtual machine.
+	RuntimeInfo *VirtualMachineRuntimeInfo `json:"runtime_info,omitempty" yaml:"runtime_info,omitempty" mapstructure:"runtime_info,omitempty"`
+
+	// Specifies list of scope of discovered resource. e.g. if VHC path is associated
+	// with principal identity, who owns the discovered resource, then scope id will
+	// be VHC path and scope type will be VHC.
+	Scope []DiscoveredResourceScope `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
+
+	// Source corresponds to the JSON schema field "source".
+	Source *ResourceReference `json:"source,omitempty" yaml:"source,omitempty" mapstructure:"source,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Type corresponds to the JSON schema field "type".
+	Type *VirtualMachineType `json:"type,omitempty" yaml:"type,omitempty" mapstructure:"type,omitempty"`
+
+	// If UPT enabled is true for any virtual network interface of the virtual
+	// machine, then this property is true for the virtual machine.
+	Uptv2Enabled *bool `json:"uptv2_enabled,omitempty" yaml:"uptv2_enabled,omitempty" mapstructure:"uptv2_enabled,omitempty"`
+}
+
+type VirtualMachinePowerState string
+
+const VirtualMachinePowerStateUNKNOWN VirtualMachinePowerState = "UNKNOWN"
+const VirtualMachinePowerStateVMRUNNING VirtualMachinePowerState = "VM_RUNNING"
+const VirtualMachinePowerStateVMSTOPPED VirtualMachinePowerState = "VM_STOPPED"
+const VirtualMachinePowerStateVMSUSPENDED VirtualMachinePowerState = "VM_SUSPENDED"
+
+var enumValues_VirtualMachinePowerState = []interface{}{
+	"VM_RUNNING",
+	"VM_STOPPED",
+	"VM_SUSPENDED",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VirtualMachinePowerState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_VirtualMachinePowerState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_VirtualMachinePowerState, v)
+	}
+	*j = VirtualMachinePowerState(v)
+	return nil
+}
+
+// Specifies details of runtime for a virtual machine
+type VirtualMachineRuntimeInfo struct {
+	// Specifies list of runtime details of virtual network interfaces of virtual
+	// machine.
+	VifRuntimeInfo []VirtualNetworkInterfaceRuntimeInfo `json:"vif_runtime_info,omitempty" yaml:"vif_runtime_info,omitempty" mapstructure:"vif_runtime_info,omitempty"`
+}
+
+type VirtualMachineType string
+
+const VirtualMachineTypeEDGE VirtualMachineType = "EDGE"
+const VirtualMachineTypeINTELLIGENCE VirtualMachineType = "INTELLIGENCE"
+const VirtualMachineTypeMP VirtualMachineType = "MP"
+const VirtualMachineTypeREGULAR VirtualMachineType = "REGULAR"
+const VirtualMachineTypeSERVICE VirtualMachineType = "SERVICE"
+const VirtualMachineTypeUNKNOWN VirtualMachineType = "UNKNOWN"
+const VirtualMachineTypeVCSYSTEM VirtualMachineType = "VC_SYSTEM"
+
+var enumValues_VirtualMachineType = []interface{}{
+	"EDGE",
+	"SERVICE",
+	"REGULAR",
+	"MP",
+	"INTELLIGENCE",
+	"VC_SYSTEM",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VirtualMachineType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_VirtualMachineType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_VirtualMachineType, v)
+	}
+	*j = VirtualMachineType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VirtualMachine) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain VirtualMachine
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = VirtualMachine(plain)
+	return nil
+}
+
+// Runtime details of virtual network interface of virtual machine.
+type VirtualNetworkInterfaceRuntimeInfo struct {
+	// ExternalId corresponds to the JSON schema field "external_id".
+	ExternalId *string `json:"external_id,omitempty" yaml:"external_id,omitempty" mapstructure:"external_id,omitempty"`
+
+	// This flag specifies whether UPTv2 (Universal Pass-through version 2) is active
+	// on the virtual network interface or not. If TRUE, then the virtual network
+	// interface works in the pass-through mode. If FALSE, then the virtual network
+	// interface still has network connectivity but works in emulated mode and
+	// pass-through is not enabled. This flag is NONE, if it is not applicable.
+	Uptv2Active *VirtualNetworkInterfaceRuntimeInfoUptv2Active `json:"uptv2_active,omitempty" yaml:"uptv2_active,omitempty" mapstructure:"uptv2_active,omitempty"`
+}
+
+type VirtualNetworkInterfaceRuntimeInfoUptv2Active string
+
+const VirtualNetworkInterfaceRuntimeInfoUptv2ActiveNONE VirtualNetworkInterfaceRuntimeInfoUptv2Active = "NONE"
+
+var enumValues_VirtualNetworkInterfaceRuntimeInfoUptv2Active = []interface{}{
+	"NONE",
+	true,
+	false,
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VirtualNetworkInterfaceRuntimeInfoUptv2Active) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_VirtualNetworkInterfaceRuntimeInfoUptv2Active {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_VirtualNetworkInterfaceRuntimeInfoUptv2Active, v)
+	}
+	*j = VirtualNetworkInterfaceRuntimeInfoUptv2Active(v)
 	return nil
 }
