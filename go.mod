@@ -1,8 +1,6 @@
 module github.com/np-guard/vmware-analyzer
 
-go 1.21.5
-
-toolchain go1.22.4
+go 1.21
 
 require (
 	github.com/np-guard/models v0.3.4
@@ -11,7 +9,6 @@ require (
 )
 
 require (
-	github.com/andelf/go-curl v0.0.0-20240707050732-dfa6a0d469d2
 	github.com/antihax/optional v1.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.2.0 // indirect
