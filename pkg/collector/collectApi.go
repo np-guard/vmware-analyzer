@@ -41,7 +41,7 @@ func curlReq(server serverData, quary string) ([]byte, error) {
 	}
 	client := &http.Client{Transport: tr}
 
-	req, err := http.NewRequest("GET", server.NSXServer+"/"+quary, nil)
+	req, err := http.NewRequest("GET", server.nsxServer+"/"+quary, nil)
 	if err != nil {
 		return nil, err
 	}

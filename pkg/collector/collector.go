@@ -17,11 +17,11 @@ const (
 )
 
 type serverData struct {
-	NSXServer, userName, password string
+	nsxServer, userName, password string
 }
 
-func CollectResources(NSXServer, userName, password string) (*ResourcesContainerModel, error) {
-	server := serverData{NSXServer, userName, password}
+func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
+	server := serverData{nsxServer, userName, password}
 	res := NewResourcesContainerModel()
 	err := collectResourceList(server, virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
@@ -51,7 +51,7 @@ func getDomain(server serverData) (string, error) {
 		return "", fmt.Errorf("failed to find domain")
 	}
 	if len(domains) > 1 {
-		return "", fmt.Errorf("multplied domains are not supported")
+		return "", fmt.Errorf("multiply domains are not supported")
 	}
 	return domains[0].ID, nil
 }

@@ -12,7 +12,7 @@ import (
 
 func TestCollectResources(t *testing.T) {
 	type args struct {
-		NSXServer           string
+		nsxServer          string
 		userName, password string
 	}
 	tests := []struct {
@@ -30,8 +30,8 @@ func TestCollectResources(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CollectResources(tt.args.NSXServer, tt.args.userName, tt.args.password)
-			if (err != nil) != (tt.args.NSXServer == "no_server") {
+			got, err := CollectResources(tt.args.nsxServer, tt.args.userName, tt.args.password)
+			if (err != nil) != (tt.args.nsxServer == "no_server") {
 				t.Errorf("CollectResources() error = %v", err)
 				return
 			}
