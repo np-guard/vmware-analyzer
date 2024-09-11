@@ -11,19 +11,19 @@ import (
 )
 
 const (
-	virtualMachineQuary = "api/v1/fabric/virtual-machines"
-	securityPolicyQuary = "policy/api/v1/infra/domains/%s/security-policies"
-	domainsQuary        = "policy/api/v1/infra/domains"
+	virtualMachineQuery = "api/v1/fabric/virtual-machines"
+	securityPolicyQuery = "policy/api/v1/infra/domains/%s/security-policies"
+	domainsQuery        = "policy/api/v1/infra/domains"
 )
 
 type serverData struct {
-	NSXServer, user_name, password string
+	NSXServer, userName, password string
 }
 
-func CollectResources(NSXServer, user_name, password string) (*ResourcesContainerModel, error) {
-	server := serverData{NSXServer, user_name, password}
+func CollectResources(NSXServer, userName, password string) (*ResourcesContainerModel, error) {
+	server := serverData{NSXServer, userName, password}
 	res := NewResourcesContainerModel()
-	err := collectResourceList(server, virtualMachineQuary, &res.VirtualMachineList)
+	err := collectResourceList(server, virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func CollectResources(NSXServer, user_name, password string) (*ResourcesContaine
 	if err != nil {
 		return nil, err
 	}
-	err = collectResourceList(server, fmt.Sprintf(securityPolicyQuary, domain), &res.SecurityPolicyList)
+	err = collectResourceList(server, fmt.Sprintf(securityPolicyQuery, domain), &res.SecurityPolicyList)
 	if err != nil {
 		return nil, err
 	}
@@ -40,10 +40,10 @@ func CollectResources(NSXServer, user_name, password string) (*ResourcesContaine
 
 func getDomain(server serverData) (string, error) {
 	type domain struct {
-		Id string
+		ID string
 	}
 	domains := []*domain{}
-	err := collectResourceList(server, domainsQuary, &domains)
+	err := collectResourceList(server, domainsQuery, &domains)
 	if err != nil {
 		return "", err
 	}
@@ -53,5 +53,5 @@ func getDomain(server serverData) (string, error) {
 	if len(domains) > 1 {
 		return "", fmt.Errorf("multplied domains are not supported")
 	}
-	return domains[0].Id, nil
+	return domains[0].ID, nil
 }
