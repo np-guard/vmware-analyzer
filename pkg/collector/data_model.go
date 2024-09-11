@@ -8,7 +8,6 @@ package collector
 
 import (
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
-
 )
 
 type SecurityPolicy struct {

@@ -55,4 +55,3 @@ func getDomain(server serverData) (string, error) {
 	}
 	return domains[0].Id, nil
 }
-

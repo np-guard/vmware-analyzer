@@ -20,8 +20,8 @@ type ResourcesContainerModel struct {
 // NewResourcesContainerModel creates an empty resources container
 func NewResourcesContainerModel() *ResourcesContainerModel {
 	return &ResourcesContainerModel{
-		SecurityPolicyList:    []*SecurityPolicy{},
-		VirtualMachineList:    []*VirtualMachine{},
+		SecurityPolicyList: []*SecurityPolicy{},
+		VirtualMachineList: []*VirtualMachine{},
 	}
 }
 
@@ -36,4 +36,3 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	toPrint, err := json.MarshalIndent(resources, "", "    ")
 	return string(toPrint), err
 }
-
