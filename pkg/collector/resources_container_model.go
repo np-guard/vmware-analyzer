@@ -11,7 +11,6 @@ import (
 	"fmt"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector/version"
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
@@ -42,23 +41,3 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	return string(toPrint), err
 }
 
-type SecurityPolicy struct {
-	resources.SecurityPolicy
-}
-
-func NewSecurityPolicy(securityPolicy *resources.SecurityPolicy) *SecurityPolicy {
-	return &SecurityPolicy{SecurityPolicy: *securityPolicy}
-}
-
-func (res *SecurityPolicy) UnmarshalJSON(data []byte) error {
-	return res.UnmarshalJSON(data)
-	// return basicUnmarshal[resources.SecurityPolicy](data, resources.UnmarshalJSON, &res.SecurityPolicy, &res.BaseTaggedResource)
-}
-
-type VirtualMachine struct {
-	resources.VirtualMachine
-}
-
-func NewVirtualMachine(virtualMachine *resources.VirtualMachine) *VirtualMachine {
-	return &VirtualMachine{VirtualMachine: *virtualMachine}
-}

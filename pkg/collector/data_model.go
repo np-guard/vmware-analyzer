@@ -7,41 +7,22 @@ SPDX-License-Identifier: Apache-2.0
 package collector
 
 import (
-	"encoding/json"
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 
 )
 
-// Helper function for unmarshalling
-
-func jsonToMap(jsonStr []byte) (map[string]json.RawMessage, error) {
-	var result map[string]json.RawMessage
-	err := json.Unmarshal(jsonStr, &result)
-	return result, err
+type SecurityPolicy struct {
+	resources.SecurityPolicy
 }
 
-func basicUnmarshal[A any](data []byte, unmarshalFunc func(map[string]json.RawMessage, any) error,
-	objRef *A, tags *BaseTaggedResource) error {
-	asMap, err := jsonToMap(data)
-	if err != nil {
-		return err
-	}
-
-	asRef := new(A)
-	err = unmarshalFunc(asMap, &asRef)
-	if err != nil {
-		return err
-	}
-	*objRef = *asRef
-
-	if tags != nil {
-		err = json.Unmarshal(data, tags)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+type VirtualMachine struct {
+	resources.VirtualMachine
 }
+
+
+
+
+
 
 // The following types define the "canonical data model" for IBM resources.
 // For the most part, these are the SDK types extended with extra information like tags or info from multiple calls
