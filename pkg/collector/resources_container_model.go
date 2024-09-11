@@ -9,13 +9,10 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/np-guard/vmware-analyzer/pkg/collector/version"
 )
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
 type ResourcesContainerModel struct {
-	ResourceModelMetadata
 	SecurityPolicyList []*SecurityPolicy `json:"security_policies"`
 	VirtualMachineList []*VirtualMachine `json:"virtual_machines"`
 }
@@ -25,7 +22,6 @@ func NewResourcesContainerModel() *ResourcesContainerModel {
 	return &ResourcesContainerModel{
 		SecurityPolicyList:    []*SecurityPolicy{},
 		VirtualMachineList:    []*VirtualMachine{},
-		ResourceModelMetadata: ResourceModelMetadata{Version: version.VersionCore},
 	}
 }
 
