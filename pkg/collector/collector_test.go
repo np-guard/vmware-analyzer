@@ -44,11 +44,32 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("CollectResources() error = %v", err)
 				return
 			}
-			if got != nil && len(got.SecurityPolicyList) == 0 {
+			if got == nil {
+				return
+			}
+			if len(got.SecurityPolicyList) == 0 {
 				t.Errorf("didnt find SecurityPolicyList")
 			}
-			if got != nil && len(got.VirtualMachineList) == 0 {
+			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
+			}
+			if len(got.GroupList) == 0 {
+				t.Errorf("didnt find Groups")
+			}
+			for spi := range got.SecurityPolicyList {
+				for ri := range got.SecurityPolicyList[spi].Rules {
+					sGroups := got.SecurityPolicyList[spi].Rules[ri].SourceGroups
+					dGroups := got.SecurityPolicyList[spi].Rules[ri].DestinationGroups
+					for _, ref := range append(sGroups,dGroups...) {
+						if ref != "ANY"{
+							if got.getGroup(ref) == nil{
+								t.Errorf("fail to find group of %v", ref)
+								return
+				
+							}
+						} 
+					}
+				}
 			}
 			jsonOut, err := got.ToJSONString()
 			if err != nil {

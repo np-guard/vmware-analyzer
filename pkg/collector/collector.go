@@ -12,6 +12,7 @@ import (
 
 const (
 	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
+	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
 	securityPolicyQuery      = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	domainsQuery             = "policy/api/v1/infra/domains"
@@ -33,6 +34,10 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 		return nil, err
 	}
 	err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domain), &res.SecurityPolicyList)
+	if err != nil {
+		return nil, err
+	}
+	err = collectResultList(server, fmt.Sprintf(groupsQuery, domain), &res.GroupList)
 	if err != nil {
 		return nil, err
 	}

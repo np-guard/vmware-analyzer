@@ -17,3 +17,7 @@ type SecurityPolicy struct {
 type VirtualMachine struct {
 	resources.VirtualMachine
 }
+
+type Group struct {
+	resources.Group
+}
