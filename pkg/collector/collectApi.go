@@ -9,6 +9,7 @@ package collector
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -54,10 +55,28 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 }
 
 func unmarshalToList[A any](b []byte) ([]*A, error) {
-	data := struct{ Results []*A }{}
+	data := struct{ Results *[]*A }{}
 	err := json.Unmarshal(b, &data)
 	if err != nil {
 		return nil, err
 	}
-	return data.Results, nil
+	if data.Results == nil {
+		return nil, getUnmarshalError(b)
+	}
+	return *data.Results, nil
+}
+
+func getUnmarshalError(b []byte) error{
+	error_data := struct {
+		Error_message string
+		Error_code    int
+	}{}
+	err := json.Unmarshal(b, &error_data)
+	if err != nil {
+		return err 
+	}
+	if error_data.Error_code != 0 || error_data.Error_message != ""{
+		return fmt.Errorf("http error %d: %s", error_data.Error_code ,error_data.Error_message)
+	}
+	return fmt.Errorf("fail to unmarshal %s",b)
 }
