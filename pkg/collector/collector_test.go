@@ -7,7 +7,16 @@ SPDX-License-Identifier: Apache-2.0
 package collector
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
+)
+
+const (
+	writeFileMde = 0o600
+)
+const (
+	outDir = "out/"
 )
 
 func TestCollectResources(t *testing.T) {
@@ -41,6 +50,31 @@ func TestCollectResources(t *testing.T) {
 			if got != nil && len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
+			jsonOut, err := got.ToJSONString()
+			if err != nil {
+				t.Errorf("fail to convert to json error = %v", err)
+				return
+			}
+			err = writTeToFile(outDir, tt.name+".json", jsonOut)
+			if err != nil {
+				t.Errorf("fail to write to file error = %v", err)
+				return
+			}
 		})
 	}
+}
+
+// todo - move this func to more general place, and make it more generic
+func writTeToFile(dir, name, content string) error {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	currentOutDir := filepath.Join(currentDir, dir)
+	err = os.MkdirAll(currentOutDir, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	fileName := filepath.Join(dir, name)
+	return os.WriteFile(fileName, []byte(content), writeFileMde)
 }
