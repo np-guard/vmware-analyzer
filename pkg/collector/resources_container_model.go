@@ -13,15 +13,15 @@ import (
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
 type ResourcesContainerModel struct {
-	SecurityPolicyList []*SecurityPolicy `json:"security_policies"`
-	VirtualMachineList []*VirtualMachine `json:"virtual_machines"`
+	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
+	VirtualMachineList []VirtualMachine `json:"virtual_machines"`
 }
 
 // NewResourcesContainerModel creates an empty resources container
 func NewResourcesContainerModel() *ResourcesContainerModel {
 	return &ResourcesContainerModel{
-		SecurityPolicyList: []*SecurityPolicy{},
-		VirtualMachineList: []*VirtualMachine{},
+		SecurityPolicyList: []SecurityPolicy{},
+		VirtualMachineList: []VirtualMachine{},
 	}
 }
 

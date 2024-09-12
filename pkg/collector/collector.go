@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	virtualMachineQuery = "api/v1/fabric/virtual-machines"
-	securityPolicyQuery = "policy/api/v1/infra/domains/%s/security-policies"
-	domainsQuery        = "policy/api/v1/infra/domains"
+	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
+	securityPolicyQuery      = "policy/api/v1/infra/domains/%s/security-policies"
+	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
+	domainsQuery             = "policy/api/v1/infra/domains"
 )
 
 type serverData struct {
@@ -23,7 +24,7 @@ type serverData struct {
 func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
 	server := serverData{nsxServer, userName, password}
 	res := NewResourcesContainerModel()
-	err := collectResourceList(server, virtualMachineQuery, &res.VirtualMachineList)
+	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return nil, err
 	}
@@ -31,10 +32,18 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	if err != nil {
 		return nil, err
 	}
-	err = collectResourceList(server, fmt.Sprintf(securityPolicyQuery, domain), &res.SecurityPolicyList)
+	err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domain), &res.SecurityPolicyList)
 	if err != nil {
 		return nil, err
 	}
+	for i := range res.SecurityPolicyList {
+		err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domain, *res.SecurityPolicyList[i].Id), &res.SecurityPolicyList[i].Rules)
+		if err != nil {
+			return nil, err
+		}
+
+	}
+
 	return res, nil
 }
 
@@ -43,7 +52,7 @@ func getDomain(server serverData) (string, error) {
 		ID string
 	}
 	domains := []*domain{}
-	err := collectResourceList(server, domainsQuery, &domains)
+	err := collectResultList(server, domainsQuery, &domains)
 	if err != nil {
 		return "", err
 	}

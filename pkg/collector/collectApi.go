@@ -14,12 +14,24 @@ import (
 	"net/http"
 )
 
-func collectResourceList[A any](server serverData, resourceQuery string, resouceList *[]*A) error {
+func collectResultList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
 	bytes, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	*resouceList, err = unmarshalToList[A](bytes)
+	*resouceList, err = unmarshalResultsToList[A](bytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func collectRulesList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
+	bytes, err := curlRequest(server, resourceQuery)
+	if err != nil {
+		return err
+	}
+	*resouceList, err = unmarshalRulesToList[A](bytes)
 	if err != nil {
 		return err
 	}
@@ -54,8 +66,8 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 	return bytes, nil
 }
 
-func unmarshalToList[A any](b []byte) ([]*A, error) {
-	data := struct{ Results *[]*A }{}
+func unmarshalResultsToList[A any](b []byte) ([]A, error) {
+	data := struct{ Results *[]A }{}
 	err := json.Unmarshal(b, &data)
 	if err != nil {
 		return nil, err
@@ -66,17 +78,29 @@ func unmarshalToList[A any](b []byte) ([]*A, error) {
 	return *data.Results, nil
 }
 
-func getUnmarshalError(b []byte) error{
+func unmarshalRulesToList[A any](b []byte) ([]A, error) {
+	data := struct{ Rules *[]A }{}
+	err := json.Unmarshal(b, &data)
+	if err != nil {
+		return nil, err
+	}
+	if data.Rules == nil {
+		return nil, getUnmarshalError(b)
+	}
+	return *data.Rules, nil
+}
+
+func getUnmarshalError(b []byte) error {
 	error_data := struct {
 		Error_message string
 		Error_code    int
 	}{}
 	err := json.Unmarshal(b, &error_data)
 	if err != nil {
-		return err 
+		return err
 	}
-	if error_data.Error_code != 0 || error_data.Error_message != ""{
-		return fmt.Errorf("http error %d: %s", error_data.Error_code ,error_data.Error_message)
+	if error_data.Error_code != 0 || error_data.Error_message != "" {
+		return fmt.Errorf("http error %d: %s", error_data.Error_code, error_data.Error_message)
 	}
-	return fmt.Errorf("fail to unmarshal %s",b)
+	return fmt.Errorf("fail to unmarshal %s", b)
 }
