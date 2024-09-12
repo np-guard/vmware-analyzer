@@ -8,7 +8,7 @@ import (
 // capture nsx config to analyze
 type config struct {
 	vms []*endpoints.VM
-	fw  *dfw.DFW // currently assuming one DFW only (todo: rename pkg dfw)
+	fw  *dfw.DFW // currently assuming one DFW only (todo: rename pkg dfw?)
 }
 
 func (c *config) getConnectivity() connMap {

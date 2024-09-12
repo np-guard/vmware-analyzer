@@ -40,6 +40,10 @@ func (d dfwCategory) string() string {
 	}
 }
 
+var categoriesList = []dfwCategory{
+	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, appCategoty, emptyCategory,
+}
+
 type categorySpec struct {
 	category      dfwCategory
 	rules         []*fwRule // ordered list of rules
@@ -86,4 +90,21 @@ func (c *categorySpec) string() string {
 		rulesStr[i] = c.rules[i].string()
 	}
 	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
+}
+
+func (c *categorySpec) addRule(src, dst *endpoints.VM, conn *connection.Set, action string) {
+	newRule := &fwRule{
+		srcVMs: []*endpoints.VM{src},
+		dstVMs: []*endpoints.VM{dst},
+		conn:   conn,
+		action: actionFromString(action),
+	}
+	c.rules = append(c.rules, newRule)
+}
+
+func newEmptyCategory(c dfwCategory) *categorySpec {
+	return &categorySpec{
+		category:      c,
+		defaultAction: actionNone,
+	}
 }

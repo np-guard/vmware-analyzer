@@ -59,6 +59,25 @@ func (d *DFW) String() string {
 	return strings.Join(categoriesStrings, lineSeparatorStr)
 }
 
-func (d *DFW) AddRule(src, dst *endpoints.VM, conn *connection.Set, category string) {
+// AddRule func for testing purposes
+func (d *DFW) AddRule(src, dst *endpoints.VM, conn *connection.Set, category string, action string) {
+	for _, fwCategory := range d.categoriesSpecs {
+		if fwCategory.category.string() == category {
+			fwCategory.addRule(src, dst, conn, action)
+		}
+	}
+}
 
+// NewEmptyDFW func for testing purposes
+func NewEmptyDFW(globalDefaultAllow bool) *DFW {
+	res := &DFW{
+		defaultAction: actionDeny,
+	}
+	if globalDefaultAllow {
+		res.defaultAction = actionAllow
+	}
+	for _, c := range categoriesList {
+		res.categoriesSpecs = append(res.categoriesSpecs, newEmptyCategory(c))
+	}
+	return res
 }
