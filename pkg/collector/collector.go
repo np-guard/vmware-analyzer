@@ -51,7 +51,7 @@ func getDomain(server serverData) (string, error) {
 		return "", fmt.Errorf("failed to find domain")
 	}
 	if len(domains) > 1 {
-		return "", fmt.Errorf("multiply domains are not supported")
+		return "", fmt.Errorf("multiple domains are not supported")
 	}
 	return domains[0].ID, nil
 }
