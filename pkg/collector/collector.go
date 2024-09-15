@@ -11,12 +11,14 @@ import (
 )
 
 const (
+	domainsQuery             = "policy/api/v1/infra/domains"
+	servicesQuery            = "policy/api/v1/infra/services"
+	segmentsQuery            = "policy/api/v1/infra/segments"
 	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
 	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
 	securityPolicyQuery      = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
-	domainsQuery             = "policy/api/v1/infra/domains"
-	servicesQuery            = "policy/api/v1/infra/services"
+	
 )
 
 type serverData struct {
@@ -38,7 +40,10 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	if err != nil {
 		return nil, err
 	}
-
+	err = collectResultList(server, segmentsQuery, &res.SegmentList)
+	if err != nil {
+		return nil, err
+	}
 
 	for di := range res.DomainList {
 		domain := &res.DomainList[di]

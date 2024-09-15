@@ -24,6 +24,9 @@ type Group struct {
 type Service struct {
 	resources.Service
 }
+type Segment struct {
+	resources.Segment
+}
 type Domain struct {
 	resources.Domain
 	DomainResources

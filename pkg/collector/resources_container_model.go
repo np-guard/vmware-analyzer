@@ -15,6 +15,7 @@ import (
 type ResourcesContainerModel struct {
 	ServiceList        []Service        `json:"services"`
 	VirtualMachineList []VirtualMachine `json:"virtual_machines"`
+	SegmentList        []Segment        `json:"segments"`
 	DomainList         []Domain         `json:"domains"`
 }
 type DomainResources struct {
@@ -24,12 +25,7 @@ type DomainResources struct {
 
 // NewResourcesContainerModel creates an empty resources container
 func NewResourcesContainerModel() *ResourcesContainerModel {
-	return &ResourcesContainerModel{
-		// SecurityPolicyList: []SecurityPolicy{},
-		// VirtualMachineList: []VirtualMachine{},
-		// GroupList:          []Group{},
-		// ServiceList:        []Service{},
-	}
+	return &ResourcesContainerModel{}
 }
 
 // ToJSONString converts a ResourcesContainerModel into a json-formatted-string

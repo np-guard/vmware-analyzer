@@ -4,3 +4,4 @@ Condition
 VirtualMachine
 Service
 Domain
+Segment
