@@ -47,27 +47,29 @@ func TestCollectResources(t *testing.T) {
 			if got == nil {
 				return
 			}
-			if len(got.SecurityPolicyList) == 0 {
-				t.Errorf("didnt find SecurityPolicyList")
-			}
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			if len(got.GroupList) == 0 {
-				t.Errorf("didnt find Groups")
-			}
-			for spi := range got.SecurityPolicyList {
-				for ri := range got.SecurityPolicyList[spi].Rules {
-					sGroups := got.SecurityPolicyList[spi].Rules[ri].SourceGroups
-					dGroups := got.SecurityPolicyList[spi].Rules[ri].DestinationGroups
-					for _, ref := range append(sGroups,dGroups...) {
-						if ref != "ANY"{
-							if got.getGroup(ref) == nil{
-								t.Errorf("fail to find group of %v", ref)
-								return
-				
+			for _, domain := range got.DomainList {
+				if len(domain.SecurityPolicyList) == 0 {
+					t.Errorf("didnt find SecurityPolicyList")
+				}
+				if len(domain.GroupList) == 0 {
+					t.Errorf("didnt find Groups")
+				}
+				for spi := range domain.SecurityPolicyList {
+					for ri := range domain.SecurityPolicyList[spi].Rules {
+						sGroups := domain.SecurityPolicyList[spi].Rules[ri].SourceGroups
+						dGroups := domain.SecurityPolicyList[spi].Rules[ri].DestinationGroups
+						for _, ref := range append(sGroups, dGroups...) {
+							if ref != "ANY" {
+								if domain.getGroup(ref) == nil {
+									t.Errorf("fail to find group of %v", ref)
+									return
+
+								}
 							}
-						} 
+						}
 					}
 				}
 			}

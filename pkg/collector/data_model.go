@@ -24,3 +24,7 @@ type Group struct {
 type Service struct {
 	resources.Service
 }
+type Domain struct {
+	resources.Domain
+	DomainResources
+}

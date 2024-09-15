@@ -16,7 +16,7 @@ const (
 	securityPolicyQuery      = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	domainsQuery             = "policy/api/v1/infra/domains"
-	servicesQuery             = "policy/api/v1/infra/services"
+	servicesQuery            = "policy/api/v1/infra/services"
 )
 
 type serverData struct {
@@ -34,43 +34,29 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	if err != nil {
 		return nil, err
 	}
-	domain, err := getDomain(server)
+	err = collectResultList(server, domainsQuery, &res.DomainList)
 	if err != nil {
 		return nil, err
 	}
-	err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domain), &res.SecurityPolicyList)
-	if err != nil {
-		return nil, err
-	}
-	err = collectResultList(server, fmt.Sprintf(groupsQuery, domain), &res.GroupList)
-	if err != nil {
-		return nil, err
-	}
-	for i := range res.SecurityPolicyList {
-		err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domain, *res.SecurityPolicyList[i].Id), &res.SecurityPolicyList[i].Rules)
+
+
+	for di := range res.DomainList {
+		domain := &res.DomainList[di]
+		domainID := *domain.Id
+		err = collectResultList(server, fmt.Sprintf(groupsQuery, domainID), &domain.GroupList)
 		if err != nil {
 			return nil, err
 		}
-
+		err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domainID), &domain.SecurityPolicyList)
+		if err != nil {
+			return nil, err
+		}
+		for i := range domain.SecurityPolicyList {
+			err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domain.SecurityPolicyList[i].Id), &domain.SecurityPolicyList[i].Rules)
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
-
 	return res, nil
-}
-
-func getDomain(server serverData) (string, error) {
-	type domain struct {
-		ID string
-	}
-	domains := []*domain{}
-	err := collectResultList(server, domainsQuery, &domains)
-	if err != nil {
-		return "", err
-	}
-	if len(domains) == 0 {
-		return "", fmt.Errorf("failed to find domain")
-	}
-	if len(domains) > 1 {
-		return "", fmt.Errorf("multiple domains are not supported")
-	}
-	return domains[0].ID, nil
 }

@@ -3,3 +3,4 @@ Group
 Condition
 VirtualMachine
 Service
+Domain
