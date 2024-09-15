@@ -17,6 +17,7 @@ type ResourcesContainerModel struct {
 	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
 	VirtualMachineList []VirtualMachine `json:"virtual_machines"`
 	GroupList          []Group          `json:"groups"`
+	ServiceList        []Service        `json:"groups"`
 }
 
 // NewResourcesContainerModel creates an empty resources container
@@ -25,6 +26,7 @@ func NewResourcesContainerModel() *ResourcesContainerModel {
 		SecurityPolicyList: []SecurityPolicy{},
 		VirtualMachineList: []VirtualMachine{},
 		GroupList:          []Group{},
+		ServiceList:           []Service{},
 	}
 }
 
@@ -40,7 +42,7 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	return string(toPrint), err
 }
 
-func (resources *ResourcesContainerModel) getGroup(query string) *Group{
-	i := slices.IndexFunc(resources.GroupList, func(gr Group)bool{return query == *gr.Path})
+func (resources *ResourcesContainerModel) getGroup(query string) *Group {
+	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == *gr.Path })
 	return &resources.GroupList[i]
 }

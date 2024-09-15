@@ -21,3 +21,6 @@ type VirtualMachine struct {
 type Group struct {
 	resources.Group
 }
+type Service struct {
+	resources.Service
+}
