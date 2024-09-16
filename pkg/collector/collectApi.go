@@ -19,16 +19,16 @@ import (
 )
 
 func fixLowerCaseEnums(b []byte) []byte{
-	vals := []resources.RealizedVirtualMachinePowerState{
+	enimVals := []resources.RealizedVirtualMachinePowerState{
 		resources.RealizedVirtualMachinePowerStateUNKNOWN,
 		resources.RealizedVirtualMachinePowerStateVMRUNNING,
 		resources.RealizedVirtualMachinePowerStateVMSTOPPED,
 		resources.RealizedVirtualMachinePowerStateVMSUSPENDED,
 	}
-	for _, emunVal := range vals {
-		wrongVal := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
-		rightVal := fmt.Sprintf("\"%s\"", string(emunVal))
-		b=bytes.Replace(b,[]byte(wrongVal),[]byte(rightVal),-1)
+	for _, emunVal := range enimVals {
+		wrongCase := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
+		rightCase := fmt.Sprintf("\"%s\"", string(emunVal))
+		b=bytes.Replace(b,[]byte(wrongCase),[]byte(rightCase),-1)
 	}
 	return b
 }
@@ -52,6 +52,18 @@ func collectRulesList[A any](server serverData, resourceQuery string, resouceLis
 		return err
 	}
 	*resouceList, err = unmarshalRulesToList[A](bytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func collectExpressionList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
+	bytes, err := curlRequest(server, resourceQuery)
+	if err != nil {
+		return err
+	}
+	*resouceList, err = unmarshalExpressionToList[A](bytes)
 	if err != nil {
 		return err
 	}
@@ -108,6 +120,18 @@ func unmarshalRulesToList[A any](b []byte) ([]A, error) {
 		return nil, getUnmarshalError(b)
 	}
 	return *data.Rules, nil
+}
+
+func unmarshalExpressionToList[A any](b []byte) ([]A, error) {
+	data := struct{ Expression *[]A }{}
+	err := json.Unmarshal(b, &data)
+	if err != nil {
+		return nil, err
+	}
+	if data.Expression == nil {
+		return nil, getUnmarshalError(b)
+	}
+	return *data.Expression, nil
 }
 
 func getUnmarshalError(b []byte) error {

@@ -21,9 +21,21 @@ type RealizedVirtualMachine struct{
 	resources.RealizedVirtualMachine
 }
 
+type Condition struct{
+	resources.Condition
+} 
+
+type ConjunctionOperator struct{
+	resources.ConjunctionOperator
+} 
+type Exprssion interface{
+
+}
+
 type Group struct {
 	resources.Group
 	Members []RealizedVirtualMachine
+	Expression []Exprssion
 }
 type Service struct {
 	resources.Service

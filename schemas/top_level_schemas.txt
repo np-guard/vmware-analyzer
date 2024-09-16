@@ -6,3 +6,4 @@ Service
 Domain
 Segment
 RealizedVirtualMachine
+ConjunctionOperator
