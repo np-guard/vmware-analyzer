@@ -18,7 +18,7 @@ const (
 	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
 	securityPolicyQuery      = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
-	
+	groupMembersQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
 )
 
 type serverData struct {
@@ -51,6 +51,12 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 		err = collectResultList(server, fmt.Sprintf(groupsQuery, domainID), &domain.GroupList)
 		if err != nil {
 			return nil, err
+		}
+		for i := range domain.GroupList {
+			err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domain.GroupList[i].Id), &domain.GroupList[i].Members)
+			if err != nil {
+				return nil, err
+			}
 		}
 		err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domainID), &domain.SecurityPolicyList)
 		if err != nil {

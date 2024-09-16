@@ -616,6 +616,263 @@ func (j *Condition) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type ConfigurationStateElement struct {
+	// FailureCode corresponds to the JSON schema field "failure_code".
+	FailureCode *int `json:"failure_code,omitempty" yaml:"failure_code,omitempty" mapstructure:"failure_code,omitempty"`
+
+	// FailureMessage corresponds to the JSON schema field "failure_message".
+	FailureMessage *string `json:"failure_message,omitempty" yaml:"failure_message,omitempty" mapstructure:"failure_message,omitempty"`
+
+	// State corresponds to the JSON schema field "state".
+	State *ConfigurationStateElementState `json:"state,omitempty" yaml:"state,omitempty" mapstructure:"state,omitempty"`
+
+	// SubSystemAddress corresponds to the JSON schema field "sub_system_address".
+	SubSystemAddress *string `json:"sub_system_address,omitempty" yaml:"sub_system_address,omitempty" mapstructure:"sub_system_address,omitempty"`
+
+	// SubSystemId corresponds to the JSON schema field "sub_system_id".
+	SubSystemId *string `json:"sub_system_id,omitempty" yaml:"sub_system_id,omitempty" mapstructure:"sub_system_id,omitempty"`
+
+	// SubSystemName corresponds to the JSON schema field "sub_system_name".
+	SubSystemName *string `json:"sub_system_name,omitempty" yaml:"sub_system_name,omitempty" mapstructure:"sub_system_name,omitempty"`
+
+	// SubSystemType corresponds to the JSON schema field "sub_system_type".
+	SubSystemType *string `json:"sub_system_type,omitempty" yaml:"sub_system_type,omitempty" mapstructure:"sub_system_type,omitempty"`
+}
+
+type ConfigurationStateElementState string
+
+const ConfigurationStateElementStateADVANCEDCONFIGEDITFAILED ConfigurationStateElementState = "ADVANCED_CONFIG_EDIT_FAILED"
+const ConfigurationStateElementStateADVANCEDCONFIGEDITPENDING ConfigurationStateElementState = "ADVANCED_CONFIG_EDIT_PENDING"
+const ConfigurationStateElementStateAPPLIANCEINTERNALERROR ConfigurationStateElementState = "APPLIANCE_INTERNAL_ERROR"
+const ConfigurationStateElementStateCOMPUTEMANAGERNOTFOUND ConfigurationStateElementState = "COMPUTE_MANAGER_NOT_FOUND"
+const ConfigurationStateElementStateCONFIGUREUPTONVMFAILED ConfigurationStateElementState = "CONFIGURE_UPT_ON_VM_FAILED"
+const ConfigurationStateElementStateDATAPATHCONFIGURATIONEDITFAILED ConfigurationStateElementState = "DATAPATH_CONFIGURATION_EDIT_FAILED"
+const ConfigurationStateElementStateDELETEFAILEDFORDIFFERENTMOREFID ConfigurationStateElementState = "DELETE_FAILED_FOR_DIFFERENT_MOREF_ID"
+const ConfigurationStateElementStateDELETEFAILEDFORNONLCMEDGE ConfigurationStateElementState = "DELETE_FAILED_FOR_NON_LCM_EDGE"
+const ConfigurationStateElementStateDELETEFAILEDONVMNOTFOUND ConfigurationStateElementState = "DELETE_FAILED_ON_VM_NOT_FOUND"
+const ConfigurationStateElementStateDELETEINPROGRESS ConfigurationStateElementState = "DELETE_IN_PROGRESS"
+const ConfigurationStateElementStateDELETEVMINREDEPLOYFAILED ConfigurationStateElementState = "DELETE_VM_IN_REDEPLOY_FAILED"
+const ConfigurationStateElementStateDEPLOYVMINREDEPLOYFAILED ConfigurationStateElementState = "DEPLOY_VM_IN_REDEPLOY_FAILED"
+const ConfigurationStateElementStateDUPLICATEPNICSINTEAMINGSWITHMULTIPLEUPLINKSANDFAILOVERORDER ConfigurationStateElementState = "DUPLICATE_PNICS_IN_TEAMINGS_WITH_MULTIPLE_UPLINKS_AND_FAILOVER_ORDER"
+const ConfigurationStateElementStateDUPLICATEVLANSSHARINGSAMEPNIC ConfigurationStateElementState = "DUPLICATE_VLANS_SHARING_SAME_PNIC"
+const ConfigurationStateElementStateDUPLICATEVLANSSHARINGSAMEPNICMULTIPLEUPLINKSINNAMEDTEAMINGNOTSUPPORTEDIFUPLINKINDEFAULTTEAMING ConfigurationStateElementState = "DUPLICATE_VLANS_SHARING_SAME_PNICMULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING"
+const ConfigurationStateElementStateEDGECONFIGERROR ConfigurationStateElementState = "EDGE_CONFIG_ERROR"
+const ConfigurationStateElementStateEDGEHARDWARENOTSUPPORTED ConfigurationStateElementState = "EDGE_HARDWARE_NOT_SUPPORTED"
+const ConfigurationStateElementStateEDGENODESETTINGSANDVSPHERESETTINGSARECHANGEDRESOLVE ConfigurationStateElementState = "EDGE_NODE_SETTINGS_AND_VSPHERE_SETTINGS_ARE_CHANGED_RESOLVE"
+const ConfigurationStateElementStateEDGENODESETTINGSMISMATCHRESOLVE ConfigurationStateElementState = "EDGE_NODE_SETTINGS_MISMATCH_RESOLVE"
+const ConfigurationStateElementStateEDGENODEVERSIONNOTSUPPORTED ConfigurationStateElementState = "EDGE_NODE_VERSION_NOT_SUPPORTED"
+const ConfigurationStateElementStateEDGEVMVSPHERESETTINGSMISMATCHRESOLVE ConfigurationStateElementState = "EDGE_VM_VSPHERE_SETTINGS_MISMATCH_RESOLVE"
+const ConfigurationStateElementStateEDGEVSPHERELOCATIONMISMATCHRESOLVE ConfigurationStateElementState = "EDGE_VSPHERE_LOCATION_MISMATCH_RESOLVE"
+const ConfigurationStateElementStateERRORINDISABLEMAINTENANCEMODE ConfigurationStateElementState = "ERROR_IN_DISABLE_MAINTENANCE_MODE"
+const ConfigurationStateElementStateERRORINENABLEMAINTENANCEMODE ConfigurationStateElementState = "ERROR_IN_ENABLE_MAINTENANCE_MODE"
+const ConfigurationStateElementStateError ConfigurationStateElementState = "error"
+const ConfigurationStateElementStateFailed ConfigurationStateElementState = "failed"
+const ConfigurationStateElementStateHOSTSWITCHPROFILENOTFOUND ConfigurationStateElementState = "HOSTSWITCH_PROFILE_NOT_FOUND"
+const ConfigurationStateElementStateINSUFFICIENTRESOURCESINEDGENODEFORSERVICE ConfigurationStateElementState = "INSUFFICIENT_RESOURCES_IN_EDGE_NODE_FOR_SERVICE"
+const ConfigurationStateElementStateINVALIDPNICDEVICENAME ConfigurationStateElementState = "INVALID_PNIC_DEVICE_NAME"
+const ConfigurationStateElementStateInProgress ConfigurationStateElementState = "in_progress"
+const ConfigurationStateElementStateInSync ConfigurationStateElementState = "in_sync"
+const ConfigurationStateElementStateLACPNOTSUPPORTEDFOREDGEVM ConfigurationStateElementState = "LACP_NOT_SUPPORTED_FOR_EDGE_VM"
+const ConfigurationStateElementStateLBSRCIDNOTSUPPORTEDFOREDGEVM ConfigurationStateElementState = "LBSRCID_NOT_SUPPORTED_FOR_EDGE_VM"
+const ConfigurationStateElementStateLLDPSENDENABLEDNOTSUPPORTED ConfigurationStateElementState = "LLDP_SEND_ENABLED_NOT_SUPPORTED"
+const ConfigurationStateElementStateLOGICALSWITCHNAMEDTEAMINGHASNOPNICBACKING ConfigurationStateElementState = "LOGICAL_SWITCH_NAMED_TEAMING_HAS_NO_PNIC_BACKING"
+const ConfigurationStateElementStateMAINTENANCEMODEENABLED ConfigurationStateElementState = "MAINTENANCE_MODE_ENABLED"
+const ConfigurationStateElementStateMPADISCONNECTED ConfigurationStateElementState = "MPA_DISCONNECTED"
+const ConfigurationStateElementStateMULTIPLEACTIVEUPLINKSNOTSUPPORTEDFOREDGE ConfigurationStateElementState = "MULTIPLE_ACTIVE_UPLINKS_NOT_SUPPORTED_FOR_EDGE"
+const ConfigurationStateElementStateMULTIPLEOVERLAYTZSNOTSUPPORTED ConfigurationStateElementState = "MULTIPLE_OVERLAY_TZS_NOT_SUPPORTED"
+const ConfigurationStateElementStateMULTIPLEUPLINKSINNAMEDTEAMINGNOTSUPPORTEDIFUPLINKINDEFAULTTEAMING ConfigurationStateElementState = "MULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING"
+const ConfigurationStateElementStateNODENOTREADY ConfigurationStateElementState = "NODE_NOT_READY"
+const ConfigurationStateElementStateNODEREADY ConfigurationStateElementState = "NODE_READY"
+const ConfigurationStateElementStateNOPNICPREPAREDINEDGE ConfigurationStateElementState = "NO_PNIC_PREPARED_IN_EDGE"
+const ConfigurationStateElementStateNOPNICSPECIFIEDINTN ConfigurationStateElementState = "NO_PNIC_SPECIFIED_IN_TN"
+const ConfigurationStateElementStateNOTAVAILABLE ConfigurationStateElementState = "NOT_AVAILABLE"
+const ConfigurationStateElementStateOrphaned ConfigurationStateElementState = "orphaned"
+const ConfigurationStateElementStatePartialSuccess ConfigurationStateElementState = "partial_success"
+const ConfigurationStateElementStatePending ConfigurationStateElementState = "pending"
+const ConfigurationStateElementStateREDEPLOYACTIVITYFAILED ConfigurationStateElementState = "REDEPLOY_ACTIVITY_FAILED"
+const ConfigurationStateElementStateREDEPLOYACTIVITYINPROGRESS ConfigurationStateElementState = "REDEPLOY_ACTIVITY_IN_PROGRESS"
+const ConfigurationStateElementStateREDEPLOYACTIVITYSCHEDULED ConfigurationStateElementState = "REDEPLOY_ACTIVITY_SCHEDULED"
+const ConfigurationStateElementStateREDEPLOYACTIVITYSUCCESSFUL ConfigurationStateElementState = "REDEPLOY_ACTIVITY_SUCCESSFUL"
+const ConfigurationStateElementStateREDEPLOYEDVMREGISTRATIONPENDING ConfigurationStateElementState = "REDEPLOYED_VM_REGISTRATION_PENDING"
+const ConfigurationStateElementStateREGISTRATIONFAILED ConfigurationStateElementState = "REGISTRATION_FAILED"
+const ConfigurationStateElementStateREGISTRATIONPENDING ConfigurationStateElementState = "REGISTRATION_PENDING"
+const ConfigurationStateElementStateREGISTRATIONTIMEDOUT ConfigurationStateElementState = "REGISTRATION_TIMEDOUT"
+const ConfigurationStateElementStateREPLACEACTIVITYFAILED ConfigurationStateElementState = "REPLACE_ACTIVITY_FAILED"
+const ConfigurationStateElementStateREPLACEACTIVITYINPROGRESS ConfigurationStateElementState = "REPLACE_ACTIVITY_IN_PROGRESS"
+const ConfigurationStateElementStateREPLACEACTIVITYSCHEDULED ConfigurationStateElementState = "REPLACE_ACTIVITY_SCHEDULED"
+const ConfigurationStateElementStateREPLACEACTIVITYSUCCESSFUL ConfigurationStateElementState = "REPLACE_ACTIVITY_SUCCESSFUL"
+const ConfigurationStateElementStateREPLACEDRPCCLIENTOFTN ConfigurationStateElementState = "REPLACED_RPC_CLIENT_OF_TN"
+const ConfigurationStateElementStateREPLACEFAILED ConfigurationStateElementState = "REPLACE_FAILED"
+const ConfigurationStateElementStateRETRYINGREPLACE ConfigurationStateElementState = "RETRYING_REPLACE"
+const ConfigurationStateElementStateSTANDBYUPLINKSNOTSUPPORTEDFOREDGEVM ConfigurationStateElementState = "STANDBY_UPLINKS_NOT_SUPPORTED_FOR_EDGE_VM"
+const ConfigurationStateElementStateSuccess ConfigurationStateElementState = "success"
+const ConfigurationStateElementStateTNOVERLAYTZINUSEBYEDGECLUSTER ConfigurationStateElementState = "TN_OVERLAY_TZ_IN_USE_BY_EDGE_CLUSTER"
+const ConfigurationStateElementStateTRANSPORTNODECONFIGURATIONMISSING ConfigurationStateElementState = "TRANSPORT_NODE_CONFIGURATION_MISSING"
+const ConfigurationStateElementStateTRANSPORTNODEREADY ConfigurationStateElementState = "TRANSPORT_NODE_READY"
+const ConfigurationStateElementStateTRANSPORTNODESYNCPENDING ConfigurationStateElementState = "TRANSPORT_NODE_SYNC_PENDING"
+const ConfigurationStateElementStateTZENDPOINTSNOTSPECIFIED ConfigurationStateElementState = "TZ_ENDPOINTS_NOT_SPECIFIED"
+const ConfigurationStateElementStateUNABLETODELETEEDGENODEVMINTERNALERROR ConfigurationStateElementState = "UNABLE_TO_DELETE_EDGE_NODE_VM_INTERNAL_ERROR"
+const ConfigurationStateElementStateUNSUPPORTEDDEFAULTTEAMINGPOLICY ConfigurationStateElementState = "UNSUPPORTED_DEFAULT_TEAMING_POLICY"
+const ConfigurationStateElementStateUNSUPPORTEDHOSTSWITCHPROFILE ConfigurationStateElementState = "UNSUPPORTED_HOST_SWITCH_PROFILE"
+const ConfigurationStateElementStateUNSUPPORTEDLACPLBALGOFORNODE ConfigurationStateElementState = "UNSUPPORTED_LACP_LB_ALGO_FOR_NODE"
+const ConfigurationStateElementStateUNSUPPORTEDNAMEDTEAMINGPOLICY ConfigurationStateElementState = "UNSUPPORTED_NAMED_TEAMING_POLICY"
+const ConfigurationStateElementStateUPLINKFROMTEAMINGPOLICYNOTMAPPED ConfigurationStateElementState = "UPLINK_FROM_TEAMING_POLICY_NOT_MAPPED"
+const ConfigurationStateElementStateUPLINKHOSTSWITCHPROFILENOTSPECIFIED ConfigurationStateElementState = "UPLINK_HOST_SWITCH_PROFILE_NOT_SPECIFIED"
+const ConfigurationStateElementStateUPTMODEREALIZATIONPOLLTIMEDOUT ConfigurationStateElementState = "UPT_MODE_REALIZATION_POLL_TIMED_OUT"
+const ConfigurationStateElementStateUnknown ConfigurationStateElementState = "unknown"
+const ConfigurationStateElementStateVMCONFIGDISCREPANCY ConfigurationStateElementState = "VM_CONFIG_DISCREPANCY"
+const ConfigurationStateElementStateVMCONFIGEDITFAILED ConfigurationStateElementState = "VM_CONFIG_EDIT_FAILED"
+const ConfigurationStateElementStateVMCONFIGEDITPENDING ConfigurationStateElementState = "VM_CONFIG_EDIT_PENDING"
+const ConfigurationStateElementStateVMDEPLOYMENTFAILED ConfigurationStateElementState = "VM_DEPLOYMENT_FAILED"
+const ConfigurationStateElementStateVMDEPLOYMENTINPROGRESS ConfigurationStateElementState = "VM_DEPLOYMENT_IN_PROGRESS"
+const ConfigurationStateElementStateVMDEPLOYMENTQUEUED ConfigurationStateElementState = "VM_DEPLOYMENT_QUEUED"
+const ConfigurationStateElementStateVMDEPLOYMENTRESTARTED ConfigurationStateElementState = "VM_DEPLOYMENT_RESTARTED"
+const ConfigurationStateElementStateVMNETWORKEDITFAILED ConfigurationStateElementState = "VM_NETWORK_EDIT_FAILED"
+const ConfigurationStateElementStateVMNETWORKEDITPENDING ConfigurationStateElementState = "VM_NETWORK_EDIT_PENDING"
+const ConfigurationStateElementStateVMNODEREFRESHFAILED ConfigurationStateElementState = "VM_NODE_REFRESH_FAILED"
+const ConfigurationStateElementStateVMPLACEMENTREFRESHFAILED ConfigurationStateElementState = "VM_PLACEMENT_REFRESH_FAILED"
+const ConfigurationStateElementStateVMPOWEROFFFAILED ConfigurationStateElementState = "VM_POWER_OFF_FAILED"
+const ConfigurationStateElementStateVMPOWEROFFINPROGRESS ConfigurationStateElementState = "VM_POWER_OFF_IN_PROGRESS"
+const ConfigurationStateElementStateVMPOWERONFAILED ConfigurationStateElementState = "VM_POWER_ON_FAILED"
+const ConfigurationStateElementStateVMPOWERONINPROGRESS ConfigurationStateElementState = "VM_POWER_ON_IN_PROGRESS"
+const ConfigurationStateElementStateVMREDEPLOYFAILED ConfigurationStateElementState = "VM_REDEPLOY_FAILED"
+const ConfigurationStateElementStateVMRENAMEFAILED ConfigurationStateElementState = "VM_RENAME_FAILED"
+const ConfigurationStateElementStateVMRENAMEPENDING ConfigurationStateElementState = "VM_RENAME_PENDING"
+const ConfigurationStateElementStateVMRESOURCERESERVATIONEDITPENDING ConfigurationStateElementState = "VM_RESOURCE_RESERVATION_EDIT_PENDING"
+const ConfigurationStateElementStateVMRESOURCERESERVATIONFAILED ConfigurationStateElementState = "VM_RESOURCE_RESERVATION_FAILED"
+const ConfigurationStateElementStateVMUNDEPLOYFAILED ConfigurationStateElementState = "VM_UNDEPLOY_FAILED"
+const ConfigurationStateElementStateVMUNDEPLOYINPROGRESS ConfigurationStateElementState = "VM_UNDEPLOY_IN_PROGRESS"
+const ConfigurationStateElementStateVMUNDEPLOYSUCCESSFUL ConfigurationStateElementState = "VM_UNDEPLOY_SUCCESSFUL"
+const ConfigurationStateElementStateVMVERSIONISUPTINCOMPATIBLE ConfigurationStateElementState = "VM_VERSION_IS_UPT_INCOMPATIBLE"
+const ConfigurationStateElementStateVTEPDHCPNOTSUPPORTED ConfigurationStateElementState = "VTEP_DHCP_NOT_SUPPORTED"
+
+var enumValues_ConfigurationStateElementState = []interface{}{
+	"in_progress",
+	"success",
+	"failed",
+	"partial_success",
+	"in_sync",
+	"VM_DEPLOYMENT_FAILED",
+	"VM_POWER_ON_FAILED",
+	"VM_POWER_OFF_FAILED",
+	"VM_UNDEPLOY_FAILED",
+	"REPLACE_FAILED",
+	"UPLINK_FROM_TEAMING_POLICY_NOT_MAPPED",
+	"LOGICAL_SWITCH_NAMED_TEAMING_HAS_NO_PNIC_BACKING",
+	"DELETE_VM_IN_REDEPLOY_FAILED",
+	"DEPLOY_VM_IN_REDEPLOY_FAILED",
+	"INSUFFICIENT_RESOURCES_IN_EDGE_NODE_FOR_SERVICE",
+	"EDGE_CONFIG_ERROR",
+	"REGISTRATION_FAILED",
+	"TRANSPORT_NODE_CONFIGURATION_MISSING",
+	"EDGE_HARDWARE_NOT_SUPPORTED",
+	"MULTIPLE_OVERLAY_TZS_NOT_SUPPORTED",
+	"TN_OVERLAY_TZ_IN_USE_BY_EDGE_CLUSTER",
+	"TZ_ENDPOINTS_NOT_SPECIFIED",
+	"NO_PNIC_PREPARED_IN_EDGE",
+	"APPLIANCE_INTERNAL_ERROR",
+	"VTEP_DHCP_NOT_SUPPORTED",
+	"UNSUPPORTED_HOST_SWITCH_PROFILE",
+	"UPLINK_HOST_SWITCH_PROFILE_NOT_SPECIFIED",
+	"HOSTSWITCH_PROFILE_NOT_FOUND",
+	"LLDP_SEND_ENABLED_NOT_SUPPORTED",
+	"UNSUPPORTED_NAMED_TEAMING_POLICY",
+	"LBSRCID_NOT_SUPPORTED_FOR_EDGE_VM",
+	"LACP_NOT_SUPPORTED_FOR_EDGE_VM",
+	"STANDBY_UPLINKS_NOT_SUPPORTED_FOR_EDGE_VM",
+	"MULTIPLE_ACTIVE_UPLINKS_NOT_SUPPORTED_FOR_EDGE",
+	"UNSUPPORTED_LACP_LB_ALGO_FOR_NODE",
+	"EDGE_NODE_VERSION_NOT_SUPPORTED",
+	"NO_PNIC_SPECIFIED_IN_TN",
+	"INVALID_PNIC_DEVICE_NAME",
+	"UNSUPPORTED_DEFAULT_TEAMING_POLICY",
+	"MPA_DISCONNECTED",
+	"VM_NETWORK_EDIT_PENDING",
+	"VM_RENAME_PENDING",
+	"VM_CONFIG_EDIT_PENDING",
+	"VM_NETWORK_EDIT_FAILED",
+	"VM_RENAME_FAILED",
+	"VM_CONFIG_EDIT_FAILED",
+	"VM_CONFIG_DISCREPANCY",
+	"VM_NODE_REFRESH_FAILED",
+	"VM_PLACEMENT_REFRESH_FAILED",
+	"NOT_AVAILABLE",
+	"REGISTRATION_TIMEDOUT",
+	"ADVANCED_CONFIG_EDIT_FAILED",
+	"VM_RESOURCE_RESERVATION_FAILED",
+	"UPT_MODE_REALIZATION_POLL_TIMED_OUT",
+	"DATAPATH_CONFIGURATION_EDIT_FAILED",
+	"MAINTENANCE_MODE_ENABLED",
+	"ERROR_IN_ENABLE_MAINTENANCE_MODE",
+	"ERROR_IN_DISABLE_MAINTENANCE_MODE",
+	"CONFIGURE_UPT_ON_VM_FAILED",
+	"VM_VERSION_IS_UPT_INCOMPATIBLE",
+	"pending",
+	"orphaned",
+	"unknown",
+	"error",
+	"VM_DEPLOYMENT_QUEUED",
+	"VM_DEPLOYMENT_IN_PROGRESS",
+	"VM_POWER_ON_IN_PROGRESS",
+	"REGISTRATION_PENDING",
+	"NODE_NOT_READY",
+	"NODE_READY",
+	"VM_POWER_OFF_IN_PROGRESS",
+	"VM_UNDEPLOY_IN_PROGRESS",
+	"VM_UNDEPLOY_SUCCESSFUL",
+	"VM_DEPLOYMENT_RESTARTED",
+	"TRANSPORT_NODE_SYNC_PENDING",
+	"TRANSPORT_NODE_READY",
+	"DUPLICATE_PNICS_IN_TEAMINGS_WITH_MULTIPLE_UPLINKS_AND_FAILOVER_ORDER",
+	"DUPLICATE_VLANS_SHARING_SAME_PNICMULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING",
+	"EDGE_NODE_SETTINGS_MISMATCH_RESOLVE",
+	"EDGE_VM_VSPHERE_SETTINGS_MISMATCH_RESOLVE",
+	"EDGE_NODE_SETTINGS_AND_VSPHERE_SETTINGS_ARE_CHANGED_RESOLVE",
+	"EDGE_VSPHERE_LOCATION_MISMATCH_RESOLVE",
+	"COMPUTE_MANAGER_NOT_FOUND",
+	"ADVANCED_CONFIG_EDIT_PENDING",
+	"DELETE_FAILED_FOR_DIFFERENT_MOREF_ID",
+	"DELETE_FAILED_FOR_NON_LCM_EDGE",
+	"DELETE_FAILED_ON_VM_NOT_FOUND",
+	"DELETE_IN_PROGRESS",
+	"DUPLICATE_VLANS_SHARING_SAME_PNIC",
+	"MULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING",
+	"REDEPLOY_ACTIVITY_FAILED",
+	"REDEPLOY_ACTIVITY_IN_PROGRESS",
+	"REDEPLOY_ACTIVITY_SCHEDULED",
+	"REDEPLOY_ACTIVITY_SUCCESSFUL",
+	"REPLACE_ACTIVITY_FAILED",
+	"REPLACE_ACTIVITY_IN_PROGRESS",
+	"REPLACE_ACTIVITY_SCHEDULED",
+	"REPLACE_ACTIVITY_SUCCESSFUL",
+	"REPLACED_RPC_CLIENT_OF_TN",
+	"RETRYING_REPLACE",
+	"UNABLE_TO_DELETE_EDGE_NODE_VM_INTERNAL_ERROR",
+	"VM_REDEPLOY_FAILED",
+	"VM_RESOURCE_RESERVATION_EDIT_PENDING",
+	"REDEPLOYED_VM_REGISTRATION_PENDING",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ConfigurationStateElementState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ConfigurationStateElementState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ConfigurationStateElementState, v)
+	}
+	*j = ConfigurationStateElementState(v)
+	return nil
+}
+
 type DiscoveredResourceScope struct {
 	// Specifies the scope id of discovered resource.
 	ScopeId *string `json:"scope_id,omitempty" yaml:"scope_id,omitempty" mapstructure:"scope_id,omitempty"`
@@ -1743,6 +2000,178 @@ func (j *PathExpression) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Alarm base class of realized policy object
+type PolicyAlarmResource struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// ErrorDetails corresponds to the JSON schema field "error_details".
+	ErrorDetails *PolicyApiError `json:"error_details,omitempty" yaml:"error_details,omitempty" mapstructure:"error_details,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Message corresponds to the JSON schema field "message".
+	Message *string `json:"message,omitempty" yaml:"message,omitempty" mapstructure:"message,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// SourceReference corresponds to the JSON schema field "source_reference".
+	SourceReference *string `json:"source_reference,omitempty" yaml:"source_reference,omitempty" mapstructure:"source_reference,omitempty"`
+
+	// This field will refer to the source site on which the alarm is generated. This
+	// field is populated by GM, when it receives corresponding notification from LM.
+	SourceSiteId *string `json:"source_site_id,omitempty" yaml:"source_site_id,omitempty" mapstructure:"source_site_id,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyAlarmResource) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyAlarmResource
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = PolicyAlarmResource(plain)
+	return nil
+}
+
+type PolicyApiError struct {
+	// Details corresponds to the JSON schema field "details".
+	Details *string `json:"details,omitempty" yaml:"details,omitempty" mapstructure:"details,omitempty"`
+
+	// ErrorCode corresponds to the JSON schema field "error_code".
+	ErrorCode *int `json:"error_code,omitempty" yaml:"error_code,omitempty" mapstructure:"error_code,omitempty"`
+
+	// ErrorData corresponds to the JSON schema field "error_data".
+	ErrorData PolicyApiErrorErrorData `json:"error_data,omitempty" yaml:"error_data,omitempty" mapstructure:"error_data,omitempty"`
+
+	// ErrorMessage corresponds to the JSON schema field "error_message".
+	ErrorMessage *string `json:"error_message,omitempty" yaml:"error_message,omitempty" mapstructure:"error_message,omitempty"`
+
+	// ModuleName corresponds to the JSON schema field "module_name".
+	ModuleName *string `json:"module_name,omitempty" yaml:"module_name,omitempty" mapstructure:"module_name,omitempty"`
+
+	// RelatedErrors corresponds to the JSON schema field "related_errors".
+	RelatedErrors []PolicyRelatedApiError `json:"related_errors,omitempty" yaml:"related_errors,omitempty" mapstructure:"related_errors,omitempty"`
+}
+
+type PolicyApiErrorErrorData map[string]interface{}
+
+type PolicyRelatedApiError struct {
+	// Details corresponds to the JSON schema field "details".
+	Details *string `json:"details,omitempty" yaml:"details,omitempty" mapstructure:"details,omitempty"`
+
+	// ErrorCode corresponds to the JSON schema field "error_code".
+	ErrorCode *int `json:"error_code,omitempty" yaml:"error_code,omitempty" mapstructure:"error_code,omitempty"`
+
+	// ErrorData corresponds to the JSON schema field "error_data".
+	ErrorData PolicyRelatedApiErrorErrorData `json:"error_data,omitempty" yaml:"error_data,omitempty" mapstructure:"error_data,omitempty"`
+
+	// ErrorMessage corresponds to the JSON schema field "error_message".
+	ErrorMessage *string `json:"error_message,omitempty" yaml:"error_message,omitempty" mapstructure:"error_message,omitempty"`
+
+	// ModuleName corresponds to the JSON schema field "module_name".
+	ModuleName *string `json:"module_name,omitempty" yaml:"module_name,omitempty" mapstructure:"module_name,omitempty"`
+}
+
+type PolicyRelatedApiErrorErrorData map[string]interface{}
+
 // Optional API Request Parameter to be used in HAPI.
 type PolicyRequestParameter struct {
 	// The type of this request parameter.
@@ -1759,6 +2188,268 @@ type PortAddressBindingEntry struct {
 
 	// VLAN ID for port binding
 	VlanId *VlanID `json:"vlan_id,omitempty" yaml:"vlan_id,omitempty" mapstructure:"vlan_id,omitempty"`
+}
+
+type RealizedVirtualMachine struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Alarms corresponds to the JSON schema field "alarms".
+	Alarms []PolicyAlarmResource `json:"alarms,omitempty" yaml:"alarms,omitempty" mapstructure:"alarms,omitempty"`
+
+	// ComputeIds corresponds to the JSON schema field "compute_ids".
+	ComputeIds []string `json:"compute_ids,omitempty" yaml:"compute_ids,omitempty" mapstructure:"compute_ids,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// HostId corresponds to the JSON schema field "host_id".
+	HostId *string `json:"host_id,omitempty" yaml:"host_id,omitempty" mapstructure:"host_id,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// IntentReference corresponds to the JSON schema field "intent_reference".
+	IntentReference []string `json:"intent_reference,omitempty" yaml:"intent_reference,omitempty" mapstructure:"intent_reference,omitempty"`
+
+	// LocalIdOnHost corresponds to the JSON schema field "local_id_on_host".
+	LocalIdOnHost *string `json:"local_id_on_host,omitempty" yaml:"local_id_on_host,omitempty" mapstructure:"local_id_on_host,omitempty"`
+
+	// Possible values could be UP, DOWN, UNKNOWN, FAILURE This list is not
+	// exhaustive.
+	OperationalStatus *string `json:"operational_status,omitempty" yaml:"operational_status,omitempty" mapstructure:"operational_status,omitempty"`
+
+	// It defines the root cause for operational status error.
+	OperationalStatusError *string `json:"operational_status_error,omitempty" yaml:"operational_status_error,omitempty" mapstructure:"operational_status_error,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// PowerState corresponds to the JSON schema field "power_state".
+	PowerState *RealizedVirtualMachinePowerState `json:"power_state,omitempty" yaml:"power_state,omitempty" mapstructure:"power_state,omitempty"`
+
+	// Possible values could be UP, DOWN, UNKNOWN, SUCCESS This list is not
+	// exhaustive.
+	PublishStatus *string `json:"publish_status,omitempty" yaml:"publish_status,omitempty" mapstructure:"publish_status,omitempty"`
+
+	// It defines the root cause for publish status error.
+	PublishStatusError *string `json:"publish_status_error,omitempty" yaml:"publish_status_error,omitempty" mapstructure:"publish_status_error,omitempty"`
+
+	// It defines error code for publish status error.
+	PublishStatusErrorCode *int `json:"publish_status_error_code,omitempty" yaml:"publish_status_error_code,omitempty" mapstructure:"publish_status_error_code,omitempty"`
+
+	// Error details for publish status.
+	PublishStatusErrorDetails []ConfigurationStateElement `json:"publish_status_error_details,omitempty" yaml:"publish_status_error_details,omitempty" mapstructure:"publish_status_error_details,omitempty"`
+
+	// This is the time when our system detects that data has been pushed to the
+	// transport nodes. This is based on a poll mechanism and hence this is not the
+	// accurate time when the intent was published at the data path. The value of -1
+	// indicates that either the publishing is still in progress or the runtime status
+	// is UNKNOWN and hence not available. The Runtime status can be UNKNOWN if one or
+	// more hosts are down and the rules could not be sent to those hosts. When the
+	// host comes up, the runtime status will change to SUCCESS but the publish_time
+	// will show the value of the last realization time. Any new configuration change
+	// after this will start reflecting the proper value for publish_time
+	PublishTime *EpochMsTimestamp `json:"publish_time,omitempty" yaml:"publish_time,omitempty" mapstructure:"publish_time,omitempty"`
+
+	// RealizationApi corresponds to the JSON schema field "realization_api".
+	RealizationApi *string `json:"realization_api,omitempty" yaml:"realization_api,omitempty" mapstructure:"realization_api,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// RealizationSpecificIdentifier corresponds to the JSON schema field
+	// "realization_specific_identifier".
+	RealizationSpecificIdentifier *string `json:"realization_specific_identifier,omitempty" yaml:"realization_specific_identifier,omitempty" mapstructure:"realization_specific_identifier,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// It define the root cause for runtime error.
+	RuntimeError *string `json:"runtime_error,omitempty" yaml:"runtime_error,omitempty" mapstructure:"runtime_error,omitempty"`
+
+	// Possible values could be UP, DOWN, UNKNOWN, DEGRADED This list is not
+	// exhaustive.
+	RuntimeStatus *string `json:"runtime_status,omitempty" yaml:"runtime_status,omitempty" mapstructure:"runtime_status,omitempty"`
+
+	// State corresponds to the JSON schema field "state".
+	State *RealizedVirtualMachineState `json:"state,omitempty" yaml:"state,omitempty" mapstructure:"state,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is an approximate time taken for the realization of the intent to the data
+	// path. The actual time taken could be lesser than what is reported here. The
+	// value of -1 indicates that either the publishing is still in progress or the
+	// runtime status is UNKNOWN and hence not available. The Runtime status can be
+	// UNKNOWN if one or more hosts are down and the rules could not be sent to those
+	// hosts. When the host comes up, the runtime status will change to SUCCESS but
+	// the time taken for realization will show the value of the last realization
+	// time. Any new configuration change after this will start reflecting the proper
+	// value for time_taken_for_realization
+	TimeTakenForRealization *int `json:"time_taken_for_realization,omitempty" yaml:"time_taken_for_realization,omitempty" mapstructure:"time_taken_for_realization,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type RealizedVirtualMachinePowerState string
+
+const RealizedVirtualMachinePowerStateUNKNOWN RealizedVirtualMachinePowerState = "UNKNOWN"
+const RealizedVirtualMachinePowerStateVMRUNNING RealizedVirtualMachinePowerState = "VM_RUNNING"
+const RealizedVirtualMachinePowerStateVMSTOPPED RealizedVirtualMachinePowerState = "VM_STOPPED"
+const RealizedVirtualMachinePowerStateVMSUSPENDED RealizedVirtualMachinePowerState = "VM_SUSPENDED"
+
+var enumValues_RealizedVirtualMachinePowerState = []interface{}{
+	"VM_RUNNING",
+	"VM_STOPPED",
+	"VM_SUSPENDED",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RealizedVirtualMachinePowerState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RealizedVirtualMachinePowerState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RealizedVirtualMachinePowerState, v)
+	}
+	*j = RealizedVirtualMachinePowerState(v)
+	return nil
+}
+
+type RealizedVirtualMachineState string
+
+const RealizedVirtualMachineStateERROR RealizedVirtualMachineState = "ERROR"
+const RealizedVirtualMachineStateREALIZED RealizedVirtualMachineState = "REALIZED"
+const RealizedVirtualMachineStateUNAVAILABLE RealizedVirtualMachineState = "UNAVAILABLE"
+const RealizedVirtualMachineStateUNREALIZED RealizedVirtualMachineState = "UNREALIZED"
+
+var enumValues_RealizedVirtualMachineState = []interface{}{
+	"UNAVAILABLE",
+	"UNREALIZED",
+	"REALIZED",
+	"ERROR",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RealizedVirtualMachineState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RealizedVirtualMachineState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RealizedVirtualMachineState, v)
+	}
+	*j = RealizedVirtualMachineState(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RealizedVirtualMachine) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain RealizedVirtualMachine
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = RealizedVirtualMachine(plain)
+	return nil
 }
 
 type ResourceLink struct {

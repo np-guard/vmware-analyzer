@@ -7,18 +7,38 @@ SPDX-License-Identifier: Apache-2.0
 package collector
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
+
+func fixLowerCaseEnums(b []byte) []byte{
+	vals := []resources.RealizedVirtualMachinePowerState{
+		resources.RealizedVirtualMachinePowerStateUNKNOWN,
+		resources.RealizedVirtualMachinePowerStateVMRUNNING,
+		resources.RealizedVirtualMachinePowerStateVMSTOPPED,
+		resources.RealizedVirtualMachinePowerStateVMSUSPENDED,
+	}
+	for _, emunVal := range vals {
+		wrongVal := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
+		rightVal := fmt.Sprintf("\"%s\"", string(emunVal))
+		b=bytes.Replace(b,[]byte(wrongVal),[]byte(rightVal),-1)
+	}
+	return b
+}
 
 func collectResultList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
 	bytes, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
+	bytes = fixLowerCaseEnums(bytes)
 	*resouceList, err = unmarshalResultsToList[A](bytes)
 	if err != nil {
 		return err

@@ -5,3 +5,4 @@ VirtualMachine
 Service
 Domain
 Segment
+RealizedVirtualMachine

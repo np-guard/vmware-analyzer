@@ -34,7 +34,11 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	return string(toPrint), err
 }
 
-func (resources *DomainResources) getGroup(query string) *Group {
+func (resources *DomainResources) GetGroup(query string) *Group {
 	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == *gr.Path })
 	return &resources.GroupList[i]
+}
+func (resources *ResourcesContainerModel) GetService(query string) *Service {
+	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == *gr.Path })
+	return &resources.ServiceList[i]
 }

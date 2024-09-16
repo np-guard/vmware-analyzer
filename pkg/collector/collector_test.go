@@ -63,10 +63,18 @@ func TestCollectResources(t *testing.T) {
 						dGroups := domain.SecurityPolicyList[spi].Rules[ri].DestinationGroups
 						for _, ref := range append(sGroups, dGroups...) {
 							if ref != "ANY" {
-								if domain.getGroup(ref) == nil {
+								if domain.GetGroup(ref) == nil {
 									t.Errorf("fail to find group of %v", ref)
 									return
-
+								}
+							}
+						}
+						services := domain.SecurityPolicyList[spi].Rules[ri].Services
+						for _, ref := range services {
+							if ref != "ANY" {
+								if got.GetService(ref) == nil {
+									t.Errorf("fail to find service of %v", ref)
+									return
 								}
 							}
 						}
