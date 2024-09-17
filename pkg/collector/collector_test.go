@@ -93,12 +93,12 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to convert to json error = %v", err)
 				return
 			}
-			err = writeToFile(outDir, tt.name+".json", jsonOut)
+			err = WriteToFile(outDir, tt.name+".json", jsonOut)
 			if err != nil {
 				t.Errorf("fail to write to file error = %v", err)
 				return
 			}
-			b, err := readFromFile(outDir, tt.name+".json")
+			b, err := ReadFromFile(outDir, tt.name+".json")
 			if err != nil {
 				t.Errorf("fail to read from file error = %v", err)
 				return
@@ -113,7 +113,7 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to convert to json error = %v", err)
 				return
 			}
-			err = writeToFile(outDir, tt.name+"2.json", jsonOut2)
+			err = WriteToFile(outDir, tt.name+"2.json", jsonOut2)
 			if err != nil {
 				t.Errorf("fail to write to file error = %v", err)
 				return
@@ -128,7 +128,7 @@ func TestCollectResources(t *testing.T) {
 }
 
 // todo - move this func to more general place, and make it more generic
-func writeToFile(dir, name, content string) error {
+func WriteToFile(dir, name, content string) error {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -142,7 +142,7 @@ func writeToFile(dir, name, content string) error {
 	return os.WriteFile(fileName, []byte(content), writeFileMde)
 }
 
-func readFromFile(dir, name string) ([]byte, error) {
+func ReadFromFile(dir, name string) ([]byte, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return nil,err
