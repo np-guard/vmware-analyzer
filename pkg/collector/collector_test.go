@@ -93,17 +93,42 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to convert to json error = %v", err)
 				return
 			}
-			err = writTeToFile(outDir, tt.name+".json", jsonOut)
+			err = writeToFile(outDir, tt.name+".json", jsonOut)
 			if err != nil {
 				t.Errorf("fail to write to file error = %v", err)
 				return
+			}
+			b, err := readFromFile(outDir, tt.name+".json")
+			if err != nil {
+				t.Errorf("fail to read from file error = %v", err)
+				return
+			}
+			got2, err := FromJSONString(b)
+			if err != nil {
+				t.Errorf("fail to convert from json error = %v", err)
+				return
+			}
+			jsonOut2, err := got2.ToJSONString()
+			if err != nil {
+				t.Errorf("fail to convert to json error = %v", err)
+				return
+			}
+			err = writeToFile(outDir, tt.name+"2.json", jsonOut2)
+			if err != nil {
+				t.Errorf("fail to write to file error = %v", err)
+				return
+			}
+			if jsonOut != jsonOut2{
+				t.Errorf("convering from json returns another object")
+				return
+
 			}
 		})
 	}
 }
 
 // todo - move this func to more general place, and make it more generic
-func writTeToFile(dir, name, content string) error {
+func writeToFile(dir, name, content string) error {
 	currentDir, err := os.Getwd()
 	if err != nil {
 		return err
@@ -115,4 +140,18 @@ func writTeToFile(dir, name, content string) error {
 	}
 	fileName := filepath.Join(dir, name)
 	return os.WriteFile(fileName, []byte(content), writeFileMde)
+}
+
+func readFromFile(dir, name string) ([]byte, error) {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		return nil,err
+	}
+	currentOutDir := filepath.Join(currentDir, dir)
+	err = os.MkdirAll(currentOutDir, os.ModePerm)
+	if err != nil {
+		return nil,err
+	}
+	fileName := filepath.Join(dir, name)
+	return os.ReadFile(fileName)
 }

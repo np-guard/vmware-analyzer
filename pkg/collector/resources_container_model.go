@@ -33,6 +33,11 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	toPrint, err := json.MarshalIndent(resources, "", "    ")
 	return string(toPrint), err
 }
+func FromJSONString(b []byte) (*ResourcesContainerModel , error) {
+	var resources ResourcesContainerModel
+	err := json.Unmarshal(b,&resources)
+	return &resources, err
+}
 
 func (resources *DomainResources) GetGroup(query string) *Group {
 	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == *gr.Path })
