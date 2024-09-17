@@ -17,24 +17,23 @@ type SecurityPolicy struct {
 type VirtualMachine struct {
 	resources.VirtualMachine
 }
-type RealizedVirtualMachine struct{
+type RealizedVirtualMachine struct {
 	resources.RealizedVirtualMachine
 }
 
-type Condition struct{
+type Condition struct {
 	resources.Condition
-} 
+}
 
-type ConjunctionOperator struct{
+type ConjunctionOperator struct {
 	resources.ConjunctionOperator
-} 
-type Exprssion interface{
-
+}
+type Exprssion interface {
 }
 
 type Group struct {
 	resources.Group
-	Members []RealizedVirtualMachine
+	Members    []RealizedVirtualMachine
 	Expression []Exprssion
 }
 type Service struct {
@@ -45,5 +44,5 @@ type Segment struct {
 }
 type Domain struct {
 	resources.Domain
-	DomainResources
+	Resources DomainResources
 }

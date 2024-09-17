@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package collector
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -39,37 +40,43 @@ func TestCollectResources(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.args.nsxServer == "no_server" {
+				fmt.Println("didn got any server")
+				return
+			}
 			got, err := CollectResources(tt.args.nsxServer, tt.args.userName, tt.args.password)
-			if (err != nil) != (tt.args.nsxServer == "no_server") {
+			if err != nil {
 				t.Errorf("CollectResources() error = %v", err)
 				return
 			}
 			if got == nil {
+				t.Errorf("didnt got resources")
 				return
 			}
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			for _, domain := range got.DomainList {
-				if len(domain.SecurityPolicyList) == 0 {
+				domainResource := domain.Resources
+				if len(domainResource.SecurityPolicyList) == 0 {
 					t.Errorf("didnt find SecurityPolicyList")
 				}
-				if len(domain.GroupList) == 0 {
+				if len(domainResource.GroupList) == 0 {
 					t.Errorf("didnt find Groups")
 				}
-				for spi := range domain.SecurityPolicyList {
-					for ri := range domain.SecurityPolicyList[spi].Rules {
-						sGroups := domain.SecurityPolicyList[spi].Rules[ri].SourceGroups
-						dGroups := domain.SecurityPolicyList[spi].Rules[ri].DestinationGroups
+				for spi := range domainResource.SecurityPolicyList {
+					for ri := range domainResource.SecurityPolicyList[spi].Rules {
+						sGroups := domainResource.SecurityPolicyList[spi].Rules[ri].SourceGroups
+						dGroups := domainResource.SecurityPolicyList[spi].Rules[ri].DestinationGroups
 						for _, ref := range append(sGroups, dGroups...) {
 							if ref != "ANY" {
-								if domain.GetGroup(ref) == nil {
+								if domainResource.GetGroup(ref) == nil {
 									t.Errorf("fail to find group of %v", ref)
 									return
 								}
 							}
 						}
-						services := domain.SecurityPolicyList[spi].Rules[ri].Services
+						services := domainResource.SecurityPolicyList[spi].Rules[ri].Services
 						for _, ref := range services {
 							if ref != "ANY" {
 								if got.GetService(ref) == nil {

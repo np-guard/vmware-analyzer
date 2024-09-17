@@ -47,28 +47,28 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	}
 
 	for di := range res.DomainList {
-		domain := &res.DomainList[di]
-		domainID := *domain.Id
-		err = collectResultList(server, fmt.Sprintf(groupsQuery, domainID), &domain.GroupList)
+		domainID := *res.DomainList[di].Id
+		domainResouces := &res.DomainList[di].Resources
+		err = collectResultList(server, fmt.Sprintf(groupsQuery, domainID), &domainResouces.GroupList)
 		if err != nil {
 			return nil, err
 		}
-		for i := range domain.GroupList {
-			err = collectExpressionList(server, fmt.Sprintf(groupQuery, domainID, *domain.GroupList[i].Id), &domain.GroupList[i].Expression)
+		for i := range domainResouces.GroupList {
+			err = collectExpressionList(server, fmt.Sprintf(groupQuery, domainID, *domainResouces.GroupList[i].Id), &domainResouces.GroupList[i].Expression)
 			if err != nil {
 				return nil, err
 			}
-			err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domain.GroupList[i].Id), &domain.GroupList[i].Members)
+			err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResouces.GroupList[i].Id), &domainResouces.GroupList[i].Members)
 			if err != nil {
 				return nil, err
 			}
 		}
-		err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domainID), &domain.SecurityPolicyList)
+		err = collectResultList(server, fmt.Sprintf(securityPolicyQuery, domainID), &domainResouces.SecurityPolicyList)
 		if err != nil {
 			return nil, err
 		}
-		for i := range domain.SecurityPolicyList {
-			err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domain.SecurityPolicyList[i].Id), &domain.SecurityPolicyList[i].Rules)
+		for i := range domainResouces.SecurityPolicyList {
+			err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domainResouces.SecurityPolicyList[i].Id), &domainResouces.SecurityPolicyList[i].Rules)
 			if err != nil {
 				return nil, err
 			}
