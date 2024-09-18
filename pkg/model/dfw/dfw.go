@@ -60,15 +60,39 @@ func (d *DFW) String() string {
 }
 
 // AddRule func for testing purposes
-func (d *DFW) AddRule(src, dst *endpoints.VM, conn *connection.Set, category string, action string) {
+
+func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string) {
 	for _, fwCategory := range d.categoriesSpecs {
-		if fwCategory.category.string() == category {
-			fwCategory.addRule(src, dst, conn, action)
+		if fwCategory.category.string() == categoryStr {
+			fwCategory.addRule(src, dst, conn, actionStr)
 		}
 	}
 }
 
-// NewEmptyDFW func for testing purposes
+/*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string) {
+	var categoryObj *categorySpec
+	for _, c := range d.categoriesSpecs {
+		if c.category.string() == categoryStr {
+			categoryObj = c
+		}
+	}
+	if categoryObj == nil { // create new category if missing
+		categoryObj = &categorySpec{
+			category: dfwCategoryFromString(categoryStr),
+		}
+		d.categoriesSpecs = append(d.categoriesSpecs, categoryObj)
+	}
+
+	newRule := &fwRule{
+		srcVMs: src,
+		dstVMs: dst,
+		conn:   connection.All(), // todo: change
+		action: actionFromString(actionStr),
+	}
+	categoryObj.rules = append(categoryObj.rules, newRule)
+}*/
+
+// NewEmptyDFW returns new DFW with global default as from input
 func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 	res := &DFW{
 		defaultAction: actionDeny,
@@ -80,4 +104,8 @@ func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 		res.categoriesSpecs = append(res.categoriesSpecs, newEmptyCategory(c))
 	}
 	return res
+}
+
+func (d *DFW) GlobalDefaultAllow() bool {
+	return d.defaultAction == actionAllow
 }

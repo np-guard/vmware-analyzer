@@ -21,20 +21,49 @@ const (
 	emptyCategory
 )
 
+const (
+	EthernetStr       = "Ethernet"
+	EmergencyStr      = "Emergency"
+	InfrastructureStr = "Infrastructure"
+	EnvironmentStr    = "Environment"
+	ApplicationStr    = "Application"
+	EmptyStr          = "<Empty>"
+)
+
+func dfwCategoryFromString(s string) dfwCategory {
+	switch s {
+	case EthernetStr:
+		return ethernetCategory
+	case EmergencyStr:
+		return emergencyCategory
+	case InfrastructureStr:
+		return infrastructureCategory
+	case EnvironmentStr:
+		return envCategory
+	case ApplicationStr:
+		return appCategoty
+	case EmptyStr:
+		return emptyCategory
+	default:
+		return emptyCategory
+	}
+
+}
+
 func (d dfwCategory) string() string {
 	switch d {
 	case ethernetCategory:
-		return "Ethernet"
+		return EthernetStr
 	case emergencyCategory:
-		return "Emergency"
+		return EmergencyStr
 	case infrastructureCategory:
-		return "Infrastructure"
+		return InfrastructureStr
 	case envCategory:
-		return "Environment"
+		return EnvironmentStr
 	case appCategoty:
-		return "Application"
+		return ApplicationStr
 	case emptyCategory:
-		return "<Empty>"
+		return EmptyStr
 	default:
 		return ""
 	}
@@ -92,10 +121,10 @@ func (c *categorySpec) string() string {
 	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) addRule(src, dst *endpoints.VM, conn *connection.Set, action string) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action string) {
 	newRule := &fwRule{
-		srcVMs: []*endpoints.VM{src},
-		dstVMs: []*endpoints.VM{dst},
+		srcVMs: src,
+		dstVMs: dst,
 		conn:   conn,
 		action: actionFromString(action),
 	}

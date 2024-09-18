@@ -21,7 +21,7 @@ const (
 	actionNone      ruleAction = "none" // to mark that a default rule is not configured
 )
 
-func actionFromString(input string) ruleAction {
+/*func actionFromString(input string) ruleAction {
 	switch input {
 	case string(actionAllow):
 		return actionAllow
@@ -31,6 +31,19 @@ func actionFromString(input string) ruleAction {
 		return actionJumpToApp
 	}
 	return actionDeny
+}*/
+
+func actionFromString(s string) ruleAction {
+	switch strings.ToLower(s) {
+	case string(actionAllow):
+		return actionAllow
+	case string(actionDeny), "reject", "drop": // TODO: change
+		return actionDeny
+	case string(actionJumpToApp):
+		return actionJumpToApp
+	default:
+		return actionNone
+	}
 }
 
 type fwRule struct {
