@@ -19,7 +19,7 @@ const (
 	passwordFlag          = "password"
 	resourceDumpFileFlag  = "resource-dump-file"
 	skipAnalysisFlag      = "skip-analysis"
-	dumpConfigFileFlag    = "dump-config-file"
+	analysesDumpFileFlag  = "analyses-dump-file"
 
 	resourceInputFileHelp = "help for resource-input-file"
 	hostHelp              = "help for host"
@@ -27,17 +27,17 @@ const (
 	passwordHelp          = "help for password"
 	resourceDumpFileHelp  = "help for resource-dump-file"
 	skipAnalysisHelp      = "help for skip-analysis"
-	dumpConfigFileHelp    = "help for dump-config-file"
+	analysesDumpFileHelp  = "help for dump-config-file"
 )
 
 type inArgs struct {
-	resourceInputFile string
-	host              string
-	user              string
-	password          string
-	resourceDumpFile  string
-	skipAnalysis      bool
-	dumpConfigFile    string
+	resourceInputFile    string
+	host                 string
+	user                 string
+	password             string
+	resourceDumpFile     string
+	skipAnalysis         bool
+	analysesDumpFileFile string
 }
 
 func newRootCommand() *cobra.Command {
@@ -45,7 +45,7 @@ func newRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:     "vmware-analyzer",
 		Short:   "vmware-analyzer is a CLI for collecting and analyzing vmware-related cloud resources",
-		Long:    `vmware-analyzer ...`,
+		Long:    `vmware-analyzer lond description`,
 		Version: version.VersionCore,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
@@ -58,7 +58,12 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
-	rootCmd.PersistentFlags().StringVar(&args.dumpConfigFile, dumpConfigFileFlag, "", dumpConfigFileHelp)
+	rootCmd.PersistentFlags().StringVar(&args.analysesDumpFileFile, analysesDumpFileFlag, "", analysesDumpFileHelp)
+
+	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, analysesDumpFileFlag)
 
 	return rootCmd
 }

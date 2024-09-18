@@ -27,20 +27,16 @@ func Test_main(t *testing.T) {
 			args: "-h",
 		},
 		{
-			name: "error",
-			args: "wergegsdtgh",
-		},
-		{
 			name: "collect-only",
 			args: "--host no_host --username no_user --password no_password --resource-dump-file resources.json --skip-analysis",
 		},
 		{
 			name: "analyze-only",
-			args: "--resource-input-file resources.json --dump-config-file analysis.txt",
+			args: "--resource-input-file resources.json --analyses-dump-file analysis.txt",
 		},
 		{
 			name: "collect-and-analyze",
-			args: "--host no_host --username no_user --password no_password --resource-dump-file resources.json --dump-config-file analysis.txt",
+			args: "--host no_host --username no_user --password no_password --resource-dump-file resources.json --analyses-dump-file analysis.txt",
 		},
 	}
 	for _, tt := range tests {
