@@ -24,4 +24,5 @@ bin/
 # For auto-generated sdk
 schemas/*.json
 
-
+# For tests output
+pkg/collector/out/*
