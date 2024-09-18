@@ -9,13 +9,12 @@ package collector
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"testing"
+
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
-const (
-	writeFileMode = 0o600
-)
 const (
 	outDir = "out/"
 )
@@ -93,12 +92,12 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to convert to json error = %v", err)
 				return
 			}
-			err = WriteToFile(outDir, tt.name+".json", jsonOut)
+			err = common.WriteToFile(path.Join(outDir, tt.name+".json"), jsonOut)
 			if err != nil {
 				t.Errorf("fail to write to file error = %v", err)
 				return
 			}
-			b, err := ReadFromFile(outDir, tt.name+".json")
+			b, err := os.ReadFile(path.Join(outDir, tt.name+".json"))
 			if err != nil {
 				t.Errorf("fail to read from file error = %v", err)
 				return
@@ -113,7 +112,7 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to convert to json error = %v", err)
 				return
 			}
-			err = WriteToFile(outDir, tt.name+"2.json", jsonOut2)
+			err = common.WriteToFile(path.Join(outDir, tt.name+"2.json"), jsonOut2)
 			if err != nil {
 				t.Errorf("fail to write to file error = %v", err)
 				return
@@ -125,33 +124,4 @@ func TestCollectResources(t *testing.T) {
 			}
 		})
 	}
-}
-
-// todo - move this func to more general place, and make it more generic
-func WriteToFile(dir, name, content string) error {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	currentOutDir := filepath.Join(currentDir, dir)
-	err = os.MkdirAll(currentOutDir, os.ModePerm)
-	if err != nil {
-		return err
-	}
-	fileName := filepath.Join(dir, name)
-	return os.WriteFile(fileName, []byte(content), writeFileMode)
-}
-
-func ReadFromFile(dir, name string) ([]byte, error) {
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return nil,err
-	}
-	currentOutDir := filepath.Join(currentDir, dir)
-	err = os.MkdirAll(currentOutDir, os.ModePerm)
-	if err != nil {
-		return nil,err
-	}
-	fileName := filepath.Join(dir, name)
-	return os.ReadFile(fileName)
 }

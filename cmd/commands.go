@@ -13,6 +13,8 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+
 )
 
 const (
@@ -99,13 +101,13 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
-		err = os.WriteFile(args.resourceDumpFile, []byte(jsonString), writeFileMode)
+		err = common.WriteToFile(args.resourceDumpFile, jsonString)
 		if err != nil {
 			return err
 		}
 	}
 	if !args.skipAnalysis{
-		err = os.WriteFile(args.analysesDumpFileFile, []byte("analyze output"), writeFileMode)
+		err = common.WriteToFile(args.analysesDumpFileFile, "analyze output")
 		if err != nil {
 			return err
 		}
