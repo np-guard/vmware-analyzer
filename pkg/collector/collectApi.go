@@ -18,7 +18,7 @@ import (
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-func fixLowerCaseEnums(b []byte) []byte{
+func fixLowerCaseEnums(b []byte) []byte {
 	enimVals := []resources.RealizedVirtualMachinePowerState{
 		resources.RealizedVirtualMachinePowerStateUNKNOWN,
 		resources.RealizedVirtualMachinePowerStateVMRUNNING,
@@ -28,7 +28,7 @@ func fixLowerCaseEnums(b []byte) []byte{
 	for _, emunVal := range enimVals {
 		wrongCase := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
 		rightCase := fmt.Sprintf("\"%s\"", string(emunVal))
-		b=bytes.Replace(b,[]byte(wrongCase),[]byte(rightCase),-1)
+		b = bytes.Replace(b, []byte(wrongCase), []byte(rightCase), -1)
 	}
 	return b
 }
@@ -84,8 +84,9 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(server.userName, server.password)
-
+	if server.userName != "" {
+		req.SetBasicAuth(server.userName, server.password)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

@@ -18,10 +18,6 @@ import (
 )
 
 const (
-	writeFileMode = 0o600
-)
-
-const (
 	resourceInputFileFlag = "resource-input-file"
 	hostFlag              = "host"
 	userFlag              = "username"
