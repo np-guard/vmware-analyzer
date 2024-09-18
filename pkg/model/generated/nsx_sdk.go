@@ -74,6 +74,36 @@ func (j *ApplicationConnectivityStrategy) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// configuration parameters for Bridge Profile
+type BridgeProfileConfig struct {
+	// Same bridge profile can be configured on different segments. Each bridge
+	// profile on a segment must unique.
+	BridgeProfilePath *string `json:"bridge_profile_path,omitempty" yaml:"bridge_profile_path,omitempty" mapstructure:"bridge_profile_path,omitempty"`
+
+	// The name of the switching uplink teaming policy for the bridge endpoint. This
+	// name corresponds to one of the switching uplink teaming policy names listed in
+	// the VLAN transport zone specified by the property "vlan_transport_zone_path".
+	// When this property is not specified, the default teaming policy of the
+	// host-switch is assigned. Do not set a value when the 'bridge_profile_path' is
+	// the path of L2DistributedBridgeEndpointProfile.
+	UplinkTeamingPolicyName *string `json:"uplink_teaming_policy_name,omitempty" yaml:"uplink_teaming_policy_name,omitempty" mapstructure:"uplink_teaming_policy_name,omitempty"`
+
+	// VLAN specification for bridge endpoint. Either VLAN ID or VLAN ranges can be
+	// specified. Not both.
+	VlanIds []string `json:"vlan_ids,omitempty" yaml:"vlan_ids,omitempty" mapstructure:"vlan_ids,omitempty"`
+
+	// The path of the VLAN transport zone that represents the underlay L2 zone in
+	// which the VLANs will be bridged to overlay segments. A unique VLAN transport
+	// zone should be assigned to each underlay L2 zone when needed for bridging. If
+	// two VLANs in two underlay L2 zones are combined together as one L2
+	// broadcast-domain by certain L2 extension, the two underlay L2 zones still
+	// should have two different VLAN transport zones assigned to them. It is optional
+	// for distributed-bridging but required for other bridging modes. If it is not
+	// given, the distributed bridge will span all ESX transport nodes in the overlay
+	// transport zone of the segment that contains this profile.
+	VlanTransportZonePath *string `json:"vlan_transport_zone_path,omitempty" yaml:"vlan_transport_zone_path,omitempty" mapstructure:"vlan_transport_zone_path,omitempty"`
+}
+
 // Represents an object on the desired state
 type ChildPolicyConfigResource struct {
 	// Timestamp of resource creation
@@ -586,6 +616,480 @@ func (j *Condition) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type ConfigurationStateElement struct {
+	// FailureCode corresponds to the JSON schema field "failure_code".
+	FailureCode *int `json:"failure_code,omitempty" yaml:"failure_code,omitempty" mapstructure:"failure_code,omitempty"`
+
+	// FailureMessage corresponds to the JSON schema field "failure_message".
+	FailureMessage *string `json:"failure_message,omitempty" yaml:"failure_message,omitempty" mapstructure:"failure_message,omitempty"`
+
+	// State corresponds to the JSON schema field "state".
+	State *ConfigurationStateElementState `json:"state,omitempty" yaml:"state,omitempty" mapstructure:"state,omitempty"`
+
+	// SubSystemAddress corresponds to the JSON schema field "sub_system_address".
+	SubSystemAddress *string `json:"sub_system_address,omitempty" yaml:"sub_system_address,omitempty" mapstructure:"sub_system_address,omitempty"`
+
+	// SubSystemId corresponds to the JSON schema field "sub_system_id".
+	SubSystemId *string `json:"sub_system_id,omitempty" yaml:"sub_system_id,omitempty" mapstructure:"sub_system_id,omitempty"`
+
+	// SubSystemName corresponds to the JSON schema field "sub_system_name".
+	SubSystemName *string `json:"sub_system_name,omitempty" yaml:"sub_system_name,omitempty" mapstructure:"sub_system_name,omitempty"`
+
+	// SubSystemType corresponds to the JSON schema field "sub_system_type".
+	SubSystemType *string `json:"sub_system_type,omitempty" yaml:"sub_system_type,omitempty" mapstructure:"sub_system_type,omitempty"`
+}
+
+type ConfigurationStateElementState string
+
+const ConfigurationStateElementStateADVANCEDCONFIGEDITFAILED ConfigurationStateElementState = "ADVANCED_CONFIG_EDIT_FAILED"
+const ConfigurationStateElementStateADVANCEDCONFIGEDITPENDING ConfigurationStateElementState = "ADVANCED_CONFIG_EDIT_PENDING"
+const ConfigurationStateElementStateAPPLIANCEINTERNALERROR ConfigurationStateElementState = "APPLIANCE_INTERNAL_ERROR"
+const ConfigurationStateElementStateCOMPUTEMANAGERNOTFOUND ConfigurationStateElementState = "COMPUTE_MANAGER_NOT_FOUND"
+const ConfigurationStateElementStateCONFIGUREUPTONVMFAILED ConfigurationStateElementState = "CONFIGURE_UPT_ON_VM_FAILED"
+const ConfigurationStateElementStateDATAPATHCONFIGURATIONEDITFAILED ConfigurationStateElementState = "DATAPATH_CONFIGURATION_EDIT_FAILED"
+const ConfigurationStateElementStateDELETEFAILEDFORDIFFERENTMOREFID ConfigurationStateElementState = "DELETE_FAILED_FOR_DIFFERENT_MOREF_ID"
+const ConfigurationStateElementStateDELETEFAILEDFORNONLCMEDGE ConfigurationStateElementState = "DELETE_FAILED_FOR_NON_LCM_EDGE"
+const ConfigurationStateElementStateDELETEFAILEDONVMNOTFOUND ConfigurationStateElementState = "DELETE_FAILED_ON_VM_NOT_FOUND"
+const ConfigurationStateElementStateDELETEINPROGRESS ConfigurationStateElementState = "DELETE_IN_PROGRESS"
+const ConfigurationStateElementStateDELETEVMINREDEPLOYFAILED ConfigurationStateElementState = "DELETE_VM_IN_REDEPLOY_FAILED"
+const ConfigurationStateElementStateDEPLOYVMINREDEPLOYFAILED ConfigurationStateElementState = "DEPLOY_VM_IN_REDEPLOY_FAILED"
+const ConfigurationStateElementStateDUPLICATEPNICSINTEAMINGSWITHMULTIPLEUPLINKSANDFAILOVERORDER ConfigurationStateElementState = "DUPLICATE_PNICS_IN_TEAMINGS_WITH_MULTIPLE_UPLINKS_AND_FAILOVER_ORDER"
+const ConfigurationStateElementStateDUPLICATEVLANSSHARINGSAMEPNIC ConfigurationStateElementState = "DUPLICATE_VLANS_SHARING_SAME_PNIC"
+const ConfigurationStateElementStateDUPLICATEVLANSSHARINGSAMEPNICMULTIPLEUPLINKSINNAMEDTEAMINGNOTSUPPORTEDIFUPLINKINDEFAULTTEAMING ConfigurationStateElementState = "DUPLICATE_VLANS_SHARING_SAME_PNICMULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING"
+const ConfigurationStateElementStateEDGECONFIGERROR ConfigurationStateElementState = "EDGE_CONFIG_ERROR"
+const ConfigurationStateElementStateEDGEHARDWARENOTSUPPORTED ConfigurationStateElementState = "EDGE_HARDWARE_NOT_SUPPORTED"
+const ConfigurationStateElementStateEDGENODESETTINGSANDVSPHERESETTINGSARECHANGEDRESOLVE ConfigurationStateElementState = "EDGE_NODE_SETTINGS_AND_VSPHERE_SETTINGS_ARE_CHANGED_RESOLVE"
+const ConfigurationStateElementStateEDGENODESETTINGSMISMATCHRESOLVE ConfigurationStateElementState = "EDGE_NODE_SETTINGS_MISMATCH_RESOLVE"
+const ConfigurationStateElementStateEDGENODEVERSIONNOTSUPPORTED ConfigurationStateElementState = "EDGE_NODE_VERSION_NOT_SUPPORTED"
+const ConfigurationStateElementStateEDGEVMVSPHERESETTINGSMISMATCHRESOLVE ConfigurationStateElementState = "EDGE_VM_VSPHERE_SETTINGS_MISMATCH_RESOLVE"
+const ConfigurationStateElementStateEDGEVSPHERELOCATIONMISMATCHRESOLVE ConfigurationStateElementState = "EDGE_VSPHERE_LOCATION_MISMATCH_RESOLVE"
+const ConfigurationStateElementStateERRORINDISABLEMAINTENANCEMODE ConfigurationStateElementState = "ERROR_IN_DISABLE_MAINTENANCE_MODE"
+const ConfigurationStateElementStateERRORINENABLEMAINTENANCEMODE ConfigurationStateElementState = "ERROR_IN_ENABLE_MAINTENANCE_MODE"
+const ConfigurationStateElementStateError ConfigurationStateElementState = "error"
+const ConfigurationStateElementStateFailed ConfigurationStateElementState = "failed"
+const ConfigurationStateElementStateHOSTSWITCHPROFILENOTFOUND ConfigurationStateElementState = "HOSTSWITCH_PROFILE_NOT_FOUND"
+const ConfigurationStateElementStateINSUFFICIENTRESOURCESINEDGENODEFORSERVICE ConfigurationStateElementState = "INSUFFICIENT_RESOURCES_IN_EDGE_NODE_FOR_SERVICE"
+const ConfigurationStateElementStateINVALIDPNICDEVICENAME ConfigurationStateElementState = "INVALID_PNIC_DEVICE_NAME"
+const ConfigurationStateElementStateInProgress ConfigurationStateElementState = "in_progress"
+const ConfigurationStateElementStateInSync ConfigurationStateElementState = "in_sync"
+const ConfigurationStateElementStateLACPNOTSUPPORTEDFOREDGEVM ConfigurationStateElementState = "LACP_NOT_SUPPORTED_FOR_EDGE_VM"
+const ConfigurationStateElementStateLBSRCIDNOTSUPPORTEDFOREDGEVM ConfigurationStateElementState = "LBSRCID_NOT_SUPPORTED_FOR_EDGE_VM"
+const ConfigurationStateElementStateLLDPSENDENABLEDNOTSUPPORTED ConfigurationStateElementState = "LLDP_SEND_ENABLED_NOT_SUPPORTED"
+const ConfigurationStateElementStateLOGICALSWITCHNAMEDTEAMINGHASNOPNICBACKING ConfigurationStateElementState = "LOGICAL_SWITCH_NAMED_TEAMING_HAS_NO_PNIC_BACKING"
+const ConfigurationStateElementStateMAINTENANCEMODEENABLED ConfigurationStateElementState = "MAINTENANCE_MODE_ENABLED"
+const ConfigurationStateElementStateMPADISCONNECTED ConfigurationStateElementState = "MPA_DISCONNECTED"
+const ConfigurationStateElementStateMULTIPLEACTIVEUPLINKSNOTSUPPORTEDFOREDGE ConfigurationStateElementState = "MULTIPLE_ACTIVE_UPLINKS_NOT_SUPPORTED_FOR_EDGE"
+const ConfigurationStateElementStateMULTIPLEOVERLAYTZSNOTSUPPORTED ConfigurationStateElementState = "MULTIPLE_OVERLAY_TZS_NOT_SUPPORTED"
+const ConfigurationStateElementStateMULTIPLEUPLINKSINNAMEDTEAMINGNOTSUPPORTEDIFUPLINKINDEFAULTTEAMING ConfigurationStateElementState = "MULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING"
+const ConfigurationStateElementStateNODENOTREADY ConfigurationStateElementState = "NODE_NOT_READY"
+const ConfigurationStateElementStateNODEREADY ConfigurationStateElementState = "NODE_READY"
+const ConfigurationStateElementStateNOPNICPREPAREDINEDGE ConfigurationStateElementState = "NO_PNIC_PREPARED_IN_EDGE"
+const ConfigurationStateElementStateNOPNICSPECIFIEDINTN ConfigurationStateElementState = "NO_PNIC_SPECIFIED_IN_TN"
+const ConfigurationStateElementStateNOTAVAILABLE ConfigurationStateElementState = "NOT_AVAILABLE"
+const ConfigurationStateElementStateOrphaned ConfigurationStateElementState = "orphaned"
+const ConfigurationStateElementStatePartialSuccess ConfigurationStateElementState = "partial_success"
+const ConfigurationStateElementStatePending ConfigurationStateElementState = "pending"
+const ConfigurationStateElementStateREDEPLOYACTIVITYFAILED ConfigurationStateElementState = "REDEPLOY_ACTIVITY_FAILED"
+const ConfigurationStateElementStateREDEPLOYACTIVITYINPROGRESS ConfigurationStateElementState = "REDEPLOY_ACTIVITY_IN_PROGRESS"
+const ConfigurationStateElementStateREDEPLOYACTIVITYSCHEDULED ConfigurationStateElementState = "REDEPLOY_ACTIVITY_SCHEDULED"
+const ConfigurationStateElementStateREDEPLOYACTIVITYSUCCESSFUL ConfigurationStateElementState = "REDEPLOY_ACTIVITY_SUCCESSFUL"
+const ConfigurationStateElementStateREDEPLOYEDVMREGISTRATIONPENDING ConfigurationStateElementState = "REDEPLOYED_VM_REGISTRATION_PENDING"
+const ConfigurationStateElementStateREGISTRATIONFAILED ConfigurationStateElementState = "REGISTRATION_FAILED"
+const ConfigurationStateElementStateREGISTRATIONPENDING ConfigurationStateElementState = "REGISTRATION_PENDING"
+const ConfigurationStateElementStateREGISTRATIONTIMEDOUT ConfigurationStateElementState = "REGISTRATION_TIMEDOUT"
+const ConfigurationStateElementStateREPLACEACTIVITYFAILED ConfigurationStateElementState = "REPLACE_ACTIVITY_FAILED"
+const ConfigurationStateElementStateREPLACEACTIVITYINPROGRESS ConfigurationStateElementState = "REPLACE_ACTIVITY_IN_PROGRESS"
+const ConfigurationStateElementStateREPLACEACTIVITYSCHEDULED ConfigurationStateElementState = "REPLACE_ACTIVITY_SCHEDULED"
+const ConfigurationStateElementStateREPLACEACTIVITYSUCCESSFUL ConfigurationStateElementState = "REPLACE_ACTIVITY_SUCCESSFUL"
+const ConfigurationStateElementStateREPLACEDRPCCLIENTOFTN ConfigurationStateElementState = "REPLACED_RPC_CLIENT_OF_TN"
+const ConfigurationStateElementStateREPLACEFAILED ConfigurationStateElementState = "REPLACE_FAILED"
+const ConfigurationStateElementStateRETRYINGREPLACE ConfigurationStateElementState = "RETRYING_REPLACE"
+const ConfigurationStateElementStateSTANDBYUPLINKSNOTSUPPORTEDFOREDGEVM ConfigurationStateElementState = "STANDBY_UPLINKS_NOT_SUPPORTED_FOR_EDGE_VM"
+const ConfigurationStateElementStateSuccess ConfigurationStateElementState = "success"
+const ConfigurationStateElementStateTNOVERLAYTZINUSEBYEDGECLUSTER ConfigurationStateElementState = "TN_OVERLAY_TZ_IN_USE_BY_EDGE_CLUSTER"
+const ConfigurationStateElementStateTRANSPORTNODECONFIGURATIONMISSING ConfigurationStateElementState = "TRANSPORT_NODE_CONFIGURATION_MISSING"
+const ConfigurationStateElementStateTRANSPORTNODEREADY ConfigurationStateElementState = "TRANSPORT_NODE_READY"
+const ConfigurationStateElementStateTRANSPORTNODESYNCPENDING ConfigurationStateElementState = "TRANSPORT_NODE_SYNC_PENDING"
+const ConfigurationStateElementStateTZENDPOINTSNOTSPECIFIED ConfigurationStateElementState = "TZ_ENDPOINTS_NOT_SPECIFIED"
+const ConfigurationStateElementStateUNABLETODELETEEDGENODEVMINTERNALERROR ConfigurationStateElementState = "UNABLE_TO_DELETE_EDGE_NODE_VM_INTERNAL_ERROR"
+const ConfigurationStateElementStateUNSUPPORTEDDEFAULTTEAMINGPOLICY ConfigurationStateElementState = "UNSUPPORTED_DEFAULT_TEAMING_POLICY"
+const ConfigurationStateElementStateUNSUPPORTEDHOSTSWITCHPROFILE ConfigurationStateElementState = "UNSUPPORTED_HOST_SWITCH_PROFILE"
+const ConfigurationStateElementStateUNSUPPORTEDLACPLBALGOFORNODE ConfigurationStateElementState = "UNSUPPORTED_LACP_LB_ALGO_FOR_NODE"
+const ConfigurationStateElementStateUNSUPPORTEDNAMEDTEAMINGPOLICY ConfigurationStateElementState = "UNSUPPORTED_NAMED_TEAMING_POLICY"
+const ConfigurationStateElementStateUPLINKFROMTEAMINGPOLICYNOTMAPPED ConfigurationStateElementState = "UPLINK_FROM_TEAMING_POLICY_NOT_MAPPED"
+const ConfigurationStateElementStateUPLINKHOSTSWITCHPROFILENOTSPECIFIED ConfigurationStateElementState = "UPLINK_HOST_SWITCH_PROFILE_NOT_SPECIFIED"
+const ConfigurationStateElementStateUPTMODEREALIZATIONPOLLTIMEDOUT ConfigurationStateElementState = "UPT_MODE_REALIZATION_POLL_TIMED_OUT"
+const ConfigurationStateElementStateUnknown ConfigurationStateElementState = "unknown"
+const ConfigurationStateElementStateVMCONFIGDISCREPANCY ConfigurationStateElementState = "VM_CONFIG_DISCREPANCY"
+const ConfigurationStateElementStateVMCONFIGEDITFAILED ConfigurationStateElementState = "VM_CONFIG_EDIT_FAILED"
+const ConfigurationStateElementStateVMCONFIGEDITPENDING ConfigurationStateElementState = "VM_CONFIG_EDIT_PENDING"
+const ConfigurationStateElementStateVMDEPLOYMENTFAILED ConfigurationStateElementState = "VM_DEPLOYMENT_FAILED"
+const ConfigurationStateElementStateVMDEPLOYMENTINPROGRESS ConfigurationStateElementState = "VM_DEPLOYMENT_IN_PROGRESS"
+const ConfigurationStateElementStateVMDEPLOYMENTQUEUED ConfigurationStateElementState = "VM_DEPLOYMENT_QUEUED"
+const ConfigurationStateElementStateVMDEPLOYMENTRESTARTED ConfigurationStateElementState = "VM_DEPLOYMENT_RESTARTED"
+const ConfigurationStateElementStateVMNETWORKEDITFAILED ConfigurationStateElementState = "VM_NETWORK_EDIT_FAILED"
+const ConfigurationStateElementStateVMNETWORKEDITPENDING ConfigurationStateElementState = "VM_NETWORK_EDIT_PENDING"
+const ConfigurationStateElementStateVMNODEREFRESHFAILED ConfigurationStateElementState = "VM_NODE_REFRESH_FAILED"
+const ConfigurationStateElementStateVMPLACEMENTREFRESHFAILED ConfigurationStateElementState = "VM_PLACEMENT_REFRESH_FAILED"
+const ConfigurationStateElementStateVMPOWEROFFFAILED ConfigurationStateElementState = "VM_POWER_OFF_FAILED"
+const ConfigurationStateElementStateVMPOWEROFFINPROGRESS ConfigurationStateElementState = "VM_POWER_OFF_IN_PROGRESS"
+const ConfigurationStateElementStateVMPOWERONFAILED ConfigurationStateElementState = "VM_POWER_ON_FAILED"
+const ConfigurationStateElementStateVMPOWERONINPROGRESS ConfigurationStateElementState = "VM_POWER_ON_IN_PROGRESS"
+const ConfigurationStateElementStateVMREDEPLOYFAILED ConfigurationStateElementState = "VM_REDEPLOY_FAILED"
+const ConfigurationStateElementStateVMRENAMEFAILED ConfigurationStateElementState = "VM_RENAME_FAILED"
+const ConfigurationStateElementStateVMRENAMEPENDING ConfigurationStateElementState = "VM_RENAME_PENDING"
+const ConfigurationStateElementStateVMRESOURCERESERVATIONEDITPENDING ConfigurationStateElementState = "VM_RESOURCE_RESERVATION_EDIT_PENDING"
+const ConfigurationStateElementStateVMRESOURCERESERVATIONFAILED ConfigurationStateElementState = "VM_RESOURCE_RESERVATION_FAILED"
+const ConfigurationStateElementStateVMUNDEPLOYFAILED ConfigurationStateElementState = "VM_UNDEPLOY_FAILED"
+const ConfigurationStateElementStateVMUNDEPLOYINPROGRESS ConfigurationStateElementState = "VM_UNDEPLOY_IN_PROGRESS"
+const ConfigurationStateElementStateVMUNDEPLOYSUCCESSFUL ConfigurationStateElementState = "VM_UNDEPLOY_SUCCESSFUL"
+const ConfigurationStateElementStateVMVERSIONISUPTINCOMPATIBLE ConfigurationStateElementState = "VM_VERSION_IS_UPT_INCOMPATIBLE"
+const ConfigurationStateElementStateVTEPDHCPNOTSUPPORTED ConfigurationStateElementState = "VTEP_DHCP_NOT_SUPPORTED"
+
+var enumValues_ConfigurationStateElementState = []interface{}{
+	"in_progress",
+	"success",
+	"failed",
+	"partial_success",
+	"in_sync",
+	"VM_DEPLOYMENT_FAILED",
+	"VM_POWER_ON_FAILED",
+	"VM_POWER_OFF_FAILED",
+	"VM_UNDEPLOY_FAILED",
+	"REPLACE_FAILED",
+	"UPLINK_FROM_TEAMING_POLICY_NOT_MAPPED",
+	"LOGICAL_SWITCH_NAMED_TEAMING_HAS_NO_PNIC_BACKING",
+	"DELETE_VM_IN_REDEPLOY_FAILED",
+	"DEPLOY_VM_IN_REDEPLOY_FAILED",
+	"INSUFFICIENT_RESOURCES_IN_EDGE_NODE_FOR_SERVICE",
+	"EDGE_CONFIG_ERROR",
+	"REGISTRATION_FAILED",
+	"TRANSPORT_NODE_CONFIGURATION_MISSING",
+	"EDGE_HARDWARE_NOT_SUPPORTED",
+	"MULTIPLE_OVERLAY_TZS_NOT_SUPPORTED",
+	"TN_OVERLAY_TZ_IN_USE_BY_EDGE_CLUSTER",
+	"TZ_ENDPOINTS_NOT_SPECIFIED",
+	"NO_PNIC_PREPARED_IN_EDGE",
+	"APPLIANCE_INTERNAL_ERROR",
+	"VTEP_DHCP_NOT_SUPPORTED",
+	"UNSUPPORTED_HOST_SWITCH_PROFILE",
+	"UPLINK_HOST_SWITCH_PROFILE_NOT_SPECIFIED",
+	"HOSTSWITCH_PROFILE_NOT_FOUND",
+	"LLDP_SEND_ENABLED_NOT_SUPPORTED",
+	"UNSUPPORTED_NAMED_TEAMING_POLICY",
+	"LBSRCID_NOT_SUPPORTED_FOR_EDGE_VM",
+	"LACP_NOT_SUPPORTED_FOR_EDGE_VM",
+	"STANDBY_UPLINKS_NOT_SUPPORTED_FOR_EDGE_VM",
+	"MULTIPLE_ACTIVE_UPLINKS_NOT_SUPPORTED_FOR_EDGE",
+	"UNSUPPORTED_LACP_LB_ALGO_FOR_NODE",
+	"EDGE_NODE_VERSION_NOT_SUPPORTED",
+	"NO_PNIC_SPECIFIED_IN_TN",
+	"INVALID_PNIC_DEVICE_NAME",
+	"UNSUPPORTED_DEFAULT_TEAMING_POLICY",
+	"MPA_DISCONNECTED",
+	"VM_NETWORK_EDIT_PENDING",
+	"VM_RENAME_PENDING",
+	"VM_CONFIG_EDIT_PENDING",
+	"VM_NETWORK_EDIT_FAILED",
+	"VM_RENAME_FAILED",
+	"VM_CONFIG_EDIT_FAILED",
+	"VM_CONFIG_DISCREPANCY",
+	"VM_NODE_REFRESH_FAILED",
+	"VM_PLACEMENT_REFRESH_FAILED",
+	"NOT_AVAILABLE",
+	"REGISTRATION_TIMEDOUT",
+	"ADVANCED_CONFIG_EDIT_FAILED",
+	"VM_RESOURCE_RESERVATION_FAILED",
+	"UPT_MODE_REALIZATION_POLL_TIMED_OUT",
+	"DATAPATH_CONFIGURATION_EDIT_FAILED",
+	"MAINTENANCE_MODE_ENABLED",
+	"ERROR_IN_ENABLE_MAINTENANCE_MODE",
+	"ERROR_IN_DISABLE_MAINTENANCE_MODE",
+	"CONFIGURE_UPT_ON_VM_FAILED",
+	"VM_VERSION_IS_UPT_INCOMPATIBLE",
+	"pending",
+	"orphaned",
+	"unknown",
+	"error",
+	"VM_DEPLOYMENT_QUEUED",
+	"VM_DEPLOYMENT_IN_PROGRESS",
+	"VM_POWER_ON_IN_PROGRESS",
+	"REGISTRATION_PENDING",
+	"NODE_NOT_READY",
+	"NODE_READY",
+	"VM_POWER_OFF_IN_PROGRESS",
+	"VM_UNDEPLOY_IN_PROGRESS",
+	"VM_UNDEPLOY_SUCCESSFUL",
+	"VM_DEPLOYMENT_RESTARTED",
+	"TRANSPORT_NODE_SYNC_PENDING",
+	"TRANSPORT_NODE_READY",
+	"DUPLICATE_PNICS_IN_TEAMINGS_WITH_MULTIPLE_UPLINKS_AND_FAILOVER_ORDER",
+	"DUPLICATE_VLANS_SHARING_SAME_PNICMULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING",
+	"EDGE_NODE_SETTINGS_MISMATCH_RESOLVE",
+	"EDGE_VM_VSPHERE_SETTINGS_MISMATCH_RESOLVE",
+	"EDGE_NODE_SETTINGS_AND_VSPHERE_SETTINGS_ARE_CHANGED_RESOLVE",
+	"EDGE_VSPHERE_LOCATION_MISMATCH_RESOLVE",
+	"COMPUTE_MANAGER_NOT_FOUND",
+	"ADVANCED_CONFIG_EDIT_PENDING",
+	"DELETE_FAILED_FOR_DIFFERENT_MOREF_ID",
+	"DELETE_FAILED_FOR_NON_LCM_EDGE",
+	"DELETE_FAILED_ON_VM_NOT_FOUND",
+	"DELETE_IN_PROGRESS",
+	"DUPLICATE_VLANS_SHARING_SAME_PNIC",
+	"MULTIPLE_UPLINKS_IN_NAMED_TEAMING_NOT_SUPPORTED_IF_UPLINK_IN_DEFAULT_TEAMING",
+	"REDEPLOY_ACTIVITY_FAILED",
+	"REDEPLOY_ACTIVITY_IN_PROGRESS",
+	"REDEPLOY_ACTIVITY_SCHEDULED",
+	"REDEPLOY_ACTIVITY_SUCCESSFUL",
+	"REPLACE_ACTIVITY_FAILED",
+	"REPLACE_ACTIVITY_IN_PROGRESS",
+	"REPLACE_ACTIVITY_SCHEDULED",
+	"REPLACE_ACTIVITY_SUCCESSFUL",
+	"REPLACED_RPC_CLIENT_OF_TN",
+	"RETRYING_REPLACE",
+	"UNABLE_TO_DELETE_EDGE_NODE_VM_INTERNAL_ERROR",
+	"VM_REDEPLOY_FAILED",
+	"VM_RESOURCE_RESERVATION_EDIT_PENDING",
+	"REDEPLOYED_VM_REGISTRATION_PENDING",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ConfigurationStateElementState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ConfigurationStateElementState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ConfigurationStateElementState, v)
+	}
+	*j = ConfigurationStateElementState(v)
+	return nil
+}
+
+// Represents the operators AND or OR.
+type ConjunctionOperator struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// ConjunctionOperator corresponds to the JSON schema field
+	// "conjunction_operator".
+	ConjunctionOperator *ConjunctionOperatorConjunctionOperator `json:"conjunction_operator,omitempty" yaml:"conjunction_operator,omitempty" mapstructure:"conjunction_operator,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *ConjunctionOperatorResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type ConjunctionOperatorConjunctionOperator string
+
+const ConjunctionOperatorConjunctionOperatorAND ConjunctionOperatorConjunctionOperator = "AND"
+const ConjunctionOperatorConjunctionOperatorOR ConjunctionOperatorConjunctionOperator = "OR"
+
+var enumValues_ConjunctionOperatorConjunctionOperator = []interface{}{
+	"OR",
+	"AND",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ConjunctionOperatorConjunctionOperator) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ConjunctionOperatorConjunctionOperator {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ConjunctionOperatorConjunctionOperator, v)
+	}
+	*j = ConjunctionOperatorConjunctionOperator(v)
+	return nil
+}
+
+type ConjunctionOperatorResourceType string
+
+const ConjunctionOperatorResourceTypeCondition ConjunctionOperatorResourceType = "Condition"
+const ConjunctionOperatorResourceTypeConjunctionOperator ConjunctionOperatorResourceType = "ConjunctionOperator"
+const ConjunctionOperatorResourceTypeExternalIDExpression ConjunctionOperatorResourceType = "ExternalIDExpression"
+const ConjunctionOperatorResourceTypeIPAddressExpression ConjunctionOperatorResourceType = "IPAddressExpression"
+const ConjunctionOperatorResourceTypeIdentityGroupExpression ConjunctionOperatorResourceType = "IdentityGroupExpression"
+const ConjunctionOperatorResourceTypeMACAddressExpression ConjunctionOperatorResourceType = "MACAddressExpression"
+const ConjunctionOperatorResourceTypeNestedExpression ConjunctionOperatorResourceType = "NestedExpression"
+const ConjunctionOperatorResourceTypePathExpression ConjunctionOperatorResourceType = "PathExpression"
+
+var enumValues_ConjunctionOperatorResourceType = []interface{}{
+	"Condition",
+	"ConjunctionOperator",
+	"NestedExpression",
+	"IPAddressExpression",
+	"MACAddressExpression",
+	"ExternalIDExpression",
+	"PathExpression",
+	"IdentityGroupExpression",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ConjunctionOperatorResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ConjunctionOperatorResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ConjunctionOperatorResourceType, v)
+	}
+	*j = ConjunctionOperatorResourceType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ConjunctionOperator) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain ConjunctionOperator
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = ConjunctionOperator(plain)
+	return nil
+}
+
 type DiscoveredResourceScope struct {
 	// Specifies the scope id of discovered resource.
 	ScopeId *string `json:"scope_id,omitempty" yaml:"scope_id,omitempty" mapstructure:"scope_id,omitempty"`
@@ -621,6 +1125,147 @@ func (j *DiscoveredResourceScopeScopeType) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DiscoveredResourceScopeScopeType, v)
 	}
 	*j = DiscoveredResourceScopeScopeType(v)
+	return nil
+}
+
+// Domain.
+type Domain struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Domain) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Domain
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = Domain(plain)
 	return nil
 }
 
@@ -818,6 +1463,12 @@ func (j *Expression) UnmarshalJSON(b []byte) error {
 	}
 	*j = Expression(plain)
 	return nil
+}
+
+// Additional configuration required for federation.
+type FederationConnectivityConfig struct {
+	// Global id for by Layer3 services for federation usecases.
+	GlobalOverlayId *int `json:"global_overlay_id,omitempty" yaml:"global_overlay_id,omitempty" mapstructure:"global_overlay_id,omitempty"`
 }
 
 // Group.
@@ -1082,6 +1733,8 @@ type GuestInfo struct {
 	OsName *string `json:"os_name,omitempty" yaml:"os_name,omitempty" mapstructure:"os_name,omitempty"`
 }
 
+type IPAddress string
+
 // Represents IP address expressions in the form of an array, to support addition
 // of IP addresses in a group.If duplicate IP Addresses are provided these will be
 // filtered out and only unique IP Addresses will be considered. Avoid creating
@@ -1286,12 +1939,92 @@ func (j *IPAddressExpression) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type IPCIDRBlock string
+
 // IPElement can be a single IP address, IP address range or a Subnet. Its type can
 // be of IPv4 or IPv6. Supported list of formats are "192.168.1.1",
 // "192.168.1.1-192.168.1.100", "192.168.0.0/24", "fe80::250:56ff:fe83:318c",
 // "fe80::250:56ff:fe83:3181-fe80::250:56ff:fe83:318c",
 // "fe80::250:56ff:fe83:318c/64"
 type IPElement string
+
+type L2Extension struct {
+	// This property has been deprecated. Please use the property l2vpn_paths for
+	// setting the paths of associated L2 VPN session. This property will continue to
+	// work as expected to provide backwards compatibility. However, when both
+	// l2vpn_path and l2vpn_paths properties are specified, only l2vpn_paths is used.
+	L2VpnPath *string `json:"l2vpn_path,omitempty" yaml:"l2vpn_path,omitempty" mapstructure:"l2vpn_path,omitempty"`
+
+	// Policy paths corresponding to the associated L2 VPN sessions
+	L2VpnPaths []string `json:"l2vpn_paths,omitempty" yaml:"l2vpn_paths,omitempty" mapstructure:"l2vpn_paths,omitempty"`
+
+	// Local Egress.
+	LocalEgress *LocalEgress `json:"local_egress,omitempty" yaml:"local_egress,omitempty" mapstructure:"local_egress,omitempty"`
+
+	// TunnelId corresponds to the JSON schema field "tunnel_id".
+	TunnelId *int `json:"tunnel_id,omitempty" yaml:"tunnel_id,omitempty" mapstructure:"tunnel_id,omitempty"`
+}
+
+// Local Egress is used on both server and client sites so that the gateway is used
+// for N-S traffic and overhead on L2VPN tunnel is reduced.
+type LocalEgress struct {
+	// Gateway IP for Local Egress. Local egress is enabled only when this list is not
+	// empty.
+	OptimizedIps []IPAddress `json:"optimized_ips,omitempty" yaml:"optimized_ips,omitempty" mapstructure:"optimized_ips,omitempty"`
+}
+
+type LocalEgressRoutingEntry struct {
+	// Next hop address for proximity routing.
+	NexthopAddress *string `json:"nexthop_address,omitempty" yaml:"nexthop_address,omitempty" mapstructure:"nexthop_address,omitempty"`
+
+	// The destination address of traffic matching a prefix-list is forwarded to the
+	// nexthop_address. Traffic matching a prefix list with Action DENY will be
+	// dropped. Individual prefix-lists specified could have different actions.
+	PrefixListPaths []string `json:"prefix_list_paths,omitempty" yaml:"prefix_list_paths,omitempty" mapstructure:"prefix_list_paths,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *LocalEgressRoutingEntry) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain LocalEgressRoutingEntry
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if len(plain.PrefixListPaths) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "prefix_list_paths", 1)
+	}
+	*j = LocalEgressRoutingEntry(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *LocalEgress) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain LocalEgress
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.OptimizedIps != nil && len(plain.OptimizedIps) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "optimized_ips", 1)
+	}
+	if len(plain.OptimizedIps) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "optimized_ips", 1)
+	}
+	*j = LocalEgress(plain)
+	return nil
+}
+
+// A MAC address. Must be 6 pairs of hexadecimal digits, upper or lower case,
+// separated by colons or dashes. Examples: 01:23:45:67:89:ab, 01-23-45-67-89-AB.
+type MACAddress string
 
 // Represents policy path expressions in the form of an array, to support addition
 // of objects like groups, segments and policy logical ports in a group.
@@ -1484,10 +2217,456 @@ func (j *PathExpression) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Alarm base class of realized policy object
+type PolicyAlarmResource struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// ErrorDetails corresponds to the JSON schema field "error_details".
+	ErrorDetails *PolicyApiError `json:"error_details,omitempty" yaml:"error_details,omitempty" mapstructure:"error_details,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Message corresponds to the JSON schema field "message".
+	Message *string `json:"message,omitempty" yaml:"message,omitempty" mapstructure:"message,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// SourceReference corresponds to the JSON schema field "source_reference".
+	SourceReference *string `json:"source_reference,omitempty" yaml:"source_reference,omitempty" mapstructure:"source_reference,omitempty"`
+
+	// This field will refer to the source site on which the alarm is generated. This
+	// field is populated by GM, when it receives corresponding notification from LM.
+	SourceSiteId *string `json:"source_site_id,omitempty" yaml:"source_site_id,omitempty" mapstructure:"source_site_id,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyAlarmResource) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyAlarmResource
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = PolicyAlarmResource(plain)
+	return nil
+}
+
+type PolicyApiError struct {
+	// Details corresponds to the JSON schema field "details".
+	Details *string `json:"details,omitempty" yaml:"details,omitempty" mapstructure:"details,omitempty"`
+
+	// ErrorCode corresponds to the JSON schema field "error_code".
+	ErrorCode *int `json:"error_code,omitempty" yaml:"error_code,omitempty" mapstructure:"error_code,omitempty"`
+
+	// ErrorData corresponds to the JSON schema field "error_data".
+	ErrorData PolicyApiErrorErrorData `json:"error_data,omitempty" yaml:"error_data,omitempty" mapstructure:"error_data,omitempty"`
+
+	// ErrorMessage corresponds to the JSON schema field "error_message".
+	ErrorMessage *string `json:"error_message,omitempty" yaml:"error_message,omitempty" mapstructure:"error_message,omitempty"`
+
+	// ModuleName corresponds to the JSON schema field "module_name".
+	ModuleName *string `json:"module_name,omitempty" yaml:"module_name,omitempty" mapstructure:"module_name,omitempty"`
+
+	// RelatedErrors corresponds to the JSON schema field "related_errors".
+	RelatedErrors []PolicyRelatedApiError `json:"related_errors,omitempty" yaml:"related_errors,omitempty" mapstructure:"related_errors,omitempty"`
+}
+
+type PolicyApiErrorErrorData map[string]interface{}
+
+type PolicyRelatedApiError struct {
+	// Details corresponds to the JSON schema field "details".
+	Details *string `json:"details,omitempty" yaml:"details,omitempty" mapstructure:"details,omitempty"`
+
+	// ErrorCode corresponds to the JSON schema field "error_code".
+	ErrorCode *int `json:"error_code,omitempty" yaml:"error_code,omitempty" mapstructure:"error_code,omitempty"`
+
+	// ErrorData corresponds to the JSON schema field "error_data".
+	ErrorData PolicyRelatedApiErrorErrorData `json:"error_data,omitempty" yaml:"error_data,omitempty" mapstructure:"error_data,omitempty"`
+
+	// ErrorMessage corresponds to the JSON schema field "error_message".
+	ErrorMessage *string `json:"error_message,omitempty" yaml:"error_message,omitempty" mapstructure:"error_message,omitempty"`
+
+	// ModuleName corresponds to the JSON schema field "module_name".
+	ModuleName *string `json:"module_name,omitempty" yaml:"module_name,omitempty" mapstructure:"module_name,omitempty"`
+}
+
+type PolicyRelatedApiErrorErrorData map[string]interface{}
+
 // Optional API Request Parameter to be used in HAPI.
 type PolicyRequestParameter struct {
 	// The type of this request parameter.
 	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+}
+
+// Detailed information about static address for the port.
+type PortAddressBindingEntry struct {
+	// IP Address for port binding
+	IpAddress *string `json:"ip_address,omitempty" yaml:"ip_address,omitempty" mapstructure:"ip_address,omitempty"`
+
+	// Mac address for port binding
+	MacAddress *MACAddress `json:"mac_address,omitempty" yaml:"mac_address,omitempty" mapstructure:"mac_address,omitempty"`
+
+	// VLAN ID for port binding
+	VlanId *VlanID `json:"vlan_id,omitempty" yaml:"vlan_id,omitempty" mapstructure:"vlan_id,omitempty"`
+}
+
+type RealizedVirtualMachine struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Alarms corresponds to the JSON schema field "alarms".
+	Alarms []PolicyAlarmResource `json:"alarms,omitempty" yaml:"alarms,omitempty" mapstructure:"alarms,omitempty"`
+
+	// ComputeIds corresponds to the JSON schema field "compute_ids".
+	ComputeIds []string `json:"compute_ids,omitempty" yaml:"compute_ids,omitempty" mapstructure:"compute_ids,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// HostId corresponds to the JSON schema field "host_id".
+	HostId *string `json:"host_id,omitempty" yaml:"host_id,omitempty" mapstructure:"host_id,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// IntentReference corresponds to the JSON schema field "intent_reference".
+	IntentReference []string `json:"intent_reference,omitempty" yaml:"intent_reference,omitempty" mapstructure:"intent_reference,omitempty"`
+
+	// LocalIdOnHost corresponds to the JSON schema field "local_id_on_host".
+	LocalIdOnHost *string `json:"local_id_on_host,omitempty" yaml:"local_id_on_host,omitempty" mapstructure:"local_id_on_host,omitempty"`
+
+	// Possible values could be UP, DOWN, UNKNOWN, FAILURE This list is not
+	// exhaustive.
+	OperationalStatus *string `json:"operational_status,omitempty" yaml:"operational_status,omitempty" mapstructure:"operational_status,omitempty"`
+
+	// It defines the root cause for operational status error.
+	OperationalStatusError *string `json:"operational_status_error,omitempty" yaml:"operational_status_error,omitempty" mapstructure:"operational_status_error,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// PowerState corresponds to the JSON schema field "power_state".
+	PowerState *RealizedVirtualMachinePowerState `json:"power_state,omitempty" yaml:"power_state,omitempty" mapstructure:"power_state,omitempty"`
+
+	// Possible values could be UP, DOWN, UNKNOWN, SUCCESS This list is not
+	// exhaustive.
+	PublishStatus *string `json:"publish_status,omitempty" yaml:"publish_status,omitempty" mapstructure:"publish_status,omitempty"`
+
+	// It defines the root cause for publish status error.
+	PublishStatusError *string `json:"publish_status_error,omitempty" yaml:"publish_status_error,omitempty" mapstructure:"publish_status_error,omitempty"`
+
+	// It defines error code for publish status error.
+	PublishStatusErrorCode *int `json:"publish_status_error_code,omitempty" yaml:"publish_status_error_code,omitempty" mapstructure:"publish_status_error_code,omitempty"`
+
+	// Error details for publish status.
+	PublishStatusErrorDetails []ConfigurationStateElement `json:"publish_status_error_details,omitempty" yaml:"publish_status_error_details,omitempty" mapstructure:"publish_status_error_details,omitempty"`
+
+	// This is the time when our system detects that data has been pushed to the
+	// transport nodes. This is based on a poll mechanism and hence this is not the
+	// accurate time when the intent was published at the data path. The value of -1
+	// indicates that either the publishing is still in progress or the runtime status
+	// is UNKNOWN and hence not available. The Runtime status can be UNKNOWN if one or
+	// more hosts are down and the rules could not be sent to those hosts. When the
+	// host comes up, the runtime status will change to SUCCESS but the publish_time
+	// will show the value of the last realization time. Any new configuration change
+	// after this will start reflecting the proper value for publish_time
+	PublishTime *EpochMsTimestamp `json:"publish_time,omitempty" yaml:"publish_time,omitempty" mapstructure:"publish_time,omitempty"`
+
+	// RealizationApi corresponds to the JSON schema field "realization_api".
+	RealizationApi *string `json:"realization_api,omitempty" yaml:"realization_api,omitempty" mapstructure:"realization_api,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// RealizationSpecificIdentifier corresponds to the JSON schema field
+	// "realization_specific_identifier".
+	RealizationSpecificIdentifier *string `json:"realization_specific_identifier,omitempty" yaml:"realization_specific_identifier,omitempty" mapstructure:"realization_specific_identifier,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// It define the root cause for runtime error.
+	RuntimeError *string `json:"runtime_error,omitempty" yaml:"runtime_error,omitempty" mapstructure:"runtime_error,omitempty"`
+
+	// Possible values could be UP, DOWN, UNKNOWN, DEGRADED This list is not
+	// exhaustive.
+	RuntimeStatus *string `json:"runtime_status,omitempty" yaml:"runtime_status,omitempty" mapstructure:"runtime_status,omitempty"`
+
+	// State corresponds to the JSON schema field "state".
+	State *RealizedVirtualMachineState `json:"state,omitempty" yaml:"state,omitempty" mapstructure:"state,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is an approximate time taken for the realization of the intent to the data
+	// path. The actual time taken could be lesser than what is reported here. The
+	// value of -1 indicates that either the publishing is still in progress or the
+	// runtime status is UNKNOWN and hence not available. The Runtime status can be
+	// UNKNOWN if one or more hosts are down and the rules could not be sent to those
+	// hosts. When the host comes up, the runtime status will change to SUCCESS but
+	// the time taken for realization will show the value of the last realization
+	// time. Any new configuration change after this will start reflecting the proper
+	// value for time_taken_for_realization
+	TimeTakenForRealization *int `json:"time_taken_for_realization,omitempty" yaml:"time_taken_for_realization,omitempty" mapstructure:"time_taken_for_realization,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type RealizedVirtualMachinePowerState string
+
+const RealizedVirtualMachinePowerStateUNKNOWN RealizedVirtualMachinePowerState = "UNKNOWN"
+const RealizedVirtualMachinePowerStateVMRUNNING RealizedVirtualMachinePowerState = "VM_RUNNING"
+const RealizedVirtualMachinePowerStateVMSTOPPED RealizedVirtualMachinePowerState = "VM_STOPPED"
+const RealizedVirtualMachinePowerStateVMSUSPENDED RealizedVirtualMachinePowerState = "VM_SUSPENDED"
+
+var enumValues_RealizedVirtualMachinePowerState = []interface{}{
+	"VM_RUNNING",
+	"VM_STOPPED",
+	"VM_SUSPENDED",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RealizedVirtualMachinePowerState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RealizedVirtualMachinePowerState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RealizedVirtualMachinePowerState, v)
+	}
+	*j = RealizedVirtualMachinePowerState(v)
+	return nil
+}
+
+type RealizedVirtualMachineState string
+
+const RealizedVirtualMachineStateERROR RealizedVirtualMachineState = "ERROR"
+const RealizedVirtualMachineStateREALIZED RealizedVirtualMachineState = "REALIZED"
+const RealizedVirtualMachineStateUNAVAILABLE RealizedVirtualMachineState = "UNAVAILABLE"
+const RealizedVirtualMachineStateUNREALIZED RealizedVirtualMachineState = "UNREALIZED"
+
+var enumValues_RealizedVirtualMachineState = []interface{}{
+	"UNAVAILABLE",
+	"UNREALIZED",
+	"REALIZED",
+	"ERROR",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RealizedVirtualMachineState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RealizedVirtualMachineState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RealizedVirtualMachineState, v)
+	}
+	*j = RealizedVirtualMachineState(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RealizedVirtualMachine) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain RealizedVirtualMachine
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = RealizedVirtualMachine(plain)
+	return nil
 }
 
 type ResourceLink struct {
@@ -2276,6 +3455,642 @@ func (j *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Segment configuration to attach workloads.
+type Segment struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Static address binding used for the Segment. This field is deprecated and will
+	// be removed in a future release. Please use address_bindings in SegmentPort to
+	// configure static bindings.
+	AddressBindings []PortAddressBindingEntry `json:"address_bindings,omitempty" yaml:"address_bindings,omitempty" mapstructure:"address_bindings,omitempty"`
+
+	// Admin state represents desired state of segment. It does not reflect the state
+	// of other logical entities connected/attached to the segment.
+	AdminState SegmentAdminState `json:"admin_state,omitempty" yaml:"admin_state,omitempty" mapstructure:"admin_state,omitempty"`
+
+	// Advanced configuration for Segment.
+	AdvancedConfig *SegmentAdvancedConfig `json:"advanced_config,omitempty" yaml:"advanced_config,omitempty" mapstructure:"advanced_config,omitempty"`
+
+	// Multiple distinct L2 bridge profiles can be configured.
+	BridgeProfiles []BridgeProfileConfig `json:"bridge_profiles,omitempty" yaml:"bridge_profiles,omitempty" mapstructure:"bridge_profiles,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Policy path to the connecting Tier-0 or Tier-1 or label of type Tier0. Valid
+	// only for segments created under Infra. This field can only be used for overlay
+	// segments. VLAN backed segments cannot have connectivity path set.
+	ConnectivityPath *string `json:"connectivity_path,omitempty" yaml:"connectivity_path,omitempty" mapstructure:"connectivity_path,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Policy path to DHCP server or relay configuration to use for all IPv4 & IPv6
+	// subnets configured on this segment.
+	DhcpConfigPath *string `json:"dhcp_config_path,omitempty" yaml:"dhcp_config_path,omitempty" mapstructure:"dhcp_config_path,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// DomainName corresponds to the JSON schema field "domain_name".
+	DomainName *string `json:"domain_name,omitempty" yaml:"domain_name,omitempty" mapstructure:"domain_name,omitempty"`
+
+	// Flag to indicate if the Segment is a Child-Segment of type EVPN.
+	EvpnSegment *bool `json:"evpn_segment,omitempty" yaml:"evpn_segment,omitempty" mapstructure:"evpn_segment,omitempty"`
+
+	// Policy path to the EvpnTenantConfig resource. Supported only for Route-Server
+	// Evpn Mode. Supported only for Overlay Segments. This will be populated for both
+	// Parent and Child segments participating in Evpn Route-Server Mode.
+	EvpnTenantConfigPath *string `json:"evpn_tenant_config_path,omitempty" yaml:"evpn_tenant_config_path,omitempty" mapstructure:"evpn_tenant_config_path,omitempty"`
+
+	// This property could be used for vendor specific configuration in key value
+	// string pairs, the setting in extra_configs will be automatically inheritted by
+	// segment ports in the Segment.
+	ExtraConfigs []SegmentExtraConfig `json:"extra_configs,omitempty" yaml:"extra_configs,omitempty" mapstructure:"extra_configs,omitempty"`
+
+	// Additional config for federation.
+	FederationConfig *FederationConnectivityConfig `json:"federation_config,omitempty" yaml:"federation_config,omitempty" mapstructure:"federation_config,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// L2Extension corresponds to the JSON schema field "l2_extension".
+	L2Extension *L2Extension `json:"l2_extension,omitempty" yaml:"l2_extension,omitempty" mapstructure:"l2_extension,omitempty"`
+
+	// This property is deprecated. The property will continue to work as expected for
+	// existing segments. The segments that are newly created with ls_id will be
+	// ignored. Sepcify pre-creted logical switch id for Segment.
+	LsId *string `json:"ls_id,omitempty" yaml:"ls_id,omitempty" mapstructure:"ls_id,omitempty"`
+
+	// Mac pool id that associated with a Segment.
+	MacPoolId *string `json:"mac_pool_id,omitempty" yaml:"mac_pool_id,omitempty" mapstructure:"mac_pool_id,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// Policy path to metadata proxy configuration. Multiple distinct MD proxies can
+	// be configured.
+	MetadataProxyPaths []string `json:"metadata_proxy_paths,omitempty" yaml:"metadata_proxy_paths,omitempty" mapstructure:"metadata_proxy_paths,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Used for overlay connectivity of segments. The overlay_id should be allocated
+	// from the pool as definied by enforcement-point. If not provided, it is
+	// auto-allocated from the default pool on the enforcement-point.
+	OverlayId *int `json:"overlay_id,omitempty" yaml:"overlay_id,omitempty" mapstructure:"overlay_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// If this field is not set for overlay segment, then the default of MTEP will be
+	// used.
+	ReplicationMode SegmentReplicationMode `json:"replication_mode,omitempty" yaml:"replication_mode,omitempty" mapstructure:"replication_mode,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Subnets corresponds to the JSON schema field "subnets".
+	Subnets []SegmentSubnet `json:"subnets,omitempty" yaml:"subnets,omitempty" mapstructure:"subnets,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Policy path to the transport zone. Supported for VLAN backed segments as well
+	// as Overlay Segments. - This field is required for VLAN backed Segments. - For
+	// overlay Segments, it is auto assigned if only one transport zone   exists in
+	// the enforcement point. Default transport zone is auto   assigned for  overlay
+	// segments if none specified.
+	TransportZonePath *string `json:"transport_zone_path,omitempty" yaml:"transport_zone_path,omitempty" mapstructure:"transport_zone_path,omitempty"`
+
+	// Segment type based on configuration.
+	Type *SegmentType `json:"type,omitempty" yaml:"type,omitempty" mapstructure:"type,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+
+	// VLAN ids for a VLAN backed Segment. Can be a VLAN id or a range of VLAN ids
+	// specified with '-' in between.
+	VlanIds []string `json:"vlan_ids,omitempty" yaml:"vlan_ids,omitempty" mapstructure:"vlan_ids,omitempty"`
+}
+
+type SegmentAdminState string
+
+const SegmentAdminStateDOWN SegmentAdminState = "DOWN"
+const SegmentAdminStateUP SegmentAdminState = "UP"
+
+var enumValues_SegmentAdminState = []interface{}{
+	"UP",
+	"DOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentAdminState) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentAdminState {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentAdminState, v)
+	}
+	*j = SegmentAdminState(v)
+	return nil
+}
+
+type SegmentAdvancedConfig struct {
+	// Policy path to IP address pools.
+	AddressPoolPaths []string `json:"address_pool_paths,omitempty" yaml:"address_pool_paths,omitempty" mapstructure:"address_pool_paths,omitempty"`
+
+	// Connectivity configuration to manually connect (ON) or disconnect (OFF)
+	// Tier-0/Tier1 segment from corresponding gateway. This property does not apply
+	// to VLAN backed segments. VLAN backed segments with connectivity OFF does not
+	// affect its layer-2 connectivity.
+	Connectivity SegmentAdvancedConfigConnectivity `json:"connectivity,omitempty" yaml:"connectivity,omitempty" mapstructure:"connectivity,omitempty"`
+
+	// When set to true, all the ports created on this segment will behave in a hybrid
+	// fashion. The hybrid port indicates to NSX that the VM intends to operate in
+	// underlay mode, but retains the ability to forward egress traffic to the NSX
+	// overlay network. This property is only applicable for segment created with
+	// transport zone type OVERLAY_STANDARD. This property cannot be modified after
+	// segment is created.
+	Hybrid bool `json:"hybrid,omitempty" yaml:"hybrid,omitempty" mapstructure:"hybrid,omitempty"`
+
+	// When set to true, any port attached to this logical switch will not be visible
+	// through VC/ESX UI
+	InterRouter bool `json:"inter_router,omitempty" yaml:"inter_router,omitempty" mapstructure:"inter_router,omitempty"`
+
+	// This property is used to enable proximity routing with local egress. When set
+	// to true, logical router interface (downlink) connecting Segment to Tier0/Tier1
+	// gateway is configured with prefix-length 32.
+	LocalEgress bool `json:"local_egress,omitempty" yaml:"local_egress,omitempty" mapstructure:"local_egress,omitempty"`
+
+	// An ordered list of routing policies to forward traffic to the next hop.
+	LocalEgressRoutingPolicies []LocalEgressRoutingEntry `json:"local_egress_routing_policies,omitempty" yaml:"local_egress_routing_policies,omitempty" mapstructure:"local_egress_routing_policies,omitempty"`
+
+	// Enable multicast on the downlink LRP created to connect the segment to
+	// Tier0/Tier1 gateway.
+	Multicast *bool `json:"multicast,omitempty" yaml:"multicast,omitempty" mapstructure:"multicast,omitempty"`
+
+	// This profile is applie dto the downlink logical router port created while
+	// attaching this semgnet to tier-0 or tier-1. If this field is empty, NDRA
+	// profile of the router is applied to the newly created port.
+	NdraProfilePath *string `json:"ndra_profile_path,omitempty" yaml:"ndra_profile_path,omitempty" mapstructure:"ndra_profile_path,omitempty"`
+
+	// A behaviour required for Firewall As A Service (FaaS) where the segment BUM
+	// traffic is confined within the edge node that this segment belongs to.
+	NodeLocalSwitch *bool `json:"node_local_switch,omitempty" yaml:"node_local_switch,omitempty" mapstructure:"node_local_switch,omitempty"`
+
+	// ID populated by NSX when NSX on DVPG is used to indicate the source DVPG.
+	// Currently, only DVPortgroups are identified as Discovered Segments. The
+	// origin_id is the identifier of DVPortgroup from the source vCenter server.
+	OriginId *string `json:"origin_id,omitempty" yaml:"origin_id,omitempty" mapstructure:"origin_id,omitempty"`
+
+	// The type of source from where the DVPortgroup is discovered
+	OriginType *SegmentAdvancedConfigOriginType `json:"origin_type,omitempty" yaml:"origin_type,omitempty" mapstructure:"origin_type,omitempty"`
+
+	// The name of the switching uplink teaming policy for the Segment. This name
+	// corresponds to one of the switching uplink teaming policy names listed in
+	// TransportZone associated with the Segment. See transport_zone_path property
+	// above for more details. When this property is not specified, the segment will
+	// not have a teaming policy associated with it and the host switch's default
+	// teaming policy will be used by MP.
+	UplinkTeamingPolicyName *string `json:"uplink_teaming_policy_name,omitempty" yaml:"uplink_teaming_policy_name,omitempty" mapstructure:"uplink_teaming_policy_name,omitempty"`
+
+	// This URPF mode is applied to the downlink logical router port created while
+	// attaching this segment to tier-0 or tier-1.
+	UrpfMode SegmentAdvancedConfigUrpfMode `json:"urpf_mode,omitempty" yaml:"urpf_mode,omitempty" mapstructure:"urpf_mode,omitempty"`
+}
+
+type SegmentAdvancedConfigConnectivity string
+
+const SegmentAdvancedConfigConnectivityOFF SegmentAdvancedConfigConnectivity = "OFF"
+const SegmentAdvancedConfigConnectivityON SegmentAdvancedConfigConnectivity = "ON"
+
+var enumValues_SegmentAdvancedConfigConnectivity = []interface{}{
+	"ON",
+	"OFF",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentAdvancedConfigConnectivity) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentAdvancedConfigConnectivity {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentAdvancedConfigConnectivity, v)
+	}
+	*j = SegmentAdvancedConfigConnectivity(v)
+	return nil
+}
+
+type SegmentAdvancedConfigOriginType string
+
+const SegmentAdvancedConfigOriginTypeVCENTER SegmentAdvancedConfigOriginType = "VCENTER"
+
+var enumValues_SegmentAdvancedConfigOriginType = []interface{}{
+	"VCENTER",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentAdvancedConfigOriginType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentAdvancedConfigOriginType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentAdvancedConfigOriginType, v)
+	}
+	*j = SegmentAdvancedConfigOriginType(v)
+	return nil
+}
+
+type SegmentAdvancedConfigUrpfMode string
+
+const SegmentAdvancedConfigUrpfModeNONE SegmentAdvancedConfigUrpfMode = "NONE"
+const SegmentAdvancedConfigUrpfModeSTRICT SegmentAdvancedConfigUrpfMode = "STRICT"
+
+var enumValues_SegmentAdvancedConfigUrpfMode = []interface{}{
+	"NONE",
+	"STRICT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentAdvancedConfigUrpfMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentAdvancedConfigUrpfMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentAdvancedConfigUrpfMode, v)
+	}
+	*j = SegmentAdvancedConfigUrpfMode(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentAdvancedConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain SegmentAdvancedConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if len(plain.AddressPoolPaths) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "address_pool_paths", 1)
+	}
+	if v, ok := raw["connectivity"]; !ok || v == nil {
+		plain.Connectivity = "ON"
+	}
+	if v, ok := raw["hybrid"]; !ok || v == nil {
+		plain.Hybrid = false
+	}
+	if v, ok := raw["inter_router"]; !ok || v == nil {
+		plain.InterRouter = false
+	}
+	if v, ok := raw["local_egress"]; !ok || v == nil {
+		plain.LocalEgress = false
+	}
+	if plain.LocalEgressRoutingPolicies != nil && len(plain.LocalEgressRoutingPolicies) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "local_egress_routing_policies", 1)
+	}
+	if v, ok := raw["urpf_mode"]; !ok || v == nil {
+		plain.UrpfMode = "STRICT"
+	}
+	*j = SegmentAdvancedConfig(plain)
+	return nil
+}
+
+// DHCP IPv4 and IPv6 configurations are extended from this abstract class.
+type SegmentDhcpConfig struct {
+	// IP address of DNS servers for subnet. DNS server IP address must belong to the
+	// same address family as segment gateway_address property.
+	DnsServers []IPAddress `json:"dns_servers,omitempty" yaml:"dns_servers,omitempty" mapstructure:"dns_servers,omitempty"`
+
+	// DHCP lease time in seconds. When specified, this property overwrites lease time
+	// configured DHCP server config.
+	LeaseTime int `json:"lease_time,omitempty" yaml:"lease_time,omitempty" mapstructure:"lease_time,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *SegmentDhcpConfigResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// IP address of the DHCP server in CIDR format. The server_address is mandatory
+	// in case this segment has provided a dhcp_config_path and it represents a DHCP
+	// server config. If this SegmentDhcpConfig is a SegmentDhcpV4Config, the address
+	// must be an IPv4 address. If this is a SegmentDhcpV6Config, the address must be
+	// an IPv6 address. This address must not overlap the ip-ranges of the subnet, or
+	// the gateway address of the subnet, or the DHCP static-binding addresses of this
+	// segment.
+	ServerAddress *IPCIDRBlock `json:"server_address,omitempty" yaml:"server_address,omitempty" mapstructure:"server_address,omitempty"`
+}
+
+type SegmentDhcpConfigResourceType string
+
+const SegmentDhcpConfigResourceTypeSegmentDhcpV4Config SegmentDhcpConfigResourceType = "SegmentDhcpV4Config"
+const SegmentDhcpConfigResourceTypeSegmentDhcpV6Config SegmentDhcpConfigResourceType = "SegmentDhcpV6Config"
+
+var enumValues_SegmentDhcpConfigResourceType = []interface{}{
+	"SegmentDhcpV4Config",
+	"SegmentDhcpV6Config",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentDhcpConfigResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentDhcpConfigResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentDhcpConfigResourceType, v)
+	}
+	*j = SegmentDhcpConfigResourceType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentDhcpConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain SegmentDhcpConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if len(plain.DnsServers) > 2 {
+		return fmt.Errorf("field %s length: must be <= %d", "dns_servers", 2)
+	}
+	if v, ok := raw["lease_time"]; !ok || v == nil {
+		plain.LeaseTime = 86400.0
+	}
+	*j = SegmentDhcpConfig(plain)
+	return nil
+}
+
+// Segment extra config is intended for supporting vendor specific configuration on
+// the data path, it can be set as key value string pairs on either segment or
+// segment port.
+type SegmentExtraConfig struct {
+	// Key value pair in string for the configuration.
+	ConfigPair *UnboundedKeyValuePair `json:"config_pair,omitempty" yaml:"config_pair,omitempty" mapstructure:"config_pair,omitempty"`
+}
+
+type SegmentReplicationMode string
+
+const SegmentReplicationModeMTEP SegmentReplicationMode = "MTEP"
+const SegmentReplicationModeSOURCE SegmentReplicationMode = "SOURCE"
+
+var enumValues_SegmentReplicationMode = []interface{}{
+	"MTEP",
+	"SOURCE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentReplicationMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentReplicationMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentReplicationMode, v)
+	}
+	*j = SegmentReplicationMode(v)
+	return nil
+}
+
+type SegmentSubnet struct {
+	// Additional DHCP configuration for current subnet.
+	DhcpConfig *SegmentDhcpConfig `json:"dhcp_config,omitempty" yaml:"dhcp_config,omitempty" mapstructure:"dhcp_config,omitempty"`
+
+	// DHCP address ranges are used for dynamic IP allocation. Supports address range
+	// and CIDR formats. First valid host address from the first value is assigned to
+	// DHCP server IP address. Existing values cannot be deleted or modified, but
+	// additional DHCP ranges can be added.
+	DhcpRanges []IPElement `json:"dhcp_ranges,omitempty" yaml:"dhcp_ranges,omitempty" mapstructure:"dhcp_ranges,omitempty"`
+
+	// Gateway IP address in CIDR format for both IPv4 and IPv6.
+	GatewayAddress *string `json:"gateway_address,omitempty" yaml:"gateway_address,omitempty" mapstructure:"gateway_address,omitempty"`
+
+	// Network CIDR for this subnet calculated from gateway_addresses and prefix_len.
+	Network *string `json:"network,omitempty" yaml:"network,omitempty" mapstructure:"network,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentSubnet) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain SegmentSubnet
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.DhcpRanges != nil && len(plain.DhcpRanges) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "dhcp_ranges", 1)
+	}
+	if len(plain.DhcpRanges) > 99 {
+		return fmt.Errorf("field %s length: must be <= %d", "dhcp_ranges", 99)
+	}
+	*j = SegmentSubnet(plain)
+	return nil
+}
+
+type SegmentType string
+
+const SegmentTypeDISCONNECTED SegmentType = "DISCONNECTED"
+const SegmentTypeEXTENDED SegmentType = "EXTENDED"
+const SegmentTypeROUTED SegmentType = "ROUTED"
+const SegmentTypeROUTEDANDEXTENDED SegmentType = "ROUTED_AND_EXTENDED"
+
+var enumValues_SegmentType = []interface{}{
+	"ROUTED",
+	"EXTENDED",
+	"ROUTED_AND_EXTENDED",
+	"DISCONNECTED",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *SegmentType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_SegmentType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_SegmentType, v)
+	}
+	*j = SegmentType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Segment) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Segment
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if len(plain.AddressBindings) > 512 {
+		return fmt.Errorf("field %s length: must be <= %d", "address_bindings", 512)
+	}
+	if v, ok := raw["admin_state"]; !ok || v == nil {
+		plain.AdminState = "UP"
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if v, ok := raw["replication_mode"]; !ok || v == nil {
+		plain.ReplicationMode = "MTEP"
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = Segment(plain)
+	return nil
+}
+
 // The server will populate this field when returing the resource. Ignored on PUT
 // and POST.
 type SelfResourceLink struct {
@@ -2287,6 +4102,128 @@ type SelfResourceLink struct {
 
 	// Custom relation type (follows RFC 5988 where appropriate definitions exist)
 	Rel *string `json:"rel,omitempty" yaml:"rel,omitempty" mapstructure:"rel,omitempty"`
+}
+
+// Used while defining a CommunicationEntry. A service may have multiple service
+// entries.
+type Service struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// The flag, if true, indicates that service is created in the system by default.
+	// Such default services can't be modified/deleted.
+	IsDefault bool `json:"is_default,omitempty" yaml:"is_default,omitempty" mapstructure:"is_default,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Service entries for this service
+	ServiceEntries []ServiceEntry `json:"service_entries,omitempty" yaml:"service_entries,omitempty" mapstructure:"service_entries,omitempty"`
+
+	// ServiceType corresponds to the JSON schema field "service_type".
+	ServiceType *string `json:"service_type,omitempty" yaml:"service_type,omitempty" mapstructure:"service_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
 }
 
 type ServiceEntry struct {
@@ -2469,6 +4406,39 @@ func (j *ServiceEntry) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Service) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Service
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["is_default"]; !ok || v == nil {
+		plain.IsDefault = false
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = Service(plain)
+	return nil
+}
+
 type Tag struct {
 	// Tag searches may optionally be restricted by scope
 	Scope string `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
@@ -2499,6 +4469,14 @@ func (j *Tag) UnmarshalJSON(b []byte) error {
 	}
 	*j = Tag(plain)
 	return nil
+}
+
+type UnboundedKeyValuePair struct {
+	// Key corresponds to the JSON schema field "key".
+	Key *string `json:"key,omitempty" yaml:"key,omitempty" mapstructure:"key,omitempty"`
+
+	// Value corresponds to the JSON schema field "value".
+	Value *string `json:"value,omitempty" yaml:"value,omitempty" mapstructure:"value,omitempty"`
 }
 
 type VirtualMachine struct {
@@ -2713,3 +4691,5 @@ func (j *VirtualNetworkInterfaceRuntimeInfoUptv2Active) UnmarshalJSON(b []byte) 
 	*j = VirtualNetworkInterfaceRuntimeInfoUptv2Active(v)
 	return nil
 }
+
+type VlanID int
