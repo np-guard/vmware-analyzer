@@ -2,3 +2,8 @@ SecurityPolicy
 Group
 Condition
 VirtualMachine
+Service
+Domain
+Segment
+RealizedVirtualMachine
+ConjunctionOperator
