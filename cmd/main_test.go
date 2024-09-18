@@ -11,10 +11,12 @@ import (
 	"testing"
 )
 
+const serverInfo = "--host no_host --username no_user --password no_password"
+
 func Test_main(t *testing.T) {
 	tests := []struct {
-		name    string
-		args    string
+		name string
+		args string
 	}{
 		// version
 		{
@@ -28,15 +30,15 @@ func Test_main(t *testing.T) {
 		},
 		{
 			name: "collect-only",
-			args: "--host no_host --username no_user --password no_password --resource-dump-file resources.json --skip-analysis",
+			args: serverInfo + " --resource-dump-file examples/output/resources.json --skip-analysis",
 		},
 		{
 			name: "analyze-only",
-			args: "--resource-input-file resources.json --analyses-dump-file analysis.txt",
+			args: "--resource-input-file examples/input/resources.json --analyses-dump-file examples/output/analysis.txt",
 		},
 		{
 			name: "collect-and-analyze",
-			args: "--host no_host --username no_user --password no_password --resource-dump-file resources.json --analyses-dump-file analysis.txt",
+			args: serverInfo + " --resource-dump-file examples/output/resources2.json --analyses-dump-file examples/output/analysis2.txt",
 		},
 	}
 	for _, tt := range tests {

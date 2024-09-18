@@ -7,9 +7,16 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
+)
+
+const (
+	writeFileMode = 0o600
 )
 
 const (
@@ -64,10 +71,44 @@ func newRootCommand() *cobra.Command {
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, analysesDumpFileFlag)
+	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
 
 	return rootCmd
 }
 
 func runCommand(args *inArgs) error {
+	var recourses *collector.ResourcesContainerModel
+	var err error
+	if args.host != "" {
+		recourses, err = collector.CollectResources(args.host, args.user, args.password)
+		if err != nil {
+			return err
+		}
+	} else {
+		b, err := os.ReadFile(args.resourceInputFile)
+		if err != nil {
+			return err
+		}
+		recourses, err = collector.FromJSONString(b)
+		if err != nil {
+			return err
+		}
+	}
+	if args.resourceDumpFile != ""{
+		jsonString, err := recourses.ToJSONString()
+		if err != nil {
+			return err
+		}
+		err = os.WriteFile(args.resourceDumpFile, []byte(jsonString), writeFileMode)
+		if err != nil {
+			return err
+		}
+	}
+	if !args.skipAnalysis{
+		err = os.WriteFile(args.analysesDumpFileFile, []byte("analyze output"), writeFileMode)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

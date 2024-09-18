@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	writeFileMde = 0o600
+	writeFileMode = 0o600
 )
 const (
 	outDir = "out/"
@@ -41,7 +41,7 @@ func TestCollectResources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.nsxServer == "no_server" {
-				fmt.Println("didn got any server")
+				fmt.Println("didn't got any server")
 				return
 			}
 			got, err := CollectResources(tt.args.nsxServer, tt.args.userName, tt.args.password)
@@ -139,7 +139,7 @@ func WriteToFile(dir, name, content string) error {
 		return err
 	}
 	fileName := filepath.Join(dir, name)
-	return os.WriteFile(fileName, []byte(content), writeFileMde)
+	return os.WriteFile(fileName, []byte(content), writeFileMode)
 }
 
 func ReadFromFile(dir, name string) ([]byte, error) {
