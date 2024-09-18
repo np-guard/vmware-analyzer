@@ -26,5 +26,5 @@ schemas/*.json
 
 # For tests output
 pkg/collector/out/*
-cmd/examples/output/*.txt
-cmd/examples/output/*.json
+cmd/examples/output/*
+
