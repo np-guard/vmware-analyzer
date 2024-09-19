@@ -18,7 +18,7 @@ import (
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-func fixLowerCaseEnums(b []byte) []byte{
+func fixLowerCaseEnums(b []byte) []byte {
 	enimVals := []resources.RealizedVirtualMachinePowerState{
 		resources.RealizedVirtualMachinePowerStateUNKNOWN,
 		resources.RealizedVirtualMachinePowerStateVMRUNNING,
@@ -28,7 +28,7 @@ func fixLowerCaseEnums(b []byte) []byte{
 	for _, emunVal := range enimVals {
 		wrongCase := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
 		rightCase := fmt.Sprintf("\"%s\"", string(emunVal))
-		b=bytes.Replace(b,[]byte(wrongCase),[]byte(rightCase),-1)
+		b = bytes.Replace(b, []byte(wrongCase), []byte(rightCase), -1)
 	}
 	return b
 }
@@ -46,38 +46,12 @@ func collectResultList[A any](server serverData, resourceQuery string, resouceLi
 	return nil
 }
 
-func collectRulesList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
+func collectResource[A json.Unmarshaler](server serverData, resourceQuery string, resource A) error {
 	bytes, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	*resouceList, err = unmarshalRulesToList[A](bytes)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func collectRule(server serverData, resourceQuery string, rule *Rule) error {
-	bytes, err := curlRequest(server, resourceQuery)
-	if err != nil {
-		return err
-	}
-	rule.UnmarshalJSON(bytes)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-
-
-func collectExpressionList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
-	if err != nil {
-		return err
-	}
-	*resouceList, err = unmarshalExpressionToList[A](bytes)
+	err = (resource).UnmarshalJSON(bytes)
 	if err != nil {
 		return err
 	}
@@ -122,30 +96,6 @@ func unmarshalResultsToList[A any](b []byte) ([]A, error) {
 		return nil, getUnmarshalError(b)
 	}
 	return *data.Results, nil
-}
-
-func unmarshalRulesToList[A any](b []byte) ([]A, error) {
-	data := struct{ Rules *[]A }{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Rules == nil {
-		return nil, getUnmarshalError(b)
-	}
-	return *data.Rules, nil
-}
-
-func unmarshalExpressionToList[A any](b []byte) ([]A, error) {
-	data := struct{ Expression *[]A }{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Expression == nil {
-		return nil, getUnmarshalError(b)
-	}
-	return *data.Expression, nil
 }
 
 func getUnmarshalError(b []byte) error {
