@@ -12,8 +12,51 @@ import (
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
+type Rule struct {
+	resources.Rule
+	ServiceEntries []ServiceEntry `json:"service_entries"`
+}
+
+func (r *Rule) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	var res Rule
+	if err := json.Unmarshal(b, &res.Rule); err != nil {
+		return err
+	}
+	if r, ok := raw["service_entries"]; ok {
+		if err := json.Unmarshal(r, &res.ServiceEntries); err != nil {
+			return err
+		}
+	}
+	*r = res
+	return nil
+}
+
+
 type SecurityPolicy struct {
 	resources.SecurityPolicy
+	Rules []Rule `json:"rules"`
+}
+
+func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	var res SecurityPolicy
+	if err := json.Unmarshal(b, &res.SecurityPolicy); err != nil {
+		return err
+	}
+	if r, ok := raw["rules"]; ok {
+		if err := json.Unmarshal(r, &res.Rules); err != nil {
+			return err
+		}
+	}
+	*s = res
+	return nil
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

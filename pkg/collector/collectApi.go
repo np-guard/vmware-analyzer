@@ -58,6 +58,20 @@ func collectRulesList[A any](server serverData, resourceQuery string, resouceLis
 	return nil
 }
 
+func collectRule(server serverData, resourceQuery string, rule *Rule) error {
+	bytes, err := curlRequest(server, resourceQuery)
+	if err != nil {
+		return err
+	}
+	rule.UnmarshalJSON(bytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+
+
 func collectExpressionList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
 	bytes, err := curlRequest(server, resourceQuery)
 	if err != nil {

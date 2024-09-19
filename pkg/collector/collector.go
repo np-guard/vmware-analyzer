@@ -21,6 +21,7 @@ const (
 	groupMembersQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
 	securityPolicyQuery      = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
+	securityPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
 )
 
 type serverData struct {
@@ -74,10 +75,16 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 		if err != nil {
 			return nil, err
 		}
-		for i := range domainResouces.SecurityPolicyList {
-			err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domainResouces.SecurityPolicyList[i].Id), &domainResouces.SecurityPolicyList[i].Rules)
+		for si := range domainResouces.SecurityPolicyList {
+			err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domainResouces.SecurityPolicyList[si].Id), &domainResouces.SecurityPolicyList[si].Rules)
 			if err != nil {
 				return nil, err
+			}
+			for ri := range domainResouces.SecurityPolicyList[si].Rules {
+				err = collectRule(server, fmt.Sprintf(securityPolicyRuleQuery, domainID, *domainResouces.SecurityPolicyList[si].Id, *domainResouces.SecurityPolicyList[si].Rules[ri].Id), &domainResouces.SecurityPolicyList[si].Rules[ri])
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
