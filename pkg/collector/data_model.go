@@ -16,9 +16,55 @@ type SecurityPolicy struct {
 	resources.SecurityPolicy
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+type IPProtocolServiceEntry struct {
+	resources.IPProtocolServiceEntry
+}
+type IGMPTypeServiceEntry struct {
+	resources.IGMPTypeServiceEntry
+}
+type ICMPTypeServiceEntry struct {
+	resources.ICMPTypeServiceEntry
+}
+type ALGTypeServiceEntry struct {
+	resources.ALGTypeServiceEntry
+}
+type L4PortSetServiceEntry struct {
+	resources.L4PortSetServiceEntry
+}
+type EtherTypeServiceEntry struct {
+	resources.EtherTypeServiceEntry
+}
+type NestedServiceServiceEntry struct {
+	resources.NestedServiceServiceEntry
+}
+
+type ServiceEntry interface {
+}
+
 type Service struct {
 	resources.Service
+	ServiceEntries []ServiceEntry `json:"service_entries"`
 }
+func (s *Service) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	var res Service
+	if err := json.Unmarshal(b, &res.Service); err != nil {
+		return err
+	}
+	if m, ok := raw["service_entries"]; ok {
+		if err := json.Unmarshal(m, &res.ServiceEntries); err != nil {
+			return err
+		}
+	}
+	*s = res
+	return nil
+}
+///////////////////////////////////////////////////////////////////////////////////////
+
 type VirtualMachine struct {
 	resources.VirtualMachine
 }
@@ -29,6 +75,8 @@ type RealizedVirtualMachine struct {
 	resources.RealizedVirtualMachine
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+
 type Condition struct {
 	resources.Condition
 }
@@ -36,13 +84,14 @@ type Condition struct {
 type ConjunctionOperator struct {
 	resources.ConjunctionOperator
 }
-type Exprssion interface {
+
+type Expression interface {
 }
 
 type Group struct {
 	resources.Group
 	Members    []RealizedVirtualMachine `json:"members"`
-	Expression []Exprssion              `json:"expression"`
+	Expression []Expression             `json:"expression"`
 }
 
 func (d *Group) UnmarshalJSON(b []byte) error {
@@ -67,6 +116,7 @@ func (d *Group) UnmarshalJSON(b []byte) error {
 	*d = res
 	return nil
 }
+///////////////////////////////////////////////////////////////////////////////////////
 
 type Domain struct {
 	resources.Domain

@@ -13,6 +13,7 @@ import (
 const (
 	domainsQuery             = "policy/api/v1/infra/domains"
 	servicesQuery            = "policy/api/v1/infra/services"
+	serviceEntriesQuery      = "policy/api/v1/infra/services/%s/service-entries"
 	segmentsQuery            = "policy/api/v1/infra/segments"
 	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
 	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
@@ -36,6 +37,12 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	err = collectResultList(server, servicesQuery, &res.ServiceList)
 	if err != nil {
 		return nil, err
+	}
+	for si := range res.ServiceList {
+		err = collectResultList(server, fmt.Sprintf(serviceEntriesQuery, *res.ServiceList[si].Id), &res.ServiceList[si].ServiceEntries)
+		if err != nil {
+			return nil, err
+		}
 	}
 	err = collectResultList(server, domainsQuery, &res.DomainList)
 	if err != nil {

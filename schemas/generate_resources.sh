@@ -18,7 +18,7 @@ cat ${top_level_schemas_file} |
         all_schemas="${all_schemas} ${schema}.json"
     done
 
-    go-jsonschema ${all_schemas} --package resources --resolve-extension .json --output ${sdk_go_file}
+    /home/haimke/go/bin/go-jsonschema ${all_schemas} --package resources --resolve-extension .json --output ${sdk_go_file}
     echo Done generating $sdk_go_file
 }
 

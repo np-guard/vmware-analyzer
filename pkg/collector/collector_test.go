@@ -118,7 +118,7 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to write to file error = %v", err)
 				return
 			}
-			if jsonOut != jsonOut2{
+			if jsonOut != jsonOut2 {
 				t.Errorf("convering from json returns another object")
 				return
 
@@ -145,12 +145,12 @@ func WriteToFile(dir, name, content string) error {
 func ReadFromFile(dir, name string) ([]byte, error) {
 	currentDir, err := os.Getwd()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	currentOutDir := filepath.Join(currentDir, dir)
 	err = os.MkdirAll(currentOutDir, os.ModePerm)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	fileName := filepath.Join(dir, name)
 	return os.ReadFile(fileName)
