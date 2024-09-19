@@ -167,8 +167,36 @@ type ConjunctionOperator struct {
 	resources.ConjunctionOperator
 }
 
-type Expression interface {
+type ExpressionP interface{}
+type Expression struct{
+	ExpressionP
 }
+
+func (e *Expression) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	cType := string(raw["resource_type"]) 
+	switch cType {
+	case "\"Condition\"":
+		var res Condition
+		if err := json.Unmarshal(b, &res); err != nil {
+			return err
+		}
+		e.ExpressionP = ExpressionP(res)
+	case "\"ConjunctionOperator\"":
+		var res ConjunctionOperator
+		if err := json.Unmarshal(b, &res); err != nil {
+			return err
+		}
+		e.ExpressionP = ExpressionP(res)
+	}
+	return nil
+}
+
+
+
 
 type Group struct {
 	resources.Group
