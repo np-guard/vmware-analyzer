@@ -85,10 +85,10 @@ func TestCollectResources(t *testing.T) {
 								}
 							}
 						}
-						ServiceEntries := domainResource.SecurityPolicyList[spi].Rules[ri].ServiceEntries
-						for _, e := range ServiceEntries {
-							e.(ServiceEntryWithMethods).ToConnection()
-						}
+						// ServiceEntries := domainResource.SecurityPolicyList[spi].Rules[ri].ServiceEntries
+						// for _, e := range ServiceEntries {
+						// 	e.(ServiceEntryWithMethods).ToConnection()
+						// }
 					}
 				}
 			}

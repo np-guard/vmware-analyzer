@@ -62,7 +62,7 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 			return nil, err
 		}
 		for i := range domainResources.GroupList {
-			err = collectExpressionList(server, fmt.Sprintf(groupQuery, domainID, *domainResources.GroupList[i].Id), &domainResources.GroupList[i].Expression)
+			err = collectResource(server, fmt.Sprintf(groupQuery, domainID, *domainResources.GroupList[i].Id), &domainResources.GroupList[i])
 			if err != nil {
 				return nil, err
 			}
@@ -76,7 +76,7 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 			return nil, err
 		}
 		for si := range domainResources.SecurityPolicyList {
-			err = collectRulesList(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domainResources.SecurityPolicyList[si].Id), &domainResources.SecurityPolicyList[si].Rules)
+			err = collectResource(server, fmt.Sprintf(securityPolicyRulesQuery, domainID, *domainResources.SecurityPolicyList[si].Id), &domainResources.SecurityPolicyList[si])
 			if err != nil {
 				return nil, err
 			}

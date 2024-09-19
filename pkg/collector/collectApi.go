@@ -46,34 +46,6 @@ func collectResultList[A any](server serverData, resourceQuery string, resouceLi
 	return nil
 }
 
-func collectRulesList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
-	if err != nil {
-		return err
-	}
-	*resouceList, err = unmarshalRulesToList[A](bytes)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func collectExpressionList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
-	if err != nil {
-		return err
-	}
-	*resouceList, err = unmarshalExpressionToList[A](bytes)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-
-
-
-
 
 func collectResource[A json.Unmarshaler](server serverData, resourceQuery string, resource A) error {
 	bytes, err := curlRequest(server, resourceQuery)
@@ -125,30 +97,6 @@ func unmarshalResultsToList[A any](b []byte) ([]A, error) {
 		return nil, getUnmarshalError(b)
 	}
 	return *data.Results, nil
-}
-
-func unmarshalRulesToList[A any](b []byte) ([]A, error) {
-	data := struct{ Rules *[]A }{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Rules == nil {
-		return nil, getUnmarshalError(b)
-	}
-	return *data.Rules, nil
-}
-
-func unmarshalExpressionToList[A any](b []byte) ([]A, error) {
-	data := struct{ Expression *[]A }{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Expression == nil {
-		return nil, getUnmarshalError(b)
-	}
-	return *data.Expression, nil
 }
 
 

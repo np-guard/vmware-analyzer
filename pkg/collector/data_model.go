@@ -169,7 +169,7 @@ type ConjunctionOperator struct {
 
 type ExpressionP interface{}
 type Expression struct{
-	ExpressionP
+	ExpressionP  `json:"expression"`
 }
 
 func (e *Expression) UnmarshalJSON(b []byte) error {
@@ -194,7 +194,9 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 	}
 	return nil
 }
-
+func (e *Expression) MarshalJSON() ([]byte, error) {
+	return json.Marshal(e.ExpressionP)
+}
 
 
 
