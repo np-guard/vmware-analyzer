@@ -9,6 +9,7 @@ package collector
 import (
 	"encoding/json"
 
+	"github.com/np-guard/models/pkg/connection"
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -35,7 +36,6 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-
 type SecurityPolicy struct {
 	resources.SecurityPolicy
 	Rules []Rule `json:"rules"`
@@ -59,36 +59,74 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////////////
 type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry
 }
+
+func (e *IPProtocolServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type IGMPTypeServiceEntry struct {
 	resources.IGMPTypeServiceEntry
 }
+
+func (e *IGMPTypeServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type ICMPTypeServiceEntry struct {
 	resources.ICMPTypeServiceEntry
 }
+
+func (e ICMPTypeServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type ALGTypeServiceEntry struct {
 	resources.ALGTypeServiceEntry
 }
+
+func (e *ALGTypeServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type L4PortSetServiceEntry struct {
 	resources.L4PortSetServiceEntry
 }
+
+func (e L4PortSetServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type EtherTypeServiceEntry struct {
 	resources.EtherTypeServiceEntry
 }
+
+func (e *EtherTypeServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type NestedServiceServiceEntry struct {
 	resources.NestedServiceServiceEntry
 }
 
+func (e *NestedServiceServiceEntry) ToConnection() connection.Set {
+	return connection.Set{}
+}
+
 type ServiceEntry interface {
+}
+type ServiceEntryWithMethods interface {
+	ToConnection() connection.Set
 }
 
 type Service struct {
 	resources.Service
 	ServiceEntries []ServiceEntry `json:"service_entries"`
 }
+
 func (s *Service) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
@@ -106,6 +144,7 @@ func (s *Service) UnmarshalJSON(b []byte) error {
 	*s = res
 	return nil
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type VirtualMachine struct {
@@ -159,6 +198,7 @@ func (d *Group) UnmarshalJSON(b []byte) error {
 	*d = res
 	return nil
 }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type Domain struct {
