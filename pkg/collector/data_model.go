@@ -8,8 +8,12 @@ package collector
 
 import (
 	"encoding/json"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netp"
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -31,7 +35,7 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 		if err := json.Unmarshal(r, &res.ServiceEntries); err != nil {
 			return err
 		}
-	}else{
+	} else {
 		res.ServiceEntries = ServiceEntries{}
 	}
 	*r = res
@@ -66,60 +70,90 @@ type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry
 }
 
-func (e IPProtocolServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e IPProtocolServiceEntry) ToConnection() *connection.Set {
+	return nil
 }
 
 type IGMPTypeServiceEntry struct {
 	resources.IGMPTypeServiceEntry
 }
 
-func (e IGMPTypeServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e IGMPTypeServiceEntry) ToConnection() *connection.Set {
+	return nil
 }
 
 type ICMPTypeServiceEntry struct {
 	resources.ICMPTypeServiceEntry
 }
 
-func (e ICMPTypeServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e ICMPTypeServiceEntry) ToConnection() *connection.Set {
+	if e.IcmpCode == nil || e.IcmpType == nil {
+		return nil
+	}
+	c := int64(*e.IcmpCode)
+	t := int64(*e.IcmpType)
+	return connection.ICMPConnection(t, t, c, c)
 }
 
 type ALGTypeServiceEntry struct {
 	resources.ALGTypeServiceEntry
 }
 
-func (e ALGTypeServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e ALGTypeServiceEntry) ToConnection() *connection.Set {
+	return nil
 }
 
 type L4PortSetServiceEntry struct {
 	resources.L4PortSetServiceEntry
 }
 
-func (e L4PortSetServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e L4PortSetServiceEntry) ToConnection() *connection.Set {
+	res := connection.None()
+	protocol := netp.ProtocolString(*e.L4Protocol)
+	srcPorts := parsePorts(e.SourcePorts)
+	dstPorts := parsePorts(e.DestinationPorts)
+	for _, sp := range srcPorts {
+		for _, dp := range dstPorts {
+			res.Union(connection.TCPorUDPConnection(protocol, sp.min, sp.max, dp.min, dp.max))
+		}
+	}
+	return res
+}
+
+func parsePorts(ports []resources.PortElement) []struct{ min, max int64 } {
+	res := make([]struct{ min, max int64 }, len(ports))
+	if len(ports) == 0 {
+		return []struct{ min, max int64 }{{connection.MinPort, connection.MaxPort}}
+	}
+	for i, portString := range ports {
+		if strings.Contains(string(portString), "-") {
+			fmt.Sscanf(string(portString), "%s-%s", res[i].min, res[i].max)
+		} else {
+			res[i].min, _ = strconv.ParseInt(string(portString), 10, 64)
+			res[i].max = res[i].min
+		}
+	}
+	return res
 }
 
 type EtherTypeServiceEntry struct {
 	resources.EtherTypeServiceEntry
 }
 
-func (e EtherTypeServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e EtherTypeServiceEntry) ToConnection() *connection.Set {
+	return nil
 }
 
 type NestedServiceServiceEntry struct {
 	resources.NestedServiceServiceEntry
 }
 
-func (e NestedServiceServiceEntry) ToConnection() connection.Set {
-	return connection.Set{}
+func (e NestedServiceServiceEntry) ToConnection() *connection.Set {
+	return nil
 }
 
 type ServiceEntry interface {
-	ToConnection() connection.Set
+	ToConnection() *connection.Set
 }
 
 type ServiceEntries []ServiceEntry
@@ -222,19 +256,21 @@ type RealizedVirtualMachine struct {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-type ExpressionElement interface{
+type ExpressionElement interface {
 	expressionElementIsMe()
 }
 
 type Condition struct {
 	resources.Condition
 }
-func (Condition) expressionElementIsMe(){}
+
+func (Condition) expressionElementIsMe() {}
 
 type ConjunctionOperator struct {
 	resources.ConjunctionOperator
 }
-func (ConjunctionOperator) expressionElementIsMe(){}
+
+func (ConjunctionOperator) expressionElementIsMe() {}
 
 type Expression []ExpressionElement
 

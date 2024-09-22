@@ -56,6 +56,12 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
+			for _, service := range got.ServiceList{
+				for _, e := range service.ServiceEntries {
+					e.ToConnection()
+				}
+
+			}
 			for _, domain := range got.DomainList {
 				domainResource := domain.Resources
 				if len(domainResource.SecurityPolicyList) == 0 {
@@ -85,10 +91,10 @@ func TestCollectResources(t *testing.T) {
 								}
 							}
 						}
-						// ServiceEntries := domainResource.SecurityPolicyList[spi].Rules[ri].ServiceEntries
-						// for _, e := range ServiceEntries {
-						// 	e.(ServiceEntryWithMethods).ToConnection()
-						// }
+						ServiceEntries := domainResource.SecurityPolicyList[spi].Rules[ri].ServiceEntries
+						for _, e := range ServiceEntries {
+							e.ToConnection()
+						}
 					}
 				}
 			}
