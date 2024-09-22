@@ -22,6 +22,6 @@ func _main(cmdlineArgs []string) error {
 func main() {
 	err := _main(os.Args[1:])
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(os.Stderr, "%v", err)
 	}
 }
