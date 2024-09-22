@@ -15,7 +15,7 @@ import (
 
 type Rule struct {
 	resources.Rule
-	ServiceEntries []ServiceEntry `json:"service_entries"`
+	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
 func (r *Rule) UnmarshalJSON(b []byte) error {
@@ -31,6 +31,8 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 		if err := json.Unmarshal(r, &res.ServiceEntries); err != nil {
 			return err
 		}
+	}else{
+		res.ServiceEntries = ServiceEntries{}
 	}
 	*r = res
 	return nil
@@ -64,7 +66,7 @@ type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry
 }
 
-func (e *IPProtocolServiceEntry) ToConnection() connection.Set {
+func (e IPProtocolServiceEntry) ToConnection() connection.Set {
 	return connection.Set{}
 }
 
@@ -72,7 +74,7 @@ type IGMPTypeServiceEntry struct {
 	resources.IGMPTypeServiceEntry
 }
 
-func (e *IGMPTypeServiceEntry) ToConnection() connection.Set {
+func (e IGMPTypeServiceEntry) ToConnection() connection.Set {
 	return connection.Set{}
 }
 
@@ -88,7 +90,7 @@ type ALGTypeServiceEntry struct {
 	resources.ALGTypeServiceEntry
 }
 
-func (e *ALGTypeServiceEntry) ToConnection() connection.Set {
+func (e ALGTypeServiceEntry) ToConnection() connection.Set {
 	return connection.Set{}
 }
 
@@ -104,7 +106,7 @@ type EtherTypeServiceEntry struct {
 	resources.EtherTypeServiceEntry
 }
 
-func (e *EtherTypeServiceEntry) ToConnection() connection.Set {
+func (e EtherTypeServiceEntry) ToConnection() connection.Set {
 	return connection.Set{}
 }
 
@@ -112,19 +114,80 @@ type NestedServiceServiceEntry struct {
 	resources.NestedServiceServiceEntry
 }
 
-func (e *NestedServiceServiceEntry) ToConnection() connection.Set {
+func (e NestedServiceServiceEntry) ToConnection() connection.Set {
 	return connection.Set{}
 }
 
 type ServiceEntry interface {
-}
-type ServiceEntryWithMethods interface {
 	ToConnection() connection.Set
+}
+
+type ServiceEntries []ServiceEntry
+
+func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
+	var raws []json.RawMessage
+	if err := json.Unmarshal(b, &raws); err != nil {
+		return err
+	}
+	*s = make([]ServiceEntry, len(raws))
+	for i, rawMessage := range raws {
+		var raw map[string]json.RawMessage
+		if err := json.Unmarshal(rawMessage, &raw); err != nil {
+			return err
+		}
+		cType := string(raw["resource_type"])
+
+		switch cType {
+		case "\"IPProtocolServiceEntry\"":
+			var res IPProtocolServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		case "\"IGMPTypeServiceEntry\"":
+			var res IGMPTypeServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		case "\"ICMPTypeServiceEntry\"":
+			var res ICMPTypeServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		case "\"ALGTypeServiceEntry\"":
+			var res ALGTypeServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		case "\"L4PortSetServiceEntry\"":
+			var res L4PortSetServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		case "\"EtherTypeServiceEntry\"":
+			var res EtherTypeServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		case "\"NestedServiceServiceEntry\"":
+			var res NestedServiceServiceEntry
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*s)[i] = res
+		}
+	}
+	return nil
 }
 
 type Service struct {
 	resources.Service
-	ServiceEntries []ServiceEntry `json:"service_entries"`
+	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
 func (s *Service) UnmarshalJSON(b []byte) error {
