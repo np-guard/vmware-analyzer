@@ -159,51 +159,56 @@ type RealizedVirtualMachine struct {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+type ExpressionElement interface{
+	expressionElementIsMe()
+}
+
 type Condition struct {
 	resources.Condition
 }
+func (Condition) expressionElementIsMe(){}
 
 type ConjunctionOperator struct {
 	resources.ConjunctionOperator
 }
+func (ConjunctionOperator) expressionElementIsMe(){}
 
-type ExpressionP interface{}
-type Expression struct{
-	ExpressionP  `json:"expression"`
-}
+type Expression []ExpressionElement
 
 func (e *Expression) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
+	var raws []json.RawMessage
+	if err := json.Unmarshal(b, &raws); err != nil {
 		return err
 	}
-	cType := string(raw["resource_type"]) 
-	switch cType {
-	case "\"Condition\"":
-		var res Condition
-		if err := json.Unmarshal(b, &res); err != nil {
+	*e = make([]ExpressionElement, len(raws))
+	for i, rawMessage := range raws {
+		var raw map[string]json.RawMessage
+		if err := json.Unmarshal(rawMessage, &raw); err != nil {
 			return err
 		}
-		e.ExpressionP = ExpressionP(res)
-	case "\"ConjunctionOperator\"":
-		var res ConjunctionOperator
-		if err := json.Unmarshal(b, &res); err != nil {
-			return err
+		cType := string(raw["resource_type"])
+		switch cType {
+		case "\"Condition\"":
+			var res Condition
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*e)[i] = res
+		case "\"ConjunctionOperator\"":
+			var res ConjunctionOperator
+			if err := json.Unmarshal(rawMessage, &res); err != nil {
+				return err
+			}
+			(*e)[i] = res
 		}
-		e.ExpressionP = ExpressionP(res)
 	}
 	return nil
 }
-func (e *Expression) MarshalJSON() ([]byte, error) {
-	return json.Marshal(e.ExpressionP)
-}
-
-
 
 type Group struct {
 	resources.Group
 	Members    []RealizedVirtualMachine `json:"members"`
-	Expression []Expression             `json:"expression"`
+	Expression Expression               `json:"expression"`
 }
 
 func (d *Group) UnmarshalJSON(b []byte) error {
