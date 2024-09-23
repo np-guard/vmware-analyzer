@@ -117,10 +117,9 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to write to file error = %v", err)
 				return
 			}
-			if jsonOut != jsonOut2{
+			if jsonOut != jsonOut2 {
 				t.Errorf("convering from json returns another object")
 				return
-
 			}
 		})
 	}

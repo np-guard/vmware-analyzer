@@ -51,7 +51,7 @@ linters-settings:
         severity: warning
         arguments:
           - maxLitCount: "1"
-            allowStrs: '"",".","-","/","\n","\n\n","\t","error","true","false"'
+            allowStrs: '"",".","-","/","\n","\n\n","\t","error","true","false","%q"'
             allowInts: "0,1,2,404"
             allowFloats: "0.0,0.,1.0,1.,2.0,2."
   tagliatelle:
@@ -67,12 +67,12 @@ linters:
     - bidichk
     - bodyclose
     - contextcheck
+    - copyloopvar
     - dogsled
     - dupl
     - durationcheck
     - errcheck
     - errorlint
-    - exportloopref
     - funlen
     - ginkgolinter
     - gochecknoinits

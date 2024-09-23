@@ -28,7 +28,6 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
 			} else {
 				c.add(src, dst, connection.None())
 			}
-
 		}
 	}
 }

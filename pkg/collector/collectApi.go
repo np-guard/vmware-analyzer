@@ -26,20 +26,20 @@ func fixLowerCaseEnums(b []byte) []byte {
 		resources.RealizedVirtualMachinePowerStateVMSUSPENDED,
 	}
 	for _, emunVal := range enimVals {
-		wrongCase := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
-		rightCase := fmt.Sprintf("\"%s\"", string(emunVal))
-		b = bytes.Replace(b, []byte(wrongCase), []byte(rightCase), -1)
+		wrongCase := fmt.Sprintf("%q", strings.ToLower(string(emunVal)))
+		rightCase := fmt.Sprintf("%q", string(emunVal))
+		b = bytes.ReplaceAll(b, []byte(wrongCase), []byte(rightCase))
 	}
 	return b
 }
 
 func collectResultList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
+	buf, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	bytes = fixLowerCaseEnums(bytes)
-	*resouceList, err = unmarshalResultsToList[A](bytes)
+	buf = fixLowerCaseEnums(buf)
+	*resouceList, err = unmarshalResultsToList[A](buf)
 	if err != nil {
 		return err
 	}
@@ -47,11 +47,11 @@ func collectResultList[A any](server serverData, resourceQuery string, resouceLi
 }
 
 func collectRulesList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
+	buf, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	*resouceList, err = unmarshalRulesToList[A](bytes)
+	*resouceList, err = unmarshalRulesToList[A](buf)
 	if err != nil {
 		return err
 	}
@@ -59,11 +59,11 @@ func collectRulesList[A any](server serverData, resourceQuery string, resouceLis
 }
 
 func collectExpressionList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
+	buf, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	*resouceList, err = unmarshalExpressionToList[A](bytes)
+	*resouceList, err = unmarshalExpressionToList[A](buf)
 	if err != nil {
 		return err
 	}
@@ -92,11 +92,11 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	bytes, err := io.ReadAll(resp.Body)
+	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return bytes, nil
+	return buf, nil
 }
 
 func unmarshalResultsToList[A any](b []byte) ([]A, error) {
@@ -136,16 +136,16 @@ func unmarshalExpressionToList[A any](b []byte) ([]A, error) {
 }
 
 func getUnmarshalError(b []byte) error {
-	error_data := struct {
-		Error_message string
-		Error_code    int
+	errorData := struct {
+		ErrorMsg  string
+		ErrorCode int
 	}{}
-	err := json.Unmarshal(b, &error_data)
+	err := json.Unmarshal(b, &errorData)
 	if err != nil {
 		return err
 	}
-	if error_data.Error_code != 0 || error_data.Error_message != "" {
-		return fmt.Errorf("http error %d: %s", error_data.Error_code, error_data.Error_message)
+	if errorData.ErrorCode != 0 || errorData.ErrorMsg != "" {
+		return fmt.Errorf("http error %d: %s", errorData.ErrorCode, errorData.ErrorMsg)
 	}
 	return fmt.Errorf("fail to unmarshal %s", b)
 }

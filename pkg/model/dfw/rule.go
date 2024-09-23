@@ -43,7 +43,7 @@ func vmsString(vms []*endpoints.VM) string {
 	return strings.Join(names, listSeparatorStr)
 }
 
-// return a string represetnation of a single rule
+// return a string representation of a single rule
 func (f *fwRule) string() string {
 	return fmt.Sprintf("src: %s, dst: %s, conn: %s, action: %s", vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action))
 }
