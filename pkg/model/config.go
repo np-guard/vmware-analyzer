@@ -33,7 +33,7 @@ func (c *config) computeConnectivity() {
 			if src == dst {
 				continue
 			}
-			conn := c.fw.AnalyzeDFW(src, dst)
+			conn := c.fw.AllowedConnections(src, dst)
 			res.add(src, dst, conn)
 		}
 	}

@@ -17,5 +17,9 @@ func TestParser(t *testing.T) {
 	}
 	config := parser.getConfig()
 	fmt.Println(config.getConfigInfoStr())
+
+	config.computeConnectivity()
+	fmt.Println("analyzed Connectivity")
+	fmt.Println(config.analyzedConnectivity.string())
 	fmt.Println("done")
 }
