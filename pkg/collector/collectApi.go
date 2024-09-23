@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -25,10 +24,10 @@ func fixLowerCaseEnums(b []byte) []byte {
 		resources.RealizedVirtualMachinePowerStateVMSTOPPED,
 		resources.RealizedVirtualMachinePowerStateVMSUSPENDED,
 	}
-	for _, emunVal := range enimVals {
-		wrongCase := fmt.Sprintf("%q", strings.ToLower(string(emunVal)))
-		rightCase := fmt.Sprintf("%q", string(emunVal))
-		b = bytes.ReplaceAll(b, []byte(wrongCase), []byte(rightCase))
+	for _, enumVal := range enimVals {
+		rightCase, _ := json.Marshal(enumVal)
+		wrongCase := bytes.ToLower(rightCase)
+		b = bytes.ReplaceAll(b, wrongCase, rightCase)
 	}
 	return b
 }
@@ -47,11 +46,11 @@ func collectResultList[A any](server serverData, resourceQuery string, resouceLi
 }
 
 func collectResource[A json.Unmarshaler](server serverData, resourceQuery string, resource A) error {
-	bytes, err := curlRequest(server, resourceQuery)
+	b, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	err = (resource).UnmarshalJSON(bytes)
+	err = (resource).UnmarshalJSON(b)
 	if err != nil {
 		return err
 	}
@@ -80,11 +79,11 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	bytes, err := io.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	return bytes, nil
+	return b, nil
 }
 
 func unmarshalResultsToList[A any](b []byte) ([]A, error) {
@@ -101,8 +100,8 @@ func unmarshalResultsToList[A any](b []byte) ([]A, error) {
 
 func getUnmarshalError(b []byte) error {
 	errorData := struct {
-		ErrorMessage string  `json:"error_message"`
-		ErrorCode    int `json:"error_code"`
+		ErrorMessage string `json:"error_message"`
+		ErrorCode    int    `json:"error_code"`
 	}{}
 	err := json.Unmarshal(b, &errorData)
 	if err != nil {

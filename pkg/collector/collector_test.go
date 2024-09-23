@@ -91,7 +91,11 @@ func TestCollectResources(t *testing.T) {
 						}
 						ServiceEntries := domainResource.SecurityPolicyList[spi].Rules[ri].ServiceEntries
 						for _, e := range ServiceEntries {
-							e.ToConnection()
+							_, err := e.ToConnection()
+							if err != nil {
+								t.Errorf("fail to create rule service entry = %v", err)
+								return
+							}
 						}
 					}
 				}

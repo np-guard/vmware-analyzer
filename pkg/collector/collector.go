@@ -81,7 +81,8 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 			}
 			for ri := range domainResources.SecurityPolicyList[si].Rules {
 				err = collectResource(server,
-					fmt.Sprintf(securityPolicyRuleQuery, domainID, *domainResources.SecurityPolicyList[si].Id, *domainResources.SecurityPolicyList[si].Rules[ri].Id),
+					fmt.Sprintf(securityPolicyRuleQuery, domainID,
+						*domainResources.SecurityPolicyList[si].Id, *domainResources.SecurityPolicyList[si].Rules[ri].Id),
 					&domainResources.SecurityPolicyList[si].Rules[ri])
 				if err != nil {
 					return nil, err
