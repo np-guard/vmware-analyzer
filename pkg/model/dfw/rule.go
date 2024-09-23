@@ -21,6 +21,18 @@ const (
 	actionNone      ruleAction = "none" // to mark that a default rule is not configured
 )
 
+func actionFromString(input string) ruleAction {
+	switch input {
+	case string(actionAllow):
+		return actionAllow
+	case string(actionDeny):
+		return actionDeny
+	case string(actionJumpToApp):
+		return actionJumpToApp
+	}
+	return actionDeny
+}
+
 type fwRule struct {
 	srcVMs []*endpoints.VM
 	dstVMs []*endpoints.VM
@@ -43,7 +55,7 @@ func vmsString(vms []*endpoints.VM) string {
 	return strings.Join(names, listSeparatorStr)
 }
 
-// return a string represetnation of a single rule
+// return a string representation of a single rule
 func (f *fwRule) string() string {
 	return fmt.Sprintf("src: %s, dst: %s, conn: %s, action: %s", vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action))
 }
