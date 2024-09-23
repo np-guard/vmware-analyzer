@@ -26,9 +26,9 @@ func fixLowerCaseEnums(b []byte) []byte {
 		resources.RealizedVirtualMachinePowerStateVMSUSPENDED,
 	}
 	for _, emunVal := range enimVals {
-		wrongCase := fmt.Sprintf("\"%s\"", strings.ToLower(string(emunVal)))
-		rightCase := fmt.Sprintf("\"%s\"", string(emunVal))
-		b = bytes.Replace(b, []byte(wrongCase), []byte(rightCase), -1)
+		wrongCase := fmt.Sprintf("%q", strings.ToLower(string(emunVal)))
+		rightCase := fmt.Sprintf("%q", string(emunVal))
+		b = bytes.ReplaceAll(b, []byte(wrongCase), []byte(rightCase))
 	}
 	return b
 }

@@ -70,7 +70,7 @@ type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry
 }
 
-func (e IPProtocolServiceEntry) ToConnection() *connection.Set {
+func (e *IPProtocolServiceEntry) ToConnection() *connection.Set {
 	return nil
 }
 
@@ -78,7 +78,7 @@ type IGMPTypeServiceEntry struct {
 	resources.IGMPTypeServiceEntry
 }
 
-func (e IGMPTypeServiceEntry) ToConnection() *connection.Set {
+func (e *IGMPTypeServiceEntry) ToConnection() *connection.Set {
 	return nil
 }
 
@@ -86,7 +86,7 @@ type ICMPTypeServiceEntry struct {
 	resources.ICMPTypeServiceEntry
 }
 
-func (e ICMPTypeServiceEntry) ToConnection() *connection.Set {
+func (e *ICMPTypeServiceEntry) ToConnection() *connection.Set {
 	if e.IcmpCode == nil || e.IcmpType == nil {
 		return nil
 	}
@@ -99,7 +99,7 @@ type ALGTypeServiceEntry struct {
 	resources.ALGTypeServiceEntry
 }
 
-func (e ALGTypeServiceEntry) ToConnection() *connection.Set {
+func (e *ALGTypeServiceEntry) ToConnection() *connection.Set {
 	return nil
 }
 
@@ -107,7 +107,7 @@ type L4PortSetServiceEntry struct {
 	resources.L4PortSetServiceEntry
 }
 
-func (e L4PortSetServiceEntry) ToConnection() *connection.Set {
+func (e *L4PortSetServiceEntry) ToConnection() *connection.Set {
 	res := connection.None()
 	protocol := netp.ProtocolString(*e.L4Protocol)
 	srcPorts := parsePorts(e.SourcePorts)
@@ -140,7 +140,7 @@ type EtherTypeServiceEntry struct {
 	resources.EtherTypeServiceEntry
 }
 
-func (e EtherTypeServiceEntry) ToConnection() *connection.Set {
+func (e *EtherTypeServiceEntry) ToConnection() *connection.Set {
 	return nil
 }
 
@@ -148,7 +148,7 @@ type NestedServiceServiceEntry struct {
 	resources.NestedServiceServiceEntry
 }
 
-func (e NestedServiceServiceEntry) ToConnection() *connection.Set {
+func (e *NestedServiceServiceEntry) ToConnection() *connection.Set {
 	return nil
 }
 
@@ -173,44 +173,44 @@ func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 
 		switch cType {
 		case "\"IPProtocolServiceEntry\"":
-			var res IPProtocolServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			res := &IPProtocolServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
 		case "\"IGMPTypeServiceEntry\"":
-			var res IGMPTypeServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			res := &IGMPTypeServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
 		case "\"ICMPTypeServiceEntry\"":
-			var res ICMPTypeServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			res := &ICMPTypeServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
 		case "\"ALGTypeServiceEntry\"":
-			var res ALGTypeServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			res := &ALGTypeServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
 		case "\"L4PortSetServiceEntry\"":
-			var res L4PortSetServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			var res = &L4PortSetServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
 		case "\"EtherTypeServiceEntry\"":
-			var res EtherTypeServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			res := &EtherTypeServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
 		case "\"NestedServiceServiceEntry\"":
-			var res NestedServiceServiceEntry
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
+			res := &NestedServiceServiceEntry{}
+			if err := json.Unmarshal(rawMessage, res); err != nil {
 				return err
 			}
 			(*s)[i] = res
