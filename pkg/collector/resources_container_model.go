@@ -33,9 +33,10 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	toPrint, err := json.MarshalIndent(resources, "", "    ")
 	return string(toPrint), err
 }
-func FromJSONString(b []byte) (*ResourcesContainerModel , error) {
+
+func FromJSONString(b []byte) (*ResourcesContainerModel, error) {
 	var resources ResourcesContainerModel
-	err := json.Unmarshal(b,&resources)
+	err := json.Unmarshal(b, &resources)
 	return &resources, err
 }
 
@@ -43,6 +44,7 @@ func (resources *DomainResources) GetGroup(query string) *Group {
 	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == *gr.Path })
 	return &resources.GroupList[i]
 }
+
 func (resources *ResourcesContainerModel) GetService(query string) *Service {
 	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == *gr.Path })
 	return &resources.ServiceList[i]
