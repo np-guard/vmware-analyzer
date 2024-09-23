@@ -34,12 +34,12 @@ func fixLowerCaseEnums(b []byte) []byte {
 }
 
 func collectResultList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	bytes, err := curlRequest(server, resourceQuery)
+	b, err := curlRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
-	bytes = fixLowerCaseEnums(bytes)
-	*resouceList, err = unmarshalResultsToList[A](bytes)
+	b = fixLowerCaseEnums(b)
+	*resouceList, err = unmarshalResultsToList[A](b)
 	if err != nil {
 		return err
 	}
