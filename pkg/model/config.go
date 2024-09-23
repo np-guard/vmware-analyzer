@@ -18,12 +18,12 @@ type config struct {
 
 func (c *config) getConnectivity() connMap {
 	if !c.analysisDone {
-		c.computeConnectivity()
+		c.ComputeConnectivity()
 	}
 	return c.analyzedConnectivity
 }
 
-func (c *config) computeConnectivity() {
+func (c *config) ComputeConnectivity() {
 	res := connMap{}
 	// make sure all vm pairs are in the result, by init with global default
 	res.initPairs(c.fw.GlobalDefaultAllow(), c.vms)
@@ -53,4 +53,8 @@ func (c *config) getConfigInfoStr() string {
 	sb.WriteString(c.fw.String())
 
 	return sb.String()
+}
+
+func (c *config) AnalyzedConnectivity() string {
+	return c.analyzedConnectivity.String()
 }

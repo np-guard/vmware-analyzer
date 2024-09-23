@@ -35,8 +35,8 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
 	}
 }
 
-// string returns a concatenated lines strings with all pairs and their permitted connections
-func (c connMap) string() string {
+// String returns a concatenated lines strings with all pairs and their permitted connections
+func (c connMap) String() string {
 	lines := []string{}
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {

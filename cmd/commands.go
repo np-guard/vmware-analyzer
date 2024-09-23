@@ -7,12 +7,14 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
 
@@ -88,10 +90,12 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
+		fmt.Println("reading input file")
 		recourses, err = collector.FromJSONString(b)
 		if err != nil {
 			return err
 		}
+
 	}
 	if args.resourceDumpFile != "" {
 		jsonString, err := recourses.ToJSONString()
@@ -104,10 +108,17 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if !args.skipAnalysis {
+		parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
+		err = parser.RunParser()
+		config := parser.GetConfig()
+		config.ComputeConnectivity()
+		fmt.Println("analyzed Connectivity")
+		fmt.Println(config.AnalyzedConnectivity())
+
 		err = common.WriteToFile(args.outputFilleFile, "analyze output")
-		if err != nil {
+		/*if err != nil {
 			return err
-		}
+		}*/
 	}
 	return nil
 }

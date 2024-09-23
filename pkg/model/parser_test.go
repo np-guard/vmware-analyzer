@@ -11,15 +11,15 @@ func TestParser(t *testing.T) {
 		t.Fatalf(err.Error())
 	}
 
-	err = parser.runParser()
+	err = parser.RunParser()
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-	config := parser.getConfig()
+	config := parser.GetConfig()
 	fmt.Println(config.getConfigInfoStr())
 
-	config.computeConnectivity()
+	config.ComputeConnectivity()
 	fmt.Println("analyzed Connectivity")
-	fmt.Println(config.analyzedConnectivity.string())
+	fmt.Println(config.analyzedConnectivity.String())
 	fmt.Println("done")
 }

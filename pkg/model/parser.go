@@ -44,14 +44,14 @@ type NSXConfigParser struct {
 	allGroupsVMs []*endpoints.VM
 }
 
-func (p *NSXConfigParser) runParser() error {
+func (p *NSXConfigParser) RunParser() error {
 	p.configRes = &config{}
 	p.getVMs() // get vms config
 	p.getDFW() // get distributed firewall config
 	return nil
 }
 
-func (p *NSXConfigParser) getConfig() *config {
+func (p *NSXConfigParser) GetConfig() *config {
 	return p.configRes
 }
 
