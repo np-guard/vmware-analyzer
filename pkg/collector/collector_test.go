@@ -57,6 +57,7 @@ func TestCollectResources(t *testing.T) {
 			}
 			for _, service := range got.ServiceList {
 				for _, e := range service.ServiceEntries {
+					//nolint:errcheck // we do not support al services?
 					e.ToConnection()
 				}
 			}
