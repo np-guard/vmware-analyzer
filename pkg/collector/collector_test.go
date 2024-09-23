@@ -31,9 +31,9 @@ func TestCollectResources(t *testing.T) {
 		{
 			"simple",
 			args{
-				"no_server",
-				"no_user",
-				"no_password",
+				"https://10.127.131.68",
+				"admin",
+				"s7BqewHRMj^U",
 			},
 		},
 	}
@@ -59,7 +59,6 @@ func TestCollectResources(t *testing.T) {
 				for _, e := range service.ServiceEntries {
 					e.ToConnection()
 				}
-
 			}
 			for _, domain := range got.DomainList {
 				domainResource := domain.Resources
@@ -130,7 +129,6 @@ func TestCollectResources(t *testing.T) {
 			if jsonOut != jsonOut2 {
 				t.Errorf("convering from json returns another object")
 				return
-
 			}
 		})
 	}

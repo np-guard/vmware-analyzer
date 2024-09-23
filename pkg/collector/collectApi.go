@@ -100,16 +100,16 @@ func unmarshalResultsToList[A any](b []byte) ([]A, error) {
 }
 
 func getUnmarshalError(b []byte) error {
-	error_data := struct {
-		Error_message string
-		Error_code    int
+	errorData := struct {
+		ErrorMessage string  `json:"error_message"`
+		ErrorCode    int `json:"error_code"`
 	}{}
-	err := json.Unmarshal(b, &error_data)
+	err := json.Unmarshal(b, &errorData)
 	if err != nil {
 		return err
 	}
-	if error_data.Error_code != 0 || error_data.Error_message != "" {
-		return fmt.Errorf("http error %d: %s", error_data.Error_code, error_data.Error_message)
+	if errorData.ErrorCode != 0 || errorData.ErrorMessage != "" {
+		return fmt.Errorf("http error %d: %s", errorData.ErrorCode, errorData.ErrorMessage)
 	}
 	return fmt.Errorf("fail to unmarshal %s", b)
 }
