@@ -122,7 +122,7 @@ func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
 	if err != nil {
 		return nil, err
 	}
-	dstPorts,err := parsePorts(e.DestinationPorts)
+	dstPorts, err := parsePorts(e.DestinationPorts)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func parsePorts(ports []resources.PortElement) ([]struct{ min, max int64 }, erro
 		if err != nil {
 			return nil, err
 		}
-	
+
 	}
 	return res, nil
 }
