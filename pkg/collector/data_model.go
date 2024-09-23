@@ -77,7 +77,9 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry
 }
+
 const creatingConnectionError = "fail to create a connection from service %v"
+
 func (e *IPProtocolServiceEntry) ToConnection() (*connection.Set, error) {
 	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 }
@@ -214,7 +216,7 @@ func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 			return err
 		}
 		(*s)[i] = res
-}
+	}
 	return nil
 }
 
@@ -301,7 +303,7 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 			return err
 		}
 		(*e)[i] = res
-}
+	}
 	return nil
 }
 

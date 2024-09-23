@@ -18,6 +18,7 @@ import (
 const (
 	outDir = "out/"
 )
+
 //nolint:gocyclo // one function with lots of checks
 func TestCollectResources(t *testing.T) {
 	type args struct {
