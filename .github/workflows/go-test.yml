@@ -1,0 +1,28 @@
+name: push-tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+    - name: Set up Go
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+      with:
+        go-version-file: ./go.mod
+
+    - name: Build
+      run: make build
+
+    - name: Test
+      run: make test
+
