@@ -73,8 +73,9 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(server.userName, server.password)
-
+	if server.userName != "" {
+		req.SetBasicAuth(server.userName, server.password)
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
