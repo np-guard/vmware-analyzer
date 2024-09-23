@@ -10,9 +10,11 @@ import (
 	"os"
 	"path"
 )
+
 const (
 	writeFileMode = 0o600
 )
+
 func WriteToFile(file, content string) error {
 	err := os.MkdirAll(path.Dir(file), os.ModePerm)
 	if err != nil {

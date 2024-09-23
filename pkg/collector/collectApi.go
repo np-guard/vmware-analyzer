@@ -46,7 +46,6 @@ func collectResultList[A any](server serverData, resourceQuery string, resouceLi
 	return nil
 }
 
-
 func collectResource[A json.Unmarshaler](server serverData, resourceQuery string, resource A) error {
 	bytes, err := curlRequest(server, resourceQuery)
 	if err != nil {
@@ -99,7 +98,6 @@ func unmarshalResultsToList[A any](b []byte) ([]A, error) {
 	}
 	return *data.Results, nil
 }
-
 
 func getUnmarshalError(b []byte) error {
 	error_data := struct {

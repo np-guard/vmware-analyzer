@@ -33,9 +33,9 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	toPrint, err := json.MarshalIndent(resources, "", "    ")
 	return string(toPrint), err
 }
-func FromJSONString(b []byte) (*ResourcesContainerModel , error) {
+func FromJSONString(b []byte) (*ResourcesContainerModel, error) {
 	var resources ResourcesContainerModel
-	err := json.Unmarshal(b,&resources)
+	err := json.Unmarshal(b, &resources)
 	return &resources, err
 }
 

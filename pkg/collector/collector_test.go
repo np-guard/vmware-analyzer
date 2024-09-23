@@ -55,7 +55,7 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			for _, service := range got.ServiceList{
+			for _, service := range got.ServiceList {
 				for _, e := range service.ServiceEntries {
 					e.ToConnection()
 				}
