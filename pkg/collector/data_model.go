@@ -17,12 +17,12 @@ import (
 )
 
 const (
-	rulesJsonEntry          = "rules"
-	membersJsonEntry        = "members"
-	expressionJsonEntry     = "expression"
-	resourcesJsonEntry      = "resources"
-	serviceEntriesJsonEntry = "service_entries"
-	resourceTypeJsonEntry   = "resource_type"
+	rulesJSONEntry          = "rules"
+	membersJSONEntry        = "members"
+	expressionJSONEntry     = "expression"
+	resourcesJSONEntry      = "resources"
+	serviceEntriesJSONEntry = "service_entries"
+	resourceTypeJSONEntry   = "resource_type"
 )
 
 type Rule struct {
@@ -39,7 +39,7 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.Rule); err != nil {
 		return err
 	}
-	if r, ok := raw[serviceEntriesJsonEntry]; ok {
+	if r, ok := raw[serviceEntriesJSONEntry]; ok {
 		if err := json.Unmarshal(r, &res.ServiceEntries); err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.SecurityPolicy); err != nil {
 		return err
 	}
-	if r, ok := raw[rulesJsonEntry]; ok {
+	if r, ok := raw[rulesJSONEntry]; ok {
 		if err := json.Unmarshal(r, &res.Rules); err != nil {
 			return err
 		}
@@ -77,9 +77,9 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry
 }
-
+const creatingConnectionError = "fail to create a connection from service %v"
 func (e *IPProtocolServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf("fail to create a connection from service %v", e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 }
 
 type IGMPTypeServiceEntry struct {
@@ -87,7 +87,7 @@ type IGMPTypeServiceEntry struct {
 }
 
 func (e *IGMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf("fail to create a connection from service %v", e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 }
 
 type ICMPTypeServiceEntry struct {
@@ -96,7 +96,7 @@ type ICMPTypeServiceEntry struct {
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
 	if e.IcmpCode == nil || e.IcmpType == nil {
-		return nil, fmt.Errorf("fail to create a connection from service %v", e.ResourceType)
+		return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 	}
 	c := int64(*e.IcmpCode)
 	t := int64(*e.IcmpType)
@@ -108,7 +108,7 @@ type ALGTypeServiceEntry struct {
 }
 
 func (e *ALGTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf("fail to create a connection from service %v", e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 }
 
 type L4PortSetServiceEntry struct {
@@ -150,7 +150,6 @@ func parsePorts(ports []resources.PortElement) ([]struct{ min, max int64 }, erro
 		if err != nil {
 			return nil, err
 		}
-
 	}
 	return res, nil
 }
@@ -160,7 +159,7 @@ type EtherTypeServiceEntry struct {
 }
 
 func (e *EtherTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf("fail to create a connection from service %v", e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 }
 
 type NestedServiceServiceEntry struct {
@@ -168,7 +167,7 @@ type NestedServiceServiceEntry struct {
 }
 
 func (e *NestedServiceServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf("fail to create a connection from service %v", e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
 }
 
 type ServiceEntry interface {
@@ -189,56 +188,33 @@ func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 			return err
 		}
 		var cType string
-		if err := json.Unmarshal(raw[resourceTypeJsonEntry], &cType); err != nil {
+		if err := json.Unmarshal(raw[resourceTypeJSONEntry], &cType); err != nil {
 			return err
 		}
+		var res ServiceEntry
 		switch cType {
 		case "IPProtocolServiceEntry":
-			res := &IPProtocolServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &IPProtocolServiceEntry{}
 		case "IGMPTypeServiceEntry":
-			res := &IGMPTypeServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &IGMPTypeServiceEntry{}
 		case "ICMPTypeServiceEntry":
-			res := &ICMPTypeServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &ICMPTypeServiceEntry{}
 		case "ALGTypeServiceEntry":
-			res := &ALGTypeServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &ALGTypeServiceEntry{}
 		case "L4PortSetServiceEntry":
-			var res = &L4PortSetServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &L4PortSetServiceEntry{}
 		case "EtherTypeServiceEntry":
-			res := &EtherTypeServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &EtherTypeServiceEntry{}
 		case "NestedServiceServiceEntry":
-			res := &NestedServiceServiceEntry{}
-			if err := json.Unmarshal(rawMessage, res); err != nil {
-				return err
-			}
-			(*s)[i] = res
+			res = &NestedServiceServiceEntry{}
 		default:
 			return fmt.Errorf("fail to unmarshal entry %s", rawMessage)
 		}
-	}
+		if err := json.Unmarshal(rawMessage, res); err != nil {
+			return err
+		}
+		(*s)[i] = res
+}
 	return nil
 }
 
@@ -256,7 +232,7 @@ func (s *Service) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.Service); err != nil {
 		return err
 	}
-	if m, ok := raw[serviceEntriesJsonEntry]; ok {
+	if m, ok := raw[serviceEntriesJSONEntry]; ok {
 		if err := json.Unmarshal(m, &res.ServiceEntries); err != nil {
 			return err
 		}
@@ -309,26 +285,23 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 			return err
 		}
 		var cType string
-		if err := json.Unmarshal(raw[resourceTypeJsonEntry], &cType); err != nil {
+		if err := json.Unmarshal(raw[resourceTypeJSONEntry], &cType); err != nil {
 			return err
 		}
+		var res ExpressionElement
 		switch cType {
 		case "Condition":
-			var res Condition
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
-				return err
-			}
-			(*e)[i] = res
+			res = &Condition{}
 		case "ConjunctionOperator":
-			var res ConjunctionOperator
-			if err := json.Unmarshal(rawMessage, &res); err != nil {
-				return err
-			}
-			(*e)[i] = res
+			res = &ConjunctionOperator{}
 		default:
 			return fmt.Errorf("fail to unmarshal expression %s", rawMessage)
 		}
-	}
+		if err := json.Unmarshal(rawMessage, &res); err != nil {
+			return err
+		}
+		(*e)[i] = res
+}
 	return nil
 }
 
@@ -347,12 +320,12 @@ func (d *Group) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.Group); err != nil {
 		return err
 	}
-	if m, ok := raw[membersJsonEntry]; ok {
+	if m, ok := raw[membersJSONEntry]; ok {
 		if err := json.Unmarshal(m, &res.Members); err != nil {
 			return err
 		}
 	}
-	if m, ok := raw[expressionJsonEntry]; ok {
+	if m, ok := raw[expressionJSONEntry]; ok {
 		if err := json.Unmarshal(m, &res.Expression); err != nil {
 			return err
 		}
@@ -377,7 +350,7 @@ func (d *Domain) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.Domain); err != nil {
 		return err
 	}
-	if m, ok := raw[resourcesJsonEntry]; ok {
+	if m, ok := raw[resourcesJSONEntry]; ok {
 		if err := json.Unmarshal(m, &res.Resources); err != nil {
 			return err
 		}
