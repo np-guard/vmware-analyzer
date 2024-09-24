@@ -84,6 +84,9 @@ func collectorNewCode(server serverData, res *ResourcesContainerModel) (error, e
 // //////////////////////////////////////////////////
 func testNewCode(got *ResourcesContainerModel) {
 	for _, segment := range got.SegmentList {
+		if len(segment.SegmentPorts) == 0{
+			fmt.Printf("segment %s has no ports\n", *segment.DisplayName)
+		}
 		for _, port := range segment.SegmentPorts {
 			att := *port.Attachment.Id
 			vif := got.GetVirtualNetworkInterfaceByPort(att)

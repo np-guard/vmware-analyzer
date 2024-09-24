@@ -7,6 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package collector
 
 import (
+	"fmt"
+	"slices"
+
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -20,11 +23,10 @@ type Tier1 struct {
 
 ////////////////////////////////////////////////////
 
-
 // //////////////////////////////////////////////////
 const (
-	tier0Query     = "/policy/api/v1/infra/tier-0s"
-	tier1Query     = "/policy/api/v1/infra/tier-1s"
+	tier0Query = "policy/api/v1/infra/tier-0s"
+	tier1Query = "policy/api/v1/infra/tier-1s"
 )
 
 func collectorNewCodeGateway(server serverData, res *ResourcesContainerModel) (error, error) {
@@ -37,26 +39,41 @@ func collectorNewCodeGateway(server serverData, res *ResourcesContainerModel) (e
 	if err != nil {
 		return nil, err
 	}
-	// for si := range res.SegmentList {
-	// 	segmentID := *res.SegmentList[si].Id
-	// 	err = collectResultList(server, fmt.Sprintf(segmentPortsQuery, segmentID), &res.SegmentList[si].SegmentPorts)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// }
 	return nil, nil
 }
 
 // //////////////////////////////////////////////////
-// func testNewCode(got *ResourcesContainerModel) {
-// 	for _, segment := range got.SegmentList {
-// 		for _, port := range segment.SegmentPorts {
-// 			att := *port.Attachment.Id
-// 			vif := got.GetVirtualNetworkInterfaceByPort(att)
-// 			vm := got.GetVirtualMachine(*vif.OwnerVmId)
-// 			fmt.Printf("[segment, vm]: [%s, %s]\n", *segment.DisplayName, *vm.DisplayName)
-// 		}
-// 	}
-// }
+func testNewCodeGateway(got *ResourcesContainerModel) {
+	for _, segment := range got.SegmentList {
+		if segment.ConnectivityPath == nil{
+			fmt.Printf("[segment, type]: [%s, %s] has no ConnectivityPath\n", *segment.DisplayName, *segment.Type)
+			continue
+		}
+		if t1 := got.GetTier1(*segment.ConnectivityPath); t1 != nil{
+			t0 := got.GetTier0(*t1.Tier0Path)
+			fmt.Printf("[segment, type, t1, t0]: [%s, %s, %s, %s]\n", *segment.DisplayName, *segment.Type, *t1.DisplayName, *t0.DisplayName)
+		}else if t0 := got.GetTier0(*segment.ConnectivityPath); t0 != nil{
+			fmt.Printf("[segment, type, t0]: [%s, %s, %s]\n", *segment.DisplayName, *segment.Type, *t0.DisplayName)
+		}else{
+			fmt.Printf("fail to find tier of [segment, type]: [%s, %s] with connectivity %s\n", *segment.DisplayName, *segment.Type, *segment.ConnectivityPath)
+		}
+		
+	}
+}
 
 ////////////////////////////////////////////////////
+
+func (resources *ResourcesContainerModel) GetTier0(query string) *Tier0 {
+	i := slices.IndexFunc(resources.Tier0List, func(t Tier0) bool { return query == *t.Path })
+	if i >= 0 {
+		return &resources.Tier0List[i]
+	}
+	return nil
+}
+func (resources *ResourcesContainerModel) GetTier1(query string) *Tier1 {
+	i := slices.IndexFunc(resources.Tier1List, func(t Tier1) bool { return query == *t.Path })
+	if i >= 0 {
+		return &resources.Tier1List[i]
+	}
+	return nil
+}

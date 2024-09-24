@@ -45,7 +45,14 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	if err != nil {
 		return nil, err
 	}
-	collectorNewCode(server, res)
+	_, err = collectorNewCode(server, res)
+	if err != nil {
+		return nil, err
+	}
+	_, err = collectorNewCodeGateway(server, res)
+	if err != nil {
+		return nil, err
+	}
 	for di := range res.DomainList {
 		domainID := *res.DomainList[di].Id
 		domainResouces := &res.DomainList[di].Resources

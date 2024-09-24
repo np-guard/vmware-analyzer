@@ -56,6 +56,7 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			testNewCode(got)
+			testNewCodeGateway(got)
 			for _, domain := range got.DomainList {
 				domainResource := domain.Resources
 				if len(domainResource.SecurityPolicyList) == 0 {
