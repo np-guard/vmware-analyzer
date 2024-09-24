@@ -7,12 +7,18 @@ import (
 
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 type ruleAction string
 
-const listSeparatorStr = ","
-const lineSeparatorStr = "\n"
+const (
+	listSeparatorStr = ","
+	lineSeparatorStr = "\n"
+)
+
+var egressDirections = []string{"OUT", "IN_OUT"}
+var ingressDirections = []string{"IN", "IN_OUT"}
 
 const (
 	actionAllow     ruleAction = "allow"
@@ -21,7 +27,7 @@ const (
 	actionNone      ruleAction = "none" // to mark that a default rule is not configured
 )
 
-func actionFromString(input string) ruleAction {
+/*func actionFromString(input string) ruleAction {
 	switch input {
 	case string(actionAllow):
 		return actionAllow
@@ -31,20 +37,41 @@ func actionFromString(input string) ruleAction {
 		return actionJumpToApp
 	}
 	return actionDeny
+}*/
+
+func actionFromString(s string) ruleAction {
+	switch strings.ToLower(s) {
+	case string(actionAllow):
+		return actionAllow
+	case string(actionDeny), "reject", "drop": // TODO: change
+		return actionDeny
+	case string(actionJumpToApp):
+		return actionJumpToApp
+	default:
+		return actionNone
+	}
 }
 
 type fwRule struct {
-	srcVMs []*endpoints.VM
-	dstVMs []*endpoints.VM
-	conn   *connection.Set
-	action ruleAction
-	// direction string
+	srcVMs      []*endpoints.VM
+	dstVMs      []*endpoints.VM
+	conn        *connection.Set
+	action      ruleAction
+	direction   string //	"IN","OUT",	"IN_OUT"
+	origRuleObj *nsx.Rule
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
-// return whether the rule captures the input src,dst VMs
-func (f *fwRule) capturesPair(src, dst *endpoints.VM) bool {
-	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
+// return whether the rule captures the input src,dst VMs on the given direction
+func (f *fwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
+	vmsCaptured := slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
+	if !vmsCaptured {
+		return false
+	}
+	if isIngress {
+		return slices.Contains(ingressDirections, f.direction)
+	}
+	return slices.Contains(egressDirections, f.direction)
 }
 
 func vmsString(vms []*endpoints.VM) string {
@@ -57,5 +84,6 @@ func vmsString(vms []*endpoints.VM) string {
 
 // return a string representation of a single rule
 func (f *fwRule) string() string {
-	return fmt.Sprintf("src: %s, dst: %s, conn: %s, action: %s", vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action))
+	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s",
+		*f.origRuleObj.RuleId, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
@@ -21,20 +22,49 @@ const (
 	emptyCategory
 )
 
+const (
+	EthernetStr       = "Ethernet"
+	EmergencyStr      = "Emergency"
+	InfrastructureStr = "Infrastructure"
+	EnvironmentStr    = "Environment"
+	ApplicationStr    = "Application"
+	EmptyStr          = "<Empty>"
+)
+
+func dfwCategoryFromString(s string) dfwCategory {
+	switch s {
+	case EthernetStr:
+		return ethernetCategory
+	case EmergencyStr:
+		return emergencyCategory
+	case InfrastructureStr:
+		return infrastructureCategory
+	case EnvironmentStr:
+		return envCategory
+	case ApplicationStr:
+		return appCategoty
+	case EmptyStr:
+		return emptyCategory
+	default:
+		return emptyCategory
+	}
+
+}
+
 func (d dfwCategory) string() string {
 	switch d {
 	case ethernetCategory:
-		return "Ethernet"
+		return EthernetStr
 	case emergencyCategory:
-		return "Emergency"
+		return EmergencyStr
 	case infrastructureCategory:
-		return "Infrastructure"
+		return InfrastructureStr
 	case envCategory:
-		return "Environment"
+		return EnvironmentStr
 	case appCategoty:
-		return "Application"
+		return ApplicationStr
 	case emptyCategory:
-		return "<Empty>"
+		return EmptyStr
 	default:
 		return ""
 	}
@@ -55,10 +85,10 @@ type categorySpec struct {
 // notDeterminedConns are the set of connections between src to dst, for which this category has no verdict (no relevant rule + no default defined),
 // thus are expected to be inspected by the next cateorgy (or by the "global default") if this is the last category
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
-func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM) (allowedConns, jumpToAppConns, deniedConns, notDeterminedConns *connection.Set) {
+func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool) (allowedConns, jumpToAppConns, deniedConns, notDeterminedConns *connection.Set) {
 	allowedConns, jumpToAppConns, deniedConns = connection.None(), connection.None(), connection.None()
 	for _, rule := range c.rules {
-		if rule.capturesPair(src, dst) {
+		if rule.capturesPair(src, dst, isIngress) {
 			switch rule.action {
 			case actionAllow:
 				addedAllowedConns := rule.conn.Subtract(deniedConns).Subtract(jumpToAppConns)
@@ -92,12 +122,14 @@ func (c *categorySpec) string() string {
 	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) addRule(src, dst *endpoints.VM, conn *connection.Set, action string) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action string, direction string, origRule *nsx.Rule) {
 	newRule := &fwRule{
-		srcVMs: []*endpoints.VM{src},
-		dstVMs: []*endpoints.VM{dst},
-		conn:   conn,
-		action: actionFromString(action),
+		srcVMs:      src,
+		dstVMs:      dst,
+		conn:        conn,
+		action:      actionFromString(action),
+		direction:   direction,
+		origRuleObj: origRule,
 	}
 	c.rules = append(c.rules, newRule)
 }
