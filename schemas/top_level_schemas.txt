@@ -9,3 +9,5 @@ RealizedVirtualMachine
 ConjunctionOperator
 SegmentPort
 VirtualNetworkInterface
+Tier0
+Tier1

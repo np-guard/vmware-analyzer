@@ -17,6 +17,8 @@ type ResourcesContainerModel struct {
 	VirtualMachineList          []VirtualMachine          `json:"virtual_machines"`
 	VirtualNetworkInterfaceList []VirtualNetworkInterface `json:"virtual_network_interface"`
 	SegmentList                 []Segment                 `json:"segments"`
+	Tier0List                   []Tier0                   `json:"tier0"`
+	Tier1List                   []Tier1                   `json:"tier1"`
 	DomainList                  []Domain                  `json:"domains"`
 }
 type DomainResources struct {

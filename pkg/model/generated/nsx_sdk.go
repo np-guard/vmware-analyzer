@@ -1488,6 +1488,28 @@ type FederationConnectivityConfig struct {
 	GlobalOverlayId *int `json:"global_overlay_id,omitempty" yaml:"global_overlay_id,omitempty" mapstructure:"global_overlay_id,omitempty"`
 }
 
+// Additional gateway configuration required for federation
+type FederationGatewayConfig struct {
+	// Global id for by Layer3 services for federation usecases.
+	GlobalOverlayId *int `json:"global_overlay_id,omitempty" yaml:"global_overlay_id,omitempty" mapstructure:"global_overlay_id,omitempty"`
+
+	// Indicies for cross site allocation for edge cluster and its members referred by
+	// gateway.
+	SiteAllocationIndices []SiteAllocationIndexForEdge `json:"site_allocation_indices,omitempty" yaml:"site_allocation_indices,omitempty" mapstructure:"site_allocation_indices,omitempty"`
+
+	// Global UUID for transit segment id to be used by Layer2 services for federation
+	// usecases.
+	TransitSegmentId *string `json:"transit_segment_id,omitempty" yaml:"transit_segment_id,omitempty" mapstructure:"transit_segment_id,omitempty"`
+}
+
+type GatewayQosProfileConfig struct {
+	// Policy path to gateway QoS profile in egress direction.
+	EgressQosProfilePath *string `json:"egress_qos_profile_path,omitempty" yaml:"egress_qos_profile_path,omitempty" mapstructure:"egress_qos_profile_path,omitempty"`
+
+	// Policy path to gateway QoS profile in ingress direction.
+	IngressQosProfilePath *string `json:"ingress_qos_profile_path,omitempty" yaml:"ingress_qos_profile_path,omitempty" mapstructure:"ingress_qos_profile_path,omitempty"`
+}
+
 // Group.
 type Group struct {
 	// Timestamp of resource creation
@@ -1964,6 +1986,51 @@ type IPCIDRBlock string
 // "fe80::250:56ff:fe83:3181-fe80::250:56ff:fe83:318c",
 // "fe80::250:56ff:fe83:318c/64"
 type IPElement string
+
+// Intersite gateway configuration.
+type IntersiteGatewayConfig struct {
+	// Fallback site to be used as new primary site on current primary site failure.
+	// Disaster recovery must be initiated via API/UI. Fallback site configuration is
+	// supported only for T0 gateway. T1 gateway will follow T0 gateway's primary site
+	// during disaster recovery.
+	FallbackSites []string `json:"fallback_sites,omitempty" yaml:"fallback_sites,omitempty" mapstructure:"fallback_sites,omitempty"`
+
+	// IPv4 subnet for inter-site transit segment connecting service routers across
+	// sites for stretched gateway. For IPv6 link local subnet is auto configured.
+	IntersiteTransitSubnet string `json:"intersite_transit_subnet,omitempty" yaml:"intersite_transit_subnet,omitempty" mapstructure:"intersite_transit_subnet,omitempty"`
+
+	// Epoch(in seconds) is auto updated based on system current timestamp when
+	// primary locale service is updated. It is used for resolving conflict during
+	// site failover. If system clock not in sync then User can optionally override
+	// this. New value must be higher than the current value.
+	LastAdminActiveEpoch *int `json:"last_admin_active_epoch,omitempty" yaml:"last_admin_active_epoch,omitempty" mapstructure:"last_admin_active_epoch,omitempty"`
+
+	// Primary egress site for gateway. T0/T1 gateway in Active/Standby mode supports
+	// stateful services on primary site. In this mode primary site must be set if
+	// gateway is stretched to more than one site. For T0 gateway in Active/Active
+	// primary site is optional field. If set then secondary site prefers routes
+	// learned from primary over locally learned routes. This field is not applicable
+	// for T1 gateway with no services.
+	PrimarySitePath *string `json:"primary_site_path,omitempty" yaml:"primary_site_path,omitempty" mapstructure:"primary_site_path,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *IntersiteGatewayConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain IntersiteGatewayConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["intersite_transit_subnet"]; !ok || v == nil {
+		plain.IntersiteTransitSubnet = "169.254.32.0/20"
+	}
+	*j = IntersiteGatewayConfig(plain)
+	return nil
+}
 
 type IpAddressInfo struct {
 	// IpAddresses corresponds to the JSON schema field "ip_addresses".
@@ -2965,6 +3032,110 @@ func (j *ResourceReference) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("field %s length: must be <= %d", "target_type", 255)
 	}
 	*j = ResourceReference(plain)
+	return nil
+}
+
+type RouteAdvertisementRule struct {
+	// Action to advertise filtered routes to the connected Tier0 gateway. PERMIT:
+	// Enables the advertisment DENY: Disables the advertisement
+	Action RouteAdvertisementRuleAction `json:"action,omitempty" yaml:"action,omitempty" mapstructure:"action,omitempty"`
+
+	// Display name should be unique.
+	Name *string `json:"name,omitempty" yaml:"name,omitempty" mapstructure:"name,omitempty"`
+
+	// Prefix operator to filter subnets. GE prefix operator filters all the routes
+	// with prefix length greater than or equal to the subnets configured. EQ prefix
+	// operator filter all the routes with prefix length equal to the subnets
+	// configured.
+	PrefixOperator RouteAdvertisementRulePrefixOperator `json:"prefix_operator,omitempty" yaml:"prefix_operator,omitempty" mapstructure:"prefix_operator,omitempty"`
+
+	// Enable different types of route advertisements. When not specified, routes to
+	// IPSec VPN local-endpoint subnets (TIER1_IPSEC_LOCAL_ENDPOINT) are automatically
+	// advertised.
+	RouteAdvertisementTypes []Tier1RouteAdvertisentTypes `json:"route_advertisement_types,omitempty" yaml:"route_advertisement_types,omitempty" mapstructure:"route_advertisement_types,omitempty"`
+
+	// Network CIDRs to be routed.
+	Subnets []string `json:"subnets,omitempty" yaml:"subnets,omitempty" mapstructure:"subnets,omitempty"`
+}
+
+type RouteAdvertisementRuleAction string
+
+const RouteAdvertisementRuleActionDENY RouteAdvertisementRuleAction = "DENY"
+const RouteAdvertisementRuleActionPERMIT RouteAdvertisementRuleAction = "PERMIT"
+
+var enumValues_RouteAdvertisementRuleAction = []interface{}{
+	"PERMIT",
+	"DENY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RouteAdvertisementRuleAction) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RouteAdvertisementRuleAction {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RouteAdvertisementRuleAction, v)
+	}
+	*j = RouteAdvertisementRuleAction(v)
+	return nil
+}
+
+type RouteAdvertisementRulePrefixOperator string
+
+const RouteAdvertisementRulePrefixOperatorEQ RouteAdvertisementRulePrefixOperator = "EQ"
+const RouteAdvertisementRulePrefixOperatorGE RouteAdvertisementRulePrefixOperator = "GE"
+
+var enumValues_RouteAdvertisementRulePrefixOperator = []interface{}{
+	"GE",
+	"EQ",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RouteAdvertisementRulePrefixOperator) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RouteAdvertisementRulePrefixOperator {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RouteAdvertisementRulePrefixOperator, v)
+	}
+	*j = RouteAdvertisementRulePrefixOperator(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RouteAdvertisementRule) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain RouteAdvertisementRule
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["action"]; !ok || v == nil {
+		plain.Action = "PERMIT"
+	}
+	if v, ok := raw["prefix_operator"]; !ok || v == nil {
+		plain.PrefixOperator = "GE"
+	}
+	*j = RouteAdvertisementRule(plain)
 	return nil
 }
 
@@ -4937,6 +5108,19 @@ func (j *Service) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Index for cross site allocation for edge cluster and its members referred by
+// gateway.
+type SiteAllocationIndexForEdge struct {
+	// Unqiue edge cluster node index across sites based on stretch of the Gateway.
+	// For example, if a Gateway is streched to sites S1 with one edge cluster of 3
+	// nodes and site S2 with one edge cluster of 2 nodes, the in the Global Manager
+	// will allocate the index for 5 edge nodes and 2 cluster in the rage 0 to 7.
+	Index *int `json:"index,omitempty" yaml:"index,omitempty" mapstructure:"index,omitempty"`
+
+	// TargetResourcePath corresponds to the JSON schema field "target_resource_path".
+	TargetResourcePath *string `json:"target_resource_path,omitempty" yaml:"target_resource_path,omitempty" mapstructure:"target_resource_path,omitempty"`
+}
+
 type Tag struct {
 	// Tag searches may optionally be restricted by scope
 	Scope string `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
@@ -4966,6 +5150,910 @@ func (j *Tag) UnmarshalJSON(b []byte) error {
 		plain.Tag = ""
 	}
 	*j = Tag(plain)
+	return nil
+}
+
+// Tier-0 configuration for external connectivity.
+type Tier0 struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// NSX specific configuration for tier-0
+	AdvancedConfig *Tier0AdvancedConfig `json:"advanced_config,omitempty" yaml:"advanced_config,omitempty" mapstructure:"advanced_config,omitempty"`
+
+	// Maximum number of ARP entries per transport node.
+	ArpLimit *int `json:"arp_limit,omitempty" yaml:"arp_limit,omitempty" mapstructure:"arp_limit,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Indicates if logging should be enabled for the default whitelisting rule. This
+	// field is deprecated and recommended to change Rule logging field. Note that
+	// this field is not synchronized with default logging field.
+	DefaultRuleLogging bool `json:"default_rule_logging,omitempty" yaml:"default_rule_logging,omitempty" mapstructure:"default_rule_logging,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// DHCP configuration for Segments connected to Tier-0. DHCP service is configured
+	// in relay mode.
+	DhcpConfigPaths []string `json:"dhcp_config_paths,omitempty" yaml:"dhcp_config_paths,omitempty" mapstructure:"dhcp_config_paths,omitempty"`
+
+	// Disable or enable gateway fiewall.
+	DisableFirewall bool `json:"disable_firewall,omitempty" yaml:"disable_firewall,omitempty" mapstructure:"disable_firewall,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// This field is enable that each edge node has a distinct route distinguisher per
+	// edge node.
+	EnableRdPerEdge *bool `json:"enable_rd_per_edge,omitempty" yaml:"enable_rd_per_edge,omitempty" mapstructure:"enable_rd_per_edge,omitempty"`
+
+	// Determines the behavior when a Tier-0 instance in ACTIVE-STANDBY
+	// high-availability mode restarts after a failure. If set to PREEMPTIVE, the
+	// preferred node will take over, even if it causes another failure. If set to
+	// NON_PREEMPTIVE, then the instance that restarted will remain secondary. This
+	// property is not used when the ha_mode property is set to ACTIVE_ACTIVE. Only
+	// applicable when edge cluster is configured in Tier0 locale-service.
+	FailoverMode Tier0FailoverMode `json:"failover_mode,omitempty" yaml:"failover_mode,omitempty" mapstructure:"failover_mode,omitempty"`
+
+	// Additional config for federation.
+	FederationConfig *FederationGatewayConfig `json:"federation_config,omitempty" yaml:"federation_config,omitempty" mapstructure:"federation_config,omitempty"`
+
+	// This field is deprecated and recommended to change Rule action field. Note that
+	// this field is not synchronized with default rule field.
+	ForceWhitelisting bool `json:"force_whitelisting,omitempty" yaml:"force_whitelisting,omitempty" mapstructure:"force_whitelisting,omitempty"`
+
+	// Specify high-availability mode for Tier-0. Default is ACTIVE_ACTIVE. When
+	// ha_mode is changed from ACTIVE_ACTIVE to ACTIVE_STANDBY, inter SR iBGP (in BGP)
+	// is disabled. Changing ha_mode from ACTIVE_STANDBY to ACTIVE_ACTIVE will enable
+	// inter SR iBGP (in BGP) and previously configured preferred edge nodes (in Tier0
+	// locale-service) are removed.
+	HaMode Tier0HaMode `json:"ha_mode,omitempty" yaml:"ha_mode,omitempty" mapstructure:"ha_mode,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Specify subnets that are used to assign addresses to logical links connecting
+	// service routers and distributed routers. Only IPv4 addresses are supported.
+	// When not specified, subnet 169.254.0.0/24 is assigned by default in
+	// ACTIVE_ACTIVE HA mode or 169.254.0.0/28 in ACTIVE_STANDBY mode.
+	InternalTransitSubnets []string `json:"internal_transit_subnets,omitempty" yaml:"internal_transit_subnets,omitempty" mapstructure:"internal_transit_subnets,omitempty"`
+
+	// Inter site routing configuration when the gateway is streched.
+	IntersiteConfig *IntersiteGatewayConfig `json:"intersite_config,omitempty" yaml:"intersite_config,omitempty" mapstructure:"intersite_config,omitempty"`
+
+	// IPv6 NDRA and DAD profiles configuration on Tier0. Either or both NDRA and/or
+	// DAD profiles can be configured.
+	Ipv6ProfilePaths []string `json:"ipv6_profile_paths,omitempty" yaml:"ipv6_profile_paths,omitempty" mapstructure:"ipv6_profile_paths,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// If you are using EVPN service, then route distinguisher administrator address
+	// should be defined if you need auto generation of route distinguisher on your
+	// VRF configuration.
+	RdAdminField *IPAddress `json:"rd_admin_field,omitempty" yaml:"rd_admin_field,omitempty" mapstructure:"rd_admin_field,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// For ACTIVE-ACTIVE, this is used to enable/disable stateful services.
+	StatefulServices *Tier0StatefulServicesConfig `json:"stateful_services,omitempty" yaml:"stateful_services,omitempty" mapstructure:"stateful_services,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Specify transit subnets that are used to assign addresses to logical links
+	// connecting tier-0 and tier-1s. Both IPv4 and IPv6 addresses are supported. When
+	// not specified, subnet 100.64.0.0/16 is configured by default. When modifying,
+	// for stateful active-active Tier-0 number of IPs should be at least attached
+	// Tier-1s count * 16 and for other type of Tier-0 number of IPs should be at
+	// least attached Tier-1s count * 2. Modification not allowed if there are child
+	// tier-0 VRFs and there are any Tier-1s connected to those VRFs. The value in VRF
+	// tier-0 is always inherited from the parent.
+	TransitSubnets []string `json:"transit_subnets,omitempty" yaml:"transit_subnets,omitempty" mapstructure:"transit_subnets,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+
+	// VRF config, required for VRF Tier0.
+	VrfConfig *Tier0VrfConfig `json:"vrf_config,omitempty" yaml:"vrf_config,omitempty" mapstructure:"vrf_config,omitempty"`
+
+	// Specify subnets that are used to assign addresses to logical links connecting
+	// default T0 and child VRFs. When not specified, subnet 169.254.2.0/23 is
+	// assigned by default.
+	VrfTransitSubnets []string `json:"vrf_transit_subnets,omitempty" yaml:"vrf_transit_subnets,omitempty" mapstructure:"vrf_transit_subnets,omitempty"`
+}
+
+// NSX specific configuration for tier-0
+type Tier0AdvancedConfig struct {
+	// Connectivity configuration to manually connect (ON) or disconnect (OFF)
+	// Tier-0/Tier1 segment from corresponding gateway. This property does not apply
+	// to VLAN backed segments. VLAN backed segments with connectivity OFF does not
+	// affect its layer-2 connectivity.
+	Connectivity Tier0AdvancedConfigConnectivity `json:"connectivity,omitempty" yaml:"connectivity,omitempty" mapstructure:"connectivity,omitempty"`
+
+	// Extra time in seconds the router must wait before sending the UP notification
+	// after the peer routing session is established. Default means forward
+	// immediately. VRF logical router will set it same as parent logical router.The
+	// functionality of this timer is to ensure that a given node when coming up does
+	// not claim as active until it has learned the northbound routes. This minimizes
+	// any impact on traffic. 5 seconds is a smarter default as it allows to learn a
+	// few thousand routes (which should cover a lot of customers). Customers that
+	// have larger scale of course today would have to set it to higher value.
+	// Exception for the this default setting is single node case, i.e; no redundancy
+	// (which is anyway not recommended,not sure if anyone deploys like that). For
+	// single node case, it should be set to 0.
+	ForwardingUpTimer int `json:"forwarding_up_timer,omitempty" yaml:"forwarding_up_timer,omitempty" mapstructure:"forwarding_up_timer,omitempty"`
+}
+
+type Tier0AdvancedConfigConnectivity string
+
+const Tier0AdvancedConfigConnectivityOFF Tier0AdvancedConfigConnectivity = "OFF"
+const Tier0AdvancedConfigConnectivityON Tier0AdvancedConfigConnectivity = "ON"
+
+var enumValues_Tier0AdvancedConfigConnectivity = []interface{}{
+	"ON",
+	"OFF",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0AdvancedConfigConnectivity) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier0AdvancedConfigConnectivity {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier0AdvancedConfigConnectivity, v)
+	}
+	*j = Tier0AdvancedConfigConnectivity(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0AdvancedConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Tier0AdvancedConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["connectivity"]; !ok || v == nil {
+		plain.Connectivity = "ON"
+	}
+	if v, ok := raw["forwarding_up_timer"]; !ok || v == nil {
+		plain.ForwardingUpTimer = 5.0
+	}
+	*j = Tier0AdvancedConfig(plain)
+	return nil
+}
+
+type Tier0FailoverMode string
+
+const Tier0FailoverModeNONPREEMPTIVE Tier0FailoverMode = "NON_PREEMPTIVE"
+const Tier0FailoverModePREEMPTIVE Tier0FailoverMode = "PREEMPTIVE"
+
+var enumValues_Tier0FailoverMode = []interface{}{
+	"PREEMPTIVE",
+	"NON_PREEMPTIVE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0FailoverMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier0FailoverMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier0FailoverMode, v)
+	}
+	*j = Tier0FailoverMode(v)
+	return nil
+}
+
+type Tier0HaMode string
+
+const Tier0HaModeACTIVEACTIVE Tier0HaMode = "ACTIVE_ACTIVE"
+const Tier0HaModeACTIVESTANDBY Tier0HaMode = "ACTIVE_STANDBY"
+
+var enumValues_Tier0HaMode = []interface{}{
+	"ACTIVE_ACTIVE",
+	"ACTIVE_STANDBY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0HaMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier0HaMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier0HaMode, v)
+	}
+	*j = Tier0HaMode(v)
+	return nil
+}
+
+// Tier0 stateful services config to define stateful
+type Tier0StatefulServicesConfig struct {
+	// This is used to enable or disable ACTIVE-ACTIVE stateful services.
+	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty" mapstructure:"enabled,omitempty"`
+
+	// Redirection policy to load balance traffic among nodes IP_HASH: Hash Source IP
+	// or destination ip to redirect packet for load sharing and stateful services.
+	// NONE: Disable redirection. It requires user to define static traffic group per
+	// edge node and expects external router to forward return packet back to the same
+	// edge node. SRC_DST_IP_HASH: Hash both source and desitnation ip to redirect
+	// packet for load sharing. This mode doesn't support NAT and presumes source and
+	// destination IP remains same in either direction.
+	RedirectionPolicy Tier0StatefulServicesConfigRedirectionPolicy `json:"redirection_policy,omitempty" yaml:"redirection_policy,omitempty" mapstructure:"redirection_policy,omitempty"`
+}
+
+type Tier0StatefulServicesConfigRedirectionPolicy string
+
+const Tier0StatefulServicesConfigRedirectionPolicyIPHASH Tier0StatefulServicesConfigRedirectionPolicy = "IP_HASH"
+const Tier0StatefulServicesConfigRedirectionPolicyNONE Tier0StatefulServicesConfigRedirectionPolicy = "NONE"
+const Tier0StatefulServicesConfigRedirectionPolicySRCDSTIPHASH Tier0StatefulServicesConfigRedirectionPolicy = "SRC_DST_IP_HASH"
+
+var enumValues_Tier0StatefulServicesConfigRedirectionPolicy = []interface{}{
+	"IP_HASH",
+	"NONE",
+	"SRC_DST_IP_HASH",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0StatefulServicesConfigRedirectionPolicy) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier0StatefulServicesConfigRedirectionPolicy {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier0StatefulServicesConfigRedirectionPolicy, v)
+	}
+	*j = Tier0StatefulServicesConfigRedirectionPolicy(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0StatefulServicesConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Tier0StatefulServicesConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["enabled"]; !ok || v == nil {
+		plain.Enabled = false
+	}
+	if v, ok := raw["redirection_policy"]; !ok || v == nil {
+		plain.RedirectionPolicy = "IP_HASH"
+	}
+	*j = Tier0StatefulServicesConfig(plain)
+	return nil
+}
+
+// Tier-0 vrf configuration.
+type Tier0VrfConfig struct {
+	// It is required for VRF to participate in the EVPN service in ROUTE_SERVER mode.
+	EvpnL2VniConfig *VrfEvpnL2VniConfig `json:"evpn_l2_vni_config,omitempty" yaml:"evpn_l2_vni_config,omitempty" mapstructure:"evpn_l2_vni_config,omitempty"`
+
+	// L3 VNI associated with the VRF for overlay traffic of ethernet virtual private
+	// network (EVPN). It must be unique and available from the VNI pool defined for
+	// EVPN service. It is required for VRF to participate in the EVPN service in
+	// INLINE mode.
+	EvpnTransitVni *int `json:"evpn_transit_vni,omitempty" yaml:"evpn_transit_vni,omitempty" mapstructure:"evpn_transit_vni,omitempty"`
+
+	// route distinguisher pool for edge nodes.
+	RdPerEdgePool []string `json:"rd_per_edge_pool,omitempty" yaml:"rd_per_edge_pool,omitempty" mapstructure:"rd_per_edge_pool,omitempty"`
+
+	// Route distinguisher with format in IPAddress:<number> or ASN:<number>.
+	RouteDistinguisher *string `json:"route_distinguisher,omitempty" yaml:"route_distinguisher,omitempty" mapstructure:"route_distinguisher,omitempty"`
+
+	// Route targets.
+	RouteTargets []VrfRouteTargets `json:"route_targets,omitempty" yaml:"route_targets,omitempty" mapstructure:"route_targets,omitempty"`
+
+	// Default tier0 path. Cannot be modified after realization.
+	Tier0Path *string `json:"tier0_path,omitempty" yaml:"tier0_path,omitempty" mapstructure:"tier0_path,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0VrfConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Tier0VrfConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.RouteTargets != nil && len(plain.RouteTargets) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "route_targets", 1)
+	}
+	if len(plain.RouteTargets) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "route_targets", 1)
+	}
+	*j = Tier0VrfConfig(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier0) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Tier0
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["default_rule_logging"]; !ok || v == nil {
+		plain.DefaultRuleLogging = false
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if len(plain.DhcpConfigPaths) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "dhcp_config_paths", 1)
+	}
+	if v, ok := raw["disable_firewall"]; !ok || v == nil {
+		plain.DisableFirewall = false
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["failover_mode"]; !ok || v == nil {
+		plain.FailoverMode = "NON_PREEMPTIVE"
+	}
+	if v, ok := raw["force_whitelisting"]; !ok || v == nil {
+		plain.ForceWhitelisting = false
+	}
+	if v, ok := raw["ha_mode"]; !ok || v == nil {
+		plain.HaMode = "ACTIVE_ACTIVE"
+	}
+	if len(plain.InternalTransitSubnets) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "internal_transit_subnets", 1)
+	}
+	if len(plain.Ipv6ProfilePaths) > 2 {
+		return fmt.Errorf("field %s length: must be <= %d", "ipv6_profile_paths", 2)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	if len(plain.VrfTransitSubnets) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "vrf_transit_subnets", 1)
+	}
+	*j = Tier0(plain)
+	return nil
+}
+
+// Tier-1 instance configuration.
+type Tier1 struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Maximum number of ARP entries per transport node.
+	ArpLimit *int `json:"arp_limit,omitempty" yaml:"arp_limit,omitempty" mapstructure:"arp_limit,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Indicates if logging should be enabled for the default whitelisting rule. This
+	// field is deprecated and recommended to change Rule logging field. Note that
+	// this field is not synchronized with default logging field.
+	DefaultRuleLogging bool `json:"default_rule_logging,omitempty" yaml:"default_rule_logging,omitempty" mapstructure:"default_rule_logging,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// DHCP configuration for Segments connected to Tier-1. DHCP service is enabled in
+	// relay mode.
+	DhcpConfigPaths []string `json:"dhcp_config_paths,omitempty" yaml:"dhcp_config_paths,omitempty" mapstructure:"dhcp_config_paths,omitempty"`
+
+	// Disable or enable gateway fiewall.
+	DisableFirewall bool `json:"disable_firewall,omitempty" yaml:"disable_firewall,omitempty" mapstructure:"disable_firewall,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Flag to enable standby service router relocation. Standby relocation is not
+	// enabled until edge cluster is configured for Tier1.
+	EnableStandbyRelocation bool `json:"enable_standby_relocation,omitempty" yaml:"enable_standby_relocation,omitempty" mapstructure:"enable_standby_relocation,omitempty"`
+
+	// Determines the behavior when a Tier-1 instance restarts after a failure. If set
+	// to PREEMPTIVE, the preferred node will take over, even if it causes another
+	// failure. If set to NON_PREEMPTIVE, then the instance that restarted will remain
+	// secondary. Only applicable when edge cluster is configured in Tier1
+	// locale-service.
+	FailoverMode Tier1FailoverMode `json:"failover_mode,omitempty" yaml:"failover_mode,omitempty" mapstructure:"failover_mode,omitempty"`
+
+	// Additional config for federation.
+	FederationConfig *FederationGatewayConfig `json:"federation_config,omitempty" yaml:"federation_config,omitempty" mapstructure:"federation_config,omitempty"`
+
+	// This field is deprecated and recommended to change Rule action field. Note that
+	// this field is not synchornied with default rule field.
+	ForceWhitelisting bool `json:"force_whitelisting,omitempty" yaml:"force_whitelisting,omitempty" mapstructure:"force_whitelisting,omitempty"`
+
+	// Specify high-availability mode for Tier-1.If Tier-1 is service router, HaMode
+	// will be set as ACTIVE_STANDBY. If Tier-1 is distributed router, HaMode will be
+	// set as null.
+	HaMode *Tier1HaMode `json:"ha_mode,omitempty" yaml:"ha_mode,omitempty" mapstructure:"ha_mode,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Inter site routing configuration when the gateway is streched.
+	IntersiteConfig *IntersiteGatewayConfig `json:"intersite_config,omitempty" yaml:"intersite_config,omitempty" mapstructure:"intersite_config,omitempty"`
+
+	// Configuration IPv6 NDRA and DAD profiles. Either or both NDRA and/or DAD
+	// profiles can be configured.
+	Ipv6ProfilePaths []string `json:"ipv6_profile_paths,omitempty" yaml:"ipv6_profile_paths,omitempty" mapstructure:"ipv6_profile_paths,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// Supports edge node allocation at different sizes for routing and load balancer
+	// service to meet performance and scalability requirements.   ROUTING: Allocate
+	// edge node to provide routing services.   LB_SMALL, LB_MEDIUM, LB_LARGE,
+	// LB_XLARGE: Specify size of load balancer service that will be configured on
+	// TIER1 gateway.
+	PoolAllocation Tier1PoolAllocation `json:"pool_allocation,omitempty" yaml:"pool_allocation,omitempty" mapstructure:"pool_allocation,omitempty"`
+
+	// QoS Profile configuration for Tier1 router link connected to Tier0 gateway.
+	QosProfile *GatewayQosProfileConfig `json:"qos_profile,omitempty" yaml:"qos_profile,omitempty" mapstructure:"qos_profile,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// RouteAdvertisementRules corresponds to the JSON schema field
+	// "route_advertisement_rules".
+	RouteAdvertisementRules []RouteAdvertisementRule `json:"route_advertisement_rules,omitempty" yaml:"route_advertisement_rules,omitempty" mapstructure:"route_advertisement_rules,omitempty"`
+
+	// Enable different types of route advertisements. When not specified, routes to
+	// IPSec VPN local-endpoint subnets (TIER1_IPSEC_LOCAL_ENDPOINT) are automatically
+	// advertised.
+	RouteAdvertisementTypes []Tier1RouteAdvertisentTypes `json:"route_advertisement_types,omitempty" yaml:"route_advertisement_types,omitempty" mapstructure:"route_advertisement_types,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// The reference to the Tier-0 instance using the policy path of the Tier-0 or
+	// label of type Provider. Specify the Tier-1 connectivity to Tier-0 instance. .
+	Tier0Path *string `json:"tier0_path,omitempty" yaml:"tier0_path,omitempty" mapstructure:"tier0_path,omitempty"`
+
+	// Tier1 connectivity type for reference. Property value is not validated with
+	// Tier1 configuration.   ROUTED: Tier1 is connected to Tier0 gateway and routing
+	// is enabled.   ISOLATED: Tier1 is not connected to any Tier0 gateway.   NATTED:
+	// Tier1 is in ROUTED type with NAT configured locally.
+	Type *Tier1Type `json:"type,omitempty" yaml:"type,omitempty" mapstructure:"type,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type Tier1FailoverMode string
+
+const Tier1FailoverModeNONPREEMPTIVE Tier1FailoverMode = "NON_PREEMPTIVE"
+const Tier1FailoverModePREEMPTIVE Tier1FailoverMode = "PREEMPTIVE"
+
+var enumValues_Tier1FailoverMode = []interface{}{
+	"PREEMPTIVE",
+	"NON_PREEMPTIVE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier1FailoverMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier1FailoverMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier1FailoverMode, v)
+	}
+	*j = Tier1FailoverMode(v)
+	return nil
+}
+
+type Tier1HaMode string
+
+const Tier1HaModeACTIVEACTIVE Tier1HaMode = "ACTIVE_ACTIVE"
+const Tier1HaModeACTIVESTANDBY Tier1HaMode = "ACTIVE_STANDBY"
+
+var enumValues_Tier1HaMode = []interface{}{
+	"ACTIVE_STANDBY",
+	"ACTIVE_ACTIVE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier1HaMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier1HaMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier1HaMode, v)
+	}
+	*j = Tier1HaMode(v)
+	return nil
+}
+
+type Tier1PoolAllocation string
+
+const Tier1PoolAllocationLBLARGE Tier1PoolAllocation = "LB_LARGE"
+const Tier1PoolAllocationLBMEDIUM Tier1PoolAllocation = "LB_MEDIUM"
+const Tier1PoolAllocationLBSMALL Tier1PoolAllocation = "LB_SMALL"
+const Tier1PoolAllocationLBXLARGE Tier1PoolAllocation = "LB_XLARGE"
+const Tier1PoolAllocationROUTING Tier1PoolAllocation = "ROUTING"
+
+var enumValues_Tier1PoolAllocation = []interface{}{
+	"ROUTING",
+	"LB_SMALL",
+	"LB_MEDIUM",
+	"LB_LARGE",
+	"LB_XLARGE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier1PoolAllocation) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier1PoolAllocation {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier1PoolAllocation, v)
+	}
+	*j = Tier1PoolAllocation(v)
+	return nil
+}
+
+type Tier1RouteAdvertisentTypes string
+
+const Tier1RouteAdvertisentTypesTIER1CONNECTED Tier1RouteAdvertisentTypes = "TIER1_CONNECTED"
+const Tier1RouteAdvertisentTypesTIER1DNSFORWARDERIP Tier1RouteAdvertisentTypes = "TIER1_DNS_FORWARDER_IP"
+const Tier1RouteAdvertisentTypesTIER1IPSECLOCALENDPOINT Tier1RouteAdvertisentTypes = "TIER1_IPSEC_LOCAL_ENDPOINT"
+const Tier1RouteAdvertisentTypesTIER1LBSNAT Tier1RouteAdvertisentTypes = "TIER1_LB_SNAT"
+const Tier1RouteAdvertisentTypesTIER1LBVIP Tier1RouteAdvertisentTypes = "TIER1_LB_VIP"
+const Tier1RouteAdvertisentTypesTIER1NAT Tier1RouteAdvertisentTypes = "TIER1_NAT"
+const Tier1RouteAdvertisentTypesTIER1STATICROUTES Tier1RouteAdvertisentTypes = "TIER1_STATIC_ROUTES"
+
+var enumValues_Tier1RouteAdvertisentTypes = []interface{}{
+	"TIER1_STATIC_ROUTES",
+	"TIER1_CONNECTED",
+	"TIER1_NAT",
+	"TIER1_LB_VIP",
+	"TIER1_LB_SNAT",
+	"TIER1_DNS_FORWARDER_IP",
+	"TIER1_IPSEC_LOCAL_ENDPOINT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier1RouteAdvertisentTypes) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier1RouteAdvertisentTypes {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier1RouteAdvertisentTypes, v)
+	}
+	*j = Tier1RouteAdvertisentTypes(v)
+	return nil
+}
+
+type Tier1Type string
+
+const Tier1TypeISOLATED Tier1Type = "ISOLATED"
+const Tier1TypeNATTED Tier1Type = "NATTED"
+const Tier1TypeROUTED Tier1Type = "ROUTED"
+
+var enumValues_Tier1Type = []interface{}{
+	"ROUTED",
+	"ISOLATED",
+	"NATTED",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier1Type) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Tier1Type {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Tier1Type, v)
+	}
+	*j = Tier1Type(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Tier1) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Tier1
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["default_rule_logging"]; !ok || v == nil {
+		plain.DefaultRuleLogging = false
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if len(plain.DhcpConfigPaths) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "dhcp_config_paths", 1)
+	}
+	if v, ok := raw["disable_firewall"]; !ok || v == nil {
+		plain.DisableFirewall = false
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["enable_standby_relocation"]; !ok || v == nil {
+		plain.EnableStandbyRelocation = false
+	}
+	if v, ok := raw["failover_mode"]; !ok || v == nil {
+		plain.FailoverMode = "NON_PREEMPTIVE"
+	}
+	if v, ok := raw["force_whitelisting"]; !ok || v == nil {
+		plain.ForceWhitelisting = false
+	}
+	if len(plain.Ipv6ProfilePaths) > 2 {
+		return fmt.Errorf("field %s length: must be <= %d", "ipv6_profile_paths", 2)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if v, ok := raw["pool_allocation"]; !ok || v == nil {
+		plain.PoolAllocation = "ROUTING"
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = Tier1(plain)
 	return nil
 }
 
@@ -5283,3 +6371,128 @@ func (j *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
 }
 
 type VlanID int
+
+type VrfEvpnL2VniConfig struct {
+	// This is used to enable or disable the creation of vtep groups. Each vtep group
+	// is used to group vteps with the same MAC for L2 ECMP usage.
+	EnableVtepGroups bool `json:"enable_vtep_groups,omitempty" yaml:"enable_vtep_groups,omitempty" mapstructure:"enable_vtep_groups,omitempty"`
+
+	// Define L2 VNI and its related route distinguiser and route targets.
+	L2VniConfigs []VrfL2VniConfig `json:"l2_vni_configs,omitempty" yaml:"l2_vni_configs,omitempty" mapstructure:"l2_vni_configs,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VrfEvpnL2VniConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain VrfEvpnL2VniConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["enable_vtep_groups"]; !ok || v == nil {
+		plain.EnableVtepGroups = false
+	}
+	if plain.L2VniConfigs != nil && len(plain.L2VniConfigs) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "l2_vni_configs", 1)
+	}
+	if len(plain.L2VniConfigs) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "l2_vni_configs", 1)
+	}
+	*j = VrfEvpnL2VniConfig(plain)
+	return nil
+}
+
+type VrfL2VniConfig struct {
+	// L2 VNI associated with the VRF. It must be unique and available from the VNI
+	// pool defined for EVPN service.
+	L2Vni *int `json:"l2_vni,omitempty" yaml:"l2_vni,omitempty" mapstructure:"l2_vni,omitempty"`
+
+	// This is a 64 bit number which disambiguates overlapping logical networks, with
+	// format in IPAddress:<number> or ASN:<number>.
+	RouteDistinguisher *string `json:"route_distinguisher,omitempty" yaml:"route_distinguisher,omitempty" mapstructure:"route_distinguisher,omitempty"`
+
+	// Route targets.
+	RouteTargets []VrfRouteTargets `json:"route_targets,omitempty" yaml:"route_targets,omitempty" mapstructure:"route_targets,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VrfL2VniConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain VrfL2VniConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.RouteTargets != nil && len(plain.RouteTargets) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "route_targets", 1)
+	}
+	if len(plain.RouteTargets) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "route_targets", 1)
+	}
+	*j = VrfL2VniConfig(plain)
+	return nil
+}
+
+// Vrf Route Targets for import/export.
+type VrfRouteTargets struct {
+	// Address family.
+	AddressFamily VrfRouteTargetsAddressFamily `json:"address_family,omitempty" yaml:"address_family,omitempty" mapstructure:"address_family,omitempty"`
+
+	// Export route targets with format in ASN:<number>.
+	ExportRouteTargets []string `json:"export_route_targets,omitempty" yaml:"export_route_targets,omitempty" mapstructure:"export_route_targets,omitempty"`
+
+	// Import route targets with format in ASN:<number>.
+	ImportRouteTargets []string `json:"import_route_targets,omitempty" yaml:"import_route_targets,omitempty" mapstructure:"import_route_targets,omitempty"`
+}
+
+type VrfRouteTargetsAddressFamily string
+
+const VrfRouteTargetsAddressFamilyL2VPNEVPN VrfRouteTargetsAddressFamily = "L2VPN_EVPN"
+
+var enumValues_VrfRouteTargetsAddressFamily = []interface{}{
+	"L2VPN_EVPN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VrfRouteTargetsAddressFamily) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_VrfRouteTargetsAddressFamily {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_VrfRouteTargetsAddressFamily, v)
+	}
+	*j = VrfRouteTargetsAddressFamily(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VrfRouteTargets) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain VrfRouteTargets
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["address_family"]; !ok || v == nil {
+		plain.AddressFamily = "L2VPN_EVPN"
+	}
+	*j = VrfRouteTargets(plain)
+	return nil
+}
