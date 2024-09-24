@@ -9,7 +9,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -85,8 +84,8 @@ func (p *NSXConfigParser) getDFW() {
 
 			rules := secPolicy.Rules
 			for _, rule := range rules {
-				r := p.getDFWRule(rule.Rule)
-				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, &rule.Rule)
+				r := p.getDFWRule(rule)
+				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, &rule)
 			}
 		}
 	}
@@ -127,7 +126,7 @@ func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) (res []*end
 	return res
 }
 
-func (p *NSXConfigParser) getDFWRule(rule nsx.Rule) *parsedRule {
+func (p *NSXConfigParser) getDFWRule(rule collector.Rule) *parsedRule {
 	if rule.Action == nil {
 		return nil // skip rule without action (Add warning)
 	}
@@ -148,7 +147,7 @@ func (p *NSXConfigParser) getDFWRule(rule nsx.Rule) *parsedRule {
 	return res
 }
 
-func (p *NSXConfigParser) getRuleConnections(rule nsx.Rule) *connection.Set {
+func (p *NSXConfigParser) getRuleConnections(rule collector.Rule) *connection.Set {
 
 	/*
 		// In order to specify raw services this can be used, along with services which
