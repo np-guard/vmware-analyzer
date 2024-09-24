@@ -5,6 +5,7 @@ import (
 
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 type DFW struct {
@@ -12,8 +13,16 @@ type DFW struct {
 	defaultAction   ruleAction      // global default (?)
 }
 
-// for a pair of src,dst vms, return the set of allowed connections
-func (d *DFW) AnalyzeDFW(src, dst *endpoints.VM) (allowedConns *connection.Set) {
+// AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) (allowedConns *connection.Set) {
+	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
+	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
+	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
+	return ingress.Intersect(egress)
+}
+
+// AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
+func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) (allowedConns *connection.Set) {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns := connection.None()
 	allDeniedConns := connection.None()
@@ -24,7 +33,7 @@ func (d *DFW) AnalyzeDFW(src, dst *endpoints.VM) (allowedConns *connection.Set) 
 			continue // cuurently skip L2 rules
 		}
 		// get analyzed conns from this category
-		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns, categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst)
+		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns, categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
 
 		// remove connections already denied by higher-prio categories, from this category's allowed conns
 		categoryAllowedConns = categoryAllowedConns.Subtract(allDeniedConns)
@@ -60,15 +69,39 @@ func (d *DFW) String() string {
 }
 
 // AddRule func for testing purposes
-func (d *DFW) AddRule(src, dst *endpoints.VM, conn *connection.Set, category string, action string) {
+
+func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string, direction string, origRule *nsx.Rule) {
 	for _, fwCategory := range d.categoriesSpecs {
-		if fwCategory.category.string() == category {
-			fwCategory.addRule(src, dst, conn, action)
+		if fwCategory.category.string() == categoryStr {
+			fwCategory.addRule(src, dst, conn, actionStr, direction, origRule)
 		}
 	}
 }
 
-// NewEmptyDFW func for testing purposes
+/*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string) {
+	var categoryObj *categorySpec
+	for _, c := range d.categoriesSpecs {
+		if c.category.string() == categoryStr {
+			categoryObj = c
+		}
+	}
+	if categoryObj == nil { // create new category if missing
+		categoryObj = &categorySpec{
+			category: dfwCategoryFromString(categoryStr),
+		}
+		d.categoriesSpecs = append(d.categoriesSpecs, categoryObj)
+	}
+
+	newRule := &fwRule{
+		srcVMs: src,
+		dstVMs: dst,
+		conn:   connection.All(), // todo: change
+		action: actionFromString(actionStr),
+	}
+	categoryObj.rules = append(categoryObj.rules, newRule)
+}*/
+
+// NewEmptyDFW returns new DFW with global default as from input
 func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 	res := &DFW{
 		defaultAction: actionDeny,
@@ -80,4 +113,8 @@ func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 		res.categoriesSpecs = append(res.categoriesSpecs, newEmptyCategory(c))
 	}
 	return res
+}
+
+func (d *DFW) GlobalDefaultAllow() bool {
+	return d.defaultAction == actionAllow
 }
