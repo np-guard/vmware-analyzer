@@ -8,6 +8,4 @@ Segment
 RealizedVirtualMachine
 ConjunctionOperator
 SegmentPort
-VpcSubnet
-VpcSubnetPort
 VirtualNetworkInterface
