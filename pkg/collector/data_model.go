@@ -22,9 +22,6 @@ type Service struct {
 type VirtualMachine struct {
 	resources.VirtualMachine
 }
-type Segment struct {
-	resources.Segment
-}
 type RealizedVirtualMachine struct {
 	resources.RealizedVirtualMachine
 }

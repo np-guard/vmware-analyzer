@@ -13,10 +13,11 @@ import (
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
 type ResourcesContainerModel struct {
-	ServiceList        []Service        `json:"services"`
-	VirtualMachineList []VirtualMachine `json:"virtual_machines"`
-	SegmentList        []Segment        `json:"segments"`
-	DomainList         []Domain         `json:"domains"`
+	ServiceList                 []Service                 `json:"services"`
+	VirtualMachineList          []VirtualMachine          `json:"virtual_machines"`
+	VirtualNetworkInterfaceList []VirtualNetworkInterface `json:"virtual_network_interface"`
+	SegmentList                 []Segment                 `json:"segments"`
+	DomainList                  []Domain                  `json:"domains"`
 }
 type DomainResources struct {
 	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
