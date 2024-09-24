@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
@@ -35,12 +36,17 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
 	}
 }
 
-// String returns a concatenated lines strings with all pairs and their permitted connections
-func (c connMap) String() string {
+// String returns a concatenated lines strings with all VM pairs and their permitted connections.
+// If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
+func (c connMap) String(vms []string) string {
 	lines := []string{}
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {
-			lines = append(lines, fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", src.Name(), dst.Name(), conn.String()))
+			lineStr := fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", src.Name(), dst.Name(), conn.String())
+			if (len(vms) > 0 && slices.Contains(vms, src.Name()) && slices.Contains(vms, dst.Name())) || len(vms) == 0 {
+				lines = append(lines, lineStr)
+			}
+
 		}
 	}
 	return strings.Join(lines, "\n")

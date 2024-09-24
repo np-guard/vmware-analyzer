@@ -55,14 +55,14 @@ func TestConnectivityBasicGlobalDefaultDeny(t *testing.T) {
 	require.Equal(t, len(allVms)*(len(allVms)-1), sumPairs(conn1Res))
 	// in this test, all entires are expecetd to be with No connections
 	require.Equal(t, sumPairs(conn1Res), sumNoConns(conn1Res))
-	fmt.Printf("%s\n", conn1Res.String())
+	fmt.Printf("%s\n", conn1Res.String(nil))
 
 	conn2Res := config2.getConnectivity()
 	// all vm pairs (except of vm to itself) should be in the input connRes
 	require.Equal(t, len(allVms)*(len(allVms)-1), sumPairs(conn2Res))
 	// in this test, all entires are expecetd to be with No connections
 	require.Equal(t, 0, sumNoConns(conn2Res))
-	fmt.Printf("%s\n", conn2Res.String())
+	fmt.Printf("%s\n", conn2Res.String(nil))
 
 	fmt.Println("done")
 }

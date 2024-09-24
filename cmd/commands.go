@@ -108,17 +108,19 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if !args.skipAnalysis {
-		parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
-		err = parser.RunParser()
-		config := parser.GetConfig()
-		config.ComputeConnectivity()
-		fmt.Println("analyzed Connectivity")
-		fmt.Println(config.AnalyzedConnectivity())
-
-		err = common.WriteToFile(args.outputFilleFile, "analyze output")
-		/*if err != nil {
+		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses)
+		if err != nil {
 			return err
-		}*/
+		}
+		fmt.Println("analyzed Connectivity")
+		fmt.Println(connResStr)
+
+		if args.outputFilleFile != "" {
+			err = common.WriteToFile(args.outputFilleFile, "analyze output")
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
