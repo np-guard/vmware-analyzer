@@ -85,8 +85,8 @@ func (p *NSXConfigParser) getDFW() {
 
 			rules := secPolicy.Rules
 			for _, rule := range rules {
-				r := p.getDFWRule(rule)
-				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, &rule)
+				r := p.getDFWRule(rule.Rule)
+				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, &rule.Rule)
 			}
 		}
 	}
