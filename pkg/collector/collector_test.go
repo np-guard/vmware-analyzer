@@ -85,9 +85,17 @@ func TestCollectResources(t *testing.T) {
 						services := domainResource.SecurityPolicyList[spi].Rules[ri].Services
 						for _, ref := range services {
 							if ref != "ANY" {
-								if got.GetService(ref) == nil {
+								s := got.GetService(ref)
+								if s == nil {
 									t.Errorf("fail to find service of %v", ref)
 									return
+								}
+								for _, e := range s.ServiceEntries {
+									_, err := e.ToConnection()
+									if err != nil {
+										t.Errorf("fail to create rule service entry error = %v", err)
+										return
+									}
 								}
 							}
 						}

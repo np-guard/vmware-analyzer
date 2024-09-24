@@ -81,7 +81,7 @@ type IPProtocolServiceEntry struct {
 const creatingConnectionError = "fail to create a connection from service %v"
 
 func (e *IPProtocolServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type IGMPTypeServiceEntry struct {
@@ -89,7 +89,7 @@ type IGMPTypeServiceEntry struct {
 }
 
 func (e *IGMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type ICMPTypeServiceEntry struct {
@@ -97,12 +97,17 @@ type ICMPTypeServiceEntry struct {
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	if e.IcmpCode == nil || e.IcmpType == nil {
-		return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
+	var tMin, tMax int64 = 0,connection.MaxICMPType
+	var cMin, cMax  int64 = 0,connection.MaxICMPCode
+	if e.IcmpCode != nil {
+		cMin = int64(*e.IcmpCode)
+		cMax = cMin
 	}
-	c := int64(*e.IcmpCode)
-	t := int64(*e.IcmpType)
-	return connection.ICMPConnection(t, t, c, c), nil
+	if e.IcmpType != nil {
+		tMin= int64(*e.IcmpType)
+		tMax = tMin
+	}
+	return connection.ICMPConnection(tMin, tMax, cMin, cMax), nil
 }
 
 type ALGTypeServiceEntry struct {
@@ -110,7 +115,7 @@ type ALGTypeServiceEntry struct {
 }
 
 func (e *ALGTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type L4PortSetServiceEntry struct {
@@ -144,9 +149,9 @@ func parsePorts(ports []resources.PortElement) ([]struct{ min, max int64 }, erro
 	for i, portString := range ports {
 		var err error
 		if strings.Contains(string(portString), "-") {
-			_, err = fmt.Sscanf(string(portString), "%s-%s", res[i].min, res[i].max)
+			_, err = fmt.Sscanf(string(portString), "%d-%d", &res[i].min, &res[i].max)
 		} else {
-			_, err = fmt.Sscanf(string(portString), "%s", res[i].min)
+			_, err = fmt.Sscanf(string(portString), "%d", &res[i].min)
 			res[i].max = res[i].min
 		}
 		if err != nil {
@@ -161,7 +166,7 @@ type EtherTypeServiceEntry struct {
 }
 
 func (e *EtherTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type NestedServiceServiceEntry struct {
@@ -169,7 +174,7 @@ type NestedServiceServiceEntry struct {
 }
 
 func (e *NestedServiceServiceEntry) ToConnection() (*connection.Set, error) {
-	return nil, fmt.Errorf(creatingConnectionError, e.ResourceType)
+	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type ServiceEntry interface {
