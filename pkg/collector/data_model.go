@@ -73,6 +73,45 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+
+type VirtualNetworkInterface struct {
+	resources.VirtualNetworkInterface
+}
+type Segment struct {
+	resources.Segment
+	SegmentPorts []SegmentPort `json:"segment_ports"`
+}
+
+func (d *Segment) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	var res Segment
+	if err := json.Unmarshal(b, &res.Segment); err != nil {
+		return err
+	}
+	if m, ok := raw["segment_ports"]; ok {
+		if err := json.Unmarshal(m, &res.SegmentPorts); err != nil {
+			return err
+		}
+	}
+	*d = res
+	return nil
+}
+
+type SegmentPort struct {
+	resources.SegmentPort
+}
+
+type Tier0 struct {
+	resources.Tier0
+}
+type Tier1 struct {
+	resources.Tier1
+}
+
+
 // /////////////////////////////////////////////////////////////////////////////////////
 type IPProtocolServiceEntry struct {
 	resources.IPProtocolServiceEntry

@@ -8,13 +8,19 @@ package collector
 
 import (
 	"fmt"
+
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
 	domainsQuery             = "policy/api/v1/infra/domains"
 	servicesQuery            = "policy/api/v1/infra/services"
 	segmentsQuery            = "policy/api/v1/infra/segments"
+	segmentPortsQuery        = "policy/api/v1/infra/segments/%s/ports"
+	tier0Query               = "policy/api/v1/infra/tier-0s"
+	tier1Query               = "policy/api/v1/infra/tier-1s"
 	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
+	virtualInterfaceQuery    = "api/v1/fabric/vifs"
 	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
 	groupQuery               = "policy/api/v1/infra/domains/%s/groups/%s"
 	groupMembersQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
@@ -30,7 +36,12 @@ type serverData struct {
 func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
 	server := serverData{nsxServer, userName, password}
 	res := NewResourcesContainerModel()
+	resources.FixResourcesCode()
 	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
+	if err != nil {
+		return nil, err
+	}
+	err = collectResultList(server, virtualInterfaceQuery, &res.VirtualNetworkInterfaceList)
 	if err != nil {
 		return nil, err
 	}
@@ -46,11 +57,18 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	if err != nil {
 		return nil, err
 	}
-	_, err = collectorNewCode(server, res)
+	for si := range res.SegmentList {
+		segmentID := *res.SegmentList[si].Id
+		err = collectResultList(server, fmt.Sprintf(segmentPortsQuery, segmentID), &res.SegmentList[si].SegmentPorts)
+		if err != nil {
+			return nil, err
+		}
+	}
+	err = collectResultList(server, tier0Query, &res.Tier0List)
 	if err != nil {
 		return nil, err
 	}
-	_, err = collectorNewCodeGateway(server, res)
+	err = collectResultList(server, tier1Query, &res.Tier1List)
 	if err != nil {
 		return nil, err
 	}

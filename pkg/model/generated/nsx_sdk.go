@@ -6836,9 +6836,6 @@ func (j *Tier0AdvancedConfig) UnmarshalJSON(b []byte) error {
 	if v, ok := raw["connectivity"]; !ok || v == nil {
 		plain.Connectivity = "ON"
 	}
-	if v, ok := raw["forwarding_up_timer"]; !ok || v == nil {
-		plain.ForwardingUpTimer = 5.0
-	}
 	*j = Tier0AdvancedConfig(plain)
 	return nil
 }

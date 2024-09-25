@@ -52,3 +52,30 @@ func (resources *ResourcesContainerModel) GetService(query string) *Service {
 	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == *gr.Path })
 	return &resources.ServiceList[i]
 }
+
+func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByPort(portID string) *VirtualNetworkInterface {
+	i := slices.IndexFunc(resources.VirtualNetworkInterfaceList, func(vni VirtualNetworkInterface) bool {
+		return vni.LportAttachmentId != nil && portID == *vni.LportAttachmentId
+	})
+	return &resources.VirtualNetworkInterfaceList[i]
+}
+
+func (resources *ResourcesContainerModel) GetVirtualMachine(id string) *VirtualMachine {
+	i := slices.IndexFunc(resources.VirtualMachineList, func(vm VirtualMachine) bool { return id == *vm.ExternalId })
+	return &resources.VirtualMachineList[i]
+}
+
+func (resources *ResourcesContainerModel) GetTier0(query string) *Tier0 {
+	i := slices.IndexFunc(resources.Tier0List, func(t Tier0) bool { return query == *t.Path })
+	if i >= 0 {
+		return &resources.Tier0List[i]
+	}
+	return nil
+}
+func (resources *ResourcesContainerModel) GetTier1(query string) *Tier1 {
+	i := slices.IndexFunc(resources.Tier1List, func(t Tier1) bool { return query == *t.Path })
+	if i >= 0 {
+		return &resources.Tier1List[i]
+	}
+	return nil
+}
