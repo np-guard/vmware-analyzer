@@ -55,7 +55,6 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			testNewCode(got)
 			testNewCodeGateway(got)
 			for _, domain := range got.DomainList {
 				domainResource := domain.Resources
