@@ -97,6 +97,10 @@ type ICMPTypeServiceEntry struct {
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
+	if e.Protocol == nil || *e.Protocol == resources.ICMPTypeServiceEntryProtocolICMPv6{
+		fmt.Printf(" protocol \"%s\" of ICMPTypeServiceEntry is not supported\n", *e.DisplayName)
+		return nil, nil
+	}
 	var tMin, tMax int64 = 0,connection.MaxICMPType
 	var cMin, cMax  int64 = 0,connection.MaxICMPCode
 	if e.IcmpCode != nil {
