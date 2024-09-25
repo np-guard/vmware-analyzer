@@ -11,3 +11,10 @@ SegmentPort
 VirtualNetworkInterface
 Tier0
 Tier1
+IPProtocolServiceEntry
+IGMPTypeServiceEntry
+ICMPTypeServiceEntry
+ALGTypeServiceEntry
+L4PortSetServiceEntry
+EtherTypeServiceEntry
+NestedServiceServiceEntry

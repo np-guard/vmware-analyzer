@@ -19,6 +19,7 @@ const (
 	outDir = "out/"
 )
 
+//nolint:gocyclo // one function with lots of checks
 func TestCollectResources(t *testing.T) {
 	type args struct {
 		nsxServer          string
@@ -56,6 +57,12 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			testNewCodeGateway(got)
+			for _, service := range got.ServiceList {
+				for _, e := range service.ServiceEntries {
+					//nolint:errcheck // we do not support al services?
+					e.ToConnection()
+				}
+			}
 			for _, domain := range got.DomainList {
 				domainResource := domain.Resources
 				if len(domainResource.SecurityPolicyList) == 0 {
@@ -79,10 +86,26 @@ func TestCollectResources(t *testing.T) {
 						services := domainResource.SecurityPolicyList[spi].Rules[ri].Services
 						for _, ref := range services {
 							if ref != "ANY" {
-								if got.GetService(ref) == nil {
+								s := got.GetService(ref)
+								if s == nil {
 									t.Errorf("fail to find service of %v", ref)
 									return
 								}
+								for _, e := range s.ServiceEntries {
+									_, err := e.ToConnection()
+									if err != nil {
+										t.Errorf("fail to create rule service entry error = %v", err)
+										return
+									}
+								}
+							}
+						}
+						ServiceEntries := domainResource.SecurityPolicyList[spi].Rules[ri].ServiceEntries
+						for _, e := range ServiceEntries {
+							_, err := e.ToConnection()
+							if err != nil {
+								t.Errorf("fail to create rule service entry = %v", err)
+								return
 							}
 						}
 					}

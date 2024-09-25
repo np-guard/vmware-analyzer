@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
@@ -122,7 +122,7 @@ func (c *categorySpec) string() string {
 	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action string, direction string, origRule *nsx.Rule) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action string, direction string, origRule *collector.Rule) {
 	newRule := &fwRule{
 		srcVMs:      src,
 		dstVMs:      dst,
