@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 type DFW struct {
@@ -70,7 +70,7 @@ func (d *DFW) String() string {
 
 // AddRule func for testing purposes
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string, direction string, origRule *nsx.Rule) {
+func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string, direction string, origRule *collector.Rule) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
 			fwCategory.addRule(src, dst, conn, actionStr, direction, origRule)

@@ -7,3 +7,10 @@ Domain
 Segment
 RealizedVirtualMachine
 ConjunctionOperator
+IPProtocolServiceEntry
+IGMPTypeServiceEntry
+ICMPTypeServiceEntry
+ALGTypeServiceEntry
+L4PortSetServiceEntry
+EtherTypeServiceEntry
+NestedServiceServiceEntry

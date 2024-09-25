@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 type ruleAction string
@@ -58,7 +58,7 @@ type fwRule struct {
 	conn        *connection.Set
 	action      ruleAction
 	direction   string //	"IN","OUT",	"IN_OUT"
-	origRuleObj *nsx.Rule
+	origRuleObj *collector.Rule
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
