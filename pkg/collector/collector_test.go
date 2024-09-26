@@ -57,6 +57,7 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			testTopology(got)
+			testTree(got)
 			for _, service := range got.ServiceList {
 				for _, e := range service.ServiceEntries {
 					//nolint:errcheck // we do not support al services?
