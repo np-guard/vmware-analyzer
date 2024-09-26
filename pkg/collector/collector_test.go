@@ -153,26 +153,26 @@ func TestCollectResources(t *testing.T) {
 
 func testTopology(got *ResourcesContainerModel) {
 	for _, segment := range got.SegmentList {
-		fmt.Printf("--------------------- segment(type) %s(%s) ------------------\n", *segment.DisplayName, *segment.Type)
+		fmt.Printf("--------------------- segment(type)[addr] %s ------------------\n", segmentName(&segment))
 
 		if segment.ConnectivityPath == nil{
-			fmt.Printf("segment(type) %s(%s) has no ConnectivityPath\n", *segment.DisplayName, *segment.Type)
+			fmt.Printf("segment(type)[addr] %s has no ConnectivityPath\n", segmentName(&segment))
 		} else if t1 := got.GetTier1(*segment.ConnectivityPath); t1 != nil{
 			t0 := got.GetTier0(*t1.Tier0Path)
-			fmt.Printf("[segment(type), t1, t0]: [%s(%s), %s, %s]\n", *segment.DisplayName, *segment.Type, *t1.DisplayName, *t0.DisplayName)
+			fmt.Printf("[segment(type)[addr], t1, t0]: [%s, %s, %s]\n", segmentName(&segment), *t1.DisplayName, *t0.DisplayName)
 		}else if t0 := got.GetTier0(*segment.ConnectivityPath); t0 != nil{
-			fmt.Printf("[segment(type), t0]: [%s(%s), %s]\n", *segment.DisplayName, *segment.Type, *t0.DisplayName)
+			fmt.Printf("[segment(type)[addr], t0]: [%s, %s]\n", segmentName(&segment), *t0.DisplayName)
 		}else{
-			fmt.Printf("fail to find tier of segment(type): %s(%s) with connectivity %s\n", *segment.DisplayName, *segment.Type, *segment.ConnectivityPath)
+			fmt.Printf("fail to find tier of segment(type)[addr]: %s with connectivity %s\n", segmentName(&segment), *segment.ConnectivityPath)
 		}
 		if len(segment.SegmentPorts) == 0{
-			fmt.Printf("segment(type) %s(%s) has no ports\n", *segment.DisplayName, *segment.Type)
+			fmt.Printf("segment(type)[addr] %s has no ports\n", segmentName(&segment))
 		}
 		for _, port := range segment.SegmentPorts {
 			att := *port.Attachment.Id
 			vif := got.GetVirtualNetworkInterfaceByPort(att)
-			vm := got.GetVirtualMachine(*vif.OwnerVmId)
-			fmt.Printf("[segment(type), vm]: [%s(%s), %s]\n", *segment.DisplayName, *segment.Type, *vm.DisplayName)
+			// vm := got.GetVirtualMachine(*vif.OwnerVmId)
+			fmt.Printf("[segment(type)[addr], vm]: [%s, %s]\n", segmentName(&segment), vniName(got,vif))
 		}
 		
 	}
