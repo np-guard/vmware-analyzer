@@ -85,23 +85,6 @@ func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (bool, treeNod
 
 ////////////////////////////////////////////////////////////////
 
-func testTree(got *ResourcesContainerModel) {
-	dotTopology(got)
-
-	for i1 := range got.VirtualNetworkInterfaceList {
-		for i2 := range got.VirtualNetworkInterfaceList {
-			v1 := &got.VirtualNetworkInterfaceList[i1]
-			v2 := &got.VirtualNetworkInterfaceList[i2]
-			c, r, b1, b2 := treeNodesPath(got, v1, v2)
-			if i1 != i2 && c {
-				fmt.Printf("%s <-%d---%s---%d->%s\n", vniName(got, v1), len(b1), r.name(), len(b2), vniName(got, v2))
-			}
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
 func (resources *ResourcesContainerModel) GetSegment(query string) *Segment {
 	i := slices.IndexFunc(resources.SegmentList, func(t Segment) bool { return query == *t.Path })
 	return &resources.SegmentList[i]
@@ -133,7 +116,7 @@ func segmentName(segment *Segment) string {
 	for _, subnet := range segment.Subnets {
 		nAddresses = append(nAddresses, *subnet.Network)
 	}
-	return fmt.Sprintf("%s(%s)\\nnetworks[%s]\\ngateways[%s]", *segment.DisplayName, *segment.Type, strings.Join(nAddresses, ","), strings.Join(gAddresses, ","))
+	return fmt.Sprintf("%s(%s)\\nnetworks[%s]", *segment.DisplayName, *segment.Type, strings.Join(nAddresses, ","))
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -162,3 +145,24 @@ func dotTopology(got *ResourcesContainerModel) {
 	out += "}\n"
 	common.WriteToFile(path.Join("out/", "topology.dot"), out)
 }
+
+func connectionTopology(got *ResourcesContainerModel) {
+	dotTopology(got)
+	out := "digraph D {\n"
+
+	for i1 := range got.VirtualNetworkInterfaceList {
+		for i2 := range got.VirtualNetworkInterfaceList {
+			v1 := &got.VirtualNetworkInterfaceList[i1]
+			v2 := &got.VirtualNetworkInterfaceList[i2]
+			c, r, b1, b2 := treeNodesPath(got, v1, v2)
+			if i1 > i2 && c {
+				out += fmt.Sprintf("\"%s\" -> \"%s\"[dir=none]\n", vniName(got, v1), vniName(got, v2))
+				fmt.Printf("%s <-%d---%s---%d->%s\n", vniName(got, v1), len(b1), r.name(), len(b2), vniName(got, v2))
+			}
+		}
+	}
+	out += "}\n"
+	common.WriteToFile(path.Join("out/", "connection.dot"), out)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
