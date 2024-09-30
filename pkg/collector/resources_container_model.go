@@ -79,3 +79,18 @@ func (resources *ResourcesContainerModel) GetTier1(query string) *Tier1 {
 	}
 	return nil
 }
+
+func (resources *ResourcesContainerModel) GetSegment(query string) *Segment {
+	i := slices.IndexFunc(resources.SegmentList, func(t Segment) bool { return query == *t.Path })
+	return &resources.SegmentList[i]
+}
+
+func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort {
+	for _, segment := range resources.SegmentList {
+		i := slices.IndexFunc(segment.SegmentPorts, func(s SegmentPort) bool { return id == *s.Attachment.Id })
+		if i >= 0 {
+			return &segment.SegmentPorts[i]
+		}
+	}
+	return nil
+}
