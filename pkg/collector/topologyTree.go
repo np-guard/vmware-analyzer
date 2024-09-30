@@ -9,7 +9,6 @@ package collector
 
 type treeNode interface {
 	parent(resources *ResourcesContainerModel) treeNode
-	name() string
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -41,13 +40,6 @@ func (t *Tier1) parent(resources *ResourcesContainerModel) treeNode {
 }
 func (t *Tier0) parent(resources *ResourcesContainerModel) treeNode { return nil }
 
-////////////////////////////////////////////////////////////////////////////
-
-func (v *VirtualNetworkInterface) name() string { return *v.DisplayName + "(ni)" }
-func (s *SegmentPort) name() string             { return *s.DisplayName + "(sp)" }
-func (s *Segment) name() string                 { return *s.DisplayName + "(sg)" }
-func (t *Tier1) name() string                   { return *t.DisplayName + "(t1)" }
-func (t *Tier0) name() string                   { return *t.DisplayName + "(t0)" }
 
 // //////////////////////////////////////////////////////////////////////
 type treeNodeBranch []treeNode
@@ -76,3 +68,7 @@ func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (bool, treeNod
 	return true, b1[rootIndex], b1[rootIndex+1:], b2[rootIndex+1:]
 }
 
+func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
+	c, _,_,_ := treeNodesPath(got, t1, t2);
+	return c
+}

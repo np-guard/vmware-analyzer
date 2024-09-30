@@ -210,10 +210,8 @@ func dotConnections(got *ResourcesContainerModel) {
 		for i2 := range got.VirtualNetworkInterfaceList {
 			v1 := &got.VirtualNetworkInterfaceList[i1]
 			v2 := &got.VirtualNetworkInterfaceList[i2]
-			c, r, b1, b2 := treeNodesPath(got, v1, v2)
-			if i1 > i2 && c {
+			if i1 > i2 && IsConnected(got, v1, v2) {
 				out += fmt.Sprintf("\"%s\" -> \"%s\"[dir=none]\n", vniName(got, v1), vniName(got, v2))
-				fmt.Printf("%s <-%d---%s---%d->%s\n", vniName(got, v1), len(b1), r.name(), len(b2), vniName(got, v2))
 			}
 		}
 	}
