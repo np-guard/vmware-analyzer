@@ -257,9 +257,43 @@ func (s *Service) UnmarshalJSON(b []byte) error {
 type VirtualMachine struct {
 	resources.VirtualMachine
 }
+type VirtualNetworkInterface struct {
+	resources.VirtualNetworkInterface
+}
 type Segment struct {
 	resources.Segment
+	SegmentPorts []SegmentPort `json:"segment_ports"`
 }
+
+func (d *Segment) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	var res Segment
+	if err := json.Unmarshal(b, &res.Segment); err != nil {
+		return err
+	}
+	if m, ok := raw["segment_ports"]; ok {
+		if err := json.Unmarshal(m, &res.SegmentPorts); err != nil {
+			return err
+		}
+	}
+	*d = res
+	return nil
+}
+
+type SegmentPort struct {
+	resources.SegmentPort
+}
+
+type Tier0 struct {
+	resources.Tier0
+}
+type Tier1 struct {
+	resources.Tier1
+}
+
 type RealizedVirtualMachine struct {
 	resources.RealizedVirtualMachine
 }
@@ -369,44 +403,3 @@ func (d *Domain) UnmarshalJSON(b []byte) error {
 	*d = res
 	return nil
 }
-
-// Helper function for unmarshalling
-/*
-func jsonToMap(jsonStr []byte) (map[string]json.RawMessage, error) {
-	var result map[string]json.RawMessage
-	err := json.Unmarshal(jsonStr, &result)
-	return result, err
-}
-func (res *Group) UnmarshalJSON(data []byte) error {
-
-	asObj := &resources.Group{}
-	err := json.Unmarshal(data, &asObj)
-	if err != nil {
-		return err
-	}
-	res.Group = *asObj
-
-	asMap, err := jsonToMap(data)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(asMap["Members"], &res.Members)
-}
-*/
-/*
-func (res *NetworkACL) UnmarshalJSON(data []byte) error {
-	asMap, err := jsonToMap(data)
-	if err != nil {
-		return err
-	}
-	asObj := &vpcv1.NetworkACL{}
-	err = vpcv1.UnmarshalNetworkACL(asMap, &asObj)
-	if err != nil {
-		return err
-	}
-	res.NetworkACL = *asObj
-
-	return json.Unmarshal(data, &res.BaseTaggedResource)
-}
-*/

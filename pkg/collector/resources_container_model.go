@@ -13,10 +13,13 @@ import (
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
 type ResourcesContainerModel struct {
-	ServiceList        []Service        `json:"services"`
-	VirtualMachineList []VirtualMachine `json:"virtual_machines"`
-	SegmentList        []Segment        `json:"segments"`
-	DomainList         []Domain         `json:"domains"`
+	ServiceList                 []Service                 `json:"services"`
+	VirtualMachineList          []VirtualMachine          `json:"virtual_machines"`
+	VirtualNetworkInterfaceList []VirtualNetworkInterface `json:"virtual_network_interface"`
+	SegmentList                 []Segment                 `json:"segments"`
+	Tier0List                   []Tier0                   `json:"tier0"`
+	Tier1List                   []Tier1                   `json:"tier1"`
+	DomainList                  []Domain                  `json:"domains"`
 }
 type DomainResources struct {
 	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
@@ -48,4 +51,46 @@ func (resources *DomainResources) GetGroup(query string) *Group {
 func (resources *ResourcesContainerModel) GetService(query string) *Service {
 	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == *gr.Path })
 	return &resources.ServiceList[i]
+}
+
+func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByPort(portID string) *VirtualNetworkInterface {
+	i := slices.IndexFunc(resources.VirtualNetworkInterfaceList, func(vni VirtualNetworkInterface) bool {
+		return vni.LportAttachmentId != nil && portID == *vni.LportAttachmentId
+	})
+	return &resources.VirtualNetworkInterfaceList[i]
+}
+
+func (resources *ResourcesContainerModel) GetVirtualMachine(id string) *VirtualMachine {
+	i := slices.IndexFunc(resources.VirtualMachineList, func(vm VirtualMachine) bool { return id == *vm.ExternalId })
+	return &resources.VirtualMachineList[i]
+}
+
+func (resources *ResourcesContainerModel) GetTier0(query string) *Tier0 {
+	i := slices.IndexFunc(resources.Tier0List, func(t Tier0) bool { return query == *t.Path })
+	if i >= 0 {
+		return &resources.Tier0List[i]
+	}
+	return nil
+}
+func (resources *ResourcesContainerModel) GetTier1(query string) *Tier1 {
+	i := slices.IndexFunc(resources.Tier1List, func(t Tier1) bool { return query == *t.Path })
+	if i >= 0 {
+		return &resources.Tier1List[i]
+	}
+	return nil
+}
+
+func (resources *ResourcesContainerModel) GetSegment(query string) *Segment {
+	i := slices.IndexFunc(resources.SegmentList, func(t Segment) bool { return query == *t.Path })
+	return &resources.SegmentList[i]
+}
+
+func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort {
+	for _, segment := range resources.SegmentList {
+		i := slices.IndexFunc(segment.SegmentPorts, func(s SegmentPort) bool { return id == *s.Attachment.Id })
+		if i >= 0 {
+			return &segment.SegmentPorts[i]
+		}
+	}
+	return nil
 }
