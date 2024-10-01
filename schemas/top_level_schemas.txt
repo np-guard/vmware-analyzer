@@ -18,3 +18,4 @@ ALGTypeServiceEntry
 L4PortSetServiceEntry
 EtherTypeServiceEntry
 NestedServiceServiceEntry
+FirewallRule

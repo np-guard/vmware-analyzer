@@ -23,10 +23,13 @@ const (
 	resourcesJSONEntry      = "resources"
 	serviceEntriesJSONEntry = "service_entries"
 	resourceTypeJSONEntry   = "resource_type"
+	defaultRuleJSONEntry    = "default_rule"
+	FirewallRuleJSONEntry   = "firewall_rule"
 )
 
 type Rule struct {
 	resources.Rule
+	FirewallRule   FirewallRule   `json:"firewall_rule"`
 	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
@@ -46,13 +49,23 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 	} else {
 		res.ServiceEntries = ServiceEntries{}
 	}
+	if r, ok := raw[FirewallRuleJSONEntry]; ok {
+		if err := json.Unmarshal(r, &res.FirewallRule); err != nil {
+			return err
+		}
+	}
 	*r = res
 	return nil
 }
 
+type FirewallRule struct {
+	resources.FirewallRule
+}
+
 type SecurityPolicy struct {
 	resources.SecurityPolicy
-	Rules []Rule `json:"rules"`
+	Rules       []Rule        `json:"rules"`
+	DefaultRule *FirewallRule `json:"default_rule"`
 }
 
 func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
@@ -66,6 +79,11 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	}
 	if r, ok := raw[rulesJSONEntry]; ok {
 		if err := json.Unmarshal(r, &res.Rules); err != nil {
+			return err
+		}
+	}
+	if r, ok := raw[defaultRuleJSONEntry]; ok {
+		if err := json.Unmarshal(r, &res.DefaultRule); err != nil {
 			return err
 		}
 	}
@@ -97,18 +115,18 @@ type ICMPTypeServiceEntry struct {
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	if e.Protocol == nil || *e.Protocol == resources.ICMPTypeServiceEntryProtocolICMPv6{
+	if e.Protocol == nil || *e.Protocol == resources.ICMPTypeServiceEntryProtocolICMPv6 {
 		fmt.Printf(" protocol \"%s\" of ICMPTypeServiceEntry is not supported\n", *e.DisplayName)
 		return nil, nil
 	}
-	var tMin, tMax int64 = 0,connection.MaxICMPType
-	var cMin, cMax  int64 = 0,connection.MaxICMPCode
+	var tMin, tMax int64 = 0, connection.MaxICMPType
+	var cMin, cMax int64 = 0, connection.MaxICMPCode
 	if e.IcmpCode != nil {
 		cMin = int64(*e.IcmpCode)
 		cMax = cMin
 	}
 	if e.IcmpType != nil {
-		tMin= int64(*e.IcmpType)
+		tMin = int64(*e.IcmpType)
 		tMax = tMin
 	}
 	return connection.ICMPConnection(tMin, tMax, cMin, cMax), nil
