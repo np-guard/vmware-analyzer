@@ -27,6 +27,7 @@ const (
 	securityPoliciesQuery    = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
+	firewallRuleQuery        = "api/v1/firewall/rules/%d"
 )
 
 type serverData struct {
@@ -104,6 +105,15 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 			if err != nil {
 				return nil, err
 			}
+			if domainResources.SecurityPolicyList[si].DefaultRuleId != nil {
+				domainResources.SecurityPolicyList[si].DefaultRule = &FirewallRule{}
+				err = collectResource(server,
+					fmt.Sprintf(firewallRuleQuery, *domainResources.SecurityPolicyList[si].DefaultRuleId),
+					domainResources.SecurityPolicyList[si].DefaultRule)
+				if err != nil {
+					return nil, err
+				}
+			}
 			for ri := range domainResources.SecurityPolicyList[si].Rules {
 				err = collectResource(server,
 					fmt.Sprintf(securityPolicyRuleQuery, domainID,
@@ -112,8 +122,26 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 				if err != nil {
 					return nil, err
 				}
+				err = collectResource(server,
+					fmt.Sprintf(firewallRuleQuery,
+						*domainResources.SecurityPolicyList[si].Rules[ri].RuleId),
+					&domainResources.SecurityPolicyList[si].Rules[ri].FirewallRule)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 	}
+	FixResourcesForJson(res)
 	return res, nil
+}
+
+func FixResourcesForJson(res *ResourcesContainerModel) {
+	for i := range res.Tier0List {
+		if res.Tier0List[i].AdvancedConfig != nil {
+			if res.Tier0List[i].AdvancedConfig.ForwardingUpTimer == 0 {
+				res.Tier0List[i].AdvancedConfig.ForwardingUpTimer = 5
+			}
+		}
+	}
 }

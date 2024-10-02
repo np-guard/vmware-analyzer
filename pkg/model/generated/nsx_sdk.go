@@ -1929,6 +1929,327 @@ type FederationGatewayConfig struct {
 	TransitSegmentId *string `json:"transit_segment_id,omitempty" yaml:"transit_segment_id,omitempty" mapstructure:"transit_segment_id,omitempty"`
 }
 
+type FirewallRule struct {
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Owner corresponds to the JSON schema field "_owner".
+	Owner *OwnerResourceLink `json:"_owner,omitempty" yaml:"_owner,omitempty" mapstructure:"_owner,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Action enforced on the packets which matches the distributed service rule.
+	// Currently DS Layer supports below actions. ALLOW           - Forward any packet
+	// when a rule with this action gets a match (Used by Firewall). DROP            -
+	// Drop any packet when a rule with this action gets a match. Packets won't go
+	// further(Used by Firewall). REJECT          - Terminate TCP connection by
+	// sending TCP reset for a packet when a rule with this action gets a match (Used
+	// by Firewall). REDIRECT        - Redirect any packet to a partner appliance when
+	// a rule with this action gets a match (Used by Service Insertion).
+	// DO_NOT_REDIRECT - Do not redirect any packet to a partner appliance when a rule
+	// with this action gets a match (Used by Service Insertion). DETECT          -
+	// Detect IDS Signatures. ALLOW_CONTINUE  - Allows rules to jump from this rule.
+	// Action on matching rules in the destination category will decide next step.
+	// Application is default destination until new categories are supported to jump
+	// to. DETECT_PREVENT  - Detect and Prevent IDS Signatures.
+	Action *FirewallRuleAction `json:"action,omitempty" yaml:"action,omitempty" mapstructure:"action,omitempty"`
+
+	// List of object where rule will be enforced. The section level field overrides
+	// this one. Null will be treated as any.
+	AppliedTos []ResourceReference `json:"applied_tos,omitempty" yaml:"applied_tos,omitempty" mapstructure:"applied_tos,omitempty"`
+
+	// NS Profile object which accepts attributes and sub-attributes of various
+	// network services (ex. L7 AppId, domain name, encryption algorithm) as key value
+	// pairs.
+	ContextProfiles []ResourceReference `json:"context_profiles,omitempty" yaml:"context_profiles,omitempty" mapstructure:"context_profiles,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// List of the destinations. Null will be treated as any.
+	Destinations []ResourceReference `json:"destinations,omitempty" yaml:"destinations,omitempty" mapstructure:"destinations,omitempty"`
+
+	// Negation of the destination.
+	DestinationsExcluded bool `json:"destinations_excluded,omitempty" yaml:"destinations_excluded,omitempty" mapstructure:"destinations_excluded,omitempty"`
+
+	// Rule direction in case of stateless distributed service rules. This will only
+	// considered if section level parameter is set to stateless. Default to IN_OUT if
+	// not specified.
+	Direction FirewallRuleDirection `json:"direction,omitempty" yaml:"direction,omitempty" mapstructure:"direction,omitempty"`
+
+	// Flag to disable rule. Disabled will only be persisted but never
+	// provisioned/realized.
+	Disabled bool `json:"disabled,omitempty" yaml:"disabled,omitempty" mapstructure:"disabled,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// List of NSGroups that have end point attributes like AD Groups(SID), process
+	// name, process hash etc. For Flash release, only NSGroups containing AD Groups
+	// are supported.
+	ExtendedSources []ResourceReference `json:"extended_sources,omitempty" yaml:"extended_sources,omitempty" mapstructure:"extended_sources,omitempty"`
+
+	// Identifier of the resource
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Type of IP packet that should be matched while enforcing the rule.
+	IpProtocol FirewallRuleIpProtocol `json:"ip_protocol,omitempty" yaml:"ip_protocol,omitempty" mapstructure:"ip_protocol,omitempty"`
+
+	// Flag to indicate whether rule is default.
+	IsDefault *bool `json:"is_default,omitempty" yaml:"is_default,omitempty" mapstructure:"is_default,omitempty"`
+
+	// Flag to enable packet logging. Default is disabled.
+	Logged bool `json:"logged,omitempty" yaml:"logged,omitempty" mapstructure:"logged,omitempty"`
+
+	// User notes specific to the rule.
+	Notes *string `json:"notes,omitempty" yaml:"notes,omitempty" mapstructure:"notes,omitempty"`
+
+	// Priority of the rule.
+	Priority *int `json:"priority,omitempty" yaml:"priority,omitempty" mapstructure:"priority,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// User level field which will be printed in CLI and packet logs.
+	RuleTag *string `json:"rule_tag,omitempty" yaml:"rule_tag,omitempty" mapstructure:"rule_tag,omitempty"`
+
+	// Section Id of the section to which this rule belongs to.
+	SectionId *string `json:"section_id,omitempty" yaml:"section_id,omitempty" mapstructure:"section_id,omitempty"`
+
+	// List of the services. Null will be treated as any.
+	Services []FirewallService `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
+
+	// List of sources. Null will be treated as any.
+	Sources []ResourceReference `json:"sources,omitempty" yaml:"sources,omitempty" mapstructure:"sources,omitempty"`
+
+	// Negation of the source.
+	SourcesExcluded bool `json:"sources_excluded,omitempty" yaml:"sources_excluded,omitempty" mapstructure:"sources_excluded,omitempty"`
+}
+
+type FirewallRuleAction string
+
+const FirewallRuleActionALLOW FirewallRuleAction = "ALLOW"
+const FirewallRuleActionALLOWCONTINUE FirewallRuleAction = "ALLOW_CONTINUE"
+const FirewallRuleActionDETECT FirewallRuleAction = "DETECT"
+const FirewallRuleActionDETECTPREVENT FirewallRuleAction = "DETECT_PREVENT"
+const FirewallRuleActionDONOTREDIRECT FirewallRuleAction = "DO_NOT_REDIRECT"
+const FirewallRuleActionDROP FirewallRuleAction = "DROP"
+const FirewallRuleActionREDIRECT FirewallRuleAction = "REDIRECT"
+const FirewallRuleActionREJECT FirewallRuleAction = "REJECT"
+
+var enumValues_FirewallRuleAction = []interface{}{
+	"ALLOW",
+	"DROP",
+	"REJECT",
+	"REDIRECT",
+	"DO_NOT_REDIRECT",
+	"DETECT",
+	"ALLOW_CONTINUE",
+	"DETECT_PREVENT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FirewallRuleAction) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FirewallRuleAction {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FirewallRuleAction, v)
+	}
+	*j = FirewallRuleAction(v)
+	return nil
+}
+
+type FirewallRuleDirection string
+
+const FirewallRuleDirectionIN FirewallRuleDirection = "IN"
+const FirewallRuleDirectionINOUT FirewallRuleDirection = "IN_OUT"
+const FirewallRuleDirectionOUT FirewallRuleDirection = "OUT"
+
+var enumValues_FirewallRuleDirection = []interface{}{
+	"IN",
+	"OUT",
+	"IN_OUT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FirewallRuleDirection) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FirewallRuleDirection {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FirewallRuleDirection, v)
+	}
+	*j = FirewallRuleDirection(v)
+	return nil
+}
+
+type FirewallRuleIpProtocol string
+
+const FirewallRuleIpProtocolIPV4 FirewallRuleIpProtocol = "IPV4"
+const FirewallRuleIpProtocolIPV4IPV6 FirewallRuleIpProtocol = "IPV4_IPV6"
+const FirewallRuleIpProtocolIPV6 FirewallRuleIpProtocol = "IPV6"
+
+var enumValues_FirewallRuleIpProtocol = []interface{}{
+	"IPV4",
+	"IPV6",
+	"IPV4_IPV6",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FirewallRuleIpProtocol) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FirewallRuleIpProtocol {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FirewallRuleIpProtocol, v)
+	}
+	*j = FirewallRuleIpProtocol(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FirewallRule) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain FirewallRule
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if len(plain.AppliedTos) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "applied_tos", 128)
+	}
+	if len(plain.ContextProfiles) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "context_profiles", 128)
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if len(plain.Destinations) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "destinations", 128)
+	}
+	if v, ok := raw["destinations_excluded"]; !ok || v == nil {
+		plain.DestinationsExcluded = false
+	}
+	if v, ok := raw["direction"]; !ok || v == nil {
+		plain.Direction = "IN_OUT"
+	}
+	if v, ok := raw["disabled"]; !ok || v == nil {
+		plain.Disabled = false
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if len(plain.ExtendedSources) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "extended_sources", 128)
+	}
+	if v, ok := raw["ip_protocol"]; !ok || v == nil {
+		plain.IpProtocol = "IPV4_IPV6"
+	}
+	if v, ok := raw["logged"]; !ok || v == nil {
+		plain.Logged = false
+	}
+	if plain.Notes != nil && len(*plain.Notes) > 2048 {
+		return fmt.Errorf("field %s length: must be <= %d", "notes", 2048)
+	}
+	if plain.RuleTag != nil && len(*plain.RuleTag) > 32 {
+		return fmt.Errorf("field %s length: must be <= %d", "rule_tag", 32)
+	}
+	if len(plain.Services) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "services", 128)
+	}
+	if len(plain.Sources) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "sources", 128)
+	}
+	if v, ok := raw["sources_excluded"]; !ok || v == nil {
+		plain.SourcesExcluded = false
+	}
+	*j = FirewallRule(plain)
+	return nil
+}
+
+type FirewallService struct {
+	// Will be set to false if the referenced NSX resource has been deleted.
+	IsValid *bool `json:"is_valid,omitempty" yaml:"is_valid,omitempty" mapstructure:"is_valid,omitempty"`
+
+	// Distributed Service API accepts raw protocol and ports as part of NS service
+	// element in Distributed Service Rule that describes traffic corresponding to an
+	// NSService.
+	Service *NSServiceElement `json:"service,omitempty" yaml:"service,omitempty" mapstructure:"service,omitempty"`
+
+	// Display name of the NSX resource.
+	TargetDisplayName *string `json:"target_display_name,omitempty" yaml:"target_display_name,omitempty" mapstructure:"target_display_name,omitempty"`
+
+	// Identifier of the NSX resource.
+	TargetId *string `json:"target_id,omitempty" yaml:"target_id,omitempty" mapstructure:"target_id,omitempty"`
+
+	// Type of the NSX resource.
+	TargetType *string `json:"target_type,omitempty" yaml:"target_type,omitempty" mapstructure:"target_type,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FirewallService) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain FirewallService
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.TargetDisplayName != nil && len(*plain.TargetDisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "target_display_name", 255)
+	}
+	if plain.TargetId != nil && len(*plain.TargetId) > 64 {
+		return fmt.Errorf("field %s length: must be <= %d", "target_id", 64)
+	}
+	if plain.TargetType != nil && len(*plain.TargetType) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "target_type", 255)
+	}
+	*j = FirewallService(plain)
+	return nil
+}
+
 type GatewayQosProfileConfig struct {
 	// Policy path to gateway QoS profile in egress direction.
 	EgressQosProfilePath *string `json:"egress_qos_profile_path,omitempty" yaml:"egress_qos_profile_path,omitempty" mapstructure:"egress_qos_profile_path,omitempty"`
@@ -3383,6 +3704,49 @@ func (j *LocalEgress) UnmarshalJSON(b []byte) error {
 // separated by colons or dashes. Examples: 01:23:45:67:89:ab, 01-23-45-67-89-AB.
 type MACAddress string
 
+type NSServiceElement struct {
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *NSServiceElementResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+}
+
+type NSServiceElementResourceType string
+
+const NSServiceElementResourceTypeALGTypeNSService NSServiceElementResourceType = "ALGTypeNSService"
+const NSServiceElementResourceTypeEtherTypeNSService NSServiceElementResourceType = "EtherTypeNSService"
+const NSServiceElementResourceTypeICMPTypeNSService NSServiceElementResourceType = "ICMPTypeNSService"
+const NSServiceElementResourceTypeIGMPTypeNSService NSServiceElementResourceType = "IGMPTypeNSService"
+const NSServiceElementResourceTypeIPProtocolNSService NSServiceElementResourceType = "IPProtocolNSService"
+const NSServiceElementResourceTypeL4PortSetNSService NSServiceElementResourceType = "L4PortSetNSService"
+
+var enumValues_NSServiceElementResourceType = []interface{}{
+	"EtherTypeNSService",
+	"IPProtocolNSService",
+	"IGMPTypeNSService",
+	"ICMPTypeNSService",
+	"ALGTypeNSService",
+	"L4PortSetNSService",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NSServiceElementResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_NSServiceElementResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_NSServiceElementResourceType, v)
+	}
+	*j = NSServiceElementResourceType(v)
+	return nil
+}
+
 type NestedServiceServiceEntry struct {
 	// Timestamp of resource creation
 	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
@@ -3564,6 +3928,19 @@ func (j *NestedServiceServiceEntry) UnmarshalJSON(b []byte) error {
 	}
 	*j = NestedServiceServiceEntry(plain)
 	return nil
+}
+
+// The server will populate this field when returing the resource. Ignored on PUT
+// and POST.
+type OwnerResourceLink struct {
+	// Action corresponds to the JSON schema field "action".
+	Action *string `json:"action,omitempty" yaml:"action,omitempty" mapstructure:"action,omitempty"`
+
+	// Href corresponds to the JSON schema field "href".
+	Href *string `json:"href,omitempty" yaml:"href,omitempty" mapstructure:"href,omitempty"`
+
+	// Custom relation type (follows RFC 5988 where appropriate definitions exist)
+	Rel *string `json:"rel,omitempty" yaml:"rel,omitempty" mapstructure:"rel,omitempty"`
 }
 
 // Represents policy path expressions in the form of an array, to support addition
@@ -6835,6 +7212,9 @@ func (j *Tier0AdvancedConfig) UnmarshalJSON(b []byte) error {
 	}
 	if v, ok := raw["connectivity"]; !ok || v == nil {
 		plain.Connectivity = "ON"
+	}
+	if v, ok := raw["forwarding_up_timer"]; !ok || v == nil {
+		plain.ForwardingUpTimer = 5.0
 	}
 	*j = Tier0AdvancedConfig(plain)
 	return nil
