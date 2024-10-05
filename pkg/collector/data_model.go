@@ -13,7 +13,7 @@ import (
 
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/models/pkg/netp"
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -28,7 +28,7 @@ const (
 )
 
 type Rule struct {
-	resources.Rule
+	nsx.Rule
 	FirewallRule   FirewallRule   `json:"firewall_rule"`
 	ServiceEntries ServiceEntries `json:"service_entries"`
 }
@@ -59,11 +59,11 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 }
 
 type FirewallRule struct {
-	resources.FirewallRule
+	nsx.FirewallRule
 }
 
 type SecurityPolicy struct {
-	resources.SecurityPolicy
+	nsx.SecurityPolicy
 	Rules       []Rule        `json:"rules"`
 	DefaultRule *FirewallRule `json:"default_rule"`
 }
@@ -93,7 +93,7 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 
 // /////////////////////////////////////////////////////////////////////////////////////
 type IPProtocolServiceEntry struct {
-	resources.IPProtocolServiceEntry
+	nsx.IPProtocolServiceEntry
 }
 
 const creatingConnectionError = "fail to create a connection from service %v"
@@ -103,7 +103,7 @@ func (e *IPProtocolServiceEntry) ToConnection() (*connection.Set, error) {
 }
 
 type IGMPTypeServiceEntry struct {
-	resources.IGMPTypeServiceEntry
+	nsx.IGMPTypeServiceEntry
 }
 
 func (e *IGMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
@@ -111,13 +111,13 @@ func (e *IGMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
 }
 
 type ICMPTypeServiceEntry struct {
-	resources.ICMPTypeServiceEntry
+	nsx.ICMPTypeServiceEntry
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
-	if e.Protocol == nil || *e.Protocol == resources.ICMPTypeServiceEntryProtocolICMPv6 {
-		fmt.Printf(" protocol \"%s\" of ICMPTypeServiceEntry is not supported\n", *e.DisplayName)
-		return nil, nil
+	if e.Protocol == nil || *e.Protocol == nsx.ICMPTypeServiceEntryProtocolICMPv6 {
+		//fmt.Printf(" protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported\n", *e.Protocol, *e.DisplayName)
+		return nil, fmt.Errorf("protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported", *e.Protocol, *e.DisplayName)
 	}
 	var tMin, tMax int64 = 0, connection.MaxICMPType
 	var cMin, cMax int64 = 0, connection.MaxICMPCode
@@ -133,7 +133,7 @@ func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
 }
 
 type ALGTypeServiceEntry struct {
-	resources.ALGTypeServiceEntry
+	nsx.ALGTypeServiceEntry
 }
 
 func (e *ALGTypeServiceEntry) ToConnection() (*connection.Set, error) {
@@ -141,7 +141,7 @@ func (e *ALGTypeServiceEntry) ToConnection() (*connection.Set, error) {
 }
 
 type L4PortSetServiceEntry struct {
-	resources.L4PortSetServiceEntry
+	nsx.L4PortSetServiceEntry
 }
 
 func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
@@ -163,7 +163,7 @@ func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
 	return res, nil
 }
 
-func parsePorts(ports []resources.PortElement) ([]struct{ min, max int64 }, error) {
+func parsePorts(ports []nsx.PortElement) ([]struct{ min, max int64 }, error) {
 	res := make([]struct{ min, max int64 }, len(ports))
 	if len(ports) == 0 {
 		return []struct{ min, max int64 }{{connection.MinPort, connection.MaxPort}}, nil
@@ -184,7 +184,7 @@ func parsePorts(ports []resources.PortElement) ([]struct{ min, max int64 }, erro
 }
 
 type EtherTypeServiceEntry struct {
-	resources.EtherTypeServiceEntry
+	nsx.EtherTypeServiceEntry
 }
 
 func (e *EtherTypeServiceEntry) ToConnection() (*connection.Set, error) {
@@ -192,7 +192,7 @@ func (e *EtherTypeServiceEntry) ToConnection() (*connection.Set, error) {
 }
 
 type NestedServiceServiceEntry struct {
-	resources.NestedServiceServiceEntry
+	nsx.NestedServiceServiceEntry
 }
 
 func (e *NestedServiceServiceEntry) ToConnection() (*connection.Set, error) {
@@ -248,7 +248,7 @@ func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 }
 
 type Service struct {
-	resources.Service
+	nsx.Service
 	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
@@ -273,13 +273,13 @@ func (s *Service) UnmarshalJSON(b []byte) error {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type VirtualMachine struct {
-	resources.VirtualMachine
+	nsx.VirtualMachine
 }
 type VirtualNetworkInterface struct {
-	resources.VirtualNetworkInterface
+	nsx.VirtualNetworkInterface
 }
 type Segment struct {
-	resources.Segment
+	nsx.Segment
 	SegmentPorts []SegmentPort `json:"segment_ports"`
 }
 
@@ -302,18 +302,18 @@ func (d *Segment) UnmarshalJSON(b []byte) error {
 }
 
 type SegmentPort struct {
-	resources.SegmentPort
+	nsx.SegmentPort
 }
 
 type Tier0 struct {
-	resources.Tier0
+	nsx.Tier0
 }
 type Tier1 struct {
-	resources.Tier1
+	nsx.Tier1
 }
 
 type RealizedVirtualMachine struct {
-	resources.RealizedVirtualMachine
+	nsx.RealizedVirtualMachine
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -323,13 +323,13 @@ type ExpressionElement interface {
 }
 
 type Condition struct {
-	resources.Condition
+	nsx.Condition
 }
 
 func (Condition) expressionElementIsMe() {}
 
 type ConjunctionOperator struct {
-	resources.ConjunctionOperator
+	nsx.ConjunctionOperator
 }
 
 func (ConjunctionOperator) expressionElementIsMe() {}
@@ -369,7 +369,7 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 }
 
 type Group struct {
-	resources.Group
+	nsx.Group
 	Members    []RealizedVirtualMachine `json:"members"`
 	Expression Expression               `json:"expression"`
 }
@@ -400,7 +400,7 @@ func (d *Group) UnmarshalJSON(b []byte) error {
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type Domain struct {
-	resources.Domain
+	nsx.Domain
 	Resources DomainResources `json:"resources"`
 }
 

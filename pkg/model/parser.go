@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"os"
 	"slices"
 	"strings"
@@ -44,6 +45,7 @@ type NSXConfigParser struct {
 }
 
 func (p *NSXConfigParser) RunParser() error {
+	fmt.Println("started parsing the given NSX config")
 	p.configRes = &config{}
 	p.getVMs() // get vms config
 	p.getDFW() // get distributed firewall config
@@ -61,6 +63,9 @@ func (p *NSXConfigParser) getVMs() {
 		if vm.DisplayName == nil {
 			continue
 			// skip vm without name
+		}
+		if !strings.Contains(*vm.DisplayName, "New") {
+			continue
 		}
 		vmObj := endpoints.NewVM(*vm.DisplayName)
 		p.configRes.vms = append(p.configRes.vms, vmObj)
@@ -164,19 +169,31 @@ func (p *NSXConfigParser) getRuleConnections(rule collector.Rule) *connection.Se
 	}
 	res := connection.None()
 	for _, s := range rule.Services {
-		conn := p.connectionFromService(s)
+		conn := p.connectionFromService(s, rule)
 		res = res.Union(conn)
 	}
 
 	return res
 }
 
-func (p *NSXConfigParser) connectionFromService(servicePath string) *connection.Set {
-	// TODO: temporary work around, should be implemented
-	if strings.Contains(servicePath, "ICMP") { // example: "/infra/services/ICMP-ALL"
-		return connection.ICMPConnection(0, 255, 0, 255)
+// connectionFromService returns the set of connections from a service config within the given rule
+func (p *NSXConfigParser) connectionFromService(servicePath string, rule collector.Rule) *connection.Set {
+	res := connection.None()
+	service := p.rc.GetService(servicePath)
+	if service == nil {
+		fmt.Printf("GetService failed to find service %s\n", servicePath)
+		return nil
 	}
-	return connection.None()
+	for _, serviceEntry := range service.ServiceEntries {
+		conn, err := serviceEntry.ToConnection()
+		if conn != nil && err == nil {
+			res = res.Union(conn)
+		} else if err != nil {
+			fmt.Println(err.Error())
+			fmt.Printf("ignoring this service within rule id %d\n", *rule.RuleId)
+		}
+	}
+	return res
 }
 
 func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMachine) (res []*endpoints.VM) {

@@ -115,11 +115,13 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool) (
 }
 
 func (c *categorySpec) string() string {
-	rulesStr := make([]string, len(c.rules))
+	rulesStr := make([]string, len(c.rules)+1)
+	rulesStr[0] = "rules:"
 	for i := range c.rules {
-		rulesStr[i] = c.rules[i].string()
+		rulesStr[i+1] = c.rules[i].string()
 	}
-	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
+	return fmt.Sprintf("category: %s\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
+
 }
 
 func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action string, direction string, origRule *collector.Rule) {

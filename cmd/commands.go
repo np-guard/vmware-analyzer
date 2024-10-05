@@ -50,8 +50,8 @@ func newRootCommand() *cobra.Command {
 	args := &inArgs{}
 	rootCmd := &cobra.Command{
 		Use:     "nsxanalyzer",
-		Short:   "nsxanalyzer is a CLI for collecting and analyzing vmware-related cloud resources",
-		Long:    `nsxanalyzer long description`,
+		Short:   "nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs",
+		Long:    "nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs",
 		Version: version.VersionCore,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
@@ -81,6 +81,7 @@ func runCommand(args *inArgs) error {
 	var recourses *collector.ResourcesContainerModel
 	var err error
 	if args.host != "" {
+		fmt.Println("collecting NSX resources from given host")
 		recourses, err = collector.CollectResources(args.host, args.user, args.password)
 		if err != nil {
 			return err
@@ -90,7 +91,7 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("reading input file")
+		fmt.Println("reading input NSX config file")
 		recourses, err = collector.FromJSONString(b)
 		if err != nil {
 			return err
@@ -112,7 +113,7 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("analyzed Connectivity")
+		fmt.Println("analyzed Connectivity:")
 		fmt.Println(connResStr)
 
 		if args.outputFilleFile != "" {

@@ -6,7 +6,7 @@ import (
 )
 
 func TestParser(t *testing.T) {
-	parser, err := NewNSXConfigParserFromFile("../../docs/simple2.json")
+	parser, err := NewNSXConfigParserFromFile("../../docs/simple4.json")
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
