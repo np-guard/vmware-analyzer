@@ -27,6 +27,7 @@ const (
 	firewallRuleJSONEntry   = "firewall_rule"
 	segmentPortsJSONEntry   = "segment_ports"
 )
+var nilWithType *struct{}
 
 type Rule struct {
 	nsx.Rule
@@ -35,21 +36,8 @@ type Rule struct {
 }
 
 func (rule *Rule) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, &rule.Rule); err != nil {
-		return err
-	}
 	rule.ServiceEntries = ServiceEntries{}
-	if err := unmarshalFromRaw(raw, serviceEntriesJSONEntry, &rule.ServiceEntries); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, firewallRuleJSONEntry, &rule.FirewallRule); err != nil {
-		return err
-	}
-	return nil
+	return UnmarshalBaseStructAndFields(b, &rule.Rule, serviceEntriesJSONEntry, &rule.ServiceEntries, firewallRuleJSONEntry, &rule.FirewallRule)
 }
 
 type FirewallRule struct {
@@ -63,20 +51,7 @@ type SecurityPolicy struct {
 }
 
 func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, &securityPolicy.SecurityPolicy); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, rulesJSONEntry, &securityPolicy.Rules); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, defaultRuleJSONEntry, &securityPolicy.DefaultRule); err != nil {
-		return err
-	}
-	return nil
+	return UnmarshalBaseStructAndFields(b, &securityPolicy.SecurityPolicy, rulesJSONEntry, &securityPolicy.Rules, defaultRuleJSONEntry, &securityPolicy.DefaultRule)
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////
@@ -240,17 +215,7 @@ type Service struct {
 }
 
 func (service *Service) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, &service.Service); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, serviceEntriesJSONEntry, &service.ServiceEntries); err != nil {
-		return err
-	}
-	return nil
+	return UnmarshalBaseStructAndFields(b, &service.Service, serviceEntriesJSONEntry, &service.ServiceEntries, "", nilWithType)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -267,17 +232,7 @@ type Segment struct {
 }
 
 func (segment *Segment) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, &segment.Segment); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, segmentPortsJSONEntry, &segment.SegmentPorts); err != nil {
-		return err
-	}
-	return nil
+	return UnmarshalBaseStructAndFields(b, &segment.Segment, segmentPortsJSONEntry, &segment.SegmentPorts, "", nilWithType)
 }
 
 type SegmentPort struct {
@@ -354,20 +309,7 @@ type Group struct {
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, &group.Group); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, membersJSONEntry, &group.Members); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, expressionJSONEntry, &group.Expression); err != nil {
-		return err
-	}
-	return nil
+	return UnmarshalBaseStructAndFields(b, &group.Group, membersJSONEntry, &group.Members, expressionJSONEntry, &group.Expression)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -378,24 +320,35 @@ type Domain struct {
 }
 
 func (domain *Domain) UnmarshalJSON(b []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(b, &domain.Domain); err != nil {
-		return err
-	}
-	if err := unmarshalFromRaw(raw, resourcesJSONEntry, &domain.Resources); err != nil {
-		return err
-	}
-	return nil
+	return UnmarshalBaseStructAndFields(b, &domain.Domain, resourcesJSONEntry, &domain.Resources, "", nilWithType)
 }
 
-func unmarshalFromRaw[a any](raw map[string]json.RawMessage, entry string, res *a) error {
+// ///////////////////////////////////////////////////////////////////////////////////////
+func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *t) error {
 	if m, ok := raw[entry]; ok {
 		if err := json.Unmarshal(m, res); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](b []byte, base *baseType, entry1 string, field1 *fieldType1, entry2 string, field2 *fieldType2) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(b, base); err != nil {
+		return err
+	}
+	if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
+		return err
+	}
+	if field2 == nil {
+		return nil
+	}
+	if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
+		return err
 	}
 	return nil
 }
