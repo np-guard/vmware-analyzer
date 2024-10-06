@@ -75,15 +75,11 @@ func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &securityPolicy.SecurityPolicy); err != nil {
 		return err
 	}
-	if r, ok := raw[rulesJSONEntry]; ok {
-		if err := json.Unmarshal(r, &securityPolicy.Rules); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, rulesJSONEntry, &securityPolicy.Rules); err != nil {
+		return err
 	}
-	if r, ok := raw[defaultRuleJSONEntry]; ok {
-		if err := json.Unmarshal(r, &securityPolicy.DefaultRule); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, defaultRuleJSONEntry, &securityPolicy.DefaultRule); err != nil {
+		return err
 	}
 	return nil
 }
