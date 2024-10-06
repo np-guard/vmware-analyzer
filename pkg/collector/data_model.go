@@ -42,17 +42,12 @@ func (rule *Rule) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &rule.Rule); err != nil {
 		return err
 	}
-	if r, ok := raw[serviceEntriesJSONEntry]; ok {
-		if err := json.Unmarshal(r, &rule.ServiceEntries); err != nil {
-			return err
-		}
-	} else {
-		rule.ServiceEntries = ServiceEntries{}
+	rule.ServiceEntries = ServiceEntries{}
+	if err := unmarshalFromRaw(raw, serviceEntriesJSONEntry, &rule.ServiceEntries); err != nil {
+		return err
 	}
-	if r, ok := raw[firewallRuleJSONEntry]; ok {
-		if err := json.Unmarshal(r, &rule.FirewallRule); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, firewallRuleJSONEntry, &rule.FirewallRule); err != nil {
+		return err
 	}
 	return nil
 }
@@ -252,10 +247,8 @@ func (service *Service) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &service.Service); err != nil {
 		return err
 	}
-	if m, ok := raw[serviceEntriesJSONEntry]; ok {
-		if err := json.Unmarshal(m, &service.ServiceEntries); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, serviceEntriesJSONEntry, &service.ServiceEntries); err != nil {
+		return err
 	}
 	return nil
 }
@@ -281,10 +274,8 @@ func (segment *Segment) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &segment.Segment); err != nil {
 		return err
 	}
-	if m, ok := raw[segmentPortsJSONEntry]; ok {
-		if err := json.Unmarshal(m, &segment.SegmentPorts); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, segmentPortsJSONEntry, &segment.SegmentPorts); err != nil {
+		return err
 	}
 	return nil
 }
@@ -394,10 +385,8 @@ func (domain *Domain) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &domain.Domain); err != nil {
 		return err
 	}
-	if m, ok := raw[resourcesJSONEntry]; ok {
-		if err := json.Unmarshal(m, &domain.Resources); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, resourcesJSONEntry, &domain.Resources); err != nil {
+		return err
 	}
 	return nil
 }
