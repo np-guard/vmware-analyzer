@@ -25,14 +25,14 @@ func (v *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) tre
 func (s *SegmentPort) parent(resources *ResourcesContainerModel) treeNode {
 	return resources.GetSegment(*s.ParentPath)
 }
-func (s *Segment) parent(resources *ResourcesContainerModel) treeNode {
-	if s.ConnectivityPath == nil {
+func (segment *Segment) parent(resources *ResourcesContainerModel) treeNode {
+	if segment.ConnectivityPath == nil {
 		return nil
 	}
-	if t1 := resources.GetTier1(*s.ConnectivityPath); t1 != nil {
+	if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
 		return t1
 	}
-	return resources.GetTier0(*s.ConnectivityPath)
+	return resources.GetTier0(*segment.ConnectivityPath)
 }
 func (t *Tier1) parent(resources *ResourcesContainerModel) treeNode {
 	return resources.GetTier0(*t.Tier0Path)
