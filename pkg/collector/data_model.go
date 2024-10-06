@@ -116,7 +116,7 @@ type ICMPTypeServiceEntry struct {
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
 	if e.Protocol == nil || *e.Protocol == nsx.ICMPTypeServiceEntryProtocolICMPv6 {
-		//fmt.Printf(" protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported\n", *e.Protocol, *e.DisplayName)
+		// fmt.Printf(" protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported\n", *e.Protocol, *e.DisplayName)
 		return nil, fmt.Errorf("protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported", *e.Protocol, *e.DisplayName)
 	}
 	var tMin, tMax int64 = 0, connection.MaxICMPType

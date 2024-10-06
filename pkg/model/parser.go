@@ -59,7 +59,8 @@ func (p *NSXConfigParser) GetConfig() *config {
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *NSXConfigParser) getVMs() {
 	p.configRes.vmsMap = map[string]*endpoints.VM{}
-	for _, vm := range p.rc.VirtualMachineList {
+	for i := range p.rc.VirtualMachineList {
+		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil {
 			continue
 			// skip vm without name
@@ -73,24 +74,27 @@ func (p *NSXConfigParser) getVMs() {
 	}
 }
 
+//nolint:gocritic // for now using commented-out code
 func (p *NSXConfigParser) getDFW() {
 	p.configRes.fw = dfw.NewEmptyDFW(false) // TODO: what is global default?
-	for _, domain := range p.rc.DomainList {
-		domainRsc := domain.Resources
-		for _, secPolicy := range domainRsc.SecurityPolicyList {
+	for i := range p.rc.DomainList {
+		domainRsc := p.rc.DomainList[i].Resources
+		for j := range domainRsc.SecurityPolicyList {
+			secPolicy := &domainRsc.SecurityPolicyList[j]
 			if secPolicy.Category == nil {
 				continue // skip secPolicy with nil category (add warning)
 			}
 			category := *secPolicy.Category
-			/*secPolicyName := secPolicy.DisplayName
+			/* 	secPolicyName := secPolicy.DisplayName
 			secPolicyId := secPolicy.Id
 			scope := secPolicy.Scope // support ANY at first*/
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
 			rules := secPolicy.Rules
-			for _, rule := range rules {
+			for i := range rules {
+				rule := &rules[i]
 				r := p.getDFWRule(rule)
-				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, &rule)
+				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, rule)
 			}
 		}
 	}
@@ -104,26 +108,27 @@ type parsedRule struct {
 	direction string
 }
 
-func (p *NSXConfigParser) allGroups() (res []*endpoints.VM) {
+func (p *NSXConfigParser) allGroups() []*endpoints.VM {
 	if len(p.allGroupsVMs) > 0 {
 		return p.allGroupsVMs
 	}
-	for _, domain := range p.rc.DomainList {
-		domainRsc := domain.Resources
-		for _, g := range domainRsc.GroupList {
-
-			res = append(res, p.membersToVMsList(g.Members)...)
+	res := []*endpoints.VM{}
+	for i := range p.rc.DomainList {
+		domainRsc := &p.rc.DomainList[i].Resources
+		for j := range domainRsc.GroupList {
+			res = append(res, p.membersToVMsList(domainRsc.GroupList[j].Members)...)
 		}
 	}
 	p.allGroupsVMs = res
 	return res
 }
 
-func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) (res []*endpoints.VM) {
+func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) []*endpoints.VM {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		return p.allGroups() // all groups
 	}
+	res := []*endpoints.VM{}
 	// TODO: support IP Addresses in groupsPaths
 	for _, groupPath := range groupsPaths {
 		res = append(res, p.getGroupVMs(groupPath)...)
@@ -131,7 +136,7 @@ func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) (res []*end
 	return res
 }
 
-func (p *NSXConfigParser) getDFWRule(rule collector.Rule) *parsedRule {
+func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	if rule.Action == nil {
 		return nil // skip rule without action (Add warning)
 	}
@@ -152,8 +157,7 @@ func (p *NSXConfigParser) getDFWRule(rule collector.Rule) *parsedRule {
 	return res
 }
 
-func (p *NSXConfigParser) getRuleConnections(rule collector.Rule) *connection.Set {
-
+func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.Set {
 	/*
 		// In order to specify raw services this can be used, along with services which
 		// contains path to services. This can be empty or null.
@@ -177,7 +181,7 @@ func (p *NSXConfigParser) getRuleConnections(rule collector.Rule) *connection.Se
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
-func (p *NSXConfigParser) connectionFromService(servicePath string, rule collector.Rule) *connection.Set {
+func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *connection.Set {
 	res := connection.None()
 	service := p.rc.GetService(servicePath)
 	if service == nil {
@@ -196,8 +200,10 @@ func (p *NSXConfigParser) connectionFromService(servicePath string, rule collect
 	return res
 }
 
-func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMachine) (res []*endpoints.VM) {
-	for _, vm := range members {
+func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMachine) []*endpoints.VM {
+	res := []*endpoints.VM{}
+	for i := range members {
+		vm := &members[i]
 		if vm.DisplayName == nil {
 			continue
 		}
@@ -211,9 +217,10 @@ func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMa
 }
 
 func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
-	for _, domain := range p.rc.DomainList {
-		domainRsc := domain.Resources
-		for _, g := range domainRsc.GroupList {
+	for i := range p.rc.DomainList {
+		domainRsc := p.rc.DomainList[i].Resources
+		for j := range domainRsc.GroupList {
+			g := &domainRsc.GroupList[j]
 			if g.Path != nil && groupPath == *g.Path {
 				return p.membersToVMsList(g.Members)
 			}
@@ -225,7 +232,7 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // comments for later
 
-//scope := secPolicy.Scope // support ANY at first
+// scope := secPolicy.Scope // support ANY at first
 // more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 /*
 	If there are multiple policies with the same

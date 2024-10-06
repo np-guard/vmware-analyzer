@@ -49,9 +49,10 @@ type inArgs struct {
 func newRootCommand() *cobra.Command {
 	args := &inArgs{}
 	rootCmd := &cobra.Command{
-		Use:     "nsxanalyzer",
-		Short:   "nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs",
-		Long:    "nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs",
+		Use:   "nsxanalyzer",
+		Short: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.`,
+		Long: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.
+		It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
@@ -96,7 +97,6 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
-
 	}
 	if args.resourceDumpFile != "" {
 		jsonString, err := recourses.ToJSONString()

@@ -8,12 +8,12 @@ import (
 func TestParser(t *testing.T) {
 	parser, err := NewNSXConfigParserFromFile("../../docs/simple4.json")
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	err = parser.RunParser()
 	if err != nil {
-		t.Fatalf(err.Error())
+		t.Fatal(err.Error())
 	}
 	config := parser.GetConfig()
 	fmt.Println(config.getConfigInfoStr())
