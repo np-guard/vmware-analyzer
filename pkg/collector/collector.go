@@ -34,6 +34,7 @@ type serverData struct {
 	nsxServer, userName, password string
 }
 
+//nolint:funlen,gocyclo // just a long function
 func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
 	server := serverData{nsxServer, userName, password}
 	res := NewResourcesContainerModel()

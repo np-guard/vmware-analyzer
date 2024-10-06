@@ -50,11 +50,12 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 	return append(branch(resources, p), n)
 }
 
-func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1 treeNodeBranch, b2 treeNodeBranch) {
+func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1, b2 treeNodeBranch) {
 	b1 = branch(got, t1)
 	b2 = branch(got, t2)
-	if b1[0] != b2[0] {
-		return false, nil, nil, nil
+	isConnected = b1[0] == b2[0]
+	if !isConnected {
+		return isConnected, nil, nil, nil
 	}
 	rootIndex := 0
 	for i := range b1 {

@@ -283,7 +283,7 @@ type Segment struct {
 	SegmentPorts []SegmentPort `json:"segment_ports"`
 }
 
-func (d *Segment) UnmarshalJSON(b []byte) error {
+func (s *Segment) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
@@ -297,7 +297,7 @@ func (d *Segment) UnmarshalJSON(b []byte) error {
 			return err
 		}
 	}
-	*d = res
+	*s = res
 	return nil
 }
 
