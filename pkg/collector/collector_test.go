@@ -177,7 +177,6 @@ func testTopology(got *ResourcesContainerModel) {
 	}
 }
 
-
 func dotTopology(got *ResourcesContainerModel) {
 	out := "digraph D {\n"
 	for _, t1 := range got.Tier1List {
@@ -218,7 +217,6 @@ func dotConnections(got *ResourcesContainerModel) {
 	out += "}\n"
 	common.WriteToFile(path.Join(outDir, "connection.dot"), out)
 }
-
 
 func vniName(resources *ResourcesContainerModel, vni *VirtualNetworkInterface) string {
 	addresses := []string{}

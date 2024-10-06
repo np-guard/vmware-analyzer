@@ -46,7 +46,6 @@ func (c connMap) String(vms []string) string {
 			if (len(vms) > 0 && slices.Contains(vms, src.Name()) && slices.Contains(vms, dst.Name())) || len(vms) == 0 {
 				lines = append(lines, lineStr)
 			}
-
 		}
 	}
 	return strings.Join(lines, "\n")

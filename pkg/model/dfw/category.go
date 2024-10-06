@@ -31,7 +31,7 @@ const (
 	EmptyStr          = "<Empty>"
 )
 
-func dfwCategoryFromString(s string) dfwCategory {
+/*func dfwCategoryFromString(s string) dfwCategory {
 	switch s {
 	case EthernetStr:
 		return ethernetCategory
@@ -48,8 +48,7 @@ func dfwCategoryFromString(s string) dfwCategory {
 	default:
 		return emptyCategory
 	}
-
-}
+}*/
 
 func (d dfwCategory) string() string {
 	switch d {
@@ -80,13 +79,17 @@ type categorySpec struct {
 	defaultAction ruleAction
 }
 
-// allowedConns are the set of connections between src to dst, for which this category allows the connection
-// jumpToAppConns are the set of connections between src to dst, for which this category applies the rule action jump_to_app
-// notDeterminedConns are the set of connections between src to dst, for which this category has no verdict (no relevant rule + no default defined),
-// thus are expected to be inspected by the next cateorgy (or by the "global default") if this is the last category
+// allowedConns are the set of connections between src to dst, for which this category allows the connection.
+// jumpToAppConns are the set of connections between src to dst, for which this category applies the rule
+// action jump_to_app. notDeterminedConns are the set of connections between src to dst, for which this category
+// has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
+// (or by the "global default") if this is the last category
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
-func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool) (allowedConns, jumpToAppConns, deniedConns, notDeterminedConns *connection.Set) {
-	allowedConns, jumpToAppConns, deniedConns = connection.None(), connection.None(), connection.None()
+//
+//nolint:gocritic // unnamedResult: consider giving a name to these results : when adding this, getting lint isseu nonamedreturns
+func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
+) (*connection.Set, *connection.Set, *connection.Set, *connection.Set) {
+	allowedConns, jumpToAppConns, deniedConns := connection.None(), connection.None(), connection.None()
 	for _, rule := range c.rules {
 		if rule.capturesPair(src, dst, isIngress) {
 			switch rule.action {
@@ -115,14 +118,16 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool) (
 }
 
 func (c *categorySpec) string() string {
-	rulesStr := make([]string, len(c.rules))
+	rulesStr := make([]string, len(c.rules)+1)
+	rulesStr[0] = "rules:"
 	for i := range c.rules {
-		rulesStr[i] = c.rules[i].string()
+		rulesStr[i+1] = c.rules[i].string()
 	}
-	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(), strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
+	return fmt.Sprintf("category: %s\n%s\ndefault action: %s", c.category.string(),
+		strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action string, direction string, origRule *collector.Rule) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action, direction string, origRule *collector.Rule) {
 	newRule := &fwRule{
 		srcVMs:      src,
 		dstVMs:      dst,

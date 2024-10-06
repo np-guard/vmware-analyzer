@@ -14,7 +14,7 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) (allowedConns *connection.Set) {
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connection.Set {
 	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
@@ -22,7 +22,7 @@ func (d *DFW) AllowedConnections(src, dst *endpoints.VM) (allowedConns *connecti
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) (allowedConns *connection.Set) {
+func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) *connection.Set {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns := connection.None()
 	allDeniedConns := connection.None()
@@ -33,7 +33,8 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 			continue // cuurently skip L2 rules
 		}
 		// get analyzed conns from this category
-		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns, categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
+		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
+			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
 
 		// remove connections already denied by higher-prio categories, from this category's allowed conns
 		categoryAllowedConns = categoryAllowedConns.Subtract(allDeniedConns)
@@ -48,7 +49,9 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		allAllowedConns = allAllowedConns.Union(categoryAllowedConns)
 		allDeniedConns = allDeniedConns.Union(categoryDeniedConns)
 		// accumulated not-determined conns: remove the conns determined from this/prev categories, and add those not-determined in this category
-		allNotDeterminedConns = allNotDeterminedConns.Union(categoryNotDeterminedConns).Union(categoryJumptToAppConns).Subtract(allAllowedConns).Subtract(allDeniedConns)
+		allNotDeterminedConns = allNotDeterminedConns.Union(
+			categoryNotDeterminedConns).Union(categoryJumptToAppConns).Subtract(
+			allAllowedConns).Subtract(allDeniedConns)
 	}
 
 	if d.defaultAction == actionAllow {
@@ -70,7 +73,7 @@ func (d *DFW) String() string {
 
 // AddRule func for testing purposes
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string, direction string, origRule *collector.Rule) {
+func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr, actionStr, direction string, origRule *collector.Rule) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
 			fwCategory.addRule(src, dst, conn, actionStr, direction, origRule)

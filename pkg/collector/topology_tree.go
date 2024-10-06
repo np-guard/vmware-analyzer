@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 
 package collector
 
-
 type treeNode interface {
 	parent(resources *ResourcesContainerModel) treeNode
 }
@@ -40,7 +39,6 @@ func (t *Tier1) parent(resources *ResourcesContainerModel) treeNode {
 }
 func (t *Tier0) parent(resources *ResourcesContainerModel) treeNode { return nil }
 
-
 // //////////////////////////////////////////////////////////////////////
 type treeNodeBranch []treeNode
 
@@ -69,6 +67,6 @@ func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (bool, treeNod
 }
 
 func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
-	c, _,_,_ := treeNodesPath(got, t1, t2);
+	c, _, _, _ := treeNodesPath(got, t1, t2)
 	return c
 }

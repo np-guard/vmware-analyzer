@@ -14,15 +14,15 @@ import (
 	"io"
 	"net/http"
 
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 func fixLowerCaseEnums(b []byte) []byte {
-	enimVals := []resources.RealizedVirtualMachinePowerState{
-		resources.RealizedVirtualMachinePowerStateUNKNOWN,
-		resources.RealizedVirtualMachinePowerStateVMRUNNING,
-		resources.RealizedVirtualMachinePowerStateVMSTOPPED,
-		resources.RealizedVirtualMachinePowerStateVMSUSPENDED,
+	enimVals := []nsx.RealizedVirtualMachinePowerState{
+		nsx.RealizedVirtualMachinePowerStateUNKNOWN,
+		nsx.RealizedVirtualMachinePowerStateVMRUNNING,
+		nsx.RealizedVirtualMachinePowerStateVMSTOPPED,
+		nsx.RealizedVirtualMachinePowerStateVMSUSPENDED,
 	}
 	for _, enumVal := range enimVals {
 		rightCase, _ := json.Marshal(enumVal)
@@ -68,6 +68,7 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 
 	//nolint:noctx // no context for testing and development
 	req, err := http.NewRequest(http.MethodGet, server.nsxServer+"/"+query, http.NoBody)
+	fmt.Printf("GET %s\n", query) // TODO: update as logger for verbose mode
 	if err != nil {
 		return nil, err
 	}
