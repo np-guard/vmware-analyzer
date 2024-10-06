@@ -50,6 +50,7 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 	return append(branch(resources, p), n)
 }
 
+//nolint:nonamedreturns // god, please give me the wisdom to understand thant "named return isConnected with type bool found" means
 func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1, b2 treeNodeBranch) {
 	b1 = branch(got, t1)
 	b2 = branch(got, t2)
@@ -64,7 +65,7 @@ func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected b
 		}
 		rootIndex = i
 	}
-	return true, b1[rootIndex], b1[rootIndex+1:], b2[rootIndex+1:]
+	return isConnected, b1[rootIndex], b1[rootIndex+1:], b2[rootIndex+1:]
 }
 
 func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
