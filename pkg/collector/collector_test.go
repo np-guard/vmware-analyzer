@@ -188,9 +188,9 @@ func testTopology(got *ResourcesContainerModel) {
 
 func dotTopology(got *ResourcesContainerModel) error {
 	out := "digraph D {\n"
-	for _, t1 := range got.Tier1List {
-		t0 := got.GetTier0(*t1.Tier0Path)
-		out += fmt.Sprintf("\"t1:%s\" -> \"t0:%s\"\n", *t1.DisplayName, *t0.DisplayName)
+	for t1i := range got.Tier1List {
+		t0 := got.GetTier0(*got.Tier1List[t1i].Tier0Path)
+		out += fmt.Sprintf("\"t1:%s\" -> \"t0:%s\"\n", *got.Tier1List[t1i].DisplayName, *t0.DisplayName)
 	}
 	for si := range got.SegmentList {
 		segment := &got.SegmentList[si]
@@ -200,8 +200,8 @@ func dotTopology(got *ResourcesContainerModel) error {
 		} else if t0 := got.GetTier0(*segment.ConnectivityPath); t0 != nil {
 			out += fmt.Sprintf("\"sg:%s\" -> \"t0:%s\"\n", segmentName(segment), *t0.DisplayName)
 		}
-		for _, port := range segment.SegmentPorts {
-			att := *port.Attachment.Id
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
 			vif := got.GetVirtualNetworkInterfaceByPort(att)
 			out += fmt.Sprintf("\"ni:%s\" -> \"sg:%s\"\n", vniName(got, vif), segmentName(segment))
 			vm := got.GetVirtualMachine(*vif.OwnerVmId)
