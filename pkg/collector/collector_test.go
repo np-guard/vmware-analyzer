@@ -33,9 +33,9 @@ func TestCollectResources(t *testing.T) {
 		{
 			"simple",
 			args{
-				"no_server",
-				"no_user",
-				"no_password",
+				"https://10.127.131.68",
+				"admin",
+				"s7BqewHRMj^U",
 			},
 		},
 	}

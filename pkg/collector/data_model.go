@@ -34,28 +34,26 @@ type Rule struct {
 	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
-func (r *Rule) UnmarshalJSON(b []byte) error {
+func (rule *Rule) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var res Rule
-	if err := json.Unmarshal(b, &res.Rule); err != nil {
+	if err := json.Unmarshal(b, &rule.Rule); err != nil {
 		return err
 	}
 	if r, ok := raw[serviceEntriesJSONEntry]; ok {
-		if err := json.Unmarshal(r, &res.ServiceEntries); err != nil {
+		if err := json.Unmarshal(r, &rule.ServiceEntries); err != nil {
 			return err
 		}
 	} else {
-		res.ServiceEntries = ServiceEntries{}
+		rule.ServiceEntries = ServiceEntries{}
 	}
 	if r, ok := raw[firewallRuleJSONEntry]; ok {
-		if err := json.Unmarshal(r, &res.FirewallRule); err != nil {
+		if err := json.Unmarshal(r, &rule.FirewallRule); err != nil {
 			return err
 		}
 	}
-	*r = res
 	return nil
 }
 
@@ -69,26 +67,24 @@ type SecurityPolicy struct {
 	DefaultRule *FirewallRule `json:"default_rule"`
 }
 
-func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
+func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var res SecurityPolicy
-	if err := json.Unmarshal(b, &res.SecurityPolicy); err != nil {
+	if err := json.Unmarshal(b, &securityPolicy.SecurityPolicy); err != nil {
 		return err
 	}
 	if r, ok := raw[rulesJSONEntry]; ok {
-		if err := json.Unmarshal(r, &res.Rules); err != nil {
+		if err := json.Unmarshal(r, &securityPolicy.Rules); err != nil {
 			return err
 		}
 	}
 	if r, ok := raw[defaultRuleJSONEntry]; ok {
-		if err := json.Unmarshal(r, &res.DefaultRule); err != nil {
+		if err := json.Unmarshal(r, &securityPolicy.DefaultRule); err != nil {
 			return err
 		}
 	}
-	*s = res
 	return nil
 }
 
@@ -252,21 +248,19 @@ type Service struct {
 	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
-func (s *Service) UnmarshalJSON(b []byte) error {
+func (service *Service) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var res Service
-	if err := json.Unmarshal(b, &res.Service); err != nil {
+	if err := json.Unmarshal(b, &service.Service); err != nil {
 		return err
 	}
 	if m, ok := raw[serviceEntriesJSONEntry]; ok {
-		if err := json.Unmarshal(m, &res.ServiceEntries); err != nil {
+		if err := json.Unmarshal(m, &service.ServiceEntries); err != nil {
 			return err
 		}
 	}
-	*s = res
 	return nil
 }
 
@@ -283,21 +277,19 @@ type Segment struct {
 	SegmentPorts []SegmentPort `json:"segment_ports"`
 }
 
-func (s *Segment) UnmarshalJSON(b []byte) error {
+func (segment *Segment) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var res Segment
-	if err := json.Unmarshal(b, &res.Segment); err != nil {
+	if err := json.Unmarshal(b, &segment.Segment); err != nil {
 		return err
 	}
 	if m, ok := raw[segmentPortsJSONEntry]; ok {
-		if err := json.Unmarshal(m, &res.SegmentPorts); err != nil {
+		if err := json.Unmarshal(m, &segment.SegmentPorts); err != nil {
 			return err
 		}
 	}
-	*s = res
 	return nil
 }
 
@@ -374,22 +366,20 @@ type Group struct {
 	Expression Expression               `json:"expression"`
 }
 
-func (d *Group) UnmarshalJSON(b []byte) error {
+func (group *Group) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var res Group
-	if err := json.Unmarshal(b, &res.Group); err != nil {
+	if err := json.Unmarshal(b, &group.Group); err != nil {
 		return err
 	}
-	if err := unmarshalFromRaw(raw, membersJSONEntry, &res.Members); err != nil {
+	if err := unmarshalFromRaw(raw, membersJSONEntry, &group.Members); err != nil {
 		return err
 	}
-	if err := unmarshalFromRaw(raw, expressionJSONEntry, &res.Expression); err != nil {
+	if err := unmarshalFromRaw(raw, expressionJSONEntry, &group.Expression); err != nil {
 		return err
 	}
-	*d = res
 	return nil
 }
 
@@ -400,21 +390,19 @@ type Domain struct {
 	Resources DomainResources `json:"resources"`
 }
 
-func (d *Domain) UnmarshalJSON(b []byte) error {
+func (domain *Domain) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	var res Domain
-	if err := json.Unmarshal(b, &res.Domain); err != nil {
+	if err := json.Unmarshal(b, &domain.Domain); err != nil {
 		return err
 	}
 	if m, ok := raw[resourcesJSONEntry]; ok {
-		if err := json.Unmarshal(m, &res.Resources); err != nil {
+		if err := json.Unmarshal(m, &domain.Resources); err != nil {
 			return err
 		}
 	}
-	*d = res
 	return nil
 }
 
