@@ -58,7 +58,14 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			testTopology(got)
-			dotTopology(got)
+			if err := dotTopology(got); err != nil{
+				t.Errorf("dotTopology() error = %v", err)
+				return
+			}
+			if err := dotConnections(got); err != nil{
+				t.Errorf("dotConnections() error = %v", err)
+				return
+			}
 			dotConnections(got)
 			for _, service := range got.ServiceList {
 				for _, e := range service.ServiceEntries {
@@ -179,7 +186,7 @@ func testTopology(got *ResourcesContainerModel) {
 	}
 }
 
-func dotTopology(got *ResourcesContainerModel) {
+func dotTopology(got *ResourcesContainerModel) error {
 	out := "digraph D {\n"
 	for _, t1 := range got.Tier1List {
 		t0 := got.GetTier0(*t1.Tier0Path)
@@ -201,10 +208,10 @@ func dotTopology(got *ResourcesContainerModel) {
 		}
 	}
 	out += "}\n"
-	common.WriteToFile(path.Join(outDir, "topology.dot"), out)
+	return common.WriteToFile(path.Join(outDir, "topology.dot"), out)
 }
 
-func dotConnections(got *ResourcesContainerModel) {
+func dotConnections(got *ResourcesContainerModel) error{
 	out := "digraph D {\n"
 
 	for i1 := range got.VirtualNetworkInterfaceList {
@@ -217,7 +224,7 @@ func dotConnections(got *ResourcesContainerModel) {
 		}
 	}
 	out += "}\n"
-	common.WriteToFile(path.Join(outDir, "connection.dot"), out)
+	return common.WriteToFile(path.Join(outDir, "connection.dot"), out)
 }
 
 func vniName(resources *ResourcesContainerModel, vni *VirtualNetworkInterface) string {

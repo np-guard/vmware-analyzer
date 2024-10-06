@@ -24,7 +24,8 @@ const (
 	serviceEntriesJSONEntry = "service_entries"
 	resourceTypeJSONEntry   = "resource_type"
 	defaultRuleJSONEntry    = "default_rule"
-	FirewallRuleJSONEntry   = "firewall_rule"
+	firewallRuleJSONEntry   = "firewall_rule"
+	segmentPortsJSONEntry   = "segment_ports"
 )
 
 type Rule struct {
@@ -49,7 +50,7 @@ func (r *Rule) UnmarshalJSON(b []byte) error {
 	} else {
 		res.ServiceEntries = ServiceEntries{}
 	}
-	if r, ok := raw[FirewallRuleJSONEntry]; ok {
+	if r, ok := raw[firewallRuleJSONEntry]; ok {
 		if err := json.Unmarshal(r, &res.FirewallRule); err != nil {
 			return err
 		}
@@ -292,7 +293,7 @@ func (d *Segment) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.Segment); err != nil {
 		return err
 	}
-	if m, ok := raw["segment_ports"]; ok {
+	if m, ok := raw[segmentPortsJSONEntry]; ok {
 		if err := json.Unmarshal(m, &res.SegmentPorts); err != nil {
 			return err
 		}
@@ -383,15 +384,11 @@ func (d *Group) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.Group); err != nil {
 		return err
 	}
-	if m, ok := raw[membersJSONEntry]; ok {
-		if err := json.Unmarshal(m, &res.Members); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, membersJSONEntry, &res.Members); err != nil {
+		return err
 	}
-	if m, ok := raw[expressionJSONEntry]; ok {
-		if err := json.Unmarshal(m, &res.Expression); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, expressionJSONEntry, &res.Expression); err != nil {
+		return err
 	}
 	*d = res
 	return nil
@@ -419,5 +416,14 @@ func (d *Domain) UnmarshalJSON(b []byte) error {
 		}
 	}
 	*d = res
+	return nil
+}
+
+func unmarshalFromRaw[a any](raw map[string]json.RawMessage, entry string, res *a) error {
+	if m, ok := raw[entry]; ok {
+		if err := json.Unmarshal(m, res); err != nil {
+			return err
+		}
+	}
 	return nil
 }

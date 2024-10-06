@@ -67,6 +67,7 @@ func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (bool, treeNod
 }
 
 func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
+	//nolint: dogsled - I have no idea how to fix such case. is there other way to call the method and  use only one of the returns value?!?!
 	c, _, _, _ := treeNodesPath(got, t1, t2)
 	return c
 }
