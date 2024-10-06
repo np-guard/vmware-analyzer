@@ -9,6 +9,8 @@ package collector
 import (
 	"encoding/json"
 	"slices"
+
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
@@ -28,6 +30,7 @@ type DomainResources struct {
 
 // NewResourcesContainerModel creates an empty resources container
 func NewResourcesContainerModel() *ResourcesContainerModel {
+	nsx.FixResourcesCode()
 	return &ResourcesContainerModel{}
 }
 
@@ -38,9 +41,9 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 }
 
 func FromJSONString(b []byte) (*ResourcesContainerModel, error) {
-	var resources ResourcesContainerModel
-	err := json.Unmarshal(b, &resources)
-	return &resources, err
+	resources := NewResourcesContainerModel()
+	err := json.Unmarshal(b, resources)
+	return resources, err
 }
 
 func (resources *DomainResources) GetGroup(query string) *Group {

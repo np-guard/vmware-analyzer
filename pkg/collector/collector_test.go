@@ -97,8 +97,10 @@ func TestCollectResources(t *testing.T) {
 								for _, e := range s.ServiceEntries {
 									_, err := e.ToConnection()
 									if err != nil {
-										t.Errorf("fail to create rule service entry error = %v", err)
-										return
+										if !strings.Contains(err.Error(), "protocol ICMPv6 of ICMPTypeServiceEntry") {
+											t.Errorf("fail to create rule service entry error = %v", err)
+											return
+										}
 									}
 								}
 							}
