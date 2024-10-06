@@ -8,8 +8,6 @@ package collector
 
 import (
 	"fmt"
-
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -37,7 +35,6 @@ type serverData struct {
 func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
 	server := serverData{nsxServer, userName, password}
 	res := NewResourcesContainerModel()
-	nsx.FixResourcesCode()
 	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return nil, err
