@@ -58,15 +58,14 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			testTopology(got)
-			if err := dotTopology(got); err != nil{
+			if err := dotTopology(got); err != nil {
 				t.Errorf("dotTopology() error = %v", err)
 				return
 			}
-			if err := dotConnections(got); err != nil{
+			if err := dotConnections(got); err != nil {
 				t.Errorf("dotConnections() error = %v", err)
 				return
 			}
-			dotConnections(got)
 			for _, service := range got.ServiceList {
 				for _, e := range service.ServiceEntries {
 					//nolint:errcheck // we do not support al services?
@@ -211,7 +210,7 @@ func dotTopology(got *ResourcesContainerModel) error {
 	return common.WriteToFile(path.Join(outDir, "topology.dot"), out)
 }
 
-func dotConnections(got *ResourcesContainerModel) error{
+func dotConnections(got *ResourcesContainerModel) error {
 	out := "digraph D {\n"
 
 	for i1 := range got.VirtualNetworkInterfaceList {

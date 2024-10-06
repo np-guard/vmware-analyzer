@@ -89,10 +89,10 @@ func (resources *ResourcesContainerModel) GetSegment(query string) *Segment {
 }
 
 func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort {
-	for _, segment := range resources.SegmentList {
-		i := slices.IndexFunc(segment.SegmentPorts, func(s SegmentPort) bool { return id == *s.Attachment.Id })
+	for i := range resources.SegmentList {
+		i := slices.IndexFunc(resources.SegmentList[i].SegmentPorts, func(s SegmentPort) bool { return id == *s.Attachment.Id })
 		if i >= 0 {
-			return &segment.SegmentPorts[i]
+			return &resources.SegmentList[i].SegmentPorts[i]
 		}
 	}
 	return nil

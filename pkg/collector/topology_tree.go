@@ -50,9 +50,9 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 	return append(branch(resources, p), n)
 }
 
-func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (bool, treeNode, treeNodeBranch, treeNodeBranch) {
-	b1 := branch(got, t1)
-	b2 := branch(got, t2)
+func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1 treeNodeBranch, b2 treeNodeBranch) {
+	b1 = branch(got, t1)
+	b2 = branch(got, t2)
 	if b1[0] != b2[0] {
 		return false, nil, nil, nil
 	}
@@ -67,7 +67,7 @@ func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (bool, treeNod
 }
 
 func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
-	//nolint: dogsled - I have no idea how to fix such case. is there other way to call the method and  use only one of the returns value?!?!
+	//nolint:dogsled // I have no idea how to fix such case. is there other way to call the method and  use only one of the returns value?!?!
 	c, _, _, _ := treeNodesPath(got, t1, t2)
 	return c
 }
