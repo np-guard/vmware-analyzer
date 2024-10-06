@@ -78,15 +78,11 @@ func (s *SecurityPolicy) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &res.SecurityPolicy); err != nil {
 		return err
 	}
-	if r, ok := raw[rulesJSONEntry]; ok {
-		if err := json.Unmarshal(r, &res.Rules); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, rulesJSONEntry, &res.Rules); err != nil {
+		return err
 	}
-	if r, ok := raw[defaultRuleJSONEntry]; ok {
-		if err := json.Unmarshal(r, &res.DefaultRule); err != nil {
-			return err
-		}
+	if err := unmarshalFromRaw(raw, defaultRuleJSONEntry, &res.DefaultRule); err != nil {
+		return err
 	}
 	*s = res
 	return nil
