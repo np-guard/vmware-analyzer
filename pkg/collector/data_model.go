@@ -27,6 +27,7 @@ const (
 	firewallRuleJSONEntry   = "firewall_rule"
 	segmentPortsJSONEntry   = "segment_ports"
 )
+
 var nilWithType *struct{}
 
 type Rule struct {
@@ -37,7 +38,9 @@ type Rule struct {
 
 func (rule *Rule) UnmarshalJSON(b []byte) error {
 	rule.ServiceEntries = ServiceEntries{}
-	return UnmarshalBaseStructAndFields(b, &rule.Rule, serviceEntriesJSONEntry, &rule.ServiceEntries, firewallRuleJSONEntry, &rule.FirewallRule)
+	return UnmarshalBaseStructAndFields(b, &rule.Rule,
+		serviceEntriesJSONEntry, &rule.ServiceEntries,
+		firewallRuleJSONEntry, &rule.FirewallRule)
 }
 
 type FirewallRule struct {
@@ -51,7 +54,9 @@ type SecurityPolicy struct {
 }
 
 func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &securityPolicy.SecurityPolicy, rulesJSONEntry, &securityPolicy.Rules, defaultRuleJSONEntry, &securityPolicy.DefaultRule)
+	return UnmarshalBaseStructAndFields(b, &securityPolicy.SecurityPolicy,
+		rulesJSONEntry, &securityPolicy.Rules,
+		defaultRuleJSONEntry, &securityPolicy.DefaultRule)
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////
@@ -333,7 +338,10 @@ func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *
 	return nil
 }
 
-func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](b []byte, base *baseType, entry1 string, field1 *fieldType1, entry2 string, field2 *fieldType2) error {
+func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](
+	b []byte, base *baseType,
+	entry1 string, field1 *fieldType1,
+	entry2 string, field2 *fieldType2) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
