@@ -26,6 +26,7 @@ const (
 	resourceDumpFileFlag  = "resource-dump-file"
 	skipAnalysisFlag      = "skip-analysis"
 	outputFileFlag        = "output-file"
+	outputFormantFlag     = "output-format"
 
 	resourceInputFileHelp = "help for resource-input-file"
 	hostHelp              = "help for host"
@@ -34,6 +35,10 @@ const (
 	resourceDumpFileHelp  = "help for resource-dump-file"
 	skipAnalysisHelp      = "help for skip-analysis"
 	outputFileHelp        = "help for output-file"
+	outputFormatHelp      = "help for output format"
+
+	textFormat = "txt"
+	dotFormat  = "dot"
 )
 
 type inArgs struct {
@@ -44,6 +49,7 @@ type inArgs struct {
 	resourceDumpFile  string
 	skipAnalysis      bool
 	outputFile        string
+	outputFormat      string
 }
 
 func newRootCommand() *cobra.Command {
@@ -66,14 +72,18 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().StringVar(&args.outputFile, outputFileFlag, "", outputFileHelp)
+	// todo - check if the format is valid
+	rootCmd.PersistentFlags().StringVar(&args.outputFormat, outputFormantFlag, textFormat, outputFormatHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, passwordFlag)
+	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
+
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFileFlag)
-	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFormantFlag)
 
 	return rootCmd
 }
@@ -113,11 +123,18 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
+		var graphStr string
+		switch args.outputFormat {
+		case textFormat:
+			graphStr = graph.Text()
+		case dotFormat:
+			graphStr = graph.Dot()
+		}
 		fmt.Println("analyzed Connectivity:")
-		fmt.Println(graph.Text())
+		fmt.Println(graphStr)
 
 		if args.outputFile != "" {
-			err = common.WriteToFile(args.outputFile, graph.Dot())
+			err = common.WriteToFile(args.outputFile, graphStr)
 			if err != nil {
 				return err
 			}
