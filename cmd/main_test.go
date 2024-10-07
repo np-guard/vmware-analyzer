@@ -43,7 +43,7 @@ func Test_main(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if !strings.Contains(tt.args, "no_host") {
+			if !strings.Contains(tt.args, serverInfo) {
 				if err := _main(strings.Split(tt.args, " ")); err != nil {
 					t.Errorf("_main() error = %v,", err)
 				}
