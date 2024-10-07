@@ -25,7 +25,7 @@ const (
 	passwordFlag          = "password"
 	resourceDumpFileFlag  = "resource-dump-file"
 	skipAnalysisFlag      = "skip-analysis"
-	outputFilleFlag       = "output-file"
+	outputFileFlag        = "output-file"
 
 	resourceInputFileHelp = "help for resource-input-file"
 	hostHelp              = "help for host"
@@ -33,7 +33,7 @@ const (
 	passwordHelp          = "help for password"
 	resourceDumpFileHelp  = "help for resource-dump-file"
 	skipAnalysisHelp      = "help for skip-analysis"
-	outputFilleHelp       = "help for output-file"
+	outputFileHelp        = "help for output-file"
 )
 
 type inArgs struct {
@@ -43,7 +43,7 @@ type inArgs struct {
 	password          string
 	resourceDumpFile  string
 	skipAnalysis      bool
-	outputFilleFile   string
+	outputFile        string
 }
 
 func newRootCommand() *cobra.Command {
@@ -65,14 +65,14 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
-	rootCmd.PersistentFlags().StringVar(&args.outputFilleFile, outputFilleFlag, "", outputFilleHelp)
+	rootCmd.PersistentFlags().StringVar(&args.outputFile, outputFileFlag, "", outputFileHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, passwordFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
-	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFilleFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFileFlag)
 	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
 
 	return rootCmd
@@ -116,8 +116,8 @@ func runCommand(args *inArgs) error {
 		fmt.Println("analyzed Connectivity:")
 		fmt.Println(connResStr)
 
-		if args.outputFilleFile != "" {
-			err = common.WriteToFile(args.outputFilleFile, "analyze output")
+		if args.outputFile != "" {
+			err = common.WriteToFile(args.outputFile, "analyze output")
 			if err != nil {
 				return err
 			}
