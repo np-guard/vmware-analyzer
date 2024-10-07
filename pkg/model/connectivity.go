@@ -1,12 +1,11 @@
 package model
 
 import (
-	"fmt"
 	"slices"
-	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/output"
 )
 
 // connMap captures permitted connections between endpoints in the input config
@@ -38,15 +37,21 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
 
 // String returns a concatenated lines strings with all VM pairs and their permitted connections.
 // If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
+// Todo: sunset this:
 func (c connMap) String(vms []string) string {
-	lines := []string{}
+	return c.Graph(vms).Text()
+}
+
+// Graph() returns a graph with all VM pairs and their permitted connections.
+// If the input vms list is not empty, if returns graph with only pairs contained in this list.
+func (c connMap) Graph(vms []string) output.Graph {
+	graph := output.NewGraph()
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {
-			lineStr := fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", src.Name(), dst.Name(), conn.String())
 			if (len(vms) > 0 && slices.Contains(vms, src.Name()) && slices.Contains(vms, dst.Name())) || len(vms) == 0 {
-				lines = append(lines, lineStr)
+				graph.AddEdge(src,dst, conn.String())
 			}
 		}
 	}
-	return strings.Join(lines, "\n")
+	return graph
 }

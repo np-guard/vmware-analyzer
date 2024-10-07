@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/output"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel) (string, error) {
+func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel) (output.Graph, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	config := parser.GetConfig()
 

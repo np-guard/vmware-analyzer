@@ -109,15 +109,15 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if !args.skipAnalysis {
-		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses)
+		graph, err := model.NSXConnectivityFromResourcesContainer(recourses)
 		if err != nil {
 			return err
 		}
 		fmt.Println("analyzed Connectivity:")
-		fmt.Println(connResStr)
+		fmt.Println(graph.Text())
 
 		if args.outputFile != "" {
-			err = common.WriteToFile(args.outputFile, "analyze output")
+			err = common.WriteToFile(args.outputFile, graph.Text())
 			if err != nil {
 				return err
 			}

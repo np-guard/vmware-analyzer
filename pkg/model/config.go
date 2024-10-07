@@ -5,6 +5,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/output"
 )
 
 // config captures nsx config
@@ -55,6 +56,6 @@ func (c *config) getConfigInfoStr() string {
 	return sb.String()
 }
 
-func (c *config) AnalyzedConnectivity(vms []string) string {
-	return c.analyzedConnectivity.String(vms)
+func (c *config) AnalyzedConnectivity(vms []string) output.Graph {
+	return c.analyzedConnectivity.Graph(vms)
 }
