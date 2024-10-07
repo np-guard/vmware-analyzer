@@ -117,7 +117,7 @@ func runCommand(args *inArgs) error {
 		fmt.Println(graph.Text())
 
 		if args.outputFile != "" {
-			err = common.WriteToFile(args.outputFile, graph.Text())
+			err = common.WriteToFile(args.outputFile, graph.Dot())
 			if err != nil {
 				return err
 			}
