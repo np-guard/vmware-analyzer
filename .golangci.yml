@@ -99,7 +99,6 @@ linters:
     - nilerr
     - noctx
     - nolintlint
-    - nonamedreturns
     - nosprintfhostport
     - prealloc
     - predeclared

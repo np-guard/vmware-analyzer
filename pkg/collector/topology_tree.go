@@ -50,26 +50,23 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 	return append(branch(resources, p), n)
 }
 
-//nolint:nonamedreturns // god, please give me the wisdom to understand thant "named return isConnected with type bool found" means
-func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1, b2 treeNodeBranch) {
-	b1 = branch(got, t1)
-	b2 = branch(got, t2)
-	isConnected = b1[0] == b2[0]
-	if !isConnected {
-		return isConnected, nil, nil, nil
-	}
-	rootIndex := 0
-	for i := range b1 {
-		if b1[i] != b2[i] {
-			break
-		}
-		rootIndex = i
-	}
-	return isConnected, b1[rootIndex], b1[rootIndex+1:], b2[rootIndex+1:]
-}
+// func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1, b2 treeNodeBranch) {
+// 	b1 = branch(got, t1)
+// 	b2 = branch(got, t2)
+// 	isConnected = b1[0] == b2[0]
+// 	if !isConnected {
+// 		return isConnected, nil, nil, nil
+// 	}
+// 	rootIndex := 0
+// 	for i := range b1 {
+// 		if b1[i] != b2[i] {
+// 			break
+// 		}
+// 		rootIndex = i
+// 	}
+// 	return isConnected, b1[rootIndex], b1[rootIndex+1:], b2[rootIndex+1:]
+// }
 
 func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
-	//nolint:dogsled // I have no idea how to fix such case. is there other way to call the method and  use only one of the returns value?!?!
-	c, _, _, _ := treeNodesPath(got, t1, t2)
-	return c
+	return branch(got, t1)[0] == branch(got, t2)[0]
 }
