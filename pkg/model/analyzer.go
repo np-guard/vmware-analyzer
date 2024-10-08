@@ -6,11 +6,11 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel) (Config, error) {
+func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	config := parser.GetConfig()
 
@@ -21,5 +21,5 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity()
 
-	return config, nil
+	return config.output(params)
 }

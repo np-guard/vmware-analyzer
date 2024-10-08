@@ -7,10 +7,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-type Config interface {
-	Output(OutputParameters) (string, error)
-}
-
 // config captures nsx config
 type config struct {
 	vms                  []*endpoints.VM

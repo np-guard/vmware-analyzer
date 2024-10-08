@@ -20,7 +20,7 @@ type OutputParameters struct {
 	VMs      []string
 }
 
-func (c *config) Output(params OutputParameters) (res string, err error) {
+func (c *config) output(params OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
 
 	switch params.Format {
@@ -47,19 +47,23 @@ type dotNode struct {
 	node
 	ID nodeID
 }
-func (n *dotNode) string() string{
+
+func (n *dotNode) string() string {
 	return fmt.Sprintf("node_%d_[shape=box, label=%q, tooltip=%q]", n.ID, n.Name(), n.Name())
 }
+
 type dotEdge struct {
 	src, dst dotNode
 	label    string
 	directed bool
 }
-func (e *dotEdge) string() string{
+
+func (e *dotEdge) string() string {
 	return fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q labeltooltip=%q %s]",
-	e.src.ID, e.dst.ID, e.label, e.label, e.label,
-	map[bool]string{false: ", dir=both", true: ""}[e.directed])
+		e.src.ID, e.dst.ID, e.label, e.label, e.label,
+		map[bool]string{false: ", dir=both", true: ""}[e.directed])
 }
+
 type dotGraph struct {
 	nodes []dotNode
 	edges []dotEdge

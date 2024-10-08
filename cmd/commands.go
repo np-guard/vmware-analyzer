@@ -115,17 +115,13 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if !args.skipAnalysis {
-		config, err := model.NSXConnectivityFromResourcesContainer(recourses)
-		if err != nil {
-			return err
-		}
 		params := model.OutputParameters{
 			Format:   args.outputFormat,
 			FileName: args.outputFile,
 			// TODO: add cli params to filter vms
 			VMs: []string{"New Virtual Machine", "New-VM-1"},
 		}
-		connResStr, err := config.Output(params)
+		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)
 		if err != nil {
 			return err
 		}
