@@ -19,13 +19,16 @@ import (
 )
 
 const (
-	resourceInputFileFlag = "resource-input-file"
-	hostFlag              = "host"
-	userFlag              = "username"
-	passwordFlag          = "password"
-	resourceDumpFileFlag  = "resource-dump-file"
-	skipAnalysisFlag      = "skip-analysis"
-	outputFilleFlag       = "output-file"
+	resourceInputFileFlag  = "resource-input-file"
+	hostFlag               = "host"
+	userFlag               = "username"
+	passwordFlag           = "password"
+	resourceDumpFileFlag   = "resource-dump-file"
+	skipAnalysisFlag       = "skip-analysis"
+	outputFileFlag         = "filename"
+	outputFormantFlag      = "output"
+	outputFileShortFlag    = "f"
+	outputFormantShortFlag = "o"
 
 	resourceInputFileHelp = "help for resource-input-file"
 	hostHelp              = "help for host"
@@ -33,7 +36,8 @@ const (
 	passwordHelp          = "help for password"
 	resourceDumpFileHelp  = "help for resource-dump-file"
 	skipAnalysisHelp      = "help for skip-analysis"
-	outputFilleHelp       = "help for output-file"
+	outputFileHelp        = "file path to store results"
+	outputFormatHelp      = "output format; must be one of [txt, dot]"
 )
 
 type inArgs struct {
@@ -43,7 +47,8 @@ type inArgs struct {
 	password          string
 	resourceDumpFile  string
 	skipAnalysis      bool
-	outputFilleFile   string
+	outputFile        string
+	outputFormat      string
 }
 
 func newRootCommand() *cobra.Command {
@@ -65,15 +70,18 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
-	rootCmd.PersistentFlags().StringVar(&args.outputFilleFile, outputFilleFlag, "", outputFilleHelp)
+	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
+	// todo - check if the format is valid
+	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, model.TextFormat, outputFormatHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, passwordFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
-	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFilleFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFileFlag)
 	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFormantFlag)
 
 	return rootCmd
 }
@@ -109,19 +117,18 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if !args.skipAnalysis {
-		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses)
+		params := model.OutputParameters{
+			Format:   args.outputFormat,
+			FileName: args.outputFile,
+			// TODO: add cli params to filter vms
+			VMs: []string{"New Virtual Machine", "New-VM-1"},
+		}
+		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)
 		if err != nil {
 			return err
 		}
 		fmt.Println("analyzed Connectivity:")
 		fmt.Println(connResStr)
-
-		if args.outputFilleFile != "" {
-			err = common.WriteToFile(args.outputFilleFile, "analyze output")
-			if err != nil {
-				return err
-			}
-		}
 	}
 	return nil
 }

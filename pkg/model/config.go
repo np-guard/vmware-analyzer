@@ -54,7 +54,3 @@ func (c *config) getConfigInfoStr() string {
 
 	return sb.String()
 }
-
-func (c *config) AnalyzedConnectivity(vms []string) string {
-	return c.analyzedConnectivity.String(vms)
-}

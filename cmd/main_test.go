@@ -34,11 +34,15 @@ func Test_main(t *testing.T) {
 		},
 		{
 			name: "analyze-only",
-			args: "--resource-input-file examples/input/resources.json --output-file examples/output/analysis.txt",
+			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.txt",
+		},
+		{
+			name: "analyze-only-dot",
+			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.dot -o dot",
 		},
 		{
 			name: "collect-and-analyze",
-			args: serverInfo + " --resource-dump-file examples/output/resources2.json --output-file examples/output/analysis2.txt",
+			args: serverInfo + " --resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
 		},
 	}
 	for _, tt := range tests {

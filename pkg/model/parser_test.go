@@ -20,6 +20,6 @@ func TestParser(t *testing.T) {
 
 	config.ComputeConnectivity()
 	fmt.Println("analyzed Connectivity")
-	fmt.Println(config.analyzedConnectivity.String(nil))
+	fmt.Println(config.analyzedConnectivity.String())
 	fmt.Println("done")
 }
