@@ -1,15 +1,20 @@
 package model
 
 import (
+	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	"github.com/np-guard/vmware-analyzer/pkg/output"
 )
 
 // connMap captures permitted connections between endpoints in the input config
 type connMap map[*endpoints.VM]map[*endpoints.VM]*connection.Set
+type connMapEntry struct {
+	src, dst *endpoints.VM
+	conn     *connection.Set
+}
 
 // add func adds a given pair with specified permitted connection
 func (c connMap) add(src, dst *endpoints.VM, conn *connection.Set) {
@@ -38,20 +43,35 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
 // String returns a concatenated lines strings with all VM pairs and their permitted connections.
 // If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
 // Todo: sunset this:
-func (c connMap) String(vms []string) string {
-	return c.Graph(vms).Text()
+func (c connMap) String() string {
+	asSlice := c.toSlice()
+	lines := make([]string, len(asSlice))
+	for i, e := range asSlice {
+		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.src.Name(), e.dst.Name(), e.conn.String())
+	}
+	return strings.Join(lines, "\n")
 }
 
-// Graph() returns a graph with all VM pairs and their permitted connections.
-// If the input vms list is not empty, if returns graph with only pairs contained in this list.
-func (c connMap) Graph(vms []string) output.Graph {
-	graph := output.NewGraph()
+func (c connMap) Filter(vms []string) connMap {
+	if len(vms) == 0 {
+		return c
+	}
+	newC := connMap{}
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {
-			if (len(vms) > 0 && slices.Contains(vms, src.Name()) && slices.Contains(vms, dst.Name())) || len(vms) == 0 {
-				graph.AddEdge(src,dst, conn.String())
+			if slices.Contains(vms, src.Name()) && slices.Contains(vms, dst.Name()) {
+				newC.add(src, dst, conn)
 			}
 		}
 	}
-	return graph
+	return newC
+}
+
+func (c connMap) toSlice() (res []connMapEntry) {
+	for src, srcMap := range c {
+		for dst, conn := range srcMap {
+			res = append(res, connMapEntry{src, dst, conn})
+		}
+	}
+	return res
 }

@@ -36,9 +36,6 @@ const (
 	skipAnalysisHelp      = "help for skip-analysis"
 	outputFileHelp        = "help for output-file"
 	outputFormatHelp      = "help for output format"
-
-	textFormat = "txt"
-	dotFormat  = "dot"
 )
 
 type inArgs struct {
@@ -73,7 +70,7 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().StringVar(&args.outputFile, outputFileFlag, "", outputFileHelp)
 	// todo - check if the format is valid
-	rootCmd.PersistentFlags().StringVar(&args.outputFormat, outputFormantFlag, textFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().StringVar(&args.outputFormat, outputFormantFlag, model.TextFormat, outputFormatHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
@@ -119,22 +116,23 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if !args.skipAnalysis {
-		graph, err := model.NSXConnectivityFromResourcesContainer(recourses)
+		config, err := model.NSXConnectivityFromResourcesContainer(recourses)
 		if err != nil {
 			return err
 		}
-		var graphStr string
-		switch args.outputFormat {
-		case textFormat:
-			graphStr = graph.Text()
-		case dotFormat:
-			graphStr = graph.Dot()
+
+		// TODO: add cli params to filter vms
+		params := model.OutputParameters{
+			Format:   args.outputFormat,
+			FileName: args.outputFile,
+			VMs:      []string{"New Virtual Machine", "New-VM-1"},
 		}
+		connStr := config.Output(params)
 		fmt.Println("analyzed Connectivity:")
-		fmt.Println(graphStr)
+		fmt.Println(connStr)
 
 		if args.outputFile != "" {
-			err = common.WriteToFile(args.outputFile, graphStr)
+			err = common.WriteToFile(args.outputFile, connStr)
 			if err != nil {
 				return err
 			}

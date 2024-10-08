@@ -4,10 +4,9 @@ import (
 	"fmt"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/output"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel) (output.Graph, error) {
+func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel) (Config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
@@ -22,7 +21,5 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity()
 
-	// TODO: add cli params to filter vms
-	// return output string of connectivity map
-	return config.AnalyzedConnectivity([]string{"New Virtual Machine", "New-VM-1"}), nil
+	return config, nil
 }
