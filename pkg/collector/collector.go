@@ -26,12 +26,15 @@ const (
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
 	firewallRuleQuery        = "api/v1/firewall/rules/%d"
+
+	defaultForwardingUpTimer = 5
 )
 
 type serverData struct {
 	nsxServer, userName, password string
 }
 
+//nolint:funlen,gocyclo // just a long function
 func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
 	server := serverData{nsxServer, userName, password}
 	res := NewResourcesContainerModel()
@@ -129,15 +132,15 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 			}
 		}
 	}
-	FixResourcesForJson(res)
+	FixResourcesForJSON(res)
 	return res, nil
 }
 
-func FixResourcesForJson(res *ResourcesContainerModel) {
+func FixResourcesForJSON(res *ResourcesContainerModel) {
 	for i := range res.Tier0List {
 		if res.Tier0List[i].AdvancedConfig != nil {
 			if res.Tier0List[i].AdvancedConfig.ForwardingUpTimer == 0 {
-				res.Tier0List[i].AdvancedConfig.ForwardingUpTimer = 5
+				res.Tier0List[i].AdvancedConfig.ForwardingUpTimer = defaultForwardingUpTimer
 			}
 		}
 	}

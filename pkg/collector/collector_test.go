@@ -58,11 +58,17 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt find VirtualMachineList")
 			}
 			testTopology(got)
-			dotTopology(got)
-			dotConnections(got)
+			if err := dotTopology(got); err != nil {
+				t.Errorf("dotTopology() error = %v", err)
+				return
+			}
+			if err := dotConnections(got); err != nil {
+				t.Errorf("dotConnections() error = %v", err)
+				return
+			}
 			for _, service := range got.ServiceList {
 				for _, e := range service.ServiceEntries {
-					//nolint:errcheck // we do not support al services?
+					//nolint:errcheck // we do not support all services
 					e.ToConnection()
 				}
 			}
@@ -155,56 +161,58 @@ func TestCollectResources(t *testing.T) {
 }
 
 func testTopology(got *ResourcesContainerModel) {
-	for _, segment := range got.SegmentList {
-		fmt.Printf("--------------------- segment(type)[addr] %s ------------------\n", segmentName(&segment))
+	for si := range got.SegmentList {
+		segment := &got.SegmentList[si]
+		fmt.Printf("--------------------- segment(type)[addr] %s ------------------\n", segmentName(segment))
 
 		if segment.ConnectivityPath == nil {
-			fmt.Printf("segment(type)[addr] %s has no ConnectivityPath\n", segmentName(&segment))
+			fmt.Printf("segment(type)[addr] %s has no ConnectivityPath\n", segmentName(segment))
 		} else if t1 := got.GetTier1(*segment.ConnectivityPath); t1 != nil {
 			t0 := got.GetTier0(*t1.Tier0Path)
-			fmt.Printf("[segment(type)[addr], t1, t0]: [%s, %s, %s]\n", segmentName(&segment), *t1.DisplayName, *t0.DisplayName)
+			fmt.Printf("[segment(type)[addr], t1, t0]: [%s, %s, %s]\n", segmentName(segment), *t1.DisplayName, *t0.DisplayName)
 		} else if t0 := got.GetTier0(*segment.ConnectivityPath); t0 != nil {
-			fmt.Printf("[segment(type)[addr], t0]: [%s, %s]\n", segmentName(&segment), *t0.DisplayName)
+			fmt.Printf("[segment(type)[addr], t0]: [%s, %s]\n", segmentName(segment), *t0.DisplayName)
 		} else {
-			fmt.Printf("fail to find tier of segment(type)[addr]: %s with connectivity %s\n", segmentName(&segment), *segment.ConnectivityPath)
+			fmt.Printf("fail to find tier of segment(type)[addr]: %s with connectivity %s\n", segmentName(segment), *segment.ConnectivityPath)
 		}
 		if len(segment.SegmentPorts) == 0 {
-			fmt.Printf("segment(type)[addr] %s has no ports\n", segmentName(&segment))
+			fmt.Printf("segment(type)[addr] %s has no ports\n", segmentName(segment))
 		}
-		for _, port := range segment.SegmentPorts {
-			att := *port.Attachment.Id
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
 			vif := got.GetVirtualNetworkInterfaceByPort(att)
-			fmt.Printf("[segment(type)[addr], vm]: [%s, %s]\n", segmentName(&segment), vniName(got, vif))
+			fmt.Printf("[segment(type)[addr], vm]: [%s, %s]\n", segmentName(segment), vniName(got, vif))
 		}
 	}
 }
 
-func dotTopology(got *ResourcesContainerModel) {
+func dotTopology(got *ResourcesContainerModel) error {
 	out := "digraph D {\n"
-	for _, t1 := range got.Tier1List {
-		t0 := got.GetTier0(*t1.Tier0Path)
-		out += fmt.Sprintf("\"t1:%s\" -> \"t0:%s\"\n", *t1.DisplayName, *t0.DisplayName)
+	for t1i := range got.Tier1List {
+		t0 := got.GetTier0(*got.Tier1List[t1i].Tier0Path)
+		out += fmt.Sprintf("\"t1:%s\" -> \"t0:%s\"\n", *got.Tier1List[t1i].DisplayName, *t0.DisplayName)
 	}
-	for _, segment := range got.SegmentList {
+	for si := range got.SegmentList {
+		segment := &got.SegmentList[si]
 		if segment.ConnectivityPath == nil {
 		} else if t1 := got.GetTier1(*segment.ConnectivityPath); t1 != nil {
-			out += fmt.Sprintf("\"sg:%s\" -> \"t1:%s\"\n", segmentName(&segment), *t1.DisplayName)
+			out += fmt.Sprintf("\"sg:%s\" -> \"t1:%s\"\n", segmentName(segment), *t1.DisplayName)
 		} else if t0 := got.GetTier0(*segment.ConnectivityPath); t0 != nil {
-			out += fmt.Sprintf("\"sg:%s\" -> \"t0:%s\"\n", segmentName(&segment), *t0.DisplayName)
+			out += fmt.Sprintf("\"sg:%s\" -> \"t0:%s\"\n", segmentName(segment), *t0.DisplayName)
 		}
-		for _, port := range segment.SegmentPorts {
-			att := *port.Attachment.Id
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
 			vif := got.GetVirtualNetworkInterfaceByPort(att)
-			out += fmt.Sprintf("\"ni:%s\" -> \"sg:%s\"\n", vniName(got, vif), segmentName(&segment))
+			out += fmt.Sprintf("\"ni:%s\" -> \"sg:%s\"\n", vniName(got, vif), segmentName(segment))
 			vm := got.GetVirtualMachine(*vif.OwnerVmId)
 			out += fmt.Sprintf("\"vm:%s\" -> \"ni:%s\"\n", *vm.DisplayName, vniName(got, vif))
 		}
 	}
 	out += "}\n"
-	common.WriteToFile(path.Join(outDir, "topology.dot"), out)
+	return common.WriteToFile(path.Join(outDir, "topology.dot"), out)
 }
 
-func dotConnections(got *ResourcesContainerModel) {
+func dotConnections(got *ResourcesContainerModel) error {
 	out := "digraph D {\n"
 
 	for i1 := range got.VirtualNetworkInterfaceList {
@@ -212,12 +220,12 @@ func dotConnections(got *ResourcesContainerModel) {
 			v1 := &got.VirtualNetworkInterfaceList[i1]
 			v2 := &got.VirtualNetworkInterfaceList[i2]
 			if i1 > i2 && IsConnected(got, v1, v2) {
-				out += fmt.Sprintf("\"%s\" -> \"%s\"[dir=none]\n", vniName(got, v1), vniName(got, v2))
+				out += fmt.Sprintf("%q -> %q[dir=none]\n", vniName(got, v1), vniName(got, v2))
 			}
 		}
 	}
 	out += "}\n"
-	common.WriteToFile(path.Join(outDir, "connection.dot"), out)
+	return common.WriteToFile(path.Join(outDir, "connection.dot"), out)
 }
 
 func vniName(resources *ResourcesContainerModel, vni *VirtualNetworkInterface) string {
