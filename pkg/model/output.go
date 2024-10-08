@@ -5,6 +5,8 @@ import (
 	"maps"
 	"slices"
 	"strings"
+
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
 const (
@@ -18,20 +20,25 @@ type OutputParameters struct {
 	VMs      []string
 }
 
-func (c *config) Output(args OutputParameters) string {
-	filteredConn := c.analyzedConnectivity.Filter(args.VMs)
+func (c *config) Output(params OutputParameters) (res string, err error) {
+	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
 
-	switch args.Format {
+	switch params.Format {
 	case TextFormat:
-		return filteredConn.String()
+		res = filteredConn.String()
 	case DotFormat:
-		return createDotGraph(filteredConn.toSlice()).toDotString()
+		res = createDotGraph(filteredConn.toSlice()).string()
 	}
-	return ""
+	if params.FileName != "" {
+		err := common.WriteToFile(params.FileName, res)
+		if err != nil {
+			return "", err
+		}
+	}
+	return res, nil
 }
 
-
-/////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////
 type node interface {
 	Name() string
 }
@@ -40,28 +47,36 @@ type dotNode struct {
 	node
 	ID nodeID
 }
+func (n *dotNode) string() string{
+	return fmt.Sprintf("node_%d_[shape=box, label=%q, tooltip=%q]", n.ID, n.Name(), n.Name())
+}
 type dotEdge struct {
 	src, dst dotNode
 	label    string
 	directed bool
+}
+func (e *dotEdge) string() string{
+	return fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q labeltooltip=%q %s]",
+	e.src.ID, e.dst.ID, e.label, e.label, e.label,
+	map[bool]string{false: ", dir=both", true: ""}[e.directed])
 }
 type dotGraph struct {
 	nodes []dotNode
 	edges []dotEdge
 }
 
-func createDotGraph(filteredConn []connMapEntry) *dotGraph {
+func createDotGraph(conns []connMapEntry) *dotGraph {
 	nodes := map[node]dotNode{}
 	dotEdges := map[dotEdge]bool{}
 	var nodeIDcounter nodeID
-	for _, e := range filteredConn {
+	for _, e := range conns {
 		for _, n := range []node{e.src, e.dst} {
 			if _, ok := nodes[n]; !ok {
 				nodes[n] = dotNode{n, nodeIDcounter}
 				nodeIDcounter++
 			}
 		}
-		dotE := dotEdge{nodes[e.src], nodes[e.dst],e.conn.String(), true}
+		dotE := dotEdge{nodes[e.src], nodes[e.dst], e.conn.String(), true}
 		revDotE := dotE
 		revDotE.src, revDotE.dst = revDotE.dst, revDotE.src
 		undirDotE := dotE
@@ -80,15 +95,14 @@ func createDotGraph(filteredConn []connMapEntry) *dotGraph {
 	return &dotGraph{slices.Collect(maps.Values(nodes)), slices.Collect(maps.Keys(dotEdges))}
 }
 
-func (dotGraph *dotGraph)toDotString() string {
+func (dotGraph *dotGraph) string() string {
 	nodeLines := make([]string, len(dotGraph.nodes))
 	for i, n := range dotGraph.nodes {
-		nodeLines[i] = fmt.Sprintf("node_%d_[shape=box, label=%q, tooltip=%q]", n.ID, n.Name(), n.Name())
+		nodeLines[i] = n.string()
 	}
 	edgeLines := make([]string, len(dotGraph.edges))
-	for i,e := range dotGraph.edges {
-		dotDir := map[bool]string{false:", dir=both", true:""}
-		edgeLines[i] = fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q labeltooltip=%q %s]", e.src.ID, e.dst.ID, e.label, e.label, e.label, dotDir[e.directed])
+	for i, e := range dotGraph.edges {
+		edgeLines[i] = e.string()
 	}
 	return fmt.Sprintf("digraph{\n%s\n\n%s\n}\n", strings.Join(nodeLines, "\n"), strings.Join(edgeLines, "\n"))
 }

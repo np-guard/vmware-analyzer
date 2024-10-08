@@ -8,7 +8,7 @@ import (
 )
 
 type Config interface {
-	Output(OutputParameters) string
+	Output(OutputParameters) (string, error)
 }
 
 // config captures nsx config

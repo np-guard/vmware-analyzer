@@ -76,10 +76,9 @@ func newRootCommand() *cobra.Command {
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, passwordFlag)
-	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
-
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFileFlag)
+	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFormantFlag)
 
 	return rootCmd
@@ -120,23 +119,18 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
-
-		// TODO: add cli params to filter vms
 		params := model.OutputParameters{
 			Format:   args.outputFormat,
 			FileName: args.outputFile,
-			VMs:      []string{"New Virtual Machine", "New-VM-1"},
+			// TODO: add cli params to filter vms
+			VMs: []string{"New Virtual Machine", "New-VM-1"},
 		}
-		connStr := config.Output(params)
+		connResStr, err := config.Output(params)
+		if err != nil {
+			return err
+		}
 		fmt.Println("analyzed Connectivity:")
-		fmt.Println(connStr)
-
-		if args.outputFile != "" {
-			err = common.WriteToFile(args.outputFile, connStr)
-			if err != nil {
-				return err
-			}
-		}
+		fmt.Println(connResStr)
 	}
 	return nil
 }
