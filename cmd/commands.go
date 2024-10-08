@@ -19,14 +19,16 @@ import (
 )
 
 const (
-	resourceInputFileFlag = "resource-input-file"
-	hostFlag              = "host"
-	userFlag              = "username"
-	passwordFlag          = "password"
-	resourceDumpFileFlag  = "resource-dump-file"
-	skipAnalysisFlag      = "skip-analysis"
-	outputFileFlag        = "output-file"
-	outputFormantFlag     = "output-format"
+	resourceInputFileFlag  = "resource-input-file"
+	hostFlag               = "host"
+	userFlag               = "username"
+	passwordFlag           = "password"
+	resourceDumpFileFlag   = "resource-dump-file"
+	skipAnalysisFlag       = "skip-analysis"
+	outputFileFlag         = "filename"
+	outputFormantFlag      = "output"
+	outputFileShortFlag    = "f"
+	outputFormantShortFlag = "o"
 
 	resourceInputFileHelp = "help for resource-input-file"
 	hostHelp              = "help for host"
@@ -34,8 +36,8 @@ const (
 	passwordHelp          = "help for password"
 	resourceDumpFileHelp  = "help for resource-dump-file"
 	skipAnalysisHelp      = "help for skip-analysis"
-	outputFileHelp        = "help for output-file"
-	outputFormatHelp      = "help for output format"
+	outputFileHelp        = "file path to store results"
+	outputFormatHelp      = "output format; must be one of [txt, dot]"
 )
 
 type inArgs struct {
@@ -68,9 +70,9 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
-	rootCmd.PersistentFlags().StringVar(&args.outputFile, outputFileFlag, "", outputFileHelp)
+	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
-	rootCmd.PersistentFlags().StringVar(&args.outputFormat, outputFormantFlag, model.TextFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, model.TextFormat, outputFormatHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
