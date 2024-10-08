@@ -24,6 +24,7 @@ const (
 	userFlag               = "username"
 	passwordFlag           = "password"
 	resourceDumpFileFlag   = "resource-dump-file"
+	topologyDumpFileFlag   = "topology-dump-file"
 	skipAnalysisFlag       = "skip-analysis"
 	outputFileFlag         = "filename"
 	outputFormantFlag      = "output"
@@ -35,6 +36,7 @@ const (
 	userHelp              = "help for username"
 	passwordHelp          = "help for password"
 	resourceDumpFileHelp  = "help for resource-dump-file"
+	topologyDumpFileHelp  = "help for topology-dump-file"
 	skipAnalysisHelp      = "help for skip-analysis"
 	outputFileHelp        = "file path to store results"
 	outputFormatHelp      = "output format; must be one of [txt, dot]"
@@ -46,6 +48,7 @@ type inArgs struct {
 	user              string
 	password          string
 	resourceDumpFile  string
+	topologyDumpFile  string
 	skipAnalysis      bool
 	outputFile        string
 	outputFormat      string
@@ -69,6 +72,7 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&args.user, userFlag, "", userHelp)
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
+	rootCmd.PersistentFlags().StringVar(&args.topologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
@@ -115,6 +119,18 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
+	}
+	if args.topologyDumpFile != "" {
+		params := collector.TopologyOutputParameters{
+			Format:   args.outputFormat,
+			FileName: args.topologyDumpFile,
+		}
+		topology, err := recourses.Output(params)
+		if err != nil {
+			return err
+		}
+		fmt.Println("topology:")
+		fmt.Println(topology)
 	}
 	if !args.skipAnalysis {
 		params := model.OutputParameters{

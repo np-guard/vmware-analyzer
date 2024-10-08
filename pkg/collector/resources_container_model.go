@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"slices"
 
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -96,4 +97,65 @@ func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort
 		}
 	}
 	return nil
+}
+
+func (t0 *Tier0) Name() string                    { return *t0.DisplayName }
+func (t1 *Tier1) Name() string                    { return *t1.DisplayName }
+func (s *Segment) Name() string                   { return *s.DisplayName }
+func (vni *VirtualNetworkInterface) Name() string { return *vni.DisplayName }
+func (vm *VirtualMachine) Name() string           { return *vm.DisplayName }
+
+
+const (
+	TextFormat = "txt"
+	DotFormat  = "dot"
+)
+
+type TopologyOutputParameters struct {
+	Format   string
+	FileName string
+}
+
+
+func (resources *ResourcesContainerModel) Output(params TopologyOutputParameters) (res string, err error) {
+	switch params.Format {
+	case TextFormat:
+		res = "todo"
+	case DotFormat:
+		res = resources.createDotGraph().String()
+	}
+	if params.FileName != "" {
+		err := common.WriteToFile(params.FileName, res)
+		if err != nil {
+			return "", err
+		}
+	}
+	return res, nil
+}
+
+
+func (resources *ResourcesContainerModel) createDotGraph() *common.DotGraph {
+	g := common.NewDotGraph()
+	for t1i := range resources.Tier1List {
+		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
+		g.AddEdge(&resources.Tier1List[t1i], t0, "")
+
+	}
+	for si := range resources.SegmentList {
+		segment := &resources.SegmentList[si]
+		if segment.ConnectivityPath == nil {
+		} else if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
+			g.AddEdge(segment, t1, "")
+		} else if t0 := resources.GetTier0(*segment.ConnectivityPath); t0 != nil {
+			g.AddEdge(segment, t0, "")
+		}
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
+			vni := resources.GetVirtualNetworkInterfaceByPort(att)
+			g.AddEdge(vni, segment, "")
+			vm := resources.GetVirtualMachine(*vni.OwnerVmId)
+			g.AddEdge(vm, vni, "")
+		}
+	}
+	return g
 }

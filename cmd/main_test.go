@@ -38,7 +38,7 @@ func Test_main(t *testing.T) {
 		},
 		{
 			name: "analyze-only-dot",
-			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.dot -o dot",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
 		},
 		{
 			name: "collect-and-analyze",
