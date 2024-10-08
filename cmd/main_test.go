@@ -37,6 +37,10 @@ func Test_main(t *testing.T) {
 			args: "--resource-input-file examples/input/resources.json --output-file examples/output/analysis.txt",
 		},
 		{
+			name: "analyze-only-dot",
+			args: "--resource-input-file examples/input/resources.json --output-file examples/output/analysis.dot --output-format dot",
+		},
+		{
 			name: "collect-and-analyze",
 			args: serverInfo + " --resource-dump-file examples/output/resources2.json --output-file examples/output/analysis2.txt",
 		},

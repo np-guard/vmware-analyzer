@@ -8,6 +8,8 @@ package output
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -42,63 +44,61 @@ func (g *graph) Text() string {
 	return strings.Join(lines, "\n")
 }
 
-func (g *graph) Dot() string {
-	dotNode := map[node]int{}
+type nodeID int
+type dotNode struct {
+	node
+	ID nodeID
+}
+type dotEdge struct {
+	src, dst dotNode
+	label    string
+	directed bool
+}
+type dotGraph struct {
+	nodes []dotNode
+	edges []dotEdge
+}
+
+func (g *graph) dotGraph() *dotGraph {
+	nodes := map[node]dotNode{}
+	dotEdges := map[dotEdge]bool{}
+	var nodeIDcounter nodeID
 	for _, e := range *g {
-		if _, ok := dotNode[e.src]; !ok {
-			dotNode[e.src] = len(dotNode)
+		for _, n := range []node{e.src, e.dst} {
+			if _, ok := nodes[n]; !ok {
+				nodes[n] = dotNode{n, nodeIDcounter}
+				nodeIDcounter++
+			}
 		}
-		if _, ok := dotNode[e.dst]; !ok {
-			dotNode[e.dst] = len(dotNode)
+		dotE := dotEdge{nodes[e.src], nodes[e.dst],e.label, true}
+		revDotE := dotE
+		revDotE.src, revDotE.dst = revDotE.dst, revDotE.src
+		undirDotE := dotE
+		undirRevDotE := revDotE
+		undirDotE.directed = false
+		undirRevDotE.directed = false
+		switch {
+		case dotEdges[dotE] || dotEdges[undirDotE] || dotEdges[undirRevDotE]:
+		case dotEdges[revDotE]:
+			delete(dotEdges, revDotE)
+			dotEdges[undirDotE] = true
+		default:
+			dotEdges[dotE] = true
 		}
 	}
-	nodeLines := make([]string, len(dotNode))
-	for n, nID := range dotNode {
-		nodeLines[nID] = fmt.Sprintf("node_%d_[label=%q]", nID, n.Name())
+	return &dotGraph{slices.Collect(maps.Values(nodes)), slices.Collect(maps.Keys(dotEdges))}
+}
+
+func (g *graph) Dot() string {
+	dotGraph := g.dotGraph()
+	nodeLines := make([]string, len(dotGraph.nodes))
+	for i, n := range dotGraph.nodes {
+		nodeLines[i] = fmt.Sprintf("node_%d_[label=%q, tooltip=%q]", n.ID, n.Name(), n.Name())
 	}
-	edgeLines := make([]string, len(*g))
-	for i, e := range *g {
-		edgeLines[i] = fmt.Sprintf("node_%d_ -> node_%d_", dotNode[e.src], dotNode[e.dst])
+	edgeLines := make([]string, len(dotGraph.edges))
+	for i,e := range dotGraph.edges {
+		dotDir := map[bool]string{false:"", true:" ,dir=none"}
+		edgeLines[i] = fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q %s]", e.src.ID, e.dst.ID, e.label, e.label, dotDir[e.directed])
 	}
 	return fmt.Sprintf("diagram{\n%s\n\n%s\n}\n", strings.Join(nodeLines, "\n"), strings.Join(edgeLines, "\n"))
 }
-
-// func (g *graph) Dot(fileName string, format graphviz.Format) error {
-// 	gw := graphviz.New()
-// 	dotGraph, err := gw.Graph()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer func() error {
-// 		if err := dotGraph.Close(); err != nil {
-// 			return err
-// 		}
-// 		gw.Close()
-// 		return nil
-// 	}()
-// 	dotNode := map[node]*cgraph.Node{}
-// 	for _, e := range *g {
-// 		if _, ok := dotNode[e.src]; !ok {
-// 			dotNode[e.src], err = dotGraph.CreateNode(e.src.Name())
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
-// 		if _, ok := dotNode[e.src]; !ok {
-// 			dotNode[e.dst], err = dotGraph.CreateNode(e.dst.Name())
-// 			if err != nil {
-// 				return err
-// 			}
-// 		}
-// 		dotEdge, err := dotGraph.CreateEdge(e.label, dotNode[e.src], dotNode[e.dst])
-// 		if err != nil {
-// 			return err
-// 		}
-// 		dotEdge.SetLabel(e.label)
-// 	}
-// 	var buf bytes.Buffer
-// 	if err := gw.Render(dotGraph, format, &buf); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
