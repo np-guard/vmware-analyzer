@@ -55,13 +55,11 @@ func (n *dotNode) string() string {
 type dotEdge struct {
 	src, dst dotNode
 	label    string
-	directed bool
 }
 
 func (e *dotEdge) string() string {
-	return fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q labeltooltip=%q %s]",
-		e.src.ID, e.dst.ID, e.label, e.label, e.label,
-		map[bool]string{false: ", dir=both", true: ""}[e.directed])
+	return fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q labeltooltip=%q]",
+		e.src.ID, e.dst.ID, e.label, e.label, e.label)
 }
 
 type dotGraph struct {
@@ -71,32 +69,18 @@ type dotGraph struct {
 
 func createDotGraph(conns []connMapEntry) *dotGraph {
 	nodes := map[node]dotNode{}
-	dotEdges := map[dotEdge]bool{}
+	dotEdges := make([]dotEdge, len(conns))
 	var nodeIDcounter nodeID
-	for _, e := range conns {
+	for i, e := range conns {
 		for _, n := range []node{e.src, e.dst} {
 			if _, ok := nodes[n]; !ok {
 				nodes[n] = dotNode{n, nodeIDcounter}
 				nodeIDcounter++
 			}
 		}
-		dotE := dotEdge{nodes[e.src], nodes[e.dst], e.conn.String(), true}
-		revDotE := dotE
-		revDotE.src, revDotE.dst = revDotE.dst, revDotE.src
-		undirDotE := dotE
-		undirRevDotE := revDotE
-		undirDotE.directed = false
-		undirRevDotE.directed = false
-		switch {
-		case dotEdges[dotE] || dotEdges[undirDotE] || dotEdges[undirRevDotE]:
-		case dotEdges[revDotE]:
-			delete(dotEdges, revDotE)
-			dotEdges[undirDotE] = true
-		default:
-			dotEdges[dotE] = true
-		}
+		dotEdges[i] = dotEdge{nodes[e.src], nodes[e.dst], e.conn.String()}
 	}
-	return &dotGraph{slices.Collect(maps.Values(nodes)), slices.Collect(maps.Keys(dotEdges))}
+	return &dotGraph{slices.Collect(maps.Values(nodes)), dotEdges}
 }
 
 func (dotGraph *dotGraph) string() string {
