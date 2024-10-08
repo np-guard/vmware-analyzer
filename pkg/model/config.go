@@ -54,4 +54,3 @@ func (c *config) getConfigInfoStr() string {
 
 	return sb.String()
 }
-
