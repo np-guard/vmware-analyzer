@@ -129,7 +129,7 @@ func (c *categorySpec) string() string {
 }
 
 func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
-	action, direction string, ruleID int, origRule *collector.Rule) {
+	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM) {
 	newRule := &fwRule{
 		srcVMs:      src,
 		dstVMs:      dst,
@@ -138,6 +138,7 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 		direction:   direction,
 		ruleID:      ruleID,
 		origRuleObj: origRule,
+		scope:       scope,
 	}
 	c.rules = append(c.rules, newRule)
 }
