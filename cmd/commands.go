@@ -30,13 +30,13 @@ const (
 	outputFileShortFlag    = "f"
 	outputFormantShortFlag = "o"
 
-	resourceInputFileHelp = "help for resource-input-file"
-	hostHelp              = "help for host"
-	userHelp              = "help for username"
-	passwordHelp          = "help for password"
-	resourceDumpFileHelp  = "help for resource-dump-file"
-	skipAnalysisHelp      = "help for skip-analysis"
-	outputFileHelp        = "file path to store results"
+	resourceInputFileHelp = "file path input JSON of NSX resources"
+	hostHelp              = "nsx host url"
+	userHelp              = "nsx username"
+	passwordHelp          = "nsx password"
+	resourceDumpFileHelp  = "file path to store collected resources in JSON format"
+	skipAnalysisHelp      = "flag to skip analysis, run only collector"
+	outputFileHelp        = "file path to store analysis results"
 	outputFormatHelp      = "output format; must be one of [txt, dot]"
 )
 
@@ -57,7 +57,7 @@ func newRootCommand() *cobra.Command {
 		Use:   "nsxanalyzer",
 		Short: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.
-		It uses REST API calls from NSX manager. `,
+It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
