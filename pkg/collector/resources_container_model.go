@@ -99,33 +99,31 @@ func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort
 	return nil
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
 func (t0 *Tier0) Name() string                    { return *t0.DisplayName }
 func (t1 *Tier1) Name() string                    { return *t1.DisplayName }
 func (s *Segment) Name() string                   { return *s.DisplayName }
 func (vni *VirtualNetworkInterface) Name() string { return *vni.DisplayName }
 func (vm *VirtualMachine) Name() string           { return *vm.DisplayName }
 
-
 const (
 	TextFormat = "txt"
 	DotFormat  = "dot"
 )
 
-type TopologyOutputParameters struct {
-	Format   string
-	FileName string
-}
-
-
-func (resources *ResourcesContainerModel) Output(params TopologyOutputParameters) (res string, err error) {
-	switch params.Format {
+func (resources *ResourcesContainerModel) OutputTopology(fileName, format string) (res string, err error) {
+	switch format {
 	case TextFormat:
-		res = "todo"
+		res,err = resources.createTopologyTree().ToJSONString()
 	case DotFormat:
-		res = resources.createDotGraph().String()
+		res = resources.createTopologyDotGraph().String()
 	}
-	if params.FileName != "" {
-		err := common.WriteToFile(params.FileName, res)
+	if err != nil {
+		return "", err
+	}
+if fileName != "" {
+		err := common.WriteToFile(fileName, res)
 		if err != nil {
 			return "", err
 		}
@@ -133,13 +131,11 @@ func (resources *ResourcesContainerModel) Output(params TopologyOutputParameters
 	return res, nil
 }
 
-
-func (resources *ResourcesContainerModel) createDotGraph() *common.DotGraph {
+func (resources *ResourcesContainerModel) createTopologyDotGraph() *common.DotGraph {
 	g := common.NewDotGraph()
 	for t1i := range resources.Tier1List {
 		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
 		g.AddEdge(&resources.Tier1List[t1i], t0, "")
-
 	}
 	for si := range resources.SegmentList {
 		segment := &resources.SegmentList[si]
@@ -158,4 +154,62 @@ func (resources *ResourcesContainerModel) createDotGraph() *common.DotGraph {
 		}
 	}
 	return g
+}
+
+func (resources *ResourcesContainerModel) createTopologyTree() *TreeNode2 {
+	root := newTreeNode("root")
+	allTreeNodes := map[interface{}]*TreeNode2{}
+	for t0i := range resources.Tier0List {
+		t0 := &resources.Tier0List[t0i]
+		allTreeNodes[t0] = newTreeNode(t0.Name())
+		root.addChild("t0s", allTreeNodes[t0])
+	}
+	for t1i := range resources.Tier1List {
+		t1 := &resources.Tier1List[t1i]
+		allTreeNodes[t1] = newTreeNode(t1.Name())
+		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
+		allTreeNodes[t0].addChild("t1s", allTreeNodes[t1])
+	}
+	for si := range resources.SegmentList {
+		segment := &resources.SegmentList[si]
+		allTreeNodes[segment] = newTreeNode(segment.Name())
+		if segment.ConnectivityPath == nil {
+		} else if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
+			allTreeNodes[t1].addChild("segments", allTreeNodes[segment])
+		} else if t0 := resources.GetTier0(*segment.ConnectivityPath); t0 != nil {
+			allTreeNodes[t0].addChild("segments", allTreeNodes[segment])
+		}
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
+			vni := resources.GetVirtualNetworkInterfaceByPort(att)
+			allTreeNodes[vni] = newTreeNode(vni.Name())
+			allTreeNodes[segment].addChild("vnis", allTreeNodes[vni])
+			vm := resources.GetVirtualMachine(*vni.OwnerVmId)
+			allTreeNodes[vm] = newTreeNode(vm.Name())
+			allTreeNodes[vni].addChild("vms", allTreeNodes[vm])
+		}
+	}
+	return root
+}
+
+type treeNodeChildren map[string][]*TreeNode2
+type TreeNode2 struct {
+	Children treeNodeChildren
+	Name string
+}
+
+func newTreeNode(name string)*TreeNode2{
+	return &TreeNode2{treeNodeChildren{}, name}
+}
+
+func (tn *TreeNode2) addChild(cType string, c *TreeNode2) {
+	if _, ok := tn.Children[cType]; !ok {
+		tn.Children[cType] = []*TreeNode2{}
+	}
+	tn.Children[cType] = append(tn.Children[cType], c)
+}
+
+func (tn *TreeNode2) ToJSONString() (string, error) {
+	toPrint, err := json.MarshalIndent(tn, "", "    ")
+	return string(toPrint), err
 }

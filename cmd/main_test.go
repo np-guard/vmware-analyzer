@@ -41,6 +41,10 @@ func Test_main(t *testing.T) {
 			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
 		},
 		{
+			name: "analyze-only-json-topology",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.json --filename examples/output/analysis.dot -o txt",
+		},
+		{
 			name: "collect-and-analyze",
 			args: serverInfo + " --resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
 		},

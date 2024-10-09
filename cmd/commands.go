@@ -121,11 +121,7 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if args.topologyDumpFile != "" {
-		params := collector.TopologyOutputParameters{
-			Format:   args.outputFormat,
-			FileName: args.topologyDumpFile,
-		}
-		topology, err := recourses.Output(params)
+		topology, err := recourses.OutputTopology(args.topologyDumpFile, args.outputFormat)
 		if err != nil {
 			return err
 		}
