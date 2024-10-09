@@ -5,12 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 */
 
 package common
+
 import (
 	"fmt"
 	"maps"
 	"slices"
 	"strings"
-
 )
 
 type node interface {
@@ -46,14 +46,16 @@ func NewDotGraph() *DotGraph {
 	return &DotGraph{nodes: map[node]dotNode{}}
 }
 
-func (dotGraph *DotGraph) AddEdge(src, dst node, label string) {
+func (dotGraph *DotGraph) AddEdge(src, dst node, dstType, label string) {
 	for _, n := range []node{src, dst} {
-		if _, ok := dotGraph.nodes[n]; !ok {
+		if _, ok := dotGraph.nodes[n]; n != nil && !ok {
 			dotGraph.nodes[n] = dotNode{n, dotGraph.nodeIDcounter}
 			dotGraph.nodeIDcounter++
 		}
 	}
-	dotGraph.edges = append(dotGraph.edges, dotEdge{dotGraph.nodes[src], dotGraph.nodes[dst], label})
+	if src != nil && dst != nil {
+		dotGraph.edges = append(dotGraph.edges, dotEdge{dotGraph.nodes[src], dotGraph.nodes[dst], label})
+	}
 }
 
 func (dotGraph *DotGraph) String() string {

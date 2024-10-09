@@ -36,7 +36,7 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 func createDotGraph(conns []connMapEntry) *common.DotGraph {
 	g := common.NewDotGraph()
 	for _, e := range conns {
-		g.AddEdge(e.src, e.dst, e.conn.String())
+		g.AddEdge(e.src, e.dst,"", e.conn.String())
 	}
 	return g
 }
