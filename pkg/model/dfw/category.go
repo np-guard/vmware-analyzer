@@ -127,13 +127,15 @@ func (c *categorySpec) string() string {
 		strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action, direction string, origRule *collector.Rule) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set,
+	action, direction string, ruleID int, origRule *collector.Rule) {
 	newRule := &fwRule{
 		srcVMs:      src,
 		dstVMs:      dst,
 		conn:        conn,
 		action:      actionFromString(action),
 		direction:   direction,
+		ruleID:      ruleID,
 		origRuleObj: origRule,
 	}
 	c.rules = append(c.rules, newRule)

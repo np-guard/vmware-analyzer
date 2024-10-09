@@ -10,6 +10,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -89,15 +91,69 @@ func (p *NSXConfigParser) getDFW() {
 			secPolicyId := secPolicy.Id
 			scope := secPolicy.Scope // support ANY at first*/
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
+			scope := secPolicy.Scope
+			if !slices.Contains(scope, anyStr) {
+				fmt.Printf("warning: SecurityPolicy %s has non-default scope \"%s\", not yet analyzed\n",
+					*secPolicy.DisplayName, strings.Join(scope, ","))
+			}
 
 			rules := secPolicy.Rules
 			for i := range rules {
 				rule := &rules[i]
 				r := p.getDFWRule(rule)
-				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, rule)
+				p.addFWRule(r, category, rule)
+				//p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, rule)
+			}
+
+			// add default rule if such is configured
+			if secPolicy.DefaultRule != nil {
+				if secPolicy.ConnectivityPreference == nil || *secPolicy.ConnectivityPreference ==
+					nsx.SecurityPolicyConnectivityPreferenceNONE {
+					// todo: add as logger message
+					fmt.Println("unexpected default rule with no ConnectivityPreference")
+				}
+
+				defaultRule := p.getDefaultRule(secPolicy)
+				if defaultRule == nil {
+					fmt.Printf("skipping default rule for policy %s\n", *secPolicy.DisplayName)
+				}
+				p.addFWRule(defaultRule, category, nil)
 			}
 		}
 	}
+}
+
+func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID, origRule)
+}
+
+func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
+	// from spec documentation:
+	// The default rule that gets created will be a any-any rule and applied
+	// to entities specified in the scope of the security policy.
+	res := &parsedRule{}
+	// scope - the list of group paths where the rules in this policy will get applied.
+	scope := secPolicy.Scope
+	vms := p.getSrcOrDstEndpoints(scope)
+	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
+	res.srcVMs = vms
+	res.dstVMs = vms
+
+	switch string(*secPolicy.ConnectivityPreference) {
+	case string(nsx.SecurityPolicyConnectivityPreferenceALLOWLIST),
+		string(nsx.SecurityPolicyConnectivityPreferenceALLOWLISTENABLELOGGING):
+		res.action = string(nsx.RuleActionDROP)
+	case string(nsx.SecurityPolicyConnectivityPreferenceDENYLIST),
+		string(nsx.SecurityPolicyConnectivityPreferenceDENYLISTENABLELOGGING):
+		res.action = string(nsx.RuleActionALLOW)
+	default:
+		fmt.Printf("unexpected default rule action")
+		return nil
+	}
+	res.conn = connection.All()
+	res.ruleID = *secPolicy.DefaultRuleId
+	res.direction = string(nsx.RuleDirectionINOUT)
+	return res
 }
 
 type parsedRule struct {
@@ -106,6 +162,7 @@ type parsedRule struct {
 	action    string
 	conn      *connection.Set
 	direction string
+	ruleID    int
 }
 
 func (p *NSXConfigParser) allGroups() []*endpoints.VM {
@@ -136,6 +193,11 @@ func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) []*endpoint
 	return res
 }
 
+// type *collector.FirewallRule is deprecated but used to collect default rule per securityPolicy
+/*func (p *NSXConfigParser) getDFWRule(rule *collector.FirewallRule) *parsedRule {
+
+}*/
+
 func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	if rule.Action == nil {
 		return nil // skip rule without action (Add warning)
@@ -154,6 +216,7 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	res.action = string(*rule.Action)
 	res.conn = p.getRuleConnections(rule)
 	res.direction = string(rule.Direction)
+	res.ruleID = *rule.RuleId
 	return res
 }
 
