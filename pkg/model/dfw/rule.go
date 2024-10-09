@@ -59,6 +59,7 @@ type fwRule struct {
 	action      ruleAction
 	direction   string //	"IN","OUT",	"IN_OUT"
 	origRuleObj *collector.Rule
+	ruleID      int
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
@@ -85,5 +86,5 @@ func vmsString(vms []*endpoints.VM) string {
 // return a string representation of a single rule
 func (f *fwRule) string() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s",
-		*f.origRuleObj.RuleId, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction)
 }

@@ -73,10 +73,11 @@ func (d *DFW) String() string {
 
 // AddRule func for testing purposes
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr, actionStr, direction string, origRule *collector.Rule) {
+func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr, actionStr, direction string,
+	ruleID int, origRule *collector.Rule) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, origRule)
+			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule)
 		}
 	}
 }
