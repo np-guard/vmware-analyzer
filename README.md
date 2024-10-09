@@ -20,11 +20,13 @@ Flags:
       --host string                  nsx host url
   -o, --output string                output format; must be one of [txt, dot] (default "txt")
       --password string              nsx password
+  -q, --quiet                        runs quietly, reports only severe errors and results
       --resource-dump-file string    file path to store collected resources in JSON format
       --resource-input-file string   file path input JSON of NSX resources
       --skip-analysis                flag to skip analysis, run only collector
       --username string              nsx username
-  -v, --version                      version for nsxanalyzer
+  -v, --verbose                      runs with more informative messages printed to log
+      --version                      version for nsxanalyzer
 ```
 
 ## Build the project
