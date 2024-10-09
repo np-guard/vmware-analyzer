@@ -10,12 +10,50 @@ import (
 	"encoding/json"
 )
 
+const (
+	TextFormat = "txt"
+	DotFormat  = "dot"
+	JsonFormat = "json"
+	SvgFormat  = "svg"
+)
+
 type node interface {
 	Name() string
 	Kind() string
 }
-type TopologyGraph interface {
+type Graph interface {
 	AddEdge(src, dst node, label string)
+}
+
+type graphGenerator interface {
+	CreateGraph(g Graph)
+}
+
+func OutputGraph(fileName, format string, dotRank bool, gen graphGenerator) (res string, err error) {
+	switch format {
+	case JsonFormat:
+		g := NewTree()
+		gen.CreateGraph(g)
+		res, err = g.JSONString()
+	case TextFormat:
+		g := NewTree()
+		gen.CreateGraph(g)
+		res, err = g.JSONString()
+	case DotFormat:
+		g := NewDotGraph()
+		gen.CreateGraph(g)
+		res = g.String(dotRank)
+	}
+	if err != nil {
+		return "", err
+	}
+	if fileName != "" {
+		err := WriteToFile(fileName, res)
+		if err != nil {
+			return "", err
+		}
+	}
+	return res, nil
 }
 
 // ////////////////////////////////////////////////////////////////

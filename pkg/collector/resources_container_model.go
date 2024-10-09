@@ -113,36 +113,8 @@ func (s *Segment) Kind() string                   { return "segment" }
 func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
 func (vm *VirtualMachine) Kind() string           { return "vm" }
 
-const (
-	TextFormat = "txt"
-	JsonFormat = "json"
-	DotFormat  = "dot"
-)
 
-func (resources *ResourcesContainerModel) OutputTopology(fileName, format string) (res string, err error) {
-	switch format {
-	case TextFormat:
-		g := common.NewTree()
-		resources.createTopologyGraph(g)
-		res, err = g.JSONString()
-	case DotFormat:
-		g := common.NewDotGraph()
-		resources.createTopologyGraph(g)
-		res = g.String(true)
-	}
-	if err != nil {
-		return "", err
-	}
-	if fileName != "" {
-		err := common.WriteToFile(fileName, res)
-		if err != nil {
-			return "", err
-		}
-	}
-	return res, nil
-}
-
-func (resources *ResourcesContainerModel) createTopologyGraph(g common.TopologyGraph) {
+func (resources *ResourcesContainerModel) CreateGraph(g common.Graph) {
 	for t0i := range resources.Tier0List {
 		g.AddEdge(nil, &resources.Tier0List[t0i], "")
 	}

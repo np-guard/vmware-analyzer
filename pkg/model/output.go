@@ -4,11 +4,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
-const (
-	TextFormat = "txt"
-	DotFormat  = "dot"
-)
-
 type OutputParameters struct {
 	Format   string
 	FileName string
@@ -17,26 +12,11 @@ type OutputParameters struct {
 
 func (c *config) output(params OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
-
-	switch params.Format {
-	case TextFormat:
-		res = filteredConn.String()
-	case DotFormat:
-		res = createDotGraph(filteredConn.toSlice()).String(false)
-	}
-	if params.FileName != "" {
-		err := common.WriteToFile(params.FileName, res)
-		if err != nil {
-			return "", err
-		}
-	}
-	return res, nil
+	return common.OutputGraph(params.FileName, params.Format,false, &filteredConn)
 }
 
-func createDotGraph(conns []connMapEntry) *common.DotGraph {
-	g := common.NewDotGraph()
-	for _, e := range conns {
+func (conn *connMap) CreateGraph(g common.Graph) {
+	for _, e := range conn.toSlice() {
 		g.AddEdge(e.src, e.dst, e.conn.String())
 	}
-	return g
 }

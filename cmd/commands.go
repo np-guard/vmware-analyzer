@@ -76,7 +76,7 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
-	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, model.TextFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
@@ -121,7 +121,7 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if args.topologyDumpFile != "" {
-		topology, err := recourses.OutputTopology(args.topologyDumpFile, args.outputFormat)
+		topology, err := common.OutputGraph(args.topologyDumpFile, args.outputFormat,true, recourses)
 		if err != nil {
 			return err
 		}
