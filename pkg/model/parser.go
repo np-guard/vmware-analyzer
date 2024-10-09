@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
@@ -150,7 +150,7 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 		fmt.Printf("unexpected default rule action")
 		return nil
 	}
-	res.conn = connection.All()
+	res.conn = netset.AllTransports()
 	res.ruleID = *secPolicy.DefaultRuleId
 	res.direction = string(nsx.RuleDirectionINOUT)
 	return res
@@ -160,7 +160,7 @@ type parsedRule struct {
 	srcVMs    []*endpoints.VM
 	dstVMs    []*endpoints.VM
 	action    string
-	conn      *connection.Set
+	conn      *netset.TransportSet
 	direction string
 	ruleID    int
 }
@@ -220,7 +220,7 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	return res
 }
 
-func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.Set {
+func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.TransportSet {
 	/*
 		// In order to specify raw services this can be used, along with services which
 		// contains path to services. This can be empty or null.
@@ -232,9 +232,9 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.S
 		Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
 	*/
 	if slices.Contains(rule.Services, anyStr) {
-		return connection.All()
+		return netset.AllTransports()
 	}
-	res := connection.None()
+	res := netset.NoTransports()
 	for _, s := range rule.Services {
 		conn := p.connectionFromService(s, rule)
 		res = res.Union(conn)
@@ -244,8 +244,8 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.S
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
-func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *connection.Set {
-	res := connection.None()
+func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
+	res := netset.NoTransports()
 	service := p.rc.GetService(servicePath)
 	if service == nil {
 		fmt.Printf("GetService failed to find service %s\n", servicePath)
