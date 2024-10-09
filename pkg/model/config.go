@@ -3,8 +3,13 @@ package model
 import (
 	"strings"
 
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+)
+
+const (
+	outputSectionSep = "-------------------------------------------------------------------"
 )
 
 // config captures nsx config
@@ -24,6 +29,7 @@ func (c *config) getConnectivity() connMap {
 }
 
 func (c *config) ComputeConnectivity() {
+	logging.Debugf("compute connectivity on parsed config")
 	res := connMap{}
 	// make sure all vm pairs are in the result, by init with global default
 	res.initPairs(c.fw.GlobalDefaultAllow(), c.vms)
@@ -44,6 +50,7 @@ func (c *config) ComputeConnectivity() {
 // getConfigInfoStr returns string describing the captured configuration content
 func (c *config) getConfigInfoStr() string {
 	var sb strings.Builder
+	sb.WriteString("\n" + outputSectionSep + "\n")
 	sb.WriteString("VMs:\n")
 	for _, vm := range c.vms {
 		sb.WriteString(vm.Name() + "\n")
@@ -51,6 +58,7 @@ func (c *config) getConfigInfoStr() string {
 
 	sb.WriteString("DFW:\n")
 	sb.WriteString(c.fw.String())
+	sb.WriteString("\n" + outputSectionSep + "\n")
 
 	return sb.String()
 }

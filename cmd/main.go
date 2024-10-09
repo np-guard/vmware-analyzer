@@ -9,6 +9,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 // The actual main function
@@ -22,6 +24,7 @@ func _main(cmdlineArgs []string) error {
 func main() {
 	err := _main(os.Args[1:])
 	if err != nil {
+		logging.Init(logging.MediumVerbosity) // just in case it wasn't initialized earlier
 		fmt.Fprintf(os.Stderr, "%v", err)
 	}
 }

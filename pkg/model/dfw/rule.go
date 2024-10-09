@@ -55,6 +55,7 @@ func actionFromString(s string) ruleAction {
 type fwRule struct {
 	srcVMs      []*endpoints.VM
 	dstVMs      []*endpoints.VM
+	scope       []*endpoints.VM
 	conn        *netset.TransportSet
 	action      ruleAction
 	direction   string //	"IN","OUT",	"IN_OUT"
@@ -70,9 +71,9 @@ func (f *fwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
 		return false
 	}
 	if isIngress {
-		return slices.Contains(ingressDirections, f.direction)
+		return slices.Contains(ingressDirections, f.direction) && slices.Contains(f.scope, dst)
 	}
-	return slices.Contains(egressDirections, f.direction)
+	return slices.Contains(egressDirections, f.direction) && slices.Contains(f.scope, src)
 }
 
 func vmsString(vms []*endpoints.VM) string {

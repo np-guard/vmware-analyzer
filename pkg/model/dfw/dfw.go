@@ -74,10 +74,10 @@ func (d *DFW) String() string {
 // AddRule func for testing purposes
 
 func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule) {
+	ruleID int, origRule *collector.Rule, scope []*endpoints.VM) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule)
+			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope)
 		}
 	}
 }
