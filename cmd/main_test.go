@@ -42,7 +42,7 @@ func Test_main(t *testing.T) {
 		},
 		{
 			name: "analyze-only-json-topology",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.json --filename examples/output/analysis.dot -o txt",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.json --filename examples/output/analysis.txt -o txt",
 		},
 		{
 			name: "collect-and-analyze",

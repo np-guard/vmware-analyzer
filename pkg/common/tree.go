@@ -10,11 +10,15 @@ import (
 	"encoding/json"
 )
 
+type node interface {
+	Name() string
+	Kind() string
+}
 type TopologyGraph interface {
-	AddEdge(src, dst node, dstType, label string)
+	AddEdge(src, dst node, label string)
 }
 
-type nodeType string
+// ////////////////////////////////////////////////////////////////
 type Tree struct {
 	root  *treeNode
 	nodes map[node]*treeNode
@@ -35,7 +39,7 @@ func newTreeNode(name string) *treeNode {
 	}
 	return &tn
 }
-func (tt *Tree) AddEdge(src, dst node, dstType, label string) {
+func (tt *Tree) AddEdge(src, dst node, label string) {
 	for _, n := range []node{src, dst} {
 		if n != nil {
 			if _, ok := tt.nodes[n]; !ok {
@@ -43,7 +47,7 @@ func (tt *Tree) AddEdge(src, dst node, dstType, label string) {
 			}
 		}
 	}
-	tt.nodes[src].addChild(dstType+"s", tt.nodes[dst])
+	tt.nodes[src].addChild(dst.Kind()+"s", tt.nodes[dst])
 }
 
 func (tn *treeNode) addChild(cType string, c *treeNode) {

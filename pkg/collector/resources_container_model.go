@@ -107,6 +107,12 @@ func (s *Segment) Name() string                   { return *s.DisplayName }
 func (vni *VirtualNetworkInterface) Name() string { return *vni.DisplayName }
 func (vm *VirtualMachine) Name() string           { return *vm.DisplayName }
 
+func (t0 *Tier0) Kind() string                    { return "t0" }
+func (t1 *Tier1) Kind() string                    { return "t1" }
+func (s *Segment) Kind() string                   { return "segment" }
+func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
+func (vm *VirtualMachine) Kind() string           { return "vm" }
+
 const (
 	TextFormat = "txt"
 	JsonFormat = "json"
@@ -122,7 +128,7 @@ func (resources *ResourcesContainerModel) OutputTopology(fileName, format string
 	case DotFormat:
 		g := common.NewDotGraph()
 		resources.createTopologyGraph(g)
-		res = g.String()
+		res = g.String(true)
 	}
 	if err != nil {
 		return "", err
@@ -138,27 +144,27 @@ func (resources *ResourcesContainerModel) OutputTopology(fileName, format string
 
 func (resources *ResourcesContainerModel) createTopologyGraph(g common.TopologyGraph) {
 	for t0i := range resources.Tier0List {
-		g.AddEdge(nil, &resources.Tier0List[t0i],"t0","")
+		g.AddEdge(nil, &resources.Tier0List[t0i], "")
 	}
 	for t1i := range resources.Tier1List {
 		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
-		g.AddEdge(t0, &resources.Tier1List[t1i],"t1","")
+		g.AddEdge(t0, &resources.Tier1List[t1i], "")
 	}
 	for si := range resources.SegmentList {
 		segment := &resources.SegmentList[si]
 		if segment.ConnectivityPath == nil {
-			g.AddEdge(nil, segment,"segment","")
+			g.AddEdge(nil, segment, "")
 		} else if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
-			g.AddEdge(t1, segment,"segment","")
+			g.AddEdge(t1, segment, "")
 		} else if t0 := resources.GetTier0(*segment.ConnectivityPath); t0 != nil {
-			g.AddEdge(t0, segment,"segment","")
+			g.AddEdge(t0, segment, "")
 		}
 		for pi := range segment.SegmentPorts {
 			att := *segment.SegmentPorts[pi].Attachment.Id
 			vni := resources.GetVirtualNetworkInterfaceByPort(att)
-			g.AddEdge(segment, vni,"vni","")
+			g.AddEdge(segment, vni, "")
 			vm := resources.GetVirtualMachine(*vni.OwnerVmId)
-			g.AddEdge(vni, vm,"vm","")
+			g.AddEdge(vni, vm, "")
 		}
 	}
 }
