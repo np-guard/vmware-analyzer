@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -55,7 +55,7 @@ func actionFromString(s string) ruleAction {
 type fwRule struct {
 	srcVMs      []*endpoints.VM
 	dstVMs      []*endpoints.VM
-	conn        *connection.Set
+	conn        *netset.TransportSet
 	action      ruleAction
 	direction   string //	"IN","OUT",	"IN_OUT"
 	origRuleObj *collector.Rule

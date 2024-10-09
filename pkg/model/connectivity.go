@@ -5,21 +5,21 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 // connMap captures permitted connections between endpoints in the input config
-type connMap map[*endpoints.VM]map[*endpoints.VM]*connection.Set
+type connMap map[*endpoints.VM]map[*endpoints.VM]*netset.TransportSet
 type connMapEntry struct {
 	src, dst *endpoints.VM
-	conn     *connection.Set
+	conn     *netset.TransportSet
 }
 
 // add func adds a given pair with specified permitted connection
-func (c connMap) add(src, dst *endpoints.VM, conn *connection.Set) {
+func (c connMap) add(src, dst *endpoints.VM, conn *netset.TransportSet) {
 	if _, ok := c[src]; !ok {
-		c[src] = map[*endpoints.VM]*connection.Set{}
+		c[src] = map[*endpoints.VM]*netset.TransportSet{}
 	}
 	c[src][dst] = conn
 }
@@ -32,9 +32,9 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
 				continue
 			}
 			if initAllow {
-				c.add(src, dst, connection.All())
+				c.add(src, dst, netset.AllTransports())
 			} else {
-				c.add(src, dst, connection.None())
+				c.add(src, dst, netset.NoTransports())
 			}
 		}
 	}
