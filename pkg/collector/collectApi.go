@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -68,7 +69,7 @@ func curlRequest(server serverData, query string) ([]byte, error) {
 
 	//nolint:noctx // no context for testing and development
 	req, err := http.NewRequest(http.MethodGet, server.nsxServer+"/"+query, http.NoBody)
-	fmt.Printf("GET %s\n", query) // TODO: update as logger for verbose mode
+	logging.Infof("GET %s\n", query)
 	if err != nil {
 		return nil, err
 	}

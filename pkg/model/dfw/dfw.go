@@ -3,7 +3,7 @@ package dfw
 import (
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -14,7 +14,7 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connection.Set {
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *netset.TransportSet {
 	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
@@ -22,11 +22,11 @@ func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connection.Set {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) *connection.Set {
+func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) *netset.TransportSet {
 	// accumulate the following sets, from all categories - by order
-	allAllowedConns := connection.None()
-	allDeniedConns := connection.None()
-	allNotDeterminedConns := connection.None()
+	allAllowedConns := netset.NoTransports()
+	allDeniedConns := netset.NoTransports()
+	allNotDeterminedConns := netset.NoTransports()
 
 	for _, dfwCategory := range d.categoriesSpecs {
 		if dfwCategory.category == ethernetCategory {
@@ -73,15 +73,16 @@ func (d *DFW) String() string {
 
 // AddRule func for testing purposes
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr, actionStr, direction string, origRule *collector.Rule) {
+func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr, actionStr, direction string,
+	ruleID int, origRule *collector.Rule, scope []*endpoints.VM) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, origRule)
+			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope)
 		}
 	}
 }
 
-/*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categoryStr string, actionStr string) {
+/*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr string, actionStr string) {
 	var categoryObj *categorySpec
 	for _, c := range d.categoriesSpecs {
 		if c.category.string() == categoryStr {
@@ -98,7 +99,7 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *connection.Set, categorySt
 	newRule := &fwRule{
 		srcVMs: src,
 		dstVMs: dst,
-		conn:   connection.All(), // todo: change
+		conn:   netset.All(), // todo: change
 		action: actionFromString(actionStr),
 	}
 	categoryObj.rules = append(categoryObj.rules, newRule)

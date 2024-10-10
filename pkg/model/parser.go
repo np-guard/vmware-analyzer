@@ -1,15 +1,18 @@
 package model
 
 import (
-	"fmt"
 	"os"
 	"slices"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netp"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -45,7 +48,7 @@ type NSXConfigParser struct {
 }
 
 func (p *NSXConfigParser) RunParser() error {
-	fmt.Println("started parsing the given NSX config")
+	logging.Debugf("started parsing the given NSX config")
 	p.configRes = &config{}
 	p.getVMs() // get vms config
 	p.getDFW() // get distributed firewall config
@@ -89,23 +92,76 @@ func (p *NSXConfigParser) getDFW() {
 			secPolicyId := secPolicy.Id
 			scope := secPolicy.Scope // support ANY at first*/
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
+			//scope := secPolicy.Scope
+			scope := p.getEndpointsFromGroupsPaths(secPolicy.Scope)
 
 			rules := secPolicy.Rules
 			for i := range rules {
 				rule := &rules[i]
 				r := p.getDFWRule(rule)
-				p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, rule)
+				r.scope = scope
+				p.addFWRule(r, category, rule)
+				//p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, rule)
+			}
+
+			// add default rule if such is configured
+			if secPolicy.DefaultRule != nil {
+				if secPolicy.ConnectivityPreference == nil || *secPolicy.ConnectivityPreference ==
+					nsx.SecurityPolicyConnectivityPreferenceNONE {
+					logging.Debugf("unexpected default rule with no ConnectivityPreference")
+				}
+
+				defaultRule := p.getDefaultRule(secPolicy)
+				if defaultRule == nil {
+					logging.Debugf("skipping default rule for policy %s\n", *secPolicy.DisplayName)
+				}
+				p.addFWRule(defaultRule, category, nil)
 			}
 		}
 	}
+}
+
+func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope)
+}
+
+func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
+	// from spec documentation:
+	// The default rule that gets created will be a any-any rule and applied
+	// to entities specified in the scope of the security policy.
+	res := &parsedRule{}
+	// scope - the list of group paths where the rules in this policy will get applied.
+	scope := secPolicy.Scope
+	vms := p.getEndpointsFromGroupsPaths(scope)
+	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
+	res.srcVMs = vms
+	res.dstVMs = vms
+
+	switch string(*secPolicy.ConnectivityPreference) {
+	case string(nsx.SecurityPolicyConnectivityPreferenceALLOWLIST),
+		string(nsx.SecurityPolicyConnectivityPreferenceALLOWLISTENABLELOGGING):
+		res.action = string(nsx.RuleActionDROP)
+	case string(nsx.SecurityPolicyConnectivityPreferenceDENYLIST),
+		string(nsx.SecurityPolicyConnectivityPreferenceDENYLISTENABLELOGGING):
+		res.action = string(nsx.RuleActionALLOW)
+	default:
+		logging.Debugf("unexpected default rule action")
+		return nil
+	}
+	res.conn = netset.AllTransports()
+	res.ruleID = *secPolicy.DefaultRuleId
+	res.direction = string(nsx.RuleDirectionINOUT)
+	return res
 }
 
 type parsedRule struct {
 	srcVMs    []*endpoints.VM
 	dstVMs    []*endpoints.VM
 	action    string
-	conn      *connection.Set
+	conn      *netset.TransportSet
 	direction string
+	ruleID    int
+	scope     []*endpoints.VM
 }
 
 func (p *NSXConfigParser) allGroups() []*endpoints.VM {
@@ -123,7 +179,7 @@ func (p *NSXConfigParser) allGroups() []*endpoints.VM {
 	return res
 }
 
-func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) []*endpoints.VM {
+func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string) []*endpoints.VM {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		return p.allGroups() // all groups
@@ -136,6 +192,11 @@ func (p *NSXConfigParser) getSrcOrDstEndpoints(groupsPaths []string) []*endpoint
 	return res
 }
 
+// type *collector.FirewallRule is deprecated but used to collect default rule per securityPolicy
+/*func (p *NSXConfigParser) getDFWRule(rule *collector.FirewallRule) *parsedRule {
+
+}*/
+
 func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	if rule.Action == nil {
 		return nil // skip rule without action (Add warning)
@@ -147,17 +208,18 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	// the source groups. If false, the rule applies to the source groups
 	// TODO: handle excluded fields
 	// srcExclude := rule.SourcesExcluded
-	res.srcVMs = p.getSrcOrDstEndpoints(srcGroups)
+	res.srcVMs = p.getEndpointsFromGroupsPaths(srcGroups)
 	dstGroups := rule.DestinationGroups
-	res.dstVMs = p.getSrcOrDstEndpoints(dstGroups)
+	res.dstVMs = p.getEndpointsFromGroupsPaths(dstGroups)
 
 	res.action = string(*rule.Action)
 	res.conn = p.getRuleConnections(rule)
 	res.direction = string(rule.Direction)
+	res.ruleID = *rule.RuleId
 	return res
 }
 
-func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.Set {
+func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.TransportSet {
 	/*
 		// In order to specify raw services this can be used, along with services which
 		// contains path to services. This can be empty or null.
@@ -169,9 +231,9 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.S
 		Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
 	*/
 	if slices.Contains(rule.Services, anyStr) {
-		return connection.All()
+		return netset.AllTransports()
 	}
-	res := connection.None()
+	res := netset.NoTransports()
 	for _, s := range rule.Services {
 		conn := p.connectionFromService(s, rule)
 		res = res.Union(conn)
@@ -181,11 +243,18 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *connection.S
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
-func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *connection.Set {
-	res := connection.None()
+func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
+	// temp work around
+	if servicePath == "/infra/services/HTTP" {
+		const (
+			p = 80
+		)
+		return netset.NewTCPTransport(netp.MinPort, netp.MaxPort, p, p)
+	}
+	res := netset.NoTransports()
 	service := p.rc.GetService(servicePath)
 	if service == nil {
-		fmt.Printf("GetService failed to find service %s\n", servicePath)
+		logging.Debugf("GetService failed to find service %s\n", servicePath)
 		return nil
 	}
 	for _, serviceEntry := range service.ServiceEntries {
@@ -193,10 +262,11 @@ func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collec
 		if conn != nil && err == nil {
 			res = res.Union(conn)
 		} else if err != nil {
-			fmt.Println(err.Error())
-			fmt.Printf("ignoring this service within rule id %d\n", *rule.RuleId)
+			logging.Debugf("err: %s", err.Error())
+			logging.Debugf("ignoring this service within rule id %d\n", *rule.RuleId)
 		}
 	}
+	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
 	return res
 }
 
