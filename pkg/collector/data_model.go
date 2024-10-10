@@ -124,7 +124,7 @@ func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
 	}
 	for _, sp := range srcPorts {
 		for _, dp := range dstPorts {
-			res.Union(connection.TCPorUDPConnection(protocol, sp.min, sp.max, dp.min, dp.max))
+			res = res.Union(connection.TCPorUDPConnection(protocol, sp.min, sp.max, dp.min, dp.max))
 		}
 	}
 	return res, nil
