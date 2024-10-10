@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -79,7 +79,7 @@ type categorySpec struct {
 	defaultAction ruleAction
 }
 
-// allowedConns are the set of connections between src to dst, for which this category allows the connection.
+// allowedConns are the set of connections between src to dst, for which this category allows the netset.
 // jumpToAppConns are the set of connections between src to dst, for which this category applies the rule
 // action jump_to_app. notDeterminedConns are the set of connections between src to dst, for which this category
 // has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
@@ -88,8 +88,8 @@ type categorySpec struct {
 //
 //nolint:gocritic // unnamedResult: consider giving a name to these results : when adding this, getting lint isseu nonamedreturns
 func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
-) (*connection.Set, *connection.Set, *connection.Set, *connection.Set) {
-	allowedConns, jumpToAppConns, deniedConns := connection.None(), connection.None(), connection.None()
+) (*netset.TransportSet, *netset.TransportSet, *netset.TransportSet, *netset.TransportSet) {
+	allowedConns, jumpToAppConns, deniedConns := netset.NoTransports(), netset.NoTransports(), netset.NoTransports()
 	for _, rule := range c.rules {
 		if rule.capturesPair(src, dst, isIngress) {
 			switch rule.action {
@@ -107,11 +107,12 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	}
 	switch c.defaultAction {
 	case actionNone: // no default configured for this category
-		return allowedConns, jumpToAppConns, deniedConns, connection.All().Subtract(allowedConns).Subtract(deniedConns).Subtract(jumpToAppConns)
+		return allowedConns, jumpToAppConns, deniedConns,
+			netset.AllTransports().Subtract(allowedConns).Subtract(deniedConns).Subtract(jumpToAppConns)
 	case actionAllow: // default allow
-		return connection.All().Subtract(deniedConns).Subtract(jumpToAppConns), jumpToAppConns, deniedConns, connection.None()
+		return netset.AllTransports().Subtract(deniedConns).Subtract(jumpToAppConns), jumpToAppConns, deniedConns, netset.NoTransports()
 	case actionDeny: // default deny
-		return allowedConns, jumpToAppConns, connection.All().Subtract(allowedConns).Subtract(jumpToAppConns), connection.None()
+		return allowedConns, jumpToAppConns, netset.AllTransports().Subtract(allowedConns).Subtract(jumpToAppConns), netset.NoTransports()
 	default:
 		return nil, nil, nil, nil // invalid default action (todo: add err? )
 	}
@@ -127,14 +128,17 @@ func (c *categorySpec) string() string {
 		strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *connection.Set, action, direction string, origRule *collector.Rule) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
+	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM) {
 	newRule := &fwRule{
 		srcVMs:      src,
 		dstVMs:      dst,
 		conn:        conn,
 		action:      actionFromString(action),
 		direction:   direction,
+		ruleID:      ruleID,
 		origRuleObj: origRule,
+		scope:       scope,
 	}
 	c.rules = append(c.rules, newRule)
 }

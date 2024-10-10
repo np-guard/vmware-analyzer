@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -55,10 +55,12 @@ func actionFromString(s string) ruleAction {
 type fwRule struct {
 	srcVMs      []*endpoints.VM
 	dstVMs      []*endpoints.VM
-	conn        *connection.Set
+	scope       []*endpoints.VM
+	conn        *netset.TransportSet
 	action      ruleAction
 	direction   string //	"IN","OUT",	"IN_OUT"
 	origRuleObj *collector.Rule
+	ruleID      int
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
@@ -69,9 +71,9 @@ func (f *fwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
 		return false
 	}
 	if isIngress {
-		return slices.Contains(ingressDirections, f.direction)
+		return slices.Contains(ingressDirections, f.direction) && slices.Contains(f.scope, dst)
 	}
-	return slices.Contains(egressDirections, f.direction)
+	return slices.Contains(egressDirections, f.direction) && slices.Contains(f.scope, src)
 }
 
 func vmsString(vms []*endpoints.VM) string {
@@ -85,5 +87,5 @@ func vmsString(vms []*endpoints.VM) string {
 // return a string representation of a single rule
 func (f *fwRule) string() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s",
-		*f.origRuleObj.RuleId, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction)
 }

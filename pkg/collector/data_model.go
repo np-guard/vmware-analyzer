@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/np-guard/models/pkg/connection"
 	"github.com/np-guard/models/pkg/netp"
+	"github.com/np-guard/models/pkg/netset"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -66,7 +66,7 @@ type IPProtocolServiceEntry struct {
 
 const creatingConnectionError = "fail to create a connection from service %v"
 
-func (e *IPProtocolServiceEntry) ToConnection() (*connection.Set, error) {
+func (e *IPProtocolServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
@@ -74,7 +74,7 @@ type IGMPTypeServiceEntry struct {
 	nsx.IGMPTypeServiceEntry
 }
 
-func (e *IGMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
+func (e *IGMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
@@ -82,12 +82,12 @@ type ICMPTypeServiceEntry struct {
 	nsx.ICMPTypeServiceEntry
 }
 
-func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
+func (e *ICMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	if e.Protocol == nil || *e.Protocol == nsx.ICMPTypeServiceEntryProtocolICMPv6 {
 		return nil, fmt.Errorf("protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported", *e.Protocol, *e.DisplayName)
 	}
-	var tMin, tMax int64 = 0, connection.MaxICMPType
-	var cMin, cMax int64 = 0, connection.MaxICMPCode
+	var tMin, tMax int64 = 0, int64(netp.MaxICMPType)
+	var cMin, cMax int64 = 0, int64(netp.MaxICMPCode)
 	if e.IcmpCode != nil {
 		cMin = int64(*e.IcmpCode)
 		cMax = cMin
@@ -96,14 +96,14 @@ func (e *ICMPTypeServiceEntry) ToConnection() (*connection.Set, error) {
 		tMin = int64(*e.IcmpType)
 		tMax = tMin
 	}
-	return connection.ICMPConnection(tMin, tMax, cMin, cMax), nil
+	return netset.NewICMPTransport(tMin, tMax, cMin, cMax), nil
 }
 
 type ALGTypeServiceEntry struct {
 	nsx.ALGTypeServiceEntry
 }
 
-func (e *ALGTypeServiceEntry) ToConnection() (*connection.Set, error) {
+func (e *ALGTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
@@ -111,8 +111,8 @@ type L4PortSetServiceEntry struct {
 	nsx.L4PortSetServiceEntry
 }
 
-func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
-	res := connection.None()
+func (e *L4PortSetServiceEntry) ToConnection() (*netset.TransportSet, error) {
+	res := netset.NoTransports()
 	protocol := netp.ProtocolString(*e.L4Protocol)
 	srcPorts, err := parsePorts(e.SourcePorts)
 	if err != nil {
@@ -124,7 +124,7 @@ func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
 	}
 	for _, sp := range srcPorts {
 		for _, dp := range dstPorts {
-			res = res.Union(connection.TCPorUDPConnection(protocol, sp.min, sp.max, dp.min, dp.max))
+			res = res.Union(netset.NewTCPorUDPTransport(protocol, sp.min, sp.max, dp.min, dp.max))
 		}
 	}
 	return res, nil
@@ -133,7 +133,7 @@ func (e *L4PortSetServiceEntry) ToConnection() (*connection.Set, error) {
 func parsePorts(ports []nsx.PortElement) ([]struct{ min, max int64 }, error) {
 	res := make([]struct{ min, max int64 }, len(ports))
 	if len(ports) == 0 {
-		return []struct{ min, max int64 }{{connection.MinPort, connection.MaxPort}}, nil
+		return []struct{ min, max int64 }{{netp.MinPort, netp.MaxPort}}, nil
 	}
 	for i, portString := range ports {
 		var err error
@@ -154,7 +154,7 @@ type EtherTypeServiceEntry struct {
 	nsx.EtherTypeServiceEntry
 }
 
-func (e *EtherTypeServiceEntry) ToConnection() (*connection.Set, error) {
+func (e *EtherTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
@@ -162,12 +162,12 @@ type NestedServiceServiceEntry struct {
 	nsx.NestedServiceServiceEntry
 }
 
-func (e *NestedServiceServiceEntry) ToConnection() (*connection.Set, error) {
+func (e *NestedServiceServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type ServiceEntry interface {
-	ToConnection() (*connection.Set, error)
+	ToConnection() (*netset.TransportSet, error)
 }
 
 type ServiceEntries []ServiceEntry

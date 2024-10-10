@@ -1,9 +1,8 @@
 package model
 
 import (
-	"fmt"
-
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
@@ -14,9 +13,8 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	}
 	config := parser.GetConfig()
 
-	// in debug/verbose mode-- print the parsed config
-	fmt.Println("the parsed config details:")
-	fmt.Println(config.getConfigInfoStr())
+	// in debug/verbose mode -- print the parsed config
+	logging.Debugf("the parsed config details: %s", config.getConfigInfoStr())
 
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity()

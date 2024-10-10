@@ -14,6 +14,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
@@ -30,14 +31,16 @@ const (
 	outputFileShortFlag    = "f"
 	outputFormantShortFlag = "o"
 
-	resourceInputFileHelp = "help for resource-input-file"
-	hostHelp              = "help for host"
-	userHelp              = "help for username"
-	passwordHelp          = "help for password"
-	resourceDumpFileHelp  = "help for resource-dump-file"
-	skipAnalysisHelp      = "help for skip-analysis"
-	outputFileHelp        = "file path to store results"
+	resourceInputFileHelp = "file path input JSON of NSX resources"
+	hostHelp              = "nsx host url"
+	userHelp              = "nsx username"
+	passwordHelp          = "nsx password"
+	resourceDumpFileHelp  = "file path to store collected resources in JSON format"
+	skipAnalysisHelp      = "flag to skip analysis, run only collector"
+	outputFileHelp        = "file path to store analysis results"
 	outputFormatHelp      = "output format; must be one of [txt, dot]"
+	quietFlag             = "quiet"
+	verboseFlag           = "verbose"
 )
 
 type inArgs struct {
@@ -49,6 +52,8 @@ type inArgs struct {
 	skipAnalysis      bool
 	outputFile        string
 	outputFormat      string
+	quiet             bool
+	verbose           bool
 }
 
 func newRootCommand() *cobra.Command {
@@ -57,8 +62,18 @@ func newRootCommand() *cobra.Command {
 		Use:   "nsxanalyzer",
 		Short: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.
-		It uses REST API calls from NSX manager. `,
+It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+			verbosity := logging.MediumVerbosity
+			if args.quiet {
+				verbosity = logging.LowVerbosity
+			} else if args.verbose {
+				verbosity = logging.HighVerbosity
+			}
+			logging.Init(verbosity) // initializes a thread-safe singleton logger
+		},
+
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
 		},
@@ -73,6 +88,8 @@ func newRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, model.TextFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, "runs quietly, reports only severe errors and results")
+	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, "runs with more informative messages printed to log")
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
@@ -90,17 +107,17 @@ func runCommand(args *inArgs) error {
 	var recourses *collector.ResourcesContainerModel
 	var err error
 	if args.host != "" {
-		fmt.Println("collecting NSX resources from given host")
+		logging.Infof("collecting NSX resources from given host %s", args.host)
 		recourses, err = collector.CollectResources(args.host, args.user, args.password)
 		if err != nil {
 			return err
 		}
 	} else {
+		logging.Infof("reading input NSX config file %s", args.resourceInputFile)
 		b, err := os.ReadFile(args.resourceInputFile)
 		if err != nil {
 			return err
 		}
-		fmt.Println("reading input NSX config file")
 		recourses, err = collector.FromJSONString(b)
 		if err != nil {
 			return err
@@ -123,11 +140,11 @@ func runCommand(args *inArgs) error {
 			// TODO: add cli params to filter vms
 			VMs: []string{"New Virtual Machine", "New-VM-1"},
 		}
+		logging.Infof("starting connectivity analysis")
 		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)
 		if err != nil {
 			return err
 		}
-		fmt.Println("analyzed Connectivity:")
 		fmt.Println(connResStr)
 	}
 	return nil

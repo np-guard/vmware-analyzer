@@ -25,7 +25,7 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 
 	switch params.Format {
 	case TextFormat:
-		res = filteredConn.String()
+		res = "analyzed connectivity:\n" + filteredConn.String()
 	case DotFormat:
 		res = createDotGraph(filteredConn.toSlice()).string()
 	}
