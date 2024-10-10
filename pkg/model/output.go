@@ -12,7 +12,7 @@ type OutputParameters struct {
 
 func (c *config) output(params OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
-	return common.OutputGraph(params.FileName, params.Format,false, &filteredConn)
+	return common.OutputGraph(params.FileName, params.Format,true, &filteredConn)
 }
 
 func (conn *connMap) CreateGraph(g common.Graph) {

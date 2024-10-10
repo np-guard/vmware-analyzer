@@ -70,7 +70,7 @@ func (dotGraph *DotGraph) rankString() string {
 	return strings.Join(ranks, "\n")
 }
 
-func (dotGraph *DotGraph) String(rank bool) string {
+func (dotGraph *DotGraph) String(flat bool) string {
 	nodeLines := make([]string, len(dotGraph.nodes))
 	for i, n := range slices.Collect(maps.Values(dotGraph.nodes)) {
 		nodeLines[i] = n.string()
@@ -80,7 +80,7 @@ func (dotGraph *DotGraph) String(rank bool) string {
 		edgeLines[i] = e.string()
 	}
 	var rankdir, rankString string
-	if rank {
+	if !flat {
 		rankdir = "rankdir = \"LR\";"
 		rankString = dotGraph.rankString()
 	}

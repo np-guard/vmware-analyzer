@@ -121,7 +121,7 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if args.topologyDumpFile != "" {
-		topology, err := common.OutputGraph(args.topologyDumpFile, args.outputFormat,true, recourses)
+		topology, err := common.OutputGraph(args.topologyDumpFile, args.outputFormat,false, recourses)
 		if err != nil {
 			return err
 		}

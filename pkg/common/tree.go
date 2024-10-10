@@ -8,6 +8,8 @@ package common
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 )
 
 const (
@@ -29,20 +31,24 @@ type graphGenerator interface {
 	CreateGraph(g Graph)
 }
 
-func OutputGraph(fileName, format string, dotRank bool, gen graphGenerator) (res string, err error) {
-	switch format {
-	case JsonFormat:
+func OutputGraph(fileName, format string, flat bool, gen graphGenerator) (res string, err error) {
+	switch {
+	case  format == JsonFormat && flat:
+		g := &Edges{}
+		gen.CreateGraph(g)
+		res, err = g.JSONString()
+	case format == JsonFormat && !flat:
 		g := NewTree()
 		gen.CreateGraph(g)
 		res, err = g.JSONString()
-	case TextFormat:
-		g := NewTree()
+	case format == TextFormat:
+		g := &Edges{}
 		gen.CreateGraph(g)
-		res, err = g.JSONString()
-	case DotFormat:
+		res = g.String()
+	case format == DotFormat:
 		g := NewDotGraph()
 		gen.CreateGraph(g)
-		res = g.String(dotRank)
+		res = g.String(flat)
 	}
 	if err != nil {
 		return "", err
@@ -54,6 +60,42 @@ func OutputGraph(fileName, format string, dotRank bool, gen graphGenerator) (res
 		}
 	}
 	return res, nil
+}
+
+type edge struct {
+	src, dst node
+	label    string
+}
+type Edges []edge
+
+func (e *edge) string() string{
+	str := fmt.Sprintf("src:%s, dst: %s", e.src.Name(), e.dst.Name())
+	if e.label != "" {
+		str += fmt.Sprintf(" allowedConns: %s", e.label)
+	}
+	return str
+}
+
+func (tt *Edges) AddEdge(src, dst node, label string) {
+	if src == nil || dst == nil {
+		return
+	}
+	*tt = append(*tt, edge{src,dst,label})
+}
+func (tt *Edges) strings()[]string{
+	strs := make([]string,len(*tt))
+	for i,e := range *tt{
+		strs[i] = e.string()
+	}
+	return strs
+
+}
+func (tt *Edges) String() string {
+	return strings.Join(tt.strings(), "\n")
+}
+func (tt *Edges) JSONString() (string, error) {
+	toPrint, err := json.MarshalIndent(tt.strings(), "", "    ")
+	return string(toPrint), err
 }
 
 // ////////////////////////////////////////////////////////////////
