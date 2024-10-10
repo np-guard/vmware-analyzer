@@ -1,10 +1,12 @@
 package dfw
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -16,7 +18,9 @@ type DFW struct {
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *netset.TransportSet {
 	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
+	logging.Debugf("ingress allowed connections from %s to %s: %s", src.Name(), dst.Name(), ingress.String())
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
+	logging.Debugf("egress allowed connections from %s to %s: %s", src.Name(), dst.Name(), egress.String())
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
 	return ingress.Intersect(egress)
 }
@@ -71,13 +75,29 @@ func (d *DFW) String() string {
 	return strings.Join(categoriesStrings, lineSeparatorStr)
 }
 
+func (d *DFW) AllEffectiveRules() string {
+	inboundRes := []string{}
+	outboundRes := []string{}
+	for i := range d.categoriesSpecs {
+		if len(d.categoriesSpecs[i].processedRules.inbound) > 0 {
+			inboundRes = append(inboundRes, d.categoriesSpecs[i].inboundEffectiveRules())
+		}
+		if len(d.categoriesSpecs[i].processedRules.outbound) > 0 {
+			outboundRes = append(outboundRes, d.categoriesSpecs[i].outboundEffectiveRules())
+		}
+	}
+	inbound := fmt.Sprintf("\nInbound effective rules only:\n%s", strings.Join(inboundRes, lineSeparatorStr))
+	outbound := fmt.Sprintf("\nOutbound effective rules only:\n%s", strings.Join(outboundRes, lineSeparatorStr))
+	return inbound + outbound
+}
+
 // AddRule func for testing purposes
 
 func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule, scope []*endpoints.VM) {
+	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope)
+			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName)
 		}
 	}
 }

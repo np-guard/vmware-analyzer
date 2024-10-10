@@ -58,6 +58,7 @@ func (c *config) getConfigInfoStr() string {
 
 	sb.WriteString("DFW:\n")
 	sb.WriteString(c.fw.String())
+	sb.WriteString(c.fw.AllEffectiveRules())
 	sb.WriteString("\n" + outputSectionSep + "\n")
 
 	return sb.String()
