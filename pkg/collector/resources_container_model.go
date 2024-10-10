@@ -113,6 +113,19 @@ func (s *Segment) Kind() string                   { return "segment" }
 func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
 func (vm *VirtualMachine) Kind() string           { return "vm" }
 
+func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format string) (res string, err error) {
+	var g common.Graph
+	switch format {
+	case common.JsonFormat:
+		g = common.NewTreeGraph()
+	case common.TextFormat:
+		g = common.NewEdgesGraph()
+	case common.DotFormat:
+		g = common.NewDotGraph(true)
+	}
+	resources.CreateGraph(g)
+	return common.OutputGraph(g, fileName, format)
+}
 
 func (resources *ResourcesContainerModel) CreateGraph(g common.Graph) {
 	for t0i := range resources.Tier0List {

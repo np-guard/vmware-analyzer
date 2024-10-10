@@ -12,11 +12,17 @@ type OutputParameters struct {
 
 func (c *config) output(params OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
-	return common.OutputGraph(params.FileName, params.Format,true, &filteredConn)
-}
-
-func (conn *connMap) CreateGraph(g common.Graph) {
-	for _, e := range conn.toSlice() {
+	var g common.Graph
+	switch params.Format {
+	case common.JsonFormat:
+		g = common.NewEdgesGraph()
+	case common.TextFormat:
+		g = common.NewEdgesGraph()
+	case common.DotFormat:
+		g = common.NewDotGraph(false)
+	}
+	for _, e := range filteredConn.toSlice() {
 		g.AddEdge(e.src, e.dst, e.conn.String())
 	}
+	return common.OutputGraph(g, params.FileName, params.Format)
 }

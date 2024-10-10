@@ -37,10 +37,11 @@ type DotGraph struct {
 	edges         []*dotEdge
 	nodeIDcounter nodeID
 	nodes         map[node]*dotNode
+	rank          bool
 }
 
-func NewDotGraph() *DotGraph {
-	return &DotGraph{nodes: map[node]*dotNode{}}
+func NewDotGraph(rank bool) *DotGraph {
+	return &DotGraph{nodes: map[node]*dotNode{}, rank: rank}
 }
 
 func (dotGraph *DotGraph) AddEdge(src, dst node, label string) {
@@ -70,7 +71,7 @@ func (dotGraph *DotGraph) rankString() string {
 	return strings.Join(ranks, "\n")
 }
 
-func (dotGraph *DotGraph) String(flat bool) string {
+func (dotGraph *DotGraph) String() string {
 	nodeLines := make([]string, len(dotGraph.nodes))
 	for i, n := range slices.Collect(maps.Values(dotGraph.nodes)) {
 		nodeLines[i] = n.string()
@@ -80,9 +81,13 @@ func (dotGraph *DotGraph) String(flat bool) string {
 		edgeLines[i] = e.string()
 	}
 	var rankdir, rankString string
-	if !flat {
+	if dotGraph.rank {
 		rankdir = "rankdir = \"LR\";"
 		rankString = dotGraph.rankString()
 	}
 	return fmt.Sprintf("digraph{\n%s\n%s\n\n%s\n\n%s\n}\n", rankdir, strings.Join(nodeLines, "\n"), rankString, strings.Join(edgeLines, "\n"))
+}
+
+func (dotGraph *DotGraph) JSONString() (string, error) {
+	return "", nil
 }
