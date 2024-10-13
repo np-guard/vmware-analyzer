@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"os"
 	"os/exec"
 	"slices"
 	"strings"
@@ -56,6 +57,9 @@ func OutputGraph(g Graph, fileName, format string) (res string, err error) {
 		}
 		bts, err := exec.Command("dot", "-T"+format, dotFile).Output() //nolint:gosec // running the dot command
 		if err != nil {
+			return "", err
+		}
+		if err := os.Remove(dotFile); err != nil {
 			return "", err
 		}
 		res = string(bts)
