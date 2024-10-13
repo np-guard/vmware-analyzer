@@ -18,7 +18,7 @@ import (
 const (
 	TextFormat = "txt"
 	DotFormat  = "dot"
-	JsonFormat = "json"
+	JSONFormat = "json"
 	SvgFormat  = "svg"
 )
 
@@ -38,7 +38,7 @@ type Graph interface {
 
 func OutputGraph(g Graph, fileName, format string) (res string, err error) {
 	switch format {
-	case JsonFormat:
+	case JSONFormat:
 		res, err = g.JSONString()
 	case TextFormat:
 		res = g.String()
@@ -113,8 +113,7 @@ func (eg *EdgesGraph) JSONString() (string, error) {
 			asMaps[i]["conn"] = e.label.String()
 		}
 	}
-	toPrint, err := json.MarshalIndent(asMaps, "", "    ")
-	return string(toPrint), err
+	return indentMarshal(asMaps)
 }
 
 // ////////////////////////////////////////////////////////////////
@@ -158,8 +157,7 @@ func (tn *treeNode) addChild(cType string, c *treeNode) {
 }
 
 func (tg *TreeGraph) JSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(tg.root, "", "    ")
-	return string(toPrint), err
+	return indentMarshal(tg.root)
 }
 func (tg *TreeGraph) String() string {
 	// todo - implement if needed
@@ -248,4 +246,10 @@ func (dotGraph *DotGraph) String() string {
 
 func (dotGraph *DotGraph) JSONString() (string, error) {
 	return "", nil
+}
+
+// //////////////////////////////////////////////////////////////////////////////////////
+func indentMarshal(v any) (string, error) {
+	toPrint, err := json.MarshalIndent(v, "", "    ")
+	return string(toPrint), err
 }

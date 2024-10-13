@@ -103,20 +103,20 @@ func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort
 
 func (t0 *Tier0) Name() string                    { return *t0.DisplayName }
 func (t1 *Tier1) Name() string                    { return *t1.DisplayName }
-func (s *Segment) Name() string                   { return *s.DisplayName }
+func (segment *Segment) Name() string             { return *segment.DisplayName }
 func (vni *VirtualNetworkInterface) Name() string { return *vni.DisplayName }
 func (vm *VirtualMachine) Name() string           { return *vm.DisplayName }
 
 func (t0 *Tier0) Kind() string                    { return "t0" }
 func (t1 *Tier1) Kind() string                    { return "t1" }
-func (s *Segment) Kind() string                   { return "segment" }
+func (segment *Segment) Kind() string             { return "segment" }
 func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
 func (vm *VirtualMachine) Kind() string           { return "vm" }
 
 func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format string) (res string, err error) {
 	var g common.Graph
 	switch format {
-	case common.JsonFormat:
+	case common.JSONFormat:
 		g = common.NewTreeGraph()
 	case common.TextFormat:
 		g = common.NewEdgesGraph()

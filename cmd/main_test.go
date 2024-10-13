@@ -38,19 +38,23 @@ func Test_main(t *testing.T) {
 		},
 		{
 			name: "analyze-topology-dot",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+				" examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
 		},
 		{
 			name: "analyze-topology-json",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.json --filename examples/output/analysis.json -o json",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+				" examples/output/topology.json --filename examples/output/analysis.json -o json",
 		},
 		{
 			name: "analyze-topology-text",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+				" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
 		},
 		{
 			name: "analyze-topology-svg",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file examples/output/topology.svg --filename examples/output/analysis.svg -o svg",
+			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg",
 		},
 		{
 			name: "collect-and-analyze",

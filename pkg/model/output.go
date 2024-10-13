@@ -14,7 +14,7 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
 	var g common.Graph
 	switch params.Format {
-	case common.JsonFormat:
+	case common.JSONFormat:
 		g = common.NewEdgesGraph()
 	case common.TextFormat:
 		g = common.NewEdgesGraph()
