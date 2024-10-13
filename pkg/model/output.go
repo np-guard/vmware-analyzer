@@ -15,7 +15,7 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 	var g common.Graph
 	switch params.Format {
 	case common.JSONFormat:
-		g = common.NewEdgesGraph("analyzed connectivity")
+		g = common.NewEdgesGraph("")
 	case common.TextFormat:
 		g = common.NewEdgesGraph("analyzed connectivity")
 	case common.DotFormat, common.SvgFormat:
