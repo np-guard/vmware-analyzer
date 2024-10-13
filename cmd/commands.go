@@ -40,7 +40,7 @@ const (
 	topologyDumpFileHelp  = "file path to store topology"
 	skipAnalysisHelp      = "flag to skip analysis, run only collector"
 	outputFileHelp        = "file path to store analysis results"
-	outputFormatHelp      = "output format; must be one of [txt, dot, json]"
+	outputFormatHelp      = "output format; must be one of [txt, dot, json, svg]"
 	quietFlag             = "quiet"
 	verboseFlag           = "verbose"
 )
@@ -142,7 +142,6 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
-		fmt.Println("topology:")
 		fmt.Println(topology)
 	}
 	if !args.skipAnalysis {

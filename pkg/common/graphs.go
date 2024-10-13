@@ -76,10 +76,12 @@ type edge struct {
 	label    label
 }
 
-type EdgesGraph []edge
-
-func NewEdgesGraph() *EdgesGraph {
-	return &EdgesGraph{}
+type EdgesGraph struct{
+	edges []edge
+	header string
+}
+func NewEdgesGraph(header string) *EdgesGraph {
+	return &EdgesGraph{header: header}
 }
 
 func (e *edge) string() string {
@@ -94,20 +96,20 @@ func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 	if src == nil || dst == nil {
 		return
 	}
-	*eg = append(*eg, edge{src, dst, label})
+	eg.edges = append(eg.edges, edge{src, dst, label})
 }
 
 func (eg *EdgesGraph) String() string {
-	strs := make([]string, len(*eg))
-	for i, e := range *eg {
+	strs := make([]string, len(eg.edges))
+	for i, e := range eg.edges {
 		strs[i] = e.string()
 	}
-	return strings.Join(strs, "\n")
+	return fmt.Sprintf("%s:\n%s", eg.header, strings.Join(strs, "\n"))
 }
 
 func (eg *EdgesGraph) JSONString() (string, error) {
-	asMaps := make([]map[string]string, len(*eg))
-	for i, e := range *eg {
+	asMaps := make([]map[string]string, len(eg.edges))
+	for i, e := range eg.edges {
 		asMaps[i] = map[string]string{"src": e.src.Name(), "dst": e.dst.Name()}
 		if e.label != nil {
 			asMaps[i]["conn"] = e.label.String()
