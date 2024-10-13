@@ -123,11 +123,11 @@ func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format s
 	case common.DotFormat:
 		g = common.NewDotGraph(true)
 	}
-	resources.CreateGraph(g)
+	resources.CreateTopologyGraph(g)
 	return common.OutputGraph(g, fileName, format)
 }
 
-func (resources *ResourcesContainerModel) CreateGraph(g common.Graph) {
+func (resources *ResourcesContainerModel) CreateTopologyGraph(g common.Graph) {
 	for t0i := range resources.Tier0List {
 		g.AddEdge(nil, &resources.Tier0List[t0i], "")
 	}
