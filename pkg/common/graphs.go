@@ -76,10 +76,11 @@ type edge struct {
 	label    label
 }
 
-type EdgesGraph struct{
-	edges []edge
+type EdgesGraph struct {
+	edges  []edge
 	header string
 }
+
 func NewEdgesGraph(header string) *EdgesGraph {
 	return &EdgesGraph{header: header}
 }
