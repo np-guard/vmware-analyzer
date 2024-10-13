@@ -54,7 +54,7 @@ func OutputGraph(g Graph, fileName, format string) (res string, err error) {
 		if err != nil {
 			return "", err
 		}
-		bts, err := exec.Command("dot", "-T"+format, dotFile).Output()
+		bts, err := exec.Command("dot", "-T"+format, dotFile).Output() //nolint:gosec // running the dot command
 		if err != nil {
 			return "", err
 		}

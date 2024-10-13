@@ -12,11 +12,11 @@ type treeNode interface {
 
 ////////////////////////////////////////////////////////////////////////////
 
-func (v *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) treeNode {
-	if v.LportAttachmentId == nil {
+func (vni *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) treeNode {
+	if vni.LportAttachmentId == nil {
 		return nil
 	}
-	s := resources.GetSegmentPort(*v.LportAttachmentId)
+	s := resources.GetSegmentPort(*vni.LportAttachmentId)
 	if s == nil {
 		return nil
 	}
