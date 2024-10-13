@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"maps"
+	"os/exec"
 	"slices"
 	"strings"
 )
@@ -41,11 +42,23 @@ func OutputGraph(g Graph, fileName, format string) (res string, err error) {
 		res, err = g.JSONString()
 	case TextFormat:
 		res = g.String()
-	case DotFormat:
+	case DotFormat, SvgFormat:
 		res = g.String()
 	}
 	if err != nil {
 		return "", err
+	}
+	if format == SvgFormat {
+		dotFile := fileName + ".tmp.dot"
+		err = WriteToFile(dotFile, res)
+		if err != nil {
+			return "", err
+		}
+		bts, err := exec.Command("dot", "-T"+format, dotFile).Output()
+		if err != nil {
+			return "", err
+		}
+		res = string(bts)
 	}
 	if fileName != "" {
 		err := WriteToFile(fileName, res)
@@ -95,8 +108,8 @@ func (eg *EdgesGraph) String() string {
 func (eg *EdgesGraph) JSONString() (string, error) {
 	asMaps := make([]map[string]string, len(*eg))
 	for i, e := range *eg {
-		asMaps[i] = map[string]string{"src": e.src.Name(),"dst": e.dst.Name()}
-		if e.label != nil{
+		asMaps[i] = map[string]string{"src": e.src.Name(), "dst": e.dst.Name()}
+		if e.label != nil {
 			asMaps[i]["conn"] = e.label.String()
 		}
 	}

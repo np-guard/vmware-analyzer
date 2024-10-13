@@ -18,7 +18,7 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 		g = common.NewEdgesGraph()
 	case common.TextFormat:
 		g = common.NewEdgesGraph()
-	case common.DotFormat:
+	case common.DotFormat, common.SvgFormat:
 		g = common.NewDotGraph(false)
 	}
 	for _, e := range filteredConn.toSlice() {
