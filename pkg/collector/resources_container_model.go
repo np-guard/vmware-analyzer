@@ -129,27 +129,27 @@ func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format s
 
 func (resources *ResourcesContainerModel) CreateTopologyGraph(g common.Graph) {
 	for t0i := range resources.Tier0List {
-		g.AddEdge(nil, &resources.Tier0List[t0i], "")
+		g.AddEdge(nil, &resources.Tier0List[t0i], nil)
 	}
 	for t1i := range resources.Tier1List {
 		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
-		g.AddEdge(t0, &resources.Tier1List[t1i], "")
+		g.AddEdge(t0, &resources.Tier1List[t1i], nil)
 	}
 	for si := range resources.SegmentList {
 		segment := &resources.SegmentList[si]
 		if segment.ConnectivityPath == nil {
-			g.AddEdge(nil, segment, "")
+			g.AddEdge(nil, segment, nil)
 		} else if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
-			g.AddEdge(t1, segment, "")
+			g.AddEdge(t1, segment, nil)
 		} else if t0 := resources.GetTier0(*segment.ConnectivityPath); t0 != nil {
-			g.AddEdge(t0, segment, "")
+			g.AddEdge(t0, segment, nil)
 		}
 		for pi := range segment.SegmentPorts {
 			att := *segment.SegmentPorts[pi].Attachment.Id
 			vni := resources.GetVirtualNetworkInterfaceByPort(att)
-			g.AddEdge(segment, vni, "")
+			g.AddEdge(segment, vni, nil)
 			vm := resources.GetVirtualMachine(*vni.OwnerVmId)
-			g.AddEdge(vni, vm, "")
+			g.AddEdge(vni, vm, nil)
 		}
 	}
 }

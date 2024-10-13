@@ -25,9 +25,12 @@ type node interface {
 	Name() string
 	Kind() string
 }
+type label interface {
+	String() string
+}
 
 type Graph interface {
-	AddEdge(src, dst node, label string)
+	AddEdge(src, dst node, label label)
 	String() string
 	JSONString() (string, error)
 }
@@ -53,12 +56,11 @@ func OutputGraph(g Graph, fileName, format string) (res string, err error) {
 	return res, nil
 }
 
-
 //////////////////////////////////
 
 type edge struct {
 	src, dst node
-	label    string
+	label    label
 }
 
 type EdgesGraph []edge
@@ -68,33 +70,37 @@ func NewEdgesGraph() *EdgesGraph {
 }
 
 func (e *edge) string() string {
-	str := fmt.Sprintf("src:%s, dst: %s", e.src.Name(), e.dst.Name())
-	if e.label != "" {
-		str += fmt.Sprintf(" allowedConns: %s", e.label)
+	str := fmt.Sprintf("%s => %s", e.src.Name(), e.dst.Name())
+	if e.label != nil {
+		str += fmt.Sprintf(": %s", e.label.String())
 	}
 	return str
 }
 
-func (eg *EdgesGraph) AddEdge(src, dst node, label string) {
+func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 	if src == nil || dst == nil {
 		return
 	}
 	*eg = append(*eg, edge{src, dst, label})
 }
 
-func (eg *EdgesGraph) strings() []string {
+func (eg *EdgesGraph) String() string {
 	strs := make([]string, len(*eg))
 	for i, e := range *eg {
 		strs[i] = e.string()
 	}
-	return strs
+	return strings.Join(strs, "\n")
+}
 
-}
-func (eg *EdgesGraph) String() string {
-	return strings.Join(eg.strings(), "\n")
-}
 func (eg *EdgesGraph) JSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(eg.strings(), "", "    ")
+	asMaps := make([]map[string]string, len(*eg))
+	for i, e := range *eg {
+		asMaps[i] = map[string]string{"src": e.src.Name(),"dst": e.dst.Name()}
+		if e.label != nil{
+			asMaps[i]["conn"] = e.label.String()
+		}
+	}
+	toPrint, err := json.MarshalIndent(asMaps, "", "    ")
 	return string(toPrint), err
 }
 
@@ -109,7 +115,7 @@ func NewTreeGraph() *TreeGraph {
 	return &TreeGraph{root: root, nodes: map[node]*treeNode{nil: root}}
 }
 
-func (tg *TreeGraph) AddEdge(src, dst node, label string) {
+func (tg *TreeGraph) AddEdge(src, dst node, label label) {
 	for _, n := range []node{src, dst} {
 		if n != nil {
 			if _, ok := tg.nodes[n]; !ok {
@@ -161,12 +167,15 @@ func (n *dotNode) string() string {
 
 type dotEdge struct {
 	src, dst *dotNode
-	label    string
+	label    label
 }
 
 func (e *dotEdge) string() string {
-	return fmt.Sprintf("node_%d_ -> node_%d_[label=%q, tooltip=%q, labeltooltip=%q]",
-		e.src.ID, e.dst.ID, e.label, e.label, e.label)
+	s := fmt.Sprintf("node_%d_ -> node_%d_", e.src.ID, e.dst.ID)
+	if e.label != nil {
+		s += fmt.Sprintf("[label=%q, tooltip=%q, labeltooltip=%q]", e.label.String(), e.label.String(), e.label.String())
+	}
+	return s
 }
 
 type DotGraph struct {
@@ -180,7 +189,7 @@ func NewDotGraph(rank bool) *DotGraph {
 	return &DotGraph{nodes: map[node]*dotNode{}, rank: rank}
 }
 
-func (dotGraph *DotGraph) AddEdge(src, dst node, label string) {
+func (dotGraph *DotGraph) AddEdge(src, dst node, label label) {
 	for _, n := range []node{src, dst} {
 		if _, ok := dotGraph.nodes[n]; n != nil && !ok {
 			dotGraph.nodes[n] = &dotNode{n, dotGraph.nodeIDcounter}
