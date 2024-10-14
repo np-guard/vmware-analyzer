@@ -3,9 +3,7 @@ package model
 import (
 	"os"
 	"slices"
-	"strings"
 
-	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -68,9 +66,9 @@ func (p *NSXConfigParser) getVMs() {
 			continue
 			// skip vm without name
 		}
-		if !strings.Contains(*vm.DisplayName, "New") {
+		/*if !strings.Contains(*vm.DisplayName, "New") {
 			continue
-		}
+		}*/
 		vmObj := endpoints.NewVM(*vm.DisplayName)
 		p.configRes.vms = append(p.configRes.vms, vmObj)
 		p.configRes.vmsMap[*vm.DisplayName] = vmObj
@@ -242,7 +240,9 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 	res := netset.NoTransports()
 	for _, s := range rule.Services {
 		conn := p.connectionFromService(s, rule)
-		res = res.Union(conn)
+		if conn != nil {
+			res = res.Union(conn)
+		}
 	}
 
 	return res
@@ -250,13 +250,6 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
-	// temp work around
-	if servicePath == "/infra/services/HTTP" {
-		const (
-			p = 80
-		)
-		return netset.NewTCPTransport(netp.MinPort, netp.MaxPort, p, p)
-	}
 	res := netset.NoTransports()
 	service := p.rc.GetService(servicePath)
 	if service == nil {

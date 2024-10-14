@@ -1,0 +1,76 @@
+package model
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
+	"github.com/stretchr/testify/require"
+)
+
+type analyzerTest struct {
+	name   string
+	exData data.Example
+}
+
+var allTests = []analyzerTest{
+	{
+		name:   "Example1",
+		exData: data.Example1,
+	},
+}
+
+func (a *analyzerTest) file() string {
+	return a.name + ".txt"
+}
+
+func (a *analyzerTest) run(t *testing.T) {
+	var override bool
+	//override = true // uncommnet to override expected output
+	rc := data.ExamplesGeneration(a.exData)
+	params := OutputParameters{
+		Format: "txt",
+	}
+	res, err := NSXConnectivityFromResourcesContainer(rc, params)
+	require.Nil(t, err)
+	fmt.Println(res)
+
+	// compare expected with actual output
+	expectedFile := getExpectedTestPath(a.file())
+	expected, err := os.ReadFile(expectedFile)
+	expectedStr := string(expected)
+	require.Nil(t, err)
+	if expectedStr != res {
+		if !override {
+			// gen actual output to enable manual diff after test run
+			actual := getActualTestPath(a.file())
+			os.WriteFile(actual, []byte(res), 0644)
+		} else {
+			// override expected output with current actual output
+			os.WriteFile(expectedFile, []byte(res), 0644)
+		}
+	}
+
+	if !override {
+		require.Equal(t, expectedStr, res)
+	}
+	fmt.Println("done")
+}
+
+func TestAnalyzer(t *testing.T) {
+	for i := range allTests {
+		test := &allTests[i]
+		test.run(t)
+	}
+}
+
+func getExpectedTestPath(name string) string {
+	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "expected_output", name)
+}
+
+func getActualTestPath(name string) string {
+	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "actual_output", name)
+}

@@ -49,6 +49,7 @@ func (c connMap) String() string {
 	for i, e := range asSlice {
 		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.src.Name(), e.dst.Name(), e.conn.String())
 	}
+	slices.Sort(lines)
 	return strings.Join(lines, "\n")
 }
 

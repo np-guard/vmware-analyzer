@@ -44,7 +44,7 @@ func NewDefaultLoggerWithVerbosity(verbosity Verbosity) *DefaultLogger {
 func Init(verbosity Verbosity) {
 	// once ensures the singleton is initialized only once
 	once.Do(func() {
-		logger = *NewDefaultLoggerWithVerbosity(verbosity)
+		logger = *NewDefaultLoggerWithVerbosity(HighVerbosity)
 	})
 }
 func DebugVerbosity() bool   { return logger.verbosity == HighVerbosity }

@@ -1,0 +1,3 @@
+analyzed connectivity:
+src:A, dst: B, allowedConns: TCP dst-ports: 445
+src:B, dst: A, allowedConns: No Connections

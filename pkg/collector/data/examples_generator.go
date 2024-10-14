@@ -1,0 +1,131 @@
+package data
+
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+)
+
+func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
+	res := &collector.ResourcesContainerModel{}
+	// add vms
+	for _, vmName := range e.vms {
+		newVM := nsx.VirtualMachine{
+			DisplayName: &vmName,
+		}
+		newVMRes := collector.VirtualMachine{
+			VirtualMachine: newVM,
+		}
+		res.VirtualMachineList = append(res.VirtualMachineList, newVMRes)
+	}
+	// set default domain
+	domainRsc := collector.Domain{}
+	defaultName := "default"
+	domainRsc.DisplayName = &defaultName
+	res.DomainList = append(res.DomainList, domainRsc)
+
+	// add groups
+	groupList := []collector.Group{}
+	for group, members := range e.groups {
+		newGroup := collector.Group{}
+		newGroup.Group.DisplayName = &group
+		newGroup.Group.Path = &group
+		for _, member := range members {
+			vmMember := collector.RealizedVirtualMachine{}
+			vmMember.RealizedVirtualMachine.DisplayName = &member
+			newGroup.Members = append(newGroup.Members, vmMember)
+		}
+		groupList = append(groupList, newGroup)
+	}
+	res.DomainList[0].Resources.GroupList = groupList
+
+	// add dfw
+	policiesList := []collector.SecurityPolicy{}
+	for _, policy := range e.policies {
+		newPolicy := collector.SecurityPolicy{}
+		newPolicy.Category = &policy.categoryType
+		newPolicy.DisplayName = &policy.name
+		newPolicy.Scope = []string{any} // TODO: add scope as configurable
+		// add policy rules
+		for _, rule := range policy.rules {
+			newRule := nsx.Rule{
+				DisplayName:       &rule.name,
+				RuleId:            &rule.id,
+				Action:            (*nsx.RuleAction)(&rule.action),
+				SourceGroups:      []string{rule.source},
+				DestinationGroups: []string{rule.dest},
+				Services:          rule.services,
+				Direction:         "IN_OUT",      // TODO: add Direction as configurable
+				Scope:             []string{any}, // TODO: add scope as configurable
+			}
+			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, newRule)
+			collectorRule := collector.Rule{
+				Rule: newRule,
+			}
+			newPolicy.Rules = append(newPolicy.Rules, collectorRule)
+		}
+		policiesList = append(policiesList, newPolicy)
+	}
+
+	res.DomainList[0].Resources.SecurityPolicyList = policiesList
+
+	res.ServiceList = getServices()
+	return res
+}
+
+// examples generator
+const (
+	any   = "ANY"
+	drop  = "DROP"
+	allow = "ALLOW"
+)
+
+// Example is in s single domain
+type Example struct {
+	vms      []string
+	groups   map[string][]string
+	policies []category
+}
+
+func defaultDenyRule(id int) rule {
+	return rule{
+		name:     "default-deny-rule",
+		id:       id,
+		source:   any,
+		dest:     any,
+		services: []string{any},
+		action:   drop,
+	}
+}
+
+type rule struct {
+	name     string
+	id       int
+	source   string
+	dest     string
+	services []string
+	action   string
+}
+
+type category struct {
+	name         string
+	categoryType string
+	rules        []rule
+	//scope        []string
+}
+
+func getServices() []collector.Service {
+	servicesFilePath := filepath.Join(projectpath.Root, "pkg", "collector", "data", "services.json")
+	inputConfigContent, err := os.ReadFile(servicesFilePath)
+	if err != nil {
+		return nil
+	}
+	rc, err := collector.FromJSONString(inputConfigContent)
+	if err != nil {
+		return nil
+	}
+	return rc.ServiceList
+}
