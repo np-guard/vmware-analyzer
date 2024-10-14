@@ -48,7 +48,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 		newPolicy := collector.SecurityPolicy{}
 		newPolicy.Category = &policy.categoryType
 		newPolicy.DisplayName = &policy.name
-		newPolicy.Scope = []string{any} // TODO: add scope as configurable
+		newPolicy.Scope = []string{anyStr} // TODO: add scope as configurable
 		// add policy rules
 		for _, rule := range policy.rules {
 			newRule := nsx.Rule{
@@ -58,8 +58,8 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 				SourceGroups:      []string{rule.source},
 				DestinationGroups: []string{rule.dest},
 				Services:          rule.services,
-				Direction:         "IN_OUT",      // TODO: add Direction as configurable
-				Scope:             []string{any}, // TODO: add scope as configurable
+				Direction:         "IN_OUT",         // TODO: add Direction as configurable
+				Scope:             []string{anyStr}, // TODO: add scope as configurable
 			}
 			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, newRule)
 			collectorRule := collector.Rule{
@@ -78,9 +78,9 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 
 // examples generator
 const (
-	any   = "ANY"
-	drop  = "DROP"
-	allow = "ALLOW"
+	anyStr = "ANY"
+	drop   = "DROP"
+	allow  = "ALLOW"
 )
 
 // Example is in s single domain
@@ -94,9 +94,9 @@ func defaultDenyRule(id int) rule {
 	return rule{
 		name:     "default-deny-rule",
 		id:       id,
-		source:   any,
-		dest:     any,
-		services: []string{any},
+		source:   anyStr,
+		dest:     anyStr,
+		services: []string{anyStr},
 		action:   drop,
 	}
 }
@@ -114,7 +114,7 @@ type category struct {
 	name         string
 	categoryType string
 	rules        []rule
-	//scope        []string
+	// TODO: add scope, consider other fields
 }
 
 func getServices() []collector.Service {

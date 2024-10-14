@@ -6,9 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
-	"github.com/stretchr/testify/require"
 )
 
 type analyzerTest struct {
@@ -29,6 +30,7 @@ func (a *analyzerTest) file() string {
 
 func (a *analyzerTest) run(t *testing.T) {
 	var override bool
+	//nolint:gocritic // comment here should stay
 	//override = true // uncommnet to override expected output
 	rc := data.ExamplesGeneration(a.exData)
 	params := OutputParameters{
@@ -47,10 +49,12 @@ func (a *analyzerTest) run(t *testing.T) {
 		if !override {
 			// gen actual output to enable manual diff after test run
 			actual := getActualTestPath(a.file())
-			os.WriteFile(actual, []byte(res), 0644)
+			err := os.WriteFile(actual, []byte(res), 0o600)
+			require.Nil(t, err)
 		} else {
 			// override expected output with current actual output
-			os.WriteFile(expectedFile, []byte(res), 0644)
+			err := os.WriteFile(expectedFile, []byte(res), 0o600)
+			require.Nil(t, err)
 		}
 	}
 

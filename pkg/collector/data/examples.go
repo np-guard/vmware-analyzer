@@ -1,5 +1,6 @@
 package data
 
+//nolint:all
 var Example1 = Example{
 	vms: []string{"A", "B"},
 	groups: map[string][]string{
