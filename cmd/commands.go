@@ -25,6 +25,7 @@ const (
 	userFlag               = "username"
 	passwordFlag           = "password"
 	resourceDumpFileFlag   = "resource-dump-file"
+	topologyDumpFileFlag   = "topology-dump-file"
 	skipAnalysisFlag       = "skip-analysis"
 	outputFileFlag         = "filename"
 	outputFormantFlag      = "output"
@@ -36,9 +37,10 @@ const (
 	userHelp              = "nsx username"
 	passwordHelp          = "nsx password"
 	resourceDumpFileHelp  = "file path to store collected resources in JSON format"
+	topologyDumpFileHelp  = "file path to store topology"
 	skipAnalysisHelp      = "flag to skip analysis, run only collector"
 	outputFileHelp        = "file path to store analysis results"
-	outputFormatHelp      = "output format; must be one of [txt, dot]"
+	outputFormatHelp      = "output format; must be one of [txt, dot, json, svg]"
 	quietFlag             = "quiet"
 	verboseFlag           = "verbose"
 )
@@ -49,6 +51,7 @@ type inArgs struct {
 	user              string
 	password          string
 	resourceDumpFile  string
+	topologyDumpFile  string
 	skipAnalysis      bool
 	outputFile        string
 	outputFormat      string
@@ -84,10 +87,11 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().StringVar(&args.user, userFlag, "", userHelp)
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
+	rootCmd.PersistentFlags().StringVar(&args.topologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
-	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, model.TextFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, "runs quietly, reports only severe errors and results")
 	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, "runs with more informative messages printed to log")
 
@@ -132,6 +136,13 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
+	}
+	if args.topologyDumpFile != "" {
+		topology, err := recourses.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat)
+		if err != nil {
+			return err
+		}
+		fmt.Println(topology)
 	}
 	if !args.skipAnalysis {
 		params := model.OutputParameters{

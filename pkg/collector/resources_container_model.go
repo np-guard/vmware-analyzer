@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"slices"
 
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -96,4 +97,59 @@ func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort
 		}
 	}
 	return nil
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+func (t0 *Tier0) Name() string                    { return *t0.DisplayName }
+func (t1 *Tier1) Name() string                    { return *t1.DisplayName }
+func (segment *Segment) Name() string             { return *segment.DisplayName }
+func (vni *VirtualNetworkInterface) Name() string { return *vni.DisplayName }
+func (vm *VirtualMachine) Name() string           { return *vm.DisplayName }
+
+func (t0 *Tier0) Kind() string                    { return "t0" }
+func (t1 *Tier1) Kind() string                    { return "t1" }
+func (segment *Segment) Kind() string             { return "segment" }
+func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
+func (vm *VirtualMachine) Kind() string           { return "vm" }
+
+func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format string) (res string, err error) {
+	var g common.Graph
+	switch format {
+	case common.JSONFormat:
+		g = common.NewTreeGraph()
+	case common.TextFormat:
+		g = common.NewEdgesGraph("topology")
+	case common.DotFormat, common.SvgFormat:
+		g = common.NewDotGraph(true)
+	}
+	resources.CreateTopologyGraph(g)
+	return common.OutputGraph(g, fileName, format)
+}
+
+func (resources *ResourcesContainerModel) CreateTopologyGraph(g common.Graph) {
+	for t0i := range resources.Tier0List {
+		g.AddEdge(nil, &resources.Tier0List[t0i], nil)
+	}
+	for t1i := range resources.Tier1List {
+		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
+		g.AddEdge(t0, &resources.Tier1List[t1i], nil)
+	}
+	for si := range resources.SegmentList {
+		segment := &resources.SegmentList[si]
+		if segment.ConnectivityPath == nil {
+			g.AddEdge(nil, segment, nil)
+		} else if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
+			g.AddEdge(t1, segment, nil)
+		} else if t0 := resources.GetTier0(*segment.ConnectivityPath); t0 != nil {
+			g.AddEdge(t0, segment, nil)
+		}
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
+			vni := resources.GetVirtualNetworkInterfaceByPort(att)
+			g.AddEdge(segment, vni, nil)
+			vm := resources.GetVirtualMachine(*vni.OwnerVmId)
+			g.AddEdge(vni, vm, nil)
+		}
+	}
 }

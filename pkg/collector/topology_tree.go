@@ -12,18 +12,18 @@ type treeNode interface {
 
 ////////////////////////////////////////////////////////////////////////////
 
-func (v *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) treeNode {
-	if v.LportAttachmentId == nil {
+func (vni *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) treeNode {
+	if vni.LportAttachmentId == nil {
 		return nil
 	}
-	s := resources.GetSegmentPort(*v.LportAttachmentId)
+	s := resources.GetSegmentPort(*vni.LportAttachmentId)
 	if s == nil {
 		return nil
 	}
 	return s
 }
-func (s *SegmentPort) parent(resources *ResourcesContainerModel) treeNode {
-	return resources.GetSegment(*s.ParentPath)
+func (sp *SegmentPort) parent(resources *ResourcesContainerModel) treeNode {
+	return resources.GetSegment(*sp.ParentPath)
 }
 func (segment *Segment) parent(resources *ResourcesContainerModel) treeNode {
 	if segment.ConnectivityPath == nil {
@@ -34,10 +34,10 @@ func (segment *Segment) parent(resources *ResourcesContainerModel) treeNode {
 	}
 	return resources.GetTier0(*segment.ConnectivityPath)
 }
-func (t *Tier1) parent(resources *ResourcesContainerModel) treeNode {
-	return resources.GetTier0(*t.Tier0Path)
+func (t1 *Tier1) parent(resources *ResourcesContainerModel) treeNode {
+	return resources.GetTier0(*t1.Tier0Path)
 }
-func (t *Tier0) parent(resources *ResourcesContainerModel) treeNode { return nil }
+func (t0 *Tier0) parent(resources *ResourcesContainerModel) treeNode { return nil }
 
 // //////////////////////////////////////////////////////////////////////
 type treeNodeBranch []treeNode
