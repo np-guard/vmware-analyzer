@@ -3,9 +3,7 @@ package model
 import (
 	"os"
 	"slices"
-	"strings"
 
-	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -68,16 +66,12 @@ func (p *NSXConfigParser) getVMs() {
 			continue
 			// skip vm without name
 		}
-		if !strings.Contains(*vm.DisplayName, "New") {
-			continue
-		}
 		vmObj := endpoints.NewVM(*vm.DisplayName)
 		p.configRes.vms = append(p.configRes.vms, vmObj)
 		p.configRes.vmsMap[*vm.DisplayName] = vmObj
 	}
 }
 
-//nolint:gocritic // for now using commented-out code
 func (p *NSXConfigParser) getDFW() {
 	p.configRes.fw = dfw.NewEmptyDFW(false) // TODO: what is global default?
 	for i := range p.rc.DomainList {
@@ -88,20 +82,23 @@ func (p *NSXConfigParser) getDFW() {
 				continue // skip secPolicy with nil category (add warning)
 			}
 			category := *secPolicy.Category
-			/* 	secPolicyName := secPolicy.DisplayName
-			secPolicyId := secPolicy.Id
-			scope := secPolicy.Scope // support ANY at first*/
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
-			//scope := secPolicy.Scope
+
+			// This scope will take precedence over rule level scope.
 			scope := p.getEndpointsFromGroupsPaths(secPolicy.Scope)
+			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
 
 			rules := secPolicy.Rules
 			for i := range rules {
 				rule := &rules[i]
 				r := p.getDFWRule(rule)
-				r.scope = scope
+				r.scope = scope // scope from policy
+				if !policyHasScope {
+					// if policy scope is not configured, rule's scope takes effect
+					r.scope = p.getEndpointsFromGroupsPaths(rule.Scope)
+				}
+				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
-				//p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, rule)
 			}
 
 			// add default rule if such is configured
@@ -114,15 +111,18 @@ func (p *NSXConfigParser) getDFW() {
 				defaultRule := p.getDefaultRule(secPolicy)
 				if defaultRule == nil {
 					logging.Debugf("skipping default rule for policy %s\n", *secPolicy.DisplayName)
+				} else {
+					defaultRule.scope = scope
+					defaultRule.secPolicyName = *secPolicy.DisplayName
+					p.addFWRule(defaultRule, category, nil)
 				}
-				p.addFWRule(defaultRule, category, nil)
 			}
 		}
 	}
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope)
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName)
 }
 
 func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
@@ -155,13 +155,14 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	srcVMs    []*endpoints.VM
-	dstVMs    []*endpoints.VM
-	action    string
-	conn      *netset.TransportSet
-	direction string
-	ruleID    int
-	scope     []*endpoints.VM
+	srcVMs        []*endpoints.VM
+	dstVMs        []*endpoints.VM
+	action        string
+	conn          *netset.TransportSet
+	direction     string
+	ruleID        int
+	scope         []*endpoints.VM
+	secPolicyName string
 }
 
 func (p *NSXConfigParser) allGroups() []*endpoints.VM {
@@ -236,7 +237,9 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 	res := netset.NoTransports()
 	for _, s := range rule.Services {
 		conn := p.connectionFromService(s, rule)
-		res = res.Union(conn)
+		if conn != nil {
+			res = res.Union(conn)
+		}
 	}
 
 	return res
@@ -244,13 +247,6 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
-	// temp work around
-	if servicePath == "/infra/services/HTTP" {
-		const (
-			p = 80
-		)
-		return netset.NewTCPTransport(netp.MinPort, netp.MaxPort, p, p)
-	}
 	res := netset.NoTransports()
 	service := p.rc.GetService(servicePath)
 	if service == nil {

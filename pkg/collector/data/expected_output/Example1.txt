@@ -1,0 +1,3 @@
+analyzed connectivity:
+A => B: TCP dst-ports: 445
+B => A: No Connections

@@ -54,6 +54,9 @@ func (resources *DomainResources) GetGroup(query string) *Group {
 
 func (resources *ResourcesContainerModel) GetService(query string) *Service {
 	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == *gr.Path })
+	if i < 0 {
+		return nil
+	}
 	return &resources.ServiceList[i]
 }
 
