@@ -149,7 +149,6 @@ func runCommand(args *inArgs) error {
 			Format:   args.outputFormat,
 			FileName: args.outputFile,
 			// TODO: add cli params to filter vms
-			VMs: []string{"New Virtual Machine", "New-VM-1"},
 		}
 		logging.Infof("starting connectivity analysis")
 		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)

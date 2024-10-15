@@ -10,6 +10,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 type analyzerTest struct {
@@ -73,6 +74,7 @@ func (a *analyzerTest) run(t *testing.T) {
 }
 
 func TestAnalyzer(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
 		test.run(t)
