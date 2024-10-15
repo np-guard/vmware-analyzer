@@ -109,6 +109,7 @@ func (eg *EdgesGraph) String() string {
 	for i, e := range eg.edges {
 		strs[i] = e.string()
 	}
+	slices.Sort(strs)
 	return fmt.Sprintf("%s:\n%s", eg.header, strings.Join(strs, "\n"))
 }
 

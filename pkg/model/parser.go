@@ -66,6 +66,9 @@ func (p *NSXConfigParser) getVMs() {
 			continue
 			// skip vm without name
 		}
+		/*if !strings.Contains(*vm.DisplayName, "New") {
+			continue
+		}*/
 		vmObj := endpoints.NewVM(*vm.DisplayName)
 		p.configRes.vms = append(p.configRes.vms, vmObj)
 		p.configRes.vmsMap[*vm.DisplayName] = vmObj
