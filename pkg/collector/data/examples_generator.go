@@ -78,9 +78,10 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 
 // examples generator
 const (
-	anyStr = "ANY"
-	drop   = "DROP"
-	allow  = "ALLOW"
+	anyStr    = "ANY"
+	drop      = "DROP"
+	allow     = "ALLOW"
+	jumpToApp = "JUMP_TO_APPLICATION"
 )
 
 // Example is in s single domain

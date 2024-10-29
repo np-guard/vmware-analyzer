@@ -22,7 +22,9 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 		g = common.NewDotGraph(false)
 	}
 	for _, e := range filteredConn.toSlice() {
-		g.AddEdge(e.src, e.dst, e.conn)
+		if !e.conn.IsEmpty() {
+			g.AddEdge(e.src, e.dst, e.conn)
+		}
 	}
 	return common.OutputGraph(g, params.FileName, params.Format)
 }

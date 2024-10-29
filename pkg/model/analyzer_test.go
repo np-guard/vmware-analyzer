@@ -23,6 +23,10 @@ var allTests = []analyzerTest{
 		name:   "Example1",
 		exData: data.Example1,
 	},
+	{
+		name:   "Example2",
+		exData: data.Example2,
+	},
 }
 
 func (a *analyzerTest) file() string {
@@ -49,25 +53,21 @@ func (a *analyzerTest) run(t *testing.T) {
 	require.Nil(t, err)
 	fmt.Println(res)
 
-	// compare expected with actual output
 	expectedFile := getExpectedTestPath(a.file())
-	expected, err := os.ReadFile(expectedFile)
-	expectedStr := string(expected)
-	require.Nil(t, err)
-	if expectedStr != res {
-		if !override {
+	if override {
+		err := os.WriteFile(expectedFile, []byte(res), 0o600)
+		require.Nil(t, err)
+	} else {
+		// compare expected with actual output
+		expected, err := os.ReadFile(expectedFile)
+		expectedStr := string(expected)
+		require.Nil(t, err)
+		if expectedStr != res {
 			// gen actual output to enable manual diff after test run
 			actual := getActualTestPath(a.file())
 			err := os.WriteFile(actual, []byte(res), 0o600)
 			require.Nil(t, err)
-		} else {
-			// override expected output with current actual output
-			err := os.WriteFile(expectedFile, []byte(res), 0o600)
-			require.Nil(t, err)
 		}
-	}
-
-	if !override {
 		require.Equal(t, expectedStr, res)
 	}
 	fmt.Println("done")
