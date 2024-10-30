@@ -85,7 +85,7 @@ func splitArgs(s string) []string {
 			res = append(res, w)
 			w = ""
 		default:
-			w = w + string(c)
+			w += string(c)
 		}
 	}
 	if w != "" {
