@@ -181,7 +181,8 @@ type dotNode struct {
 }
 
 func (n *dotNode) string() string {
-	return fmt.Sprintf("node_%d_[shape=box, label=%q, tooltip=%q]", n.ID, n.Kind()+":"+n.Name(), n.Name())
+	return fmt.Sprintf("node_%d_[shape=box, label=%q, tooltip=%q fontcolor=darkgreen color=darkred]",
+		n.ID, n.Kind()+":"+n.Name(), n.Name())
 }
 
 type dotEdge struct {
@@ -192,7 +193,8 @@ type dotEdge struct {
 func (e *dotEdge) string() string {
 	s := fmt.Sprintf("node_%d_ -> node_%d_", e.src.ID, e.dst.ID)
 	if e.label != nil {
-		s += fmt.Sprintf("[label=%q, tooltip=%q, labeltooltip=%q]", e.label.String(), e.label.String(), e.label.String())
+		s += fmt.Sprintf("[label=%q, tooltip=%q, labeltooltip=%q fontcolor=purple color=darkblue]",
+			e.label.String(), e.label.String(), e.label.String())
 	}
 	return s
 }
