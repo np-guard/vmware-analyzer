@@ -54,7 +54,8 @@ func Test_main(t *testing.T) {
 		{
 			name: "analyze-topology-svg",
 			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
-				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg",
+				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
+				` --output-filter="New Virtual Machine",New-VM-1`,
 		},
 		{
 			name: "collect-and-analyze",
@@ -64,10 +65,31 @@ func Test_main(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if !strings.Contains(tt.args, serverInfo) {
-				if err := _main(strings.Split(tt.args, " ")); err != nil {
+				if err := _main(splitArgs(tt.args)); err != nil {
 					t.Errorf("_main() error = %v,", err)
 				}
 			}
 		})
 	}
+}
+
+func splitArgs(s string) []string {
+	res := []string{}
+	w := ""
+	inQ := false
+	for _, c := range s {
+		switch {
+		case c == '"':
+			inQ = !inQ
+		case c == ' ' && !inQ:
+			res = append(res, w)
+			w = ""
+		default:
+			w = w + string(c)
+		}
+	}
+	if w != ""{
+		res = append(res, w)
+	}
+	return res
 }
