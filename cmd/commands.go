@@ -31,6 +31,9 @@ const (
 	outputFormantFlag      = "output"
 	outputFileShortFlag    = "f"
 	outputFormantShortFlag = "o"
+	outputFilterFlag       = "output-filter"
+	quietFlag              = "quiet"
+	verboseFlag            = "verbose"
 
 	resourceInputFileHelp = "file path input JSON of NSX resources"
 	hostHelp              = "nsx host url"
@@ -41,8 +44,7 @@ const (
 	skipAnalysisHelp      = "flag to skip analysis, run only collector"
 	outputFileHelp        = "file path to store analysis results"
 	outputFormatHelp      = "output format; must be one of [txt, dot, json, svg]"
-	quietFlag             = "quiet"
-	verboseFlag           = "verbose"
+	outputFilterFlagHelp  = "filter the analysis results, can have more than one"
 )
 
 type inArgs struct {
@@ -57,6 +59,7 @@ type inArgs struct {
 	outputFormat      string
 	quiet             bool
 	verbose           bool
+	outputFilter      []string
 }
 
 func newRootCommand() *cobra.Command {
@@ -94,6 +97,7 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, "runs quietly, reports only severe errors and results")
 	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, "runs with more informative messages printed to log")
+	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
@@ -148,7 +152,7 @@ func runCommand(args *inArgs) error {
 		params := model.OutputParameters{
 			Format:   args.outputFormat,
 			FileName: args.outputFile,
-			// TODO: add cli params to filter vms
+			VMs:      args.outputFilter,
 		}
 		logging.Infof("starting connectivity analysis")
 		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)
