@@ -3,7 +3,7 @@ module github.com/np-guard/vmware-analyzer
 go 1.23
 
 require (
-	github.com/np-guard/models v0.5.1
+	github.com/np-guard/models v0.5.2
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/vmware/go-vmware-nsxt v0.0.0-20220328155605-f49a14c1ef5f
