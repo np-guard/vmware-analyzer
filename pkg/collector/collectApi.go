@@ -63,12 +63,15 @@ func PutResource[A json.Unmarshaler](server ServerData, query string, resource A
 	if err != nil {
 		return err
 	}
-	fmt.Println(string(bs))
 	err = (resource).UnmarshalJSON(bs)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+func DeleteResource(server ServerData, query string) error {
+	_, err := curlDeleteRequest(server, query)
+	return err
 }
 
 func curlGetRequest(server ServerData, query string) ([]byte, error) {

@@ -58,7 +58,15 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			traceFlow(got,server)
+			traceFlow, err := traceFlow(got,server)
+			if err != nil {
+				t.Errorf("traceFlow() error = %v", err)
+				return
+			}			
+			if err = deleteTraceFlow(server,traceFlow); err != nil {
+				t.Errorf("deleteTraceFlow() error = %v", err)
+				return
+			}
 			testTopology(got)
 			if err := dotTopology(got); err != nil {
 				t.Errorf("dotTopology() error = %v", err)
