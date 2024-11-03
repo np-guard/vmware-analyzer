@@ -19,13 +19,13 @@ import (
 )
 
 func fixLowerCaseEnums(b []byte) []byte {
-	enimVals := []nsx.RealizedVirtualMachinePowerState{
+	enumVals := []nsx.RealizedVirtualMachinePowerState{
 		nsx.RealizedVirtualMachinePowerStateUNKNOWN,
 		nsx.RealizedVirtualMachinePowerStateVMRUNNING,
 		nsx.RealizedVirtualMachinePowerStateVMSTOPPED,
 		nsx.RealizedVirtualMachinePowerStateVMSUSPENDED,
 	}
-	for _, enumVal := range enimVals {
+	for _, enumVal := range enumVals {
 		rightCase, _ := json.Marshal(enumVal)
 		wrongCase := bytes.ToLower(rightCase)
 		b = bytes.ReplaceAll(b, wrongCase, rightCase)
@@ -33,13 +33,27 @@ func fixLowerCaseEnums(b []byte) []byte {
 	return b
 }
 
-func collectResultList[A any](server ServerData, resourceQuery string, resouceList *[]A) error {
+func collectResult[A any](server ServerData, resourceQuery string, resource *A) error {
 	b, err := curlGetRequest(server, resourceQuery)
 	if err != nil {
 		return err
 	}
 	b = fixLowerCaseEnums(b)
-	*resouceList, err = unmarshalResultsToList[A](b)
+	res, err := unmarshalResults[A](b)
+	if err != nil {
+		return err
+	}
+	*resource = *res
+	return nil
+}
+
+func collectResultList[A any](server ServerData, resourceQuery string, resourceList *[]A) error {
+	b, err := curlGetRequest(server, resourceQuery)
+	if err != nil {
+		return err
+	}
+	b = fixLowerCaseEnums(b)
+	*resourceList, err = unmarshalResultsToList[A](b)
 	if err != nil {
 		return err
 	}
@@ -134,6 +148,18 @@ func unmarshalResultsToList[A any](b []byte) ([]A, error) {
 		return nil, getUnmarshalError(b)
 	}
 	return *data.Results, nil
+}
+
+func unmarshalResults[A any](b []byte) (*A, error) {
+	data := struct{ Results *A }{}
+	err := json.Unmarshal(b, &data)
+	if err != nil {
+		return nil, err
+	}
+	if data.Results == nil {
+		return nil, getUnmarshalError(b)
+	}
+	return data.Results, nil
 }
 
 func getUnmarshalError(b []byte) error {

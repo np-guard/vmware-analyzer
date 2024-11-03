@@ -342,6 +342,121 @@ func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
 	return UnmarshalBaseStructAndFields(b, nilWithType, "packet", &config.Packet, "source_id", &config.SourceId)
 }
 
+///////////////////////////////////////////////////////////////////////////////////////
+
+type TraceFlowObservationElement interface{}
+
+type PolicyTraceflowObservationDelivered struct {
+	nsx.PolicyTraceflowObservationDelivered
+}
+type PolicyTraceflowObservationDropped struct {
+	nsx.PolicyTraceflowObservationDropped
+}
+type PolicyTraceflowObservationDroppedLogical struct {
+	nsx.PolicyTraceflowObservationDroppedLogical
+}
+type PolicyTraceflowObservationForwardedLogical struct {
+	nsx.PolicyTraceflowObservationForwardedLogical
+}
+type PolicyTraceflowObservationReceivedLogical struct {
+	nsx.PolicyTraceflowObservationReceivedLogical
+}
+type PolicyTraceflowObservationRelayedLogical struct {
+	nsx.PolicyTraceflowObservationRelayedLogical
+}
+type TraceflowObservationDelivered struct {
+	nsx.TraceflowObservationDelivered
+}
+type TraceflowObservationDropped struct {
+	nsx.TraceflowObservationDropped
+}
+type TraceflowObservationDroppedLogical struct {
+	nsx.TraceflowObservationDroppedLogical
+}
+type TraceflowObservationForwarded struct {
+	nsx.TraceflowObservationForwarded
+}
+type TraceflowObservationForwardedLogical struct {
+	nsx.TraceflowObservationForwardedLogical
+}
+type TraceflowObservationProtected struct {
+	nsx.TraceflowObservationProtected
+}
+type TraceflowObservationReceived struct {
+	nsx.TraceflowObservationReceived
+}
+type TraceflowObservationReceivedLogical struct {
+	nsx.TraceflowObservationReceivedLogical
+}
+type TraceflowObservationRelayedLogical struct {
+	nsx.TraceflowObservationRelayedLogical
+}
+type TraceflowObservationReplicationLogical struct {
+	nsx.TraceflowObservationReplicationLogical
+}
+
+type TraceFlowObservations []TraceFlowObservationElement
+
+func (e *TraceFlowObservations) UnmarshalJSON(b []byte) error {
+	var raws []json.RawMessage
+	if err := json.Unmarshal(b, &raws); err != nil {
+		return err
+	}
+	*e = make([]TraceFlowObservationElement, len(raws))
+	for i, rawMessage := range raws {
+		var raw map[string]json.RawMessage
+		if err := json.Unmarshal(rawMessage, &raw); err != nil {
+			return err
+		}
+		var cType string
+		if err := json.Unmarshal(raw[resourceTypeJSONEntry], &cType); err != nil {
+			return err
+		}
+		var res TraceFlowObservationElement
+		switch cType {
+		case "PolicyTraceflowObservationDelivered":
+			res = &PolicyTraceflowObservationDelivered{}
+		case "PolicyTraceflowObservationDropped":
+			res = &PolicyTraceflowObservationDropped{}
+		case "PolicyTraceflowObservationDroppedLogical":
+			res = &PolicyTraceflowObservationDroppedLogical{}
+		case "PolicyTraceflowObservationForwardedLogical":
+			res = &PolicyTraceflowObservationForwardedLogical{}
+		case "PolicyTraceflowObservationReceivedLogical":
+			res = &PolicyTraceflowObservationReceivedLogical{}
+		case "PolicyTraceflowObservationRelayedLogical":
+			res = &PolicyTraceflowObservationRelayedLogical{}
+		case "TraceflowObservationDelivered":
+			res = &TraceflowObservationDelivered{}
+		case "TraceflowObservationDropped":
+			res = &TraceflowObservationDropped{}
+		case "TraceflowObservationDroppedLogical":
+			res = &TraceflowObservationDroppedLogical{}
+		case "TraceflowObservationForwarded":
+			res = &TraceflowObservationForwarded{}
+		case "TraceflowObservationForwardedLogical":
+			res = &TraceflowObservationForwardedLogical{}
+		case "TraceflowObservationProtected":
+			res = &TraceflowObservationProtected{}
+		case "TraceflowObservationReceived":
+			res = &TraceflowObservationReceived{}
+		case "TraceflowObservationReceivedLogical":
+			res = &TraceflowObservationReceivedLogical{}
+		case "TraceflowObservationRelayedLogical":
+			res = &TraceflowObservationRelayedLogical{}
+		case "TraceflowObservationReplicationLogical":
+			res = &TraceflowObservationReplicationLogical{}
+			default:
+				return fmt.Errorf("fail to unmarshal TraceFlowObservations %s", rawMessage)
+		}
+		if err := json.Unmarshal(rawMessage, &res); err != nil {
+			return err
+		}
+		(*e)[i] = res
+	}
+	return nil
+}
+
 // ///////////////////////////////////////////////////////////////////////////////////////
 func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *t) error {
 	if m, ok := raw[entry]; ok {

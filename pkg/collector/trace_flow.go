@@ -49,3 +49,8 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData) (string, e
 func deleteTraceFlow(server ServerData, traceFlowName string) error {
 	return DeleteResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName))
 }
+func traceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObservations, error) {
+	var t TraceFlowObservations
+	err := collectResult(server, fmt.Sprintf(getTraceFlowObservationQuery, traceFlowName), &t)
+	return t, err
+}

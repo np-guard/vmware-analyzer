@@ -63,10 +63,15 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("traceFlow() error = %v", err)
 				return
 			}			
+			if _, err := traceFlowObservation(server,traceFlow); err != nil {
+				t.Errorf("traceFlowObservation() error = %v", err)
+				return
+			}
 			if err = deleteTraceFlow(server,traceFlow); err != nil {
 				t.Errorf("deleteTraceFlow() error = %v", err)
 				return
 			}
+			
 			testTopology(got)
 			if err := dotTopology(got); err != nil {
 				t.Errorf("dotTopology() error = %v", err)
