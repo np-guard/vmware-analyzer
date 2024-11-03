@@ -4,6 +4,7 @@ package resources
 
 import "encoding/json"
 import "fmt"
+import "net/netip"
 import "reflect"
 
 type ALGTypeServiceEntry struct {
@@ -318,6 +319,66 @@ func (j *ApplicationConnectivityStrategy) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type ArpHeader struct {
+	// DstIp corresponds to the JSON schema field "dst_ip".
+	DstIp *IPv4Address `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// This field specifies the nature of the Arp message being sent.
+	OpCode ArpHeaderOpCode `json:"op_code,omitempty" yaml:"op_code,omitempty" mapstructure:"op_code,omitempty"`
+
+	// This field specifies the IP address of the sender. If omitted, the src_ip is
+	// set to 0.0.0.0.
+	SrcIp *IPv4Address `json:"src_ip,omitempty" yaml:"src_ip,omitempty" mapstructure:"src_ip,omitempty"`
+}
+
+type ArpHeaderOpCode string
+
+const ArpHeaderOpCodeARPREPLY ArpHeaderOpCode = "ARP_REPLY"
+const ArpHeaderOpCodeARPREQUEST ArpHeaderOpCode = "ARP_REQUEST"
+
+var enumValues_ArpHeaderOpCode = []interface{}{
+	"ARP_REQUEST",
+	"ARP_REPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ArpHeaderOpCode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ArpHeaderOpCode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ArpHeaderOpCode, v)
+	}
+	*j = ArpHeaderOpCode(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ArpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain ArpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["op_code"]; !ok || v == nil {
+		plain.OpCode = "ARP_REQUEST"
+	}
+	*j = ArpHeader(plain)
+	return nil
+}
+
 // The Attached interface is only effective for the segment port on Bare metal
 // server.
 type AttachedInterfaceEntry struct {
@@ -333,6 +394,149 @@ type AttachedInterfaceEntry struct {
 
 	// RoutingTable corresponds to the JSON schema field "routing_table".
 	RoutingTable []string `json:"routing_table,omitempty" yaml:"routing_table,omitempty" mapstructure:"routing_table,omitempty"`
+}
+
+type BinaryPacketData struct {
+	// If the requested frame_size is too small (given the payload and traceflow
+	// metadata requirement of 16 bytes), the traceflow request will fail with an
+	// appropriate message.  The frame will be zero padded to the requested size.
+	FrameSize int `json:"frame_size,omitempty" yaml:"frame_size,omitempty" mapstructure:"frame_size,omitempty"`
+
+	// Up to 1000 bytes of payload may be supplied (with a base64-encoded length of
+	// 1336 bytes.) Additional bytes of traceflow metadata will be appended to the
+	// payload. The payload must contain all headers (Ethernet, IP, etc). Note that
+	// VLAN is not supported in the logical space. Hence, payload must not contain
+	// 802.1Q headers.
+	Payload *string `json:"payload,omitempty" yaml:"payload,omitempty" mapstructure:"payload,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType BinaryPacketDataResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// When this flag is set, traceflow packet will have its destination overwritten
+	// as the gateway address of the logical router to which the source logical switch
+	// is connected. More specifically: - For ARP request, the target IP will be
+	// overwritten as gateway IP if the target   IP is not in the same subnet of
+	// gateway. - For ARP response, the target IP and destination MAC will be
+	// overwritten as   gateway IP/MAC respectively, if the target IP is not in the
+	// same subnet of gateway. - For IP packet, the destination MAC will be
+	// overwritten as gateway MAC. However, this flag will not be effective when
+	// injecting the traceflow packet to a VLAN backed port. This is because the
+	// gateway in this case is a physical gateway that is outside the scope of NSX.
+	// Therefore, users need to manually populate the gateway MAC address. If the user
+	// still sets this flag in this case, a validation error will be thrown. The
+	// scenario where a user injects a packet with a VLAN tag into a parent port is
+	// referred to as the traceflow container case. Please note that the value of
+	// `routed` depends on the connected network of the child segment rather than the
+	// connected network of segment of the parent port in this case. Here is the
+	// explanation: The parent port in this context is the port on a segment which is
+	// referred to by a SegmentConnectionBindingMap. The bound segment of the
+	// SegmentConnectionBindingMap is the child segment. The user-crafted traceflow
+	// packet will be directly forwarded to the corresponding child segment of the
+	// parent port without interacting with any layer 2 forwarding/layer 3 routing in
+	// this scenario. The crafted packet will follow the forwarding/routing polices of
+	// the child segment's connected network. For example, if a user injects a crafted
+	// packet to port_p, and the segment (seg_p) of port_p is referred to by the
+	// binding map m1, where m1 is bound to segment seg_c, and the destination port
+	// (port_d) of the packet is the VM vNIC connected to seg_p. Although port_p and
+	// port_d are on the same segment, the 'routed' value should be set to true if the
+	// user expects the crafted packet to be correctly delivered to the destination.
+	// This is because the child segments seg_c and seg_d are on different segments
+	// and require router interaction to communicate.
+	Routed *bool `json:"routed,omitempty" yaml:"routed,omitempty" mapstructure:"routed,omitempty"`
+
+	// This type takes effect only for IP packet.
+	TransportType BinaryPacketDataTransportType `json:"transport_type,omitempty" yaml:"transport_type,omitempty" mapstructure:"transport_type,omitempty"`
+}
+
+type BinaryPacketDataResourceType string
+
+const BinaryPacketDataResourceTypeBinaryPacketData BinaryPacketDataResourceType = "BinaryPacketData"
+const BinaryPacketDataResourceTypeFieldsPacketData BinaryPacketDataResourceType = "FieldsPacketData"
+
+var enumValues_BinaryPacketDataResourceType = []interface{}{
+	"BinaryPacketData",
+	"FieldsPacketData",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BinaryPacketDataResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_BinaryPacketDataResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BinaryPacketDataResourceType, v)
+	}
+	*j = BinaryPacketDataResourceType(v)
+	return nil
+}
+
+type BinaryPacketDataTransportType string
+
+const BinaryPacketDataTransportTypeBROADCAST BinaryPacketDataTransportType = "BROADCAST"
+const BinaryPacketDataTransportTypeMULTICAST BinaryPacketDataTransportType = "MULTICAST"
+const BinaryPacketDataTransportTypeUNICAST BinaryPacketDataTransportType = "UNICAST"
+const BinaryPacketDataTransportTypeUNKNOWN BinaryPacketDataTransportType = "UNKNOWN"
+
+var enumValues_BinaryPacketDataTransportType = []interface{}{
+	"BROADCAST",
+	"UNICAST",
+	"MULTICAST",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BinaryPacketDataTransportType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_BinaryPacketDataTransportType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BinaryPacketDataTransportType, v)
+	}
+	*j = BinaryPacketDataTransportType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BinaryPacketData) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain BinaryPacketData
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["frame_size"]; !ok || v == nil {
+		plain.FrameSize = 128.0
+	}
+	if plain.Payload != nil && len(*plain.Payload) > 1336 {
+		return fmt.Errorf("field %s length: must be <= %d", "payload", 1336)
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "FieldsPacketData"
+	}
+	if v, ok := raw["transport_type"]; !ok || v == nil {
+		plain.TransportType = "UNICAST"
+	}
+	*j = BinaryPacketData(plain)
+	return nil
 }
 
 // configuration parameters for Bridge Profile
@@ -1351,6 +1555,131 @@ func (j *ConjunctionOperator) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type DhcpHeader struct {
+	// This is used to specify the general type of message. A client sending request
+	// to a server uses an op code of BOOTREQUEST, while a server replying uses an op
+	// code of BOOTREPLY.
+	OpCode DhcpHeaderOpCode `json:"op_code,omitempty" yaml:"op_code,omitempty" mapstructure:"op_code,omitempty"`
+}
+
+type DhcpHeaderOpCode string
+
+const DhcpHeaderOpCodeBOOTREPLY DhcpHeaderOpCode = "BOOTREPLY"
+const DhcpHeaderOpCodeBOOTREQUEST DhcpHeaderOpCode = "BOOTREQUEST"
+
+var enumValues_DhcpHeaderOpCode = []interface{}{
+	"BOOTREQUEST",
+	"BOOTREPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DhcpHeaderOpCode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DhcpHeaderOpCode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DhcpHeaderOpCode, v)
+	}
+	*j = DhcpHeaderOpCode(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DhcpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain DhcpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["op_code"]; !ok || v == nil {
+		plain.OpCode = "BOOTREQUEST"
+	}
+	*j = DhcpHeader(plain)
+	return nil
+}
+
+type Dhcpv6Header struct {
+	// This is used to specify the DHCP v6 message. To request the assignment of one
+	// or more IPv6 addresses, a client first locates a DHCP server and then requests
+	// the assignment of addresses and other configuration information from the
+	// server. The client sends a Solicit message to the
+	// All_DHCP_Relay_Agents_and_Servers address to find available DHCP servers. Any
+	// server that can meet the client's requirements responds with an Advertise
+	// message. The client then chooses one of the servers and sends a Request message
+	// to the server asking for confirmed assignment of addresses and other
+	// configuration information. The server responds with a Reply message that
+	// contains the confirmed addresses and configuration. SOLICIT - A client sends a
+	// Solicit message to locate servers. ADVERTISE - A server sends and Advertise
+	// message to indicate that it is available. REQUEST - A client sends a Request
+	// message to request configuration parameters. REPLY - A server sends a Reply
+	// message containing assigned addresses and configuration parameters.
+	MsgType Dhcpv6HeaderMsgType `json:"msg_type,omitempty" yaml:"msg_type,omitempty" mapstructure:"msg_type,omitempty"`
+}
+
+type Dhcpv6HeaderMsgType string
+
+const Dhcpv6HeaderMsgTypeADVERTISE Dhcpv6HeaderMsgType = "ADVERTISE"
+const Dhcpv6HeaderMsgTypeREPLY Dhcpv6HeaderMsgType = "REPLY"
+const Dhcpv6HeaderMsgTypeREQUEST Dhcpv6HeaderMsgType = "REQUEST"
+const Dhcpv6HeaderMsgTypeSOLICIT Dhcpv6HeaderMsgType = "SOLICIT"
+
+var enumValues_Dhcpv6HeaderMsgType = []interface{}{
+	"SOLICIT",
+	"ADVERTISE",
+	"REQUEST",
+	"REPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Dhcpv6HeaderMsgType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Dhcpv6HeaderMsgType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Dhcpv6HeaderMsgType, v)
+	}
+	*j = Dhcpv6HeaderMsgType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Dhcpv6Header) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Dhcpv6Header
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["msg_type"]; !ok || v == nil {
+		plain.MsgType = "SOLICIT"
+	}
+	*j = Dhcpv6Header(plain)
+	return nil
+}
+
 type DiscoveredResourceScope struct {
 	// Specifies the scope id of discovered resource.
 	ScopeId *string `json:"scope_id,omitempty" yaml:"scope_id,omitempty" mapstructure:"scope_id,omitempty"`
@@ -1386,6 +1715,101 @@ func (j *DiscoveredResourceScopeScopeType) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DiscoveredResourceScopeScopeType, v)
 	}
 	*j = DiscoveredResourceScopeScopeType(v)
+	return nil
+}
+
+type DnsHeader struct {
+	// This is used to define what is being asked or responded.
+	Address *string `json:"address,omitempty" yaml:"address,omitempty" mapstructure:"address,omitempty"`
+
+	// This is used to specify the type of the address. V4 - The address provided is
+	// an IPv4 domain name/IP address, the Type in query or response will be A V6 -
+	// The address provided is an IPv6 domain name/IP address, the Type in query or
+	// response will be AAAA
+	AddressType DnsHeaderAddressType `json:"address_type,omitempty" yaml:"address_type,omitempty" mapstructure:"address_type,omitempty"`
+
+	// MessageType corresponds to the JSON schema field "message_type".
+	MessageType DnsHeaderMessageType `json:"message_type,omitempty" yaml:"message_type,omitempty" mapstructure:"message_type,omitempty"`
+}
+
+type DnsHeaderAddressType string
+
+const DnsHeaderAddressTypeV4 DnsHeaderAddressType = "V4"
+const DnsHeaderAddressTypeV6 DnsHeaderAddressType = "V6"
+
+var enumValues_DnsHeaderAddressType = []interface{}{
+	"V4",
+	"V6",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DnsHeaderAddressType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DnsHeaderAddressType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DnsHeaderAddressType, v)
+	}
+	*j = DnsHeaderAddressType(v)
+	return nil
+}
+
+type DnsHeaderMessageType string
+
+const DnsHeaderMessageTypeQUERY DnsHeaderMessageType = "QUERY"
+const DnsHeaderMessageTypeRESPONSE DnsHeaderMessageType = "RESPONSE"
+
+var enumValues_DnsHeaderMessageType = []interface{}{
+	"QUERY",
+	"RESPONSE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DnsHeaderMessageType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DnsHeaderMessageType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DnsHeaderMessageType, v)
+	}
+	*j = DnsHeaderMessageType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DnsHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain DnsHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["address_type"]; !ok || v == nil {
+		plain.AddressType = "V4"
+	}
+	if v, ok := raw["message_type"]; !ok || v == nil {
+		plain.MessageType = "QUERY"
+	}
+	*j = DnsHeader(plain)
 	return nil
 }
 
@@ -1715,6 +2139,37 @@ func (j *EtherTypeServiceEntry) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type EthernetHeader struct {
+	// The destination MAC address of form:
+	// "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$". For example: 00:00:00:00:00:00.
+	DstMac *string `json:"dst_mac,omitempty" yaml:"dst_mac,omitempty" mapstructure:"dst_mac,omitempty"`
+
+	// This field defaults to IPv4.
+	EthType int `json:"eth_type,omitempty" yaml:"eth_type,omitempty" mapstructure:"eth_type,omitempty"`
+
+	// The source MAC address of form: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".
+	// For example: 00:00:00:00:00:00.
+	SrcMac *string `json:"src_mac,omitempty" yaml:"src_mac,omitempty" mapstructure:"src_mac,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *EthernetHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain EthernetHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["eth_type"]; !ok || v == nil {
+		plain.EthType = 2048.0
+	}
+	*j = EthernetHeader(plain)
+	return nil
+}
+
 // Represents the list of members that need to be excluded
 type ExcludedMembersList struct {
 	// IpAddressExpression corresponds to the JSON schema field
@@ -1927,6 +2382,164 @@ type FederationGatewayConfig struct {
 	// Global UUID for transit segment id to be used by Layer2 services for federation
 	// usecases.
 	TransitSegmentId *string `json:"transit_segment_id,omitempty" yaml:"transit_segment_id,omitempty" mapstructure:"transit_segment_id,omitempty"`
+}
+
+type FieldsPacketData struct {
+	// ArpHeader corresponds to the JSON schema field "arp_header".
+	ArpHeader *ArpHeader `json:"arp_header,omitempty" yaml:"arp_header,omitempty" mapstructure:"arp_header,omitempty"`
+
+	// EthHeader corresponds to the JSON schema field "eth_header".
+	EthHeader *EthernetHeader `json:"eth_header,omitempty" yaml:"eth_header,omitempty" mapstructure:"eth_header,omitempty"`
+
+	// If the requested frame_size is too small (given the payload and traceflow
+	// metadata requirement of 16 bytes), the traceflow request will fail with an
+	// appropriate message.  The frame will be zero padded to the requested size.
+	FrameSize int `json:"frame_size,omitempty" yaml:"frame_size,omitempty" mapstructure:"frame_size,omitempty"`
+
+	// IpHeader corresponds to the JSON schema field "ip_header".
+	IpHeader *Ipv4Header `json:"ip_header,omitempty" yaml:"ip_header,omitempty" mapstructure:"ip_header,omitempty"`
+
+	// Ipv6Header corresponds to the JSON schema field "ipv6_header".
+	Ipv6Header *Ipv6Header `json:"ipv6_header,omitempty" yaml:"ipv6_header,omitempty" mapstructure:"ipv6_header,omitempty"`
+
+	// Up to 1000 bytes of payload may be supplied (with a base64-encoded length of
+	// 1336 bytes.) Additional bytes of traceflow metadata will be appended to the
+	// payload. The payload contains any data the user wants to put after the
+	// transport header.
+	Payload *string `json:"payload,omitempty" yaml:"payload,omitempty" mapstructure:"payload,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType FieldsPacketDataResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// When this flag is set, traceflow packet will have its destination overwritten
+	// as the gateway address of the logical router to which the source logical switch
+	// is connected. More specifically: - For ARP request, the target IP will be
+	// overwritten as gateway IP if the target   IP is not in the same subnet of
+	// gateway. - For ARP response, the target IP and destination MAC will be
+	// overwritten as   gateway IP/MAC respectively, if the target IP is not in the
+	// same subnet of gateway. - For IP packet, the destination MAC will be
+	// overwritten as gateway MAC. However, this flag will not be effective when
+	// injecting the traceflow packet to a VLAN backed port. This is because the
+	// gateway in this case is a physical gateway that is outside the scope of NSX.
+	// Therefore, users need to manually populate the gateway MAC address. If the user
+	// still sets this flag in this case, a validation error will be thrown. The
+	// scenario where a user injects a packet with a VLAN tag into a parent port is
+	// referred to as the traceflow container case. Please note that the value of
+	// `routed` depends on the connected network of the child segment rather than the
+	// connected network of segment of the parent port in this case. Here is the
+	// explanation: The parent port in this context is the port on a segment which is
+	// referred to by a SegmentConnectionBindingMap. The bound segment of the
+	// SegmentConnectionBindingMap is the child segment. The user-crafted traceflow
+	// packet will be directly forwarded to the corresponding child segment of the
+	// parent port without interacting with any layer 2 forwarding/layer 3 routing in
+	// this scenario. The crafted packet will follow the forwarding/routing polices of
+	// the child segment's connected network. For example, if a user injects a crafted
+	// packet to port_p, and the segment (seg_p) of port_p is referred to by the
+	// binding map m1, where m1 is bound to segment seg_c, and the destination port
+	// (port_d) of the packet is the VM vNIC connected to seg_p. Although port_p and
+	// port_d are on the same segment, the 'routed' value should be set to true if the
+	// user expects the crafted packet to be correctly delivered to the destination.
+	// This is because the child segments seg_c and seg_d are on different segments
+	// and require router interaction to communicate.
+	Routed *bool `json:"routed,omitempty" yaml:"routed,omitempty" mapstructure:"routed,omitempty"`
+
+	// This field contains a protocol that is above IP. It is not restricted to the
+	// 'transport' defined by the OSI model (e.g., ICMP is supported).
+	TransportHeader *TransportProtocolHeader `json:"transport_header,omitempty" yaml:"transport_header,omitempty" mapstructure:"transport_header,omitempty"`
+
+	// This type takes effect only for IP packet.
+	TransportType FieldsPacketDataTransportType `json:"transport_type,omitempty" yaml:"transport_type,omitempty" mapstructure:"transport_type,omitempty"`
+}
+
+type FieldsPacketDataResourceType string
+
+const FieldsPacketDataResourceTypeBinaryPacketData FieldsPacketDataResourceType = "BinaryPacketData"
+const FieldsPacketDataResourceTypeFieldsPacketData FieldsPacketDataResourceType = "FieldsPacketData"
+
+var enumValues_FieldsPacketDataResourceType = []interface{}{
+	"BinaryPacketData",
+	"FieldsPacketData",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FieldsPacketDataResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FieldsPacketDataResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FieldsPacketDataResourceType, v)
+	}
+	*j = FieldsPacketDataResourceType(v)
+	return nil
+}
+
+type FieldsPacketDataTransportType string
+
+const FieldsPacketDataTransportTypeBROADCAST FieldsPacketDataTransportType = "BROADCAST"
+const FieldsPacketDataTransportTypeMULTICAST FieldsPacketDataTransportType = "MULTICAST"
+const FieldsPacketDataTransportTypeUNICAST FieldsPacketDataTransportType = "UNICAST"
+const FieldsPacketDataTransportTypeUNKNOWN FieldsPacketDataTransportType = "UNKNOWN"
+
+var enumValues_FieldsPacketDataTransportType = []interface{}{
+	"BROADCAST",
+	"UNICAST",
+	"MULTICAST",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FieldsPacketDataTransportType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FieldsPacketDataTransportType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FieldsPacketDataTransportType, v)
+	}
+	*j = FieldsPacketDataTransportType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FieldsPacketData) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain FieldsPacketData
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["frame_size"]; !ok || v == nil {
+		plain.FrameSize = 128.0
+	}
+	if plain.Payload != nil && len(*plain.Payload) > 1336 {
+		return fmt.Errorf("field %s length: must be <= %d", "payload", 1336)
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "FieldsPacketData"
+	}
+	if v, ok := raw["transport_type"]; !ok || v == nil {
+		plain.TransportType = "UNICAST"
+	}
+	*j = FieldsPacketData(plain)
+	return nil
 }
 
 type FirewallRule struct {
@@ -3317,6 +3930,39 @@ func (j *IPProtocolServiceEntry) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type IPv4Address string
+
+type IPv6Address netip.Addr
+
+type IcmpEchoRequestHeader struct {
+	// Id corresponds to the JSON schema field "id".
+	Id int `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Sequence corresponds to the JSON schema field "sequence".
+	Sequence int `json:"sequence,omitempty" yaml:"sequence,omitempty" mapstructure:"sequence,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *IcmpEchoRequestHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain IcmpEchoRequestHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["id"]; !ok || v == nil {
+		plain.Id = 0.0
+	}
+	if v, ok := raw["sequence"]; !ok || v == nil {
+		plain.Sequence = 0.0
+	}
+	*j = IcmpEchoRequestHeader(plain)
+	return nil
+}
+
 // Intersite gateway configuration.
 type IntersiteGatewayConfig struct {
 	// Fallback site to be used as new primary site on current primary site failure.
@@ -3395,6 +4041,87 @@ func (j *IpAddressInfoSource) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_IpAddressInfoSource, v)
 	}
 	*j = IpAddressInfoSource(v)
+	return nil
+}
+
+type Ipv4Header struct {
+	// DstIp corresponds to the JSON schema field "dst_ip".
+	DstIp *IPv4Address `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// Flags corresponds to the JSON schema field "flags".
+	Flags int `json:"flags,omitempty" yaml:"flags,omitempty" mapstructure:"flags,omitempty"`
+
+	// Protocol corresponds to the JSON schema field "protocol".
+	Protocol int `json:"protocol,omitempty" yaml:"protocol,omitempty" mapstructure:"protocol,omitempty"`
+
+	// SrcIp corresponds to the JSON schema field "src_ip".
+	SrcIp *IPv4Address `json:"src_ip,omitempty" yaml:"src_ip,omitempty" mapstructure:"src_ip,omitempty"`
+
+	// This is used together with src_ip to calculate dst_ip for broadcast when dst_ip
+	// is not given; not used in all other cases.
+	SrcSubnetPrefixLen *int `json:"src_subnet_prefix_len,omitempty" yaml:"src_subnet_prefix_len,omitempty" mapstructure:"src_subnet_prefix_len,omitempty"`
+
+	// Ttl corresponds to the JSON schema field "ttl".
+	Ttl int `json:"ttl,omitempty" yaml:"ttl,omitempty" mapstructure:"ttl,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Ipv4Header) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Ipv4Header
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["flags"]; !ok || v == nil {
+		plain.Flags = 0.0
+	}
+	if v, ok := raw["protocol"]; !ok || v == nil {
+		plain.Protocol = 1.0
+	}
+	if v, ok := raw["ttl"]; !ok || v == nil {
+		plain.Ttl = 64.0
+	}
+	*j = Ipv4Header(plain)
+	return nil
+}
+
+type Ipv6Header struct {
+	// DstIp corresponds to the JSON schema field "dst_ip".
+	DstIp *IPv6Address `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// Decremented by 1 by each node that forwards the packets. The packet is
+	// discarded if Hop Limit is decremented to zero.
+	HopLimit int `json:"hop_limit,omitempty" yaml:"hop_limit,omitempty" mapstructure:"hop_limit,omitempty"`
+
+	// NextHeader corresponds to the JSON schema field "next_header".
+	NextHeader int `json:"next_header,omitempty" yaml:"next_header,omitempty" mapstructure:"next_header,omitempty"`
+
+	// SrcIp corresponds to the JSON schema field "src_ip".
+	SrcIp *IPv6Address `json:"src_ip,omitempty" yaml:"src_ip,omitempty" mapstructure:"src_ip,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Ipv6Header) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Ipv6Header
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["hop_limit"]; !ok || v == nil {
+		plain.HopLimit = 64.0
+	}
+	if v, ok := raw["next_header"]; !ok || v == nil {
+		plain.NextHeader = 58.0
+	}
+	*j = Ipv6Header(plain)
 	return nil
 }
 
@@ -3747,6 +4474,67 @@ func (j *NSServiceElementResourceType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type NdpHeader struct {
+	// The IP address of the destination of the solicitation. It MUST NOT be a
+	// multicast address.
+	DstIp *IPv6Address `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// This field specifies the type of the Neighbor discover message being sent.
+	// NEIGHBOR_SOLICITATION - Neighbor Solicitation message to discover the
+	// link-layer address of an on-link IPv6 node or to confirm a previously
+	// determined link-layer address. NEIGHBOR_ADVERTISEMENT - Neighbor Advertisement
+	// message in response to a Neighbor Solicitation message.
+	MsgType NdpHeaderMsgType `json:"msg_type,omitempty" yaml:"msg_type,omitempty" mapstructure:"msg_type,omitempty"`
+}
+
+type NdpHeaderMsgType string
+
+const NdpHeaderMsgTypeNEIGHBORADVERTISEMENT NdpHeaderMsgType = "NEIGHBOR_ADVERTISEMENT"
+const NdpHeaderMsgTypeNEIGHBORSOLICITATION NdpHeaderMsgType = "NEIGHBOR_SOLICITATION"
+
+var enumValues_NdpHeaderMsgType = []interface{}{
+	"NEIGHBOR_SOLICITATION",
+	"NEIGHBOR_ADVERTISEMENT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NdpHeaderMsgType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_NdpHeaderMsgType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_NdpHeaderMsgType, v)
+	}
+	*j = NdpHeaderMsgType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NdpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain NdpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["msg_type"]; !ok || v == nil {
+		plain.MsgType = "NEIGHBOR_SOLICITATION"
+	}
+	*j = NdpHeader(plain)
+	return nil
+}
+
 type NestedServiceServiceEntry struct {
 	// Timestamp of resource creation
 	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
@@ -3941,6 +4729,139 @@ type OwnerResourceLink struct {
 
 	// Custom relation type (follows RFC 5988 where appropriate definitions exist)
 	Rel *string `json:"rel,omitempty" yaml:"rel,omitempty" mapstructure:"rel,omitempty"`
+}
+
+type PacketData struct {
+	// If the requested frame_size is too small (given the payload and traceflow
+	// metadata requirement of 16 bytes), the traceflow request will fail with an
+	// appropriate message.  The frame will be zero padded to the requested size.
+	FrameSize int `json:"frame_size,omitempty" yaml:"frame_size,omitempty" mapstructure:"frame_size,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType PacketDataResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// When this flag is set, traceflow packet will have its destination overwritten
+	// as the gateway address of the logical router to which the source logical switch
+	// is connected. More specifically: - For ARP request, the target IP will be
+	// overwritten as gateway IP if the target   IP is not in the same subnet of
+	// gateway. - For ARP response, the target IP and destination MAC will be
+	// overwritten as   gateway IP/MAC respectively, if the target IP is not in the
+	// same subnet of gateway. - For IP packet, the destination MAC will be
+	// overwritten as gateway MAC. However, this flag will not be effective when
+	// injecting the traceflow packet to a VLAN backed port. This is because the
+	// gateway in this case is a physical gateway that is outside the scope of NSX.
+	// Therefore, users need to manually populate the gateway MAC address. If the user
+	// still sets this flag in this case, a validation error will be thrown. The
+	// scenario where a user injects a packet with a VLAN tag into a parent port is
+	// referred to as the traceflow container case. Please note that the value of
+	// `routed` depends on the connected network of the child segment rather than the
+	// connected network of segment of the parent port in this case. Here is the
+	// explanation: The parent port in this context is the port on a segment which is
+	// referred to by a SegmentConnectionBindingMap. The bound segment of the
+	// SegmentConnectionBindingMap is the child segment. The user-crafted traceflow
+	// packet will be directly forwarded to the corresponding child segment of the
+	// parent port without interacting with any layer 2 forwarding/layer 3 routing in
+	// this scenario. The crafted packet will follow the forwarding/routing polices of
+	// the child segment's connected network. For example, if a user injects a crafted
+	// packet to port_p, and the segment (seg_p) of port_p is referred to by the
+	// binding map m1, where m1 is bound to segment seg_c, and the destination port
+	// (port_d) of the packet is the VM vNIC connected to seg_p. Although port_p and
+	// port_d are on the same segment, the 'routed' value should be set to true if the
+	// user expects the crafted packet to be correctly delivered to the destination.
+	// This is because the child segments seg_c and seg_d are on different segments
+	// and require router interaction to communicate.
+	Routed *bool `json:"routed,omitempty" yaml:"routed,omitempty" mapstructure:"routed,omitempty"`
+
+	// This type takes effect only for IP packet.
+	TransportType PacketDataTransportType `json:"transport_type,omitempty" yaml:"transport_type,omitempty" mapstructure:"transport_type,omitempty"`
+}
+
+type PacketDataResourceType string
+
+const PacketDataResourceTypeBinaryPacketData PacketDataResourceType = "BinaryPacketData"
+const PacketDataResourceTypeFieldsPacketData PacketDataResourceType = "FieldsPacketData"
+
+var enumValues_PacketDataResourceType = []interface{}{
+	"BinaryPacketData",
+	"FieldsPacketData",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PacketDataResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PacketDataResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PacketDataResourceType, v)
+	}
+	*j = PacketDataResourceType(v)
+	return nil
+}
+
+type PacketDataTransportType string
+
+const PacketDataTransportTypeBROADCAST PacketDataTransportType = "BROADCAST"
+const PacketDataTransportTypeMULTICAST PacketDataTransportType = "MULTICAST"
+const PacketDataTransportTypeUNICAST PacketDataTransportType = "UNICAST"
+const PacketDataTransportTypeUNKNOWN PacketDataTransportType = "UNKNOWN"
+
+var enumValues_PacketDataTransportType = []interface{}{
+	"BROADCAST",
+	"UNICAST",
+	"MULTICAST",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PacketDataTransportType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PacketDataTransportType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PacketDataTransportType, v)
+	}
+	*j = PacketDataTransportType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PacketData) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PacketData
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["frame_size"]; !ok || v == nil {
+		plain.FrameSize = 128.0
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "FieldsPacketData"
+	}
+	if v, ok := raw["transport_type"]; !ok || v == nil {
+		plain.TransportType = "UNICAST"
+	}
+	*j = PacketData(plain)
+	return nil
 }
 
 // Represents policy path expressions in the form of an array, to support addition
@@ -6953,6 +7874,17 @@ func (j *Tag) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type TcpHeader struct {
+	// DstPort corresponds to the JSON schema field "dst_port".
+	DstPort *int `json:"dst_port,omitempty" yaml:"dst_port,omitempty" mapstructure:"dst_port,omitempty"`
+
+	// SrcPort corresponds to the JSON schema field "src_port".
+	SrcPort *int `json:"src_port,omitempty" yaml:"src_port,omitempty" mapstructure:"src_port,omitempty"`
+
+	// TcpFlags corresponds to the JSON schema field "tcp_flags".
+	TcpFlags *int `json:"tcp_flags,omitempty" yaml:"tcp_flags,omitempty" mapstructure:"tcp_flags,omitempty"`
+}
+
 // Tier-0 configuration for external connectivity.
 type Tier0 struct {
 	// Timestamp of resource creation
@@ -7854,6 +8786,241 @@ func (j *Tier1) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
 	}
 	*j = Tier1(plain)
+	return nil
+}
+
+// TraceflowConfig mainly records what type of packets the user wants to inject
+// into which port. This configuration will be cleaned up by the system after two
+// hours of inactivity if is_transient is true. Traceflow is not supported for VPC
+// Admin role.
+type TraceflowConfig struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Policy path of child segment connected to container port. Child segment
+	// connection is configured through SegmentConnectionBindingMapDto. This field
+	// should be provided only when source_id/segment_port_path is a VIF attached port
+	// on the parent segment.
+	ConnectedParentPathAsSource *string `json:"connected_parent_path_as_source,omitempty" yaml:"connected_parent_path_as_source,omitempty" mapstructure:"connected_parent_path_as_source,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// This field indicates if intent is transient and will be cleaned up by the
+	// system if set to true
+	IsTransient bool `json:"is_transient,omitempty" yaml:"is_transient,omitempty" mapstructure:"is_transient,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Configuration of packet data
+	Packet *PacketData `json:"packet,omitempty" yaml:"packet,omitempty" mapstructure:"packet,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Policy path or UUID of segment port to start traceflow from. Auto-plumbed ports
+	// don't have corresponding policy path. Ports auto-created by policy as part of
+	// connecting segment to Tier-0 or Tier-1 or DHCP server cannot be used. UUID is
+	// validated for syntax only. This configuration will be cleaned up by the system
+	// after two hours of inactivity.
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// Policy path or UUID (validated for syntax only) of segment port to start
+	// traceflow from. Auto-plumbed ports don't have corresponding policy path. Both
+	// overlay backed port and VLAN backed port are supported.
+	SourceId *string `json:"source_id,omitempty" yaml:"source_id,omitempty" mapstructure:"source_id,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Maximum time in seconds the management plane will wait for observation result
+	// to be generated. The default, minimum and maximum timeout values, in seconds,
+	// for: Single site environment - minimum 5, default 10, maximum 15. Federated
+	// enviroment - minimum 15, default 30, maximum 60. These values are validated by
+	// the system based on type of environment.
+	Timeout int `json:"timeout,omitempty" yaml:"timeout,omitempty" mapstructure:"timeout,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["is_transient"]; !ok || v == nil {
+		plain.IsTransient = true
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	if v, ok := raw["timeout"]; !ok || v == nil {
+		plain.Timeout = 10.0
+	}
+	*j = TraceflowConfig(plain)
+	return nil
+}
+
+type TransportProtocolHeader struct {
+	// DhcpHeader corresponds to the JSON schema field "dhcp_header".
+	DhcpHeader *DhcpHeader `json:"dhcp_header,omitempty" yaml:"dhcp_header,omitempty" mapstructure:"dhcp_header,omitempty"`
+
+	// Dhcpv6Header corresponds to the JSON schema field "dhcpv6_header".
+	Dhcpv6Header *Dhcpv6Header `json:"dhcpv6_header,omitempty" yaml:"dhcpv6_header,omitempty" mapstructure:"dhcpv6_header,omitempty"`
+
+	// DnsHeader corresponds to the JSON schema field "dns_header".
+	DnsHeader *DnsHeader `json:"dns_header,omitempty" yaml:"dns_header,omitempty" mapstructure:"dns_header,omitempty"`
+
+	// IcmpEchoRequestHeader corresponds to the JSON schema field
+	// "icmp_echo_request_header".
+	IcmpEchoRequestHeader *IcmpEchoRequestHeader `json:"icmp_echo_request_header,omitempty" yaml:"icmp_echo_request_header,omitempty" mapstructure:"icmp_echo_request_header,omitempty"`
+
+	// NdpHeader corresponds to the JSON schema field "ndp_header".
+	NdpHeader *NdpHeader `json:"ndp_header,omitempty" yaml:"ndp_header,omitempty" mapstructure:"ndp_header,omitempty"`
+
+	// TcpHeader corresponds to the JSON schema field "tcp_header".
+	TcpHeader *TcpHeader `json:"tcp_header,omitempty" yaml:"tcp_header,omitempty" mapstructure:"tcp_header,omitempty"`
+
+	// UdpHeader corresponds to the JSON schema field "udp_header".
+	UdpHeader *UdpHeader `json:"udp_header,omitempty" yaml:"udp_header,omitempty" mapstructure:"udp_header,omitempty"`
+}
+
+type UdpHeader struct {
+	// DstPort corresponds to the JSON schema field "dst_port".
+	DstPort int `json:"dst_port,omitempty" yaml:"dst_port,omitempty" mapstructure:"dst_port,omitempty"`
+
+	// SrcPort corresponds to the JSON schema field "src_port".
+	SrcPort int `json:"src_port,omitempty" yaml:"src_port,omitempty" mapstructure:"src_port,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *UdpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain UdpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["dst_port"]; !ok || v == nil {
+		plain.DstPort = 0.0
+	}
+	if v, ok := raw["src_port"]; !ok || v == nil {
+		plain.SrcPort = 0.0
+	}
+	*j = UdpHeader(plain)
 	return nil
 }
 

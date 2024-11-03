@@ -30,13 +30,16 @@ const (
 	defaultForwardingUpTimer = 5
 )
 
-type serverData struct {
-	nsxServer, userName, password string
+type ServerData struct {
+	host, user, password string
+}
+
+func NewServerData(host, user, password string) ServerData {
+	return ServerData{host, user, password}
 }
 
 //nolint:funlen,gocyclo // just a long function
-func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
-	server := serverData{nsxServer, userName, password}
+func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 	res := NewResourcesContainerModel()
 	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {

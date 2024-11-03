@@ -45,7 +45,8 @@ func TestCollectResources(t *testing.T) {
 				fmt.Println("didn't got any server")
 				return
 			}
-			got, err := CollectResources(tt.args.nsxServer, tt.args.userName, tt.args.password)
+			server := NewServerData(tt.args.nsxServer, tt.args.userName, tt.args.password)
+			got, err := CollectResources(server)
 			if err != nil {
 				t.Errorf("CollectResources() error = %v", err)
 				return
@@ -57,6 +58,7 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
+			traceFlow(got,server)
 			testTopology(got)
 			if err := dotTopology(got); err != nil {
 				t.Errorf("dotTopology() error = %v", err)

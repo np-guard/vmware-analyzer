@@ -329,6 +329,20 @@ func (domain *Domain) UnmarshalJSON(b []byte) error {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////
+type TraceflowConfig struct {
+	// Configuration of packet data
+	Packet *nsx.FieldsPacketData `json:"packet,omitempty" yaml:"packet,omitempty" mapstructure:"packet,omitempty"`
+	// Policy path or UUID (validated for syntax only) of segment port to start
+	// traceflow from. Auto-plumbed ports don't have corresponding policy path. Both
+	// overlay backed port and VLAN backed port are supported.
+	SourceId *string `json:"source_id,omitempty" yaml:"source_id,omitempty" mapstructure:"source_id,omitempty"`
+}
+
+func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
+	return UnmarshalBaseStructAndFields(b, nilWithType, "packet", &config.Packet, "source_id", &config.SourceId)
+}
+
+// ///////////////////////////////////////////////////////////////////////////////////////
 func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *t) error {
 	if m, ok := raw[entry]; ok {
 		if err := json.Unmarshal(m, res); err != nil {
@@ -346,17 +360,18 @@ func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(b, base); err != nil {
-		return err
+	if base != nil {
+		if err := json.Unmarshal(b, base); err != nil {
+			return err
+		}
 	}
 	if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
 		return err
 	}
-	if field2 == nil {
-		return nil
-	}
-	if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
-		return err
+	if field2 != nil {
+		if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
+			return err
+		}
 	}
 	return nil
 }

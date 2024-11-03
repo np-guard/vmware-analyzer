@@ -19,3 +19,7 @@ L4PortSetServiceEntry
 EtherTypeServiceEntry
 NestedServiceServiceEntry
 FirewallRule
+TraceflowConfig
+PacketData
+BinaryPacketData
+FieldsPacketData
