@@ -1,8 +1,10 @@
 package collector
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -15,7 +17,11 @@ const (
 func traceFlow(resources *ResourcesContainerModel, server ServerData) (string, error) {
 	srcIp := "192.168.1.1"
 	dstIp := "192.168.1.2"
-	traceFlowName := "traceFlowUniqName" //todo
+	rnd := make([]byte, 5)
+	if _, err := rand.Read(rnd); err != nil {
+		return "", err
+	}
+	traceFlowName := fmt.Sprintf("traceFlow%X", rnd)
 	srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
 	dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
 	if srcVni == nil {
@@ -49,8 +55,23 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData) (string, e
 func deleteTraceFlow(server ServerData, traceFlowName string) error {
 	return DeleteResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName))
 }
+
 func traceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObservations, error) {
 	var t TraceFlowObservations
 	err := collectResult(server, fmt.Sprintf(getTraceFlowObservationQuery, traceFlowName), &t)
 	return t, err
+}
+
+func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObservations, error) {
+	for i := 0; i < 10; i++ {
+		time.Sleep(3*time.Second)
+		t, err := traceFlowObservation(server, traceFlowName)
+		if err != nil {
+			return nil, err
+		}
+		if len(t) > 0 {
+			return t, nil
+		}
+	}
+	return nil, fmt.Errorf("trace flow has zero observations")
 }

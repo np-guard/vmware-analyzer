@@ -63,10 +63,12 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("traceFlow() error = %v", err)
 				return
 			}			
-			if _, err := traceFlowObservation(server,traceFlow); err != nil {
+			ts, err := poolTraceFlowObservation(server,traceFlow)
+			if err != nil {
 				t.Errorf("traceFlowObservation() error = %v", err)
 				return
 			}
+			fmt.Println(ts.String())
 			if err = deleteTraceFlow(server,traceFlow); err != nil {
 				t.Errorf("deleteTraceFlow() error = %v", err)
 				return

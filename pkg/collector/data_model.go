@@ -9,6 +9,7 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netp"
@@ -344,7 +345,9 @@ func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-type TraceFlowObservationElement interface{}
+type TraceFlowObservationElement interface {
+	String() string
+}
 
 type PolicyTraceflowObservationDelivered struct {
 	nsx.PolicyTraceflowObservationDelivered
@@ -395,7 +398,106 @@ type TraceflowObservationReplicationLogical struct {
 	nsx.TraceflowObservationReplicationLogical
 }
 
+func commonString(tf TraceFlowObservationElement) string {
+	rType, _ := getStringField(tf, "ResourceType")
+	cType, _ := getStringPointerField(tf, "ComponentType")
+	cName, _ := getStringPointerField(tf, "ComponentName")
+	tType, _ := getStringPointerField(tf, "TransportNodeType")
+	tName, _ := getStringPointerField(tf, "TransportNodeName")
+	lName, _ := getStringPointerField(tf, "LportName")
+	r0Id, _ := getIntPointerField(tf, "AclRuleId")
+	r1Id, _ := getIntPointerField(tf, "JumptoRuleId")
+	r2Id, _ := getIntPointerField(tf, "L2RuleId")
+	r3Id, _ := getIntPointerField(tf, "NatRuleId")
+	
+	
+	
+	return fmt.Sprintf("%s: %s:%s %s:%s rules:%d:%d:%d:%d '%s'", rType, cType, cName, tType, tName,
+	r0Id,r1Id,r2Id,r3Id, lName)
+}
+
+func getStringPointerField(structInstance interface{}, fieldName string) (string, bool) {
+	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
+	if f.IsValid() && !f.IsNil() {
+		return f.Elem().String(), true
+	}
+	return "", false
+}
+func getIntPointerField(structInstance interface{}, fieldName string) (int64, bool) {
+	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
+	if f.IsValid() && !f.IsNil() {
+		return f.Elem().Int(), true
+	}
+	return 0, false
+}
+
+func getStringField(structInstance interface{}, fieldName string) (string, bool) {
+	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
+	if f.IsValid() {
+		return f.String(), true
+	}
+	return "", false
+}
+
+func (tf *PolicyTraceflowObservationDelivered) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *PolicyTraceflowObservationDropped) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *PolicyTraceflowObservationDroppedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *PolicyTraceflowObservationForwardedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *PolicyTraceflowObservationReceivedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *PolicyTraceflowObservationRelayedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationDelivered) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationDropped) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationDroppedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationForwarded) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationForwardedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationProtected) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationReceived) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationReceivedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationRelayedLogical) String() string {
+	return string(tf.ResourceType)
+}
+func (tf *TraceflowObservationReplicationLogical) String() string {
+	return string(tf.ResourceType)
+}
+
 type TraceFlowObservations []TraceFlowObservationElement
+
+func (tfs *TraceFlowObservations) String() string {
+	observations := make([]string, len(*tfs))
+	for i, tf := range *tfs {
+		observations[i] = commonString(tf)
+		// observations[i] = tf.String()
+	}
+	return strings.Join(observations, "\n")
+}
 
 func (e *TraceFlowObservations) UnmarshalJSON(b []byte) error {
 	var raws []json.RawMessage
@@ -446,8 +548,8 @@ func (e *TraceFlowObservations) UnmarshalJSON(b []byte) error {
 			res = &TraceflowObservationRelayedLogical{}
 		case "TraceflowObservationReplicationLogical":
 			res = &TraceflowObservationReplicationLogical{}
-			default:
-				return fmt.Errorf("fail to unmarshal TraceFlowObservations %s", rawMessage)
+		default:
+			return fmt.Errorf("fail to unmarshal TraceFlowObservations %s", rawMessage)
 		}
 		if err := json.Unmarshal(rawMessage, &res); err != nil {
 			return err
