@@ -28,3 +28,9 @@ schemas/*.json
 pkg/collector/out/*
 cmd/examples/output/*
 
+# For temporary examples and pkgs
+examples/
+pkg/nsx
+pkg/model/*_old.go
+
+
