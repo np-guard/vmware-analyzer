@@ -58,22 +58,17 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			traceFlow, err := traceFlow(got,server)
+			err = deleteAllTraceFlows(server)
 			if err != nil {
 				t.Errorf("traceFlow() error = %v", err)
 				return
-			}			
-			ts, err := poolTraceFlowObservation(server,traceFlow)
-			if err != nil {
-				t.Errorf("traceFlowObservation() error = %v", err)
-				return
 			}
-			fmt.Println(ts.String())
-			if err = deleteTraceFlow(server,traceFlow); err != nil {
-				t.Errorf("deleteTraceFlow() error = %v", err)
-				return
+			ips := []string{
+				"192.168.1.1",
+				"192.168.1.2",
+				// "10.127.131.72",
 			}
-			
+			traceFlowsGraph(got, server, ips)
 			testTopology(got)
 			if err := dotTopology(got); err != nil {
 				t.Errorf("dotTopology() error = %v", err)

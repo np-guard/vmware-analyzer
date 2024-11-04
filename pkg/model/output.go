@@ -19,7 +19,7 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 	case common.TextFormat:
 		g = common.NewEdgesGraph("analyzed connectivity")
 	case common.DotFormat, common.SvgFormat:
-		g = common.NewDotGraph(false)
+		g = common.NewDotGraph(false, false)
 	}
 	for _, e := range filteredConn.toSlice() {
 		if !e.conn.IsEmpty() {

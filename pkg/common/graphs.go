@@ -190,24 +190,28 @@ type dotEdge struct {
 	label    label
 }
 
-func (e *dotEdge) string() string {
+func (e *dotEdge) string(labelAtToolTip bool) string {
 	s := fmt.Sprintf("node_%d_ -> node_%d_", e.src.ID, e.dst.ID)
 	if e.label != nil {
+		label := e.label.String()
+		if labelAtToolTip{
+			label = "*"
+		}
 		s += fmt.Sprintf("[label=%q, tooltip=%q, labeltooltip=%q fontcolor=purple color=darkblue]",
-			e.label.String(), e.label.String(), e.label.String())
+			label, e.label.String(), e.label.String())
 	}
 	return s
 }
 
 type DotGraph struct {
-	edges         []*dotEdge
-	nodeIDcounter nodeID
-	nodes         map[node]*dotNode
-	rank          bool
+	edges                []*dotEdge
+	nodeIDcounter        nodeID
+	nodes                map[node]*dotNode
+	rank, labelAtToolTip bool
 }
 
-func NewDotGraph(rank bool) *DotGraph {
-	return &DotGraph{nodes: map[node]*dotNode{}, rank: rank}
+func NewDotGraph(rank, labelAtToolTip bool) *DotGraph {
+	return &DotGraph{nodes: map[node]*dotNode{}, rank: rank, labelAtToolTip: labelAtToolTip}
 }
 
 func (dotGraph *DotGraph) AddEdge(src, dst node, label label) {
@@ -244,7 +248,7 @@ func (dotGraph *DotGraph) String() string {
 	}
 	edgeLines := make([]string, len(dotGraph.edges))
 	for i, e := range dotGraph.edges {
-		edgeLines[i] = e.string()
+		edgeLines[i] = e.string(dotGraph.labelAtToolTip)
 	}
 	var rankdir, rankString string
 	if dotGraph.rank {

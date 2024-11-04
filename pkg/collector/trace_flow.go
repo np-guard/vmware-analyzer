@@ -6,17 +6,17 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
+	traceFlowsQuery              = "policy/api/v1/infra/traceflows"
 	traceFlowQuery               = "policy/api/v1/infra/traceflows/%s"
 	getTraceFlowObservationQuery = "policy/api/v1/infra/traceflows/%s/observations"
 )
 
-func traceFlow(resources *ResourcesContainerModel, server ServerData) (string, error) {
-	srcIp := "192.168.1.1"
-	dstIp := "192.168.1.2"
+func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dstIp string) (string, error) {
 	rnd := make([]byte, 5)
 	if _, err := rand.Read(rnd); err != nil {
 		return "", err
@@ -52,6 +52,21 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData) (string, e
 	return traceFlowName, nil
 }
 
+func deleteAllTraceFlows(server ServerData) error {
+	ts := []nsx.TraceflowConfig{}
+	err := collectResultList(server, traceFlowsQuery, &ts)
+	if err != nil {
+		return err
+	}
+	for i := range ts {
+		traceFlowName := *ts[i].Id
+		err := deleteTraceFlow(server, traceFlowName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 func deleteTraceFlow(server ServerData, traceFlowName string) error {
 	return DeleteResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName))
 }
@@ -64,7 +79,7 @@ func traceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObs
 
 func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObservations, error) {
 	for i := 0; i < 10; i++ {
-		time.Sleep(3*time.Second)
+		time.Sleep(3 * time.Second)
 		t, err := traceFlowObservation(server, traceFlowName)
 		if err != nil {
 			return nil, err
@@ -74,4 +89,51 @@ func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlo
 		}
 	}
 	return nil, fmt.Errorf("trace flow has zero observations")
+}
+
+func traceFlowsGraph(resources *ResourcesContainerModel, server ServerData, ips []string) {
+	tfNames := map[string]string{}
+	tfObservation := map[string]TraceFlowObservations{}
+	for _, srcIp := range ips {
+		for _, dstIp := range ips {
+			key := fmt.Sprintf("%s:%s", srcIp, dstIp)
+			if srcIp == dstIp {
+				continue
+			}
+			if name, err := traceFlow(resources, server, srcIp, dstIp); err != nil {
+				// tfObservation[key] += fmt.Sprintf("poolTraceFlowObservation() error = %v", err)
+			} else {
+				tfNames[key] = name
+			}
+		}
+	}
+	for _, srcIp := range ips {
+		for _, dstIp := range ips {
+			key := fmt.Sprintf("%s:%s", srcIp, dstIp)
+			if srcIp == dstIp || tfNames[key] == "" {
+				continue
+			}
+			if obs, err := poolTraceFlowObservation(server, tfNames[key]); err != nil {
+				// tfObservation[key] += fmt.Sprintf("poolTraceFlowObservation() error = %v", err)
+			} else {
+				tfObservation[key] = obs
+			}
+			if err := deleteTraceFlow(server, tfNames[key]); err != nil {
+				// tfObservation[key] += fmt.Sprintf("deleteTraceFlow() error = %v", err)
+			}
+		}
+	}
+	g := common.NewDotGraph(false, true)
+	for _, srcIp := range ips {
+		for _, dstIp := range ips {
+			key := fmt.Sprintf("%s:%s", srcIp, dstIp)
+			if srcIp == dstIp  || tfObservation[key] == nil{
+				continue
+			}
+			srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
+			dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
+			g.AddEdge(srcVni, dstVni, tfObservation[key])
+		}
+	}
+	common.OutputGraph(g, "traceflow.dot", common.DotFormat)
 }

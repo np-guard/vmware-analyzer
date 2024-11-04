@@ -134,7 +134,7 @@ func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format s
 	case common.TextFormat:
 		g = common.NewEdgesGraph("topology")
 	case common.DotFormat, common.SvgFormat:
-		g = common.NewDotGraph(true)
+		g = common.NewDotGraph(true, false)
 	}
 	resources.CreateTopologyGraph(g)
 	return common.OutputGraph(g, fileName, format)

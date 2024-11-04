@@ -490,9 +490,9 @@ func (tf *TraceflowObservationReplicationLogical) String() string {
 
 type TraceFlowObservations []TraceFlowObservationElement
 
-func (tfs *TraceFlowObservations) String() string {
-	observations := make([]string, len(*tfs))
-	for i, tf := range *tfs {
+func (tfs TraceFlowObservations) String() string {
+	observations := make([]string, len(tfs))
+	for i, tf := range tfs {
 		observations[i] = commonString(tf)
 		// observations[i] = tf.String()
 	}
