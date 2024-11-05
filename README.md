@@ -69,4 +69,4 @@ make mod
 make build
 ```
 
-Test your build by running `./bin/vpcanalyzer -h`.
+Test your build by running `./bin/nsxanalyzer -h`.
