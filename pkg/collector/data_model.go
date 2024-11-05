@@ -9,6 +9,7 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"reflect"
 	"strings"
 
@@ -400,18 +401,15 @@ type TraceflowObservationReplicationLogical struct {
 }
 
 func commonString(tf TraceFlowObservationElement) string {
-	cType, _ := getStringPointerField(tf, "ComponentType")
-	cName, _ := getStringPointerField(tf, "ComponentName")
-	tType, _ := getStringPointerField(tf, "TransportNodeType")
-	tName, _ := getStringPointerField(tf, "TransportNodeName")
-	lName, _ := getStringPointerField(tf, "LportName")
-	r0Id, _ := getIntPointerField(tf, "AclRuleId")
-	r1Id, _ := getIntPointerField(tf, "JumptoRuleId")
-	r2Id, _ := getIntPointerField(tf, "L2RuleId")
-	r3Id, _ := getIntPointerField(tf, "NatRuleId")
-
-	return fmt.Sprintf("\n %s:%s\n %s:%s\n rules:%d:%d:%d:%d\n '%s'", cType, cName, tType, tName,
-		r0Id, r1Id, r2Id, r3Id, lName)
+	b, _ := json.Marshal(tf)
+	var raw map[string]json.RawMessage
+	json.Unmarshal(b, &raw)
+	maps.DeleteFunc(raw, func(k string, v json.RawMessage) bool {
+		return strings.Contains(k, "_id") || strings.Contains(k, "timestamp") || k == "sequence_no" ||
+			(k == "component_sub_type" && string(v) == "UNKNOWN") || k == "resource_type"
+	})
+	toPrint, _ := json.MarshalIndent(raw, "", "    ")
+	return string(toPrint)
 }
 
 func getStringPointerField(structInstance interface{}, fieldName string) (string, bool) {
