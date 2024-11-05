@@ -15,6 +15,6 @@ jobs:
       - uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
         with:
           go-version-file: ./go.mod
-      - uses: golangci/golangci-lint-action@aaa42aa0628b4ae2578232a66b541047968fac86
+      - uses: golangci/golangci-lint-action@971e284b6050e8a5849b72094c50ab08da042db8
         with:
           version: latest
