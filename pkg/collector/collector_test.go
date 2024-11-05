@@ -66,7 +66,8 @@ func TestCollectResources(t *testing.T) {
 			ips := []string{
 				"192.168.1.1",
 				"192.168.1.2",
-				// "10.127.131.72",
+				"192.168.1.3",
+				"192.0.1.3",
 			}
 			traceFlowsGraph(got, server, ips)
 			testTopology(got)

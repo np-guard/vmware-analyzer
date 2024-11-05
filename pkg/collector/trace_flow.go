@@ -24,21 +24,28 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dst
 	traceFlowName := fmt.Sprintf("traceFlow%X", rnd)
 	srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
 	dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
+
 	if srcVni == nil {
 		return "", fmt.Errorf("src does not exist")
 	}
-	if dstVni == nil {
-		return "", fmt.Errorf("dst does not exist")
+	srcMac := srcVni.MacAddress
+	dstMac := srcMac
+	if dstVni != nil {
+		dstMac = dstVni.MacAddress
+		// return "", fmt.Errorf("dst does not exist")
 	}
 	if srcVni.LportAttachmentId == nil {
 		return "", fmt.Errorf("src does not have port")
 	}
 	port := resources.GetSegmentPort(*srcVni.LportAttachmentId)
+	if port == nil {
+		return "", fmt.Errorf("src does not have port segment")
+	}
 
 	traceReq := &TraceflowConfig{}
 	traceReq.SourceId = port.UniqueId
 	traceReq.Packet = &nsx.FieldsPacketData{}
-	traceReq.Packet.EthHeader = &nsx.EthernetHeader{SrcMac: srcVni.MacAddress, DstMac: dstVni.MacAddress}
+	traceReq.Packet.EthHeader = &nsx.EthernetHeader{SrcMac: srcMac, DstMac: dstMac}
 	srcIPv4 := nsx.IPAddress(srcIp)
 	dstIPv4 := nsx.IPAddress(dstIp)
 	traceReq.Packet.IpHeader = &nsx.Ipv4Header{SrcIp: &srcIPv4, DstIp: &dstIPv4}
@@ -127,12 +134,23 @@ func traceFlowsGraph(resources *ResourcesContainerModel, server ServerData, ips 
 	for _, srcIp := range ips {
 		for _, dstIp := range ips {
 			key := fmt.Sprintf("%s:%s", srcIp, dstIp)
-			if srcIp == dstIp  || tfObservation[key] == nil{
+			if srcIp == dstIp || tfObservation[key] == nil {
 				continue
 			}
 			srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
+			srcVm := resources.GetVirtualMachine(*srcVni.OwnerVmId)
 			dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
-			g.AddEdge(srcVni, dstVni, tfObservation[key])
+			lastObs := len(tfObservation[key]) - 1
+			g.AddEdge(srcVm, tfObservation[key][0], nil)
+			if dstVni != nil {
+				dstVm := resources.GetVirtualMachine(*dstVni.OwnerVmId)
+				g.AddEdge(tfObservation[key][lastObs], dstVm, nil)
+			}
+			for i := range tfObservation[key] {
+				if i != lastObs {
+					g.AddEdge(tfObservation[key][i], tfObservation[key][i+1], nil)
+				}
+			}
 		}
 	}
 	common.OutputGraph(g, "traceflow.dot", common.DotFormat)
