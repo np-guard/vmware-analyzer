@@ -405,7 +405,8 @@ func commonString(tf TraceFlowObservationElement) string {
 	var raw map[string]json.RawMessage
 	json.Unmarshal(b, &raw)
 	maps.DeleteFunc(raw, func(k string, v json.RawMessage) bool {
-		return strings.Contains(k, "_id") || strings.Contains(k, "timestamp") || k == "sequence_no" ||
+		return (strings.Contains(k, "_id") && !strings.Contains(k, "rule")) ||
+			strings.Contains(k, "timestamp") || k == "sequence_no" ||
 			(k == "component_sub_type" && string(v) == "UNKNOWN") || k == "resource_type"
 	})
 	toPrint, _ := json.MarshalIndent(raw, "", "    ")
