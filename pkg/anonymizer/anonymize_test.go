@@ -9,47 +9,74 @@ package main
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 type inter interface {
-	boo()
 }
 
 type structA struct {
-	A            int
 	BAsStruct    structB
 	BAsPointer   *structB
 	BAsInterface inter
 	BAsSlices    []structB
 	Id           *string
 	DisplayName  *string
+	Path         *string
 }
 type structB struct {
-	A           int
-	Bs          []int
+	anInt       int
+	aSlice      []int
 	Id          *string
+	OwnerId     *string
+	OwnerVmId   *string
 	DisplayName *string
+	Path        *string
 }
 
-func (b *structB) boo() {}
+var uniqStringCounter = 0
 
-var i = 0
-
-func aString() *string {
-	i++
-	a := fmt.Sprintf("str%d", i)
+func createUniqString() *string {
+	uniqStringCounter++
+	a := fmt.Sprintf("str%d", uniqStringCounter)
 	return &a
 }
-func Test_anonymize(_ *testing.T) {
+func newStructB(OwnerId string) structB {
+	Id := createUniqString()
+	path := fmt.Sprintf("/As/%s/Bs/%s", OwnerId, *Id)
+
+	return structB{aSlice: []int{6, 7},
+		Id:          Id,
+		DisplayName: createUniqString(),
+		OwnerId:     &OwnerId,
+		Path:        &path}
+}
+func newStructBPointer(OwnerId string) *structB {
+	b := newStructB(OwnerId)
+	return &b
+}
+
+func Test_anonymize(t *testing.T) {
+	Id := createUniqString()
+	path := fmt.Sprintf("/As/%s", *Id)
 	sa := &structA{
-		A:            5,
-		BAsStruct:    structB{A: 1, Bs: []int{6, 7}, Id: aString(), DisplayName: aString()},
-		BAsPointer:   &structB{A: 2, Bs: []int{8, 9}, Id: aString(), DisplayName: aString()},
-		BAsInterface: &structB{A: 3, Bs: []int{10, 11}, Id: aString(), DisplayName: aString()},
+		BAsStruct:    newStructB(*Id),
+		BAsPointer:   newStructBPointer(*Id),
+		BAsInterface: newStructBPointer(*Id),
 		BAsSlices: []structB{
-			{A: 4, Bs: []int{12, 13}, Id: aString(), DisplayName: aString()},
-			{A: 5, Bs: []int{14, 15}, Id: aString(), DisplayName: aString()},
-		}, Id: aString(), DisplayName: aString(),
+			newStructB(*Id),
+			newStructB(*Id),
+		},
+		Id:          Id,
+		DisplayName: createUniqString(),
+		Path:        &path,
 	}
 	anonymize(sa)
+	saId := anonVal("structA", "Id", 10000)
+	require.Equal(t, saId, *sa.Id)
+	require.Equal(t, saId, *sa.BAsPointer.OwnerId)
+	require.Equal(t, saId, *sa.BAsStruct.OwnerId)
+	require.Equal(t, fmt.Sprintf("/As/%s/Bs/%s", saId, *sa.BAsSlices[0].Id), *sa.BAsSlices[0].Path)
+	require.Equal(t, (*string)(nil), sa.BAsSlices[1].OwnerVmId)
 }
