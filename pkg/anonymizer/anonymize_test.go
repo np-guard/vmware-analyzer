@@ -74,9 +74,11 @@ func Test_anonymize(t *testing.T) {
 	}
 	anonymize(sa)
 	saId := anonVal("structA", "Id", 10000)
+	bId := anonVal("structB", "Id", 10003)
 	require.Equal(t, saId, *sa.Id)
 	require.Equal(t, saId, *sa.BAsPointer.OwnerId)
 	require.Equal(t, saId, *sa.BAsStruct.OwnerId)
-	require.Equal(t, fmt.Sprintf("/As/%s/Bs/%s", saId, *sa.BAsSlices[0].Id), *sa.BAsSlices[0].Path)
+	require.Equal(t, bId, *sa.BAsSlices[0].Id)
+	require.Equal(t, fmt.Sprintf("/As/%s/Bs/%s", saId, bId), *sa.BAsSlices[0].Path)
 	require.Equal(t, (*string)(nil), sa.BAsSlices[1].OwnerVmId)
 }
