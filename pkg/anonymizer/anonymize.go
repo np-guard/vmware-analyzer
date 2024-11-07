@@ -4,13 +4,13 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package anonymizer
 
 import (
 	"strings"
 )
 
-func anonymize(st interface{}) {
+func Anonymize(st interface{}) {
 	anonymizer := newAnonymizer(nxsAnonInstruction())
 	iterate(st, anonymizer, collectIDsToKeep, toAnonymizeFilter)
 	iterate(st, anonymizer, anonymizeIDs, toAnonymizeFilter)

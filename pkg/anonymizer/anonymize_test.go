@@ -4,7 +4,7 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package anonymizer
 
 import (
 	"fmt"
@@ -72,7 +72,7 @@ func Test_anonymize(t *testing.T) {
 		DisplayName: createUniqString(),
 		Path:        &path,
 	}
-	anonymize(sa)
+	Anonymize(sa)
 	saId := anonVal("structA", "Id", 10000)
 	bId := anonVal("structB", "Id", 10003)
 	require.Equal(t, saId, *sa.Id)

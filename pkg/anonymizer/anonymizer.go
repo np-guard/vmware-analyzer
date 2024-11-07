@@ -4,7 +4,7 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package main
+package anonymizer
 
 import (
 	"fmt"
@@ -165,7 +165,7 @@ func (a *anonymizer) anonymizePaths(structInstance interface{}) {
 	for _, fieldName := range a.anonInstruction.pathFields {
 		oldVal, ok := getField(structInstance, fieldName)
 		if !ok {
-			return
+			continue
 		}
 		anonVal, ok := a.anonymizedPaths[oldVal]
 		if !ok {

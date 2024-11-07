@@ -12,6 +12,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/np-guard/vmware-analyzer/pkg/anonymizer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -27,6 +28,7 @@ const (
 	resourceDumpFileFlag   = "resource-dump-file"
 	topologyDumpFileFlag   = "topology-dump-file"
 	skipAnalysisFlag       = "skip-analysis"
+	anonymizeFlag          = "anonymize"
 	outputFileFlag         = "filename"
 	outputFormantFlag      = "output"
 	outputFileShortFlag    = "f"
@@ -42,6 +44,7 @@ const (
 	resourceDumpFileHelp  = "file path to store collected resources in JSON format"
 	topologyDumpFileHelp  = "file path to store topology"
 	skipAnalysisHelp      = "flag to skip analysis, run only collector"
+	anonymizeHelp         = "flag to anonymize resources"
 	outputFileHelp        = "file path to store analysis results"
 	outputFormatHelp      = "output format; must be one of [txt, dot, json, svg]"
 	outputFilterFlagHelp  = "filter the analysis results, can have more than one"
@@ -55,6 +58,7 @@ type inArgs struct {
 	resourceDumpFile  string
 	topologyDumpFile  string
 	skipAnalysis      bool
+	anonymise         bool
 	outputFile        string
 	outputFormat      string
 	quiet             bool
@@ -92,6 +96,7 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 	rootCmd.PersistentFlags().StringVar(&args.topologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.anonymise, anonymizeFlag, false, anonymizeHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
@@ -103,7 +108,6 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, passwordFlag)
-	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, resourceDumpFileFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFileFlag)
 	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFormantFlag)
@@ -130,6 +134,9 @@ func runCommand(args *inArgs) error {
 		if err != nil {
 			return err
 		}
+	}
+	if(args.anonymise){
+		anonymizer.Anonymize(recourses)
 	}
 	if args.resourceDumpFile != "" {
 		jsonString, err := recourses.ToJSONString()
