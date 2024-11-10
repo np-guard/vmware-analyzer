@@ -15,11 +15,6 @@ import (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-var rootPaths = []string{
-	"/infra",
-	"/infra/realized-state",
-}
-
 func (a *anonymizer) anonymizeID(structInstance interface{}, fieldName string) {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
@@ -30,9 +25,7 @@ func (a *anonymizer) anonymizeID(structInstance interface{}, fieldName string) {
 	if anonInfo, ok := a.oldToAnonsInfo[oldVal]; ok {
 		switch {
 		case oldVal == anonInfo.newValue:
-		case pkgName == anonInfo.structPackage &&
-			structName == anonInfo.structName &&
-			fieldName == anonInfo.field:
+		case structName == anonInfo.structName, a.anonInstruction.refStructs[structName] == anonInfo.structName:
 			a.setInstanceNumber(structInstance, anonInfo.instanceNumber)
 			setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
 		default:
@@ -44,7 +37,7 @@ func (a *anonymizer) anonymizeID(structInstance interface{}, fieldName string) {
 		return
 	}
 	instanceNumber := a.instanceNumber(structInstance)
-	newValue := anonVal(structName, fieldName, instanceNumber)
+	newValue := a.anonVal(structName, fieldName, instanceNumber)
 	a.addAnon(oldVal, newValue, pkgName, structName, fieldName, instanceNumber)
 	setField(structInstance, fieldName, newValue)
 }
@@ -72,7 +65,7 @@ func (a *anonymizer) anonymizeFieldFunc(structInstance interface{}, fieldName st
 	if !ok || oldVal == "" || (filterFunc != nil && !filterFunc(oldVal)) {
 		return
 	}
-	v := anonVal(structName(structInstance), fieldName, a.instanceNumber(structInstance))
+	v := a.anonVal(structName(structInstance), fieldName, a.instanceNumber(structInstance))
 	setField(structInstance, fieldName, v)
 }
 
@@ -95,11 +88,14 @@ func (a *anonymizer) anonymizeFieldByRef(structInstance interface{}, fieldName, 
 		fmt.Printf("id ref of field %s has no ref at %s\n", fieldName, refIDName)
 		return
 	}
-	v := anonVal(a.newToAnonsInfo[oldRefVal].structName, refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
+	v := a.anonVal(a.newToAnonsInfo[oldRefVal].structName, refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
 	setField(structInstance, fieldName, v)
 }
 
-func anonVal(sName, fieldName string, number int) string {
+func (a *anonymizer)anonVal(sName, fieldName string, number int) string {
+	if refName, ok := a.anonInstruction.refStructs[sName]; ok {
+		sName = refName
+	}
 	return fmt.Sprintf("%s.%s:%d", sName, fieldName, number)
 }
 
@@ -113,8 +109,8 @@ func (a *anonymizer) anonymizeAllPaths() {
 	})
 	a.paths = slices.Compact(a.paths)
 
-	a.paths = slices.DeleteFunc(a.paths, func(p string) bool { return slices.Contains(rootPaths, p) })
-	for _, p := range rootPaths {
+	a.paths = slices.DeleteFunc(a.paths, func(p string) bool { return slices.Contains(a.anonInstruction.rootPaths, p) })
+	for _, p := range a.anonInstruction.rootPaths {
 		a.anonymizedPaths[p] = p
 	}
 	for _, p := range a.paths {

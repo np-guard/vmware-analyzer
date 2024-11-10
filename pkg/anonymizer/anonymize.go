@@ -28,9 +28,12 @@ func nxsAnonInstruction() *anonInstruction {
 		return len(tokens) == 4 && tokens[0] != "192"
 	}
 	return &anonInstruction{
-		theReferenceField: "ID",
+		theReferenceField: "Id",
 		pkgsToSkip:        []string{"collector"},
 		structsToSkip:     []string{"ServiceEntry", "Expression"},
+		refStructs: map[string]string{
+			"RealizedVirtualMachine": "VirtualMachine",
+		},
 		structsToNotAnon: []string{
 			"Service",
 			"IPProtocolServiceEntry",
@@ -42,6 +45,7 @@ func nxsAnonInstruction() *anonInstruction {
 			"NestedServiceServiceEntry",
 		},
 		idFields: []string{
+			"ExternalId",
 			"UniqueId",
 			"Id",
 		},
@@ -49,7 +53,6 @@ func nxsAnonInstruction() *anonInstruction {
 			"HostId",
 			"OwnerId",
 			"RealizationId",
-			"ExternalId",
 			"OwnerVmId",
 			"SectionId",
 			"TargetId",
@@ -104,6 +107,10 @@ func nxsAnonInstruction() *anonInstruction {
 			"TargetResourcePath",
 			"TransportZonePath",
 			"VlanTransportZonePath",
+		},
+		rootPaths: []string{
+			"/infra",
+			"/infra/realized-state",
 		},
 	}
 }

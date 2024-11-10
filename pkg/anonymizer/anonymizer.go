@@ -21,6 +21,7 @@ type anonInstruction struct {
 	theReferenceField string
 	pkgsToSkip        []string
 	structsToSkip     []string
+	refStructs        map[string]string
 	structsToNotAnon  []string
 	idFields          []string
 	idRefFields       []string
@@ -31,6 +32,7 @@ type anonInstruction struct {
 	fieldsToClear     []string
 	pathFields        []string
 	pathToCleanFields []string
+	rootPaths         []string
 }
 
 type anonInfo struct {

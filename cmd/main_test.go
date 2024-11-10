@@ -11,6 +11,7 @@ import (
 	"testing"
 )
 
+const noServerInfo = "--host no_host --username no_user --password no_password"
 const serverInfo = "--host no_host --username no_user --password no_password"
 
 func Test_main(t *testing.T) {
@@ -35,6 +36,10 @@ func Test_main(t *testing.T) {
 		{
 			name: "anonymize-only",
 			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json --skip-analysis --anonymize",
+		},
+		{
+			name: "anonymize-analyze",
+			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json --anonymize --filename examples/output/analysis.svg -o svg",
 		},
 		{
 			name: "analyze-only",
@@ -68,7 +73,7 @@ func Test_main(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if !strings.Contains(tt.args, serverInfo) {
+			if strings.Contains(tt.args, resourceInputFileFlag) || !strings.Contains(tt.args, noServerInfo) {
 				if err := _main(splitArgs(tt.args)); err != nil {
 					t.Errorf("_main() error = %v,", err)
 				}
