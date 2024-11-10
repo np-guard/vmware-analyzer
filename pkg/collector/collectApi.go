@@ -33,26 +33,26 @@ func fixLowerCaseEnums(b []byte) []byte {
 	return b
 }
 
-func collectResultList[A any](server serverData, resourceQuery string, resouceList *[]A) error {
-	var currentRes,totalRes []A
-	cursor := ""
-	for done := false; !done; done = cursor == "" {
-		cursorQuery := resourceQuery
+func collectResultList[A any](server serverData, resourceQuery string, resourceList *[]A) error {
+	var totalRes []A
+	for cursor := ""; totalRes == nil || cursor != ""; {
+		currentQuery := resourceQuery
 		if cursor != ""{
-			cursorQuery = fmt.Sprintf("%s?cursor=%s",resourceQuery,cursor)
+			currentQuery = fmt.Sprintf("%s?cursor=%s",resourceQuery,cursor)
 		}
-		b, err := curlRequest(server, cursorQuery)
+		b, err := curlRequest(server, currentQuery)
 		if err != nil {
 			return err
 		}
 		b = fixLowerCaseEnums(b)
+		var currentRes []A
 		currentRes, cursor, err = unmarshalResultsToList[A](b)
 		if err != nil {
 			return err
 		}
-		totalRes = append(totalRes, currentRes...)
+		totalRes = append(currentRes, totalRes...)
 	}
-	*resouceList = totalRes
+	*resourceList = totalRes
 	return nil
 }
 
