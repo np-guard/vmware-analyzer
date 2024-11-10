@@ -37,8 +37,8 @@ func collectResultList[A any](server serverData, resourceQuery string, resourceL
 	var totalRes []A
 	for cursor := ""; totalRes == nil || cursor != ""; {
 		currentQuery := resourceQuery
-		if cursor != ""{
-			currentQuery = fmt.Sprintf("%s?cursor=%s",resourceQuery,cursor)
+		if cursor != "" {
+			currentQuery = fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor)
 		}
 		b, err := curlRequest(server, currentQuery)
 		if err != nil {
