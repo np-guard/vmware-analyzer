@@ -17,7 +17,7 @@ func anonymize(st structInstance, anonInstruction *anonInstruction) error {
 	if err := iterate(st, anonymizer, anonymizeIDs, toAnonymizeFilter); err != nil {
 		return err
 	}
-	if err := iterate(st, anonymizer, anonymizeRefs, toAnonymizeFilter); err != nil {
+	if err := iterate(st, anonymizer, anonymizeIdRefs, toAnonymizeFilter); err != nil {
 		return err
 	}
 	if err := iterate(st, anonymizer, collectPaths, toAnonymizeFilter); err != nil {
@@ -44,8 +44,8 @@ func collectIDsToKeep(user iteratorUser, structInstance structInstance) error {
 func anonymizeIDs(user iteratorUser, structInstance structInstance) error {
 	return user.(*anonymizer).anonymizeIDs(structInstance)
 }
-func anonymizeRefs(user iteratorUser, structInstance structInstance) error {
-	return user.(*anonymizer).anonymizeRefs(structInstance)
+func anonymizeIdRefs(user iteratorUser, structInstance structInstance) error {
+	return user.(*anonymizer).anonymizeIdRefs(structInstance)
 }
 func anonymizeFields(user iteratorUser, structInstance structInstance) error {
 	return user.(*anonymizer).anonymizeFields(structInstance)

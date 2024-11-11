@@ -43,7 +43,7 @@ func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string
 	return nil
 }
 
-func (a *anonymizer) anonymizeRef(structInstance structInstance, fieldName string) error {
+func (a *anonymizer) anonymizeIdRef(structInstance structInstance, fieldName string) error {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
 		return nil

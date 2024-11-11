@@ -174,9 +174,9 @@ func (a *anonymizer) anonymizeIDs(structInstance structInstance) error {
 	return nil
 }
 
-func (a *anonymizer) anonymizeRefs(structInstance structInstance) error {
+func (a *anonymizer) anonymizeIdRefs(structInstance structInstance) error {
 	for _, f := range a.anonInstruction.idRefFields {
-		if err := a.anonymizeRef(structInstance, f); err != nil {
+		if err := a.anonymizeIdRef(structInstance, f); err != nil {
 			return err
 		}
 	}
