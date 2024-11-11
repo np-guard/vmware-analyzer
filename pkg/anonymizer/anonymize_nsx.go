@@ -61,8 +61,9 @@ func nxsAnonInstruction() *anonInstruction {
 		idRefFields: []string{
 			"RealizationId",
 			"OwnerVmId",
-			"HostId",
 			"SectionId",
+			"HostId",
+			"OwnerId",
 			"TargetId",
 			"RelativePath",
 			"RealizationSpecificIdentifier",
@@ -95,6 +96,10 @@ func nxsAnonInstruction() *anonInstruction {
 		},
 		fieldsToClear: []string{
 			"ComputeIds",
+		},
+		idToCreateIfNotFound: []string{
+			"LportAttachmentId",
+			"HostId",
 			"OwnerId",
 		},
 		pathFields: []string{

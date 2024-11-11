@@ -24,11 +24,11 @@ import (
 // 7.  RealizedVirtualMachine.Id          = "VirtualMachine.ExternalId:10784"
 // 8.  VirtualNetworkInterface.OwnerVmId  = "VirtualMachine.ExternalId:10784"
 // 9.  IpAddressInfo.IpAddresses          = "IpAddressInfo.IpAddresses:10932.0"
-// 10. IpAddressInfo.IpAddresses          = ""192.168.1.2"" 
+// 10. IpAddressInfo.IpAddresses          = ""192.168.1.2""
 // 11. SegmentPort.Path                   = "/infra/segments/Segment.Id:10833/ports/SegmentPort.Id:10834"
 // 12. SegmentPort.RemotePath             = nil
 // 13. FirewallRule.Sources[0].TargetId   = "Group.UniqueId:10884"
-// 14. FirewallRule.Sources[0].TargetDisplayName = "Group.DisplayName:10884" 
+// 14. FirewallRule.Sources[0].TargetDisplayName = "Group.DisplayName:10884"
 // 15. Service.DisplayName                = "AD Server"
 
 // all these examples are different cases of anonymization, the anonymizer follow the anonInstruction struct.
@@ -37,19 +37,18 @@ import (
 // structsToSkip          - structs that it skip (for "abstract" structs )
 // idFields               - fields that we anonymize using the instance number (see examples 2,4 )
 // idsToKeep              - ids that we do not anonymize (see example 1)
-// idRefFields            - ids that we update according to ids that we already anonymized (see example 3,7,8) 
+// idRefFields            - ids that we update according to ids that we already anonymized (see example 3,7,8)
 // refStructs             - some structs are reference to another structs,
 //                          so we take the instance number from the referred structs (see example 7)
 // fields                 - fields that are not ids, we anonymize using the instance number (see example 5)
 // fieldsByCondition      - fields that are not ids, we anonymize only if it satisfy a condition function (see examples 9,10)
 // slicesByCondition      - same, but for slices
-// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given Id.(see example 14, according to example 13) 
-// structsToNotAnonFields - struct that we do not anonymize their fields(which are not Ids) ( see example 15) 
+// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given Id.(see example 14, according to example 13)
+// structsToNotAnonFields - struct that we do not anonymize their fields(which are not Ids) ( see example 15)
 // fieldsToClear          - field to delete the content (see example 12)
-// pathFields             - paths to fix, according to the Ids ( see example 11) 
+// pathFields             - paths to fix, according to the Ids ( see example 11)
 // pathToCleanFields      - paths to delete the content (see example 12)
 // rootPaths              - acceptable path prefixes
-
 
 const firstAnonNumber = 10000
 
@@ -78,12 +77,13 @@ type anonInstruction struct {
 	slicesByCondition      []conditionField
 	fieldsByRef            []byRefField
 	fieldsToClear          []string
+	idToCreateIfNotFound   []string
 	pathFields             []string
 	pathToCleanFields      []string
 	rootPaths              []string
 }
 
-// anonInfo holds the info of one ID anonymization 
+// anonInfo holds the info of one ID anonymization
 type anonInfo struct {
 	newValue       string
 	oldValue       string
@@ -94,13 +94,13 @@ type anonInfo struct {
 }
 
 type anonymizer struct {
-	instancesNumber       map[pointer]int // the uniq anon number of each instance
-	instanceNumberCounter int // the counter, to create a new anonymization
+	instancesNumber       map[pointer]int      // the uniq anon number of each instance
+	instanceNumberCounter int                  // the counter, to create a new anonymization
 	oldToAnonsInfo        map[string]*anonInfo // map from old value to anon info
 	newToAnonsInfo        map[string]*anonInfo // map from new value to anon info
-	paths                 []string // all the orig paths
-	anonymizedPaths       map[string]string // map from orig to anon path
-	anonInstruction       *anonInstruction // the instruction to anon with
+	paths                 []string             // all the orig paths
+	anonymizedPaths       map[string]string    // map from orig to anon path
+	anonInstruction       *anonInstruction     // the instruction to anon with
 }
 
 func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {

@@ -49,11 +49,12 @@ func (a *anonymizer) anonymizeRef(structInstance structInstance, fieldName strin
 		return nil
 	}
 	if _, ok = a.oldToAnonsInfo[oldVal]; !ok {
-		// todo - figure it out, and return error
-		fmt.Printf("id ref of field %s is not anonymise (%s)\n", fieldName, oldVal)
+		if !slices.Contains(a.anonInstruction.idToCreateIfNotFound, fieldName) {
+			return fmt.Errorf("id ref of field %s is not anonymized (%s)", fieldName, oldVal)
+		}
 		instanceNumber := a.instanceNumberCounter
 		a.instanceNumberCounter++
-		a.addAnon(oldVal, fmt.Sprintf("missing:%d", instanceNumber), "", "missing", "", instanceNumber)
+		a.addAnon(oldVal, fmt.Sprintf("missing%s:%d", fieldName, instanceNumber), "", "missing", "", instanceNumber)
 	}
 	setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
 	return nil
@@ -103,7 +104,7 @@ func (a *anonymizer) anonVal(sName, fieldName string, number int) string {
 	return fmt.Sprintf("%s.%s:%d", sName, fieldName, number)
 }
 
-func (a *anonymizer) anonymizeAllPaths() error{
+func (a *anonymizer) anonymizeAllPaths() error {
 	slices.SortFunc(a.paths, func(p1, p2 string) int {
 		a := strings.Count(p1, "/") - strings.Count(p2, "/")
 		if a != 0 {
@@ -118,7 +119,7 @@ func (a *anonymizer) anonymizeAllPaths() error{
 		a.anonymizedPaths[p] = p
 	}
 	for _, p := range a.paths {
-		if err := a.anonymizePath(p); err != nil{
+		if err := a.anonymizePath(p); err != nil {
 			return err
 		}
 	}
