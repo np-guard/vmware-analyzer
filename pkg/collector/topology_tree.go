@@ -6,13 +6,13 @@ SPDX-License-Identifier: Apache-2.0
 
 package collector
 
-type treeNode interface {
-	parent(resources *ResourcesContainerModel) treeNode
+type TreeNode interface {
+	parent(resources *ResourcesContainerModel) TreeNode
 }
 
 ////////////////////////////////////////////////////////////////////////////
 
-func (vni *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) treeNode {
+func (vni *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) TreeNode {
 	if vni.LportAttachmentId == nil {
 		return nil
 	}
@@ -22,10 +22,10 @@ func (vni *VirtualNetworkInterface) parent(resources *ResourcesContainerModel) t
 	}
 	return s
 }
-func (sp *SegmentPort) parent(resources *ResourcesContainerModel) treeNode {
+func (sp *SegmentPort) parent(resources *ResourcesContainerModel) TreeNode {
 	return resources.GetSegment(*sp.ParentPath)
 }
-func (segment *Segment) parent(resources *ResourcesContainerModel) treeNode {
+func (segment *Segment) parent(resources *ResourcesContainerModel) TreeNode {
 	if segment.ConnectivityPath == nil {
 		return nil
 	}
@@ -34,15 +34,15 @@ func (segment *Segment) parent(resources *ResourcesContainerModel) treeNode {
 	}
 	return resources.GetTier0(*segment.ConnectivityPath)
 }
-func (t1 *Tier1) parent(resources *ResourcesContainerModel) treeNode {
+func (t1 *Tier1) parent(resources *ResourcesContainerModel) TreeNode {
 	return resources.GetTier0(*t1.Tier0Path)
 }
-func (t0 *Tier0) parent(resources *ResourcesContainerModel) treeNode { return nil }
+func (t0 *Tier0) parent(resources *ResourcesContainerModel) TreeNode { return nil }
 
 // //////////////////////////////////////////////////////////////////////
-type treeNodeBranch []treeNode
+type treeNodeBranch []TreeNode
 
-func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
+func branch(resources *ResourcesContainerModel, n TreeNode) treeNodeBranch {
 	if n == nil {
 		return treeNodeBranch{}
 	}
@@ -50,7 +50,7 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 	return append(branch(resources, p), n)
 }
 
-// func treeNodesPath(got *ResourcesContainerModel, t1, t2 treeNode) (isConnected bool, root treeNode, b1, b2 treeNodeBranch) {
+// func treeNodesPath(got *ResourcesContainerModel, t1, t2 TreeNode) (isConnected bool, root TreeNode, b1, b2 treeNodeBranch) {
 // 	b1 = branch(got, t1)
 // 	b2 = branch(got, t2)
 // 	isConnected = b1[0] == b2[0]
@@ -67,6 +67,6 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 // 	return isConnected, b1[rootIndex], b1[rootIndex+1:], b2[rootIndex+1:]
 // }
 
-func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
+func IsConnected(got *ResourcesContainerModel, t1, t2 TreeNode) bool {
 	return branch(got, t1)[0] == branch(got, t2)[0]
 }

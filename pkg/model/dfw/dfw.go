@@ -116,7 +116,7 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categ
 		d.categoriesSpecs = append(d.categoriesSpecs, categoryObj)
 	}
 
-	newRule := &fwRule{
+	newRule := &FwRule{
 		srcVMs: src,
 		dstVMs: dst,
 		conn:   netset.All(), // todo: change
