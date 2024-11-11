@@ -43,7 +43,8 @@ import (
 // fields                 - fields that are not ids, we anonymize using the instance number (see example 5)
 // fieldsByCondition      - fields that are not ids, we anonymize only if it satisfy a condition function (see examples 9,10)
 // slicesByCondition      - same, but for slices
-// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given Id.(see example 14, according to example 13)
+// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given Id.
+//                          (see example 14, according to example 13)
 // structsToNotAnonFields - struct that we do not anonymize their fields(which are not Ids) ( see example 15)
 // fieldsToClear          - field to delete the content (see example 12)
 // pathFields             - paths to fix, according to the Ids ( see example 11)
@@ -174,9 +175,9 @@ func (a *anonymizer) anonymizeIDs(structInstance structInstance) error {
 	return nil
 }
 
-func (a *anonymizer) anonymizeIdRefs(structInstance structInstance) error {
+func (a *anonymizer) anonymizeIDRefs(structInstance structInstance) error {
 	for _, f := range a.anonInstruction.idRefFields {
-		if err := a.anonymizeIdRef(structInstance, f); err != nil {
+		if err := a.anonymizeIDRef(structInstance, f); err != nil {
 			return err
 		}
 	}
@@ -230,9 +231,8 @@ func (a *anonymizer) anonymizePaths(structInstance structInstance) error {
 		anonVal, ok := a.anonymizedPaths[oldVal]
 		if !ok {
 			return fmt.Errorf("error - did not find anonymise path of %s", oldVal)
-		} else {
-			setField(structInstance, fieldName, anonVal)
 		}
+		setField(structInstance, fieldName, anonVal)
 	}
 	return nil
 }

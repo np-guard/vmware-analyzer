@@ -43,7 +43,7 @@ func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string
 	return nil
 }
 
-func (a *anonymizer) anonymizeIdRef(structInstance structInstance, fieldName string) error {
+func (a *anonymizer) anonymizeIDRef(structInstance structInstance, fieldName string) error {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
 		return nil
@@ -90,7 +90,6 @@ func (a *anonymizer) anonymizeFieldByRef(structInstance structInstance, fs byRef
 	oldRefVal, ok := getField(structInstance, fs.refIDName)
 	if !ok || oldVal == "" {
 		return fmt.Errorf("id ref of field %s has no ref at %s", fs.fieldName, fs.refIDName)
-
 	}
 	v := a.anonVal(a.newToAnonsInfo[oldRefVal].structName, fs.refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
 	setField(structInstance, fs.fieldName, v)

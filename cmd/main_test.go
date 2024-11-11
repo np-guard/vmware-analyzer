@@ -35,11 +35,13 @@ func Test_main(t *testing.T) {
 		},
 		{
 			name: "anonymize-only",
-			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json --skip-analysis --anonymize",
+			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json" +
+				" --skip-analysis --anonymize",
 		},
 		{
 			name: "anonymize-analyze",
-			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json --anonymize --filename examples/output/analysis.svg -o svg",
+			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json" +
+				" --anonymize --filename examples/output/analysis.svg -o svg",
 		},
 		{
 			name: "analyze-only",
