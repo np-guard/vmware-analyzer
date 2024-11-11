@@ -8,24 +8,22 @@ package anonymizer
 
 import (
 	"fmt"
-	"path"
 	"reflect"
-	"unsafe"
 )
 
 // /////////////////////////////////////////////////////////////////////////////////
 
 type iteratorUser interface{}
-type atStructFunc func(user interface{}, structInstance interface{})
-type filterFunc func(user interface{}, structInstance interface{}) bool
+type atStructFunc func(user iteratorUser, structInstance structInstance)
+type filterFunc func(user iteratorUser, structInstance structInstance) bool
 
-func iterate(root interface{}, user iteratorUser, atStruct atStructFunc, filter filterFunc) {
+func iterate(root structInstance, user iteratorUser, atStruct atStructFunc, filter filterFunc) error{
 	iter := basicIterator{
 		atStruct: atStruct,
 		filter:   filter,
 		user:     user,
 	}
-	iter.iterateValue(reflect.ValueOf(root))
+	return iter.iterateValue(reflect.ValueOf(root))
 }
 
 type basicIterator struct {
@@ -34,16 +32,18 @@ type basicIterator struct {
 	user     iteratorUser
 }
 
-func (iter *basicIterator) iterateValue(val reflect.Value) {
+func (iter *basicIterator) iterateValue(val reflect.Value) error{
 	switch val.Kind() {
 	case reflect.Pointer, reflect.Interface:
 		if !val.IsNil() {
-			iter.iterateValue(val.Elem())
+			return iter.iterateValue(val.Elem())
 		}
 	case reflect.Slice:
 		for j := 0; j < val.Len(); j++ {
 			e := val.Index(j)
-			iter.iterateValue(e)
+			if err := iter.iterateValue(e); err != nil{
+				return err
+			}
 		}
 	case reflect.Struct:
 		if iter.filter == nil || iter.filter(iter.user, val.Addr().Interface()) {
@@ -51,60 +51,15 @@ func (iter *basicIterator) iterateValue(val reflect.Value) {
 		}
 		for i := 0; i < val.NumField(); i++ {
 			f := val.Field(i)
-			iter.iterateValue(f)
+			if err := iter.iterateValue(f); err != nil{
+				return err
+			}
 		}
 	case reflect.String, reflect.Bool, reflect.Int:
 	default:
-		fmt.Printf("fail to parse %v\n", val.Kind().String())
-		return
+		return fmt.Errorf("parsing %v is not supported", val.Kind().String())
 	}
+	return nil
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-
-func instancePointer(structInstance interface{}) unsafe.Pointer {
-	v := reflect.ValueOf(structInstance)
-	return v.UnsafePointer()
-}
-
-func structName(structInstance interface{}) string {
-	return reflect.TypeOf(structInstance).Elem().Name()
-}
-func pkgName(structInstance interface{}) string {
-	return path.Base(reflect.TypeOf(structInstance).Elem().PkgPath())
-}
-func getField(structInstance interface{}, fieldName string) (string, bool) {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		return f.Elem().String(), true
-	}
-	return "", false
-}
-func setField(structInstance interface{}, fieldName, value string) {
-	reflect.ValueOf(structInstance).Elem().FieldByName(fieldName).Elem().SetString(value)
-}
-func clearField(structInstance interface{}, fieldName string) {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		f.SetZero()
-	}
-}
-
-func getSliceLen(structInstance interface{}, fieldName string) int {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		return f.Len()
-	}
-	return 0
-}
-
-func getSliceField(structInstance interface{}, fieldName string, index int) (string, bool) {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		return f.Index(index).String(), true
-	}
-	return "", false
-}
-func setSliceField(structInstance interface{}, fieldName, value string, index int) {
-	reflect.ValueOf(structInstance).Elem().FieldByName(fieldName).Index(index).SetString(value)
-}

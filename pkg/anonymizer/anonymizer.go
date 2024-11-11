@@ -44,7 +44,7 @@ type anonInfo struct {
 	instanceNumber int
 }
 type anonymizer struct {
-	instancesNumber       map[interface{}]int
+	instancesNumber       map[pointer]int
 	instanceNumberCounter int
 	oldToAnonsInfo        map[string]*anonInfo
 	newToAnonsInfo        map[string]*anonInfo
@@ -56,7 +56,7 @@ type anonymizer struct {
 func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
 	return &anonymizer{
 		instanceNumberCounter: firstAnonNumber,
-		instancesNumber:       map[interface{}]int{},
+		instancesNumber:       map[pointer]int{},
 		oldToAnonsInfo:        map[string]*anonInfo{},
 		newToAnonsInfo:        map[string]*anonInfo{},
 		anonymizedPaths:       map[string]string{},
@@ -79,7 +79,7 @@ func (a *anonymizer) addAnon(oldVal, newVal string,
 	a.oldToAnonsInfo[oldVal] = anon
 }
 
-func (a *anonymizer) instanceNumber(structInstance interface{}) int {
+func (a *anonymizer) instanceNumber(structInstance structInstance) int {
 	p := instancePointer(structInstance)
 	if _, ok := a.instancesNumber[p]; !ok {
 		a.setInstanceNumber(structInstance, a.instanceNumberCounter)
@@ -88,12 +88,12 @@ func (a *anonymizer) instanceNumber(structInstance interface{}) int {
 	return a.instancesNumber[p]
 }
 
-func (a *anonymizer) setInstanceNumber(structInstance interface{}, number int) {
+func (a *anonymizer) setInstanceNumber(structInstance structInstance, number int) {
 	p := instancePointer(structInstance)
 	a.instancesNumber[p] = number
 }
 
-func (a *anonymizer) toAnonymizeFilter(structInstance interface{}) bool {
+func (a *anonymizer) toAnonymizeFilter(structInstance structInstance) bool {
 	if slices.Contains(a.anonInstruction.pkgsToSkip, pkgName(structInstance)) {
 		return false
 	}
@@ -103,7 +103,7 @@ func (a *anonymizer) toAnonymizeFilter(structInstance interface{}) bool {
 	return true
 }
 
-func (a *anonymizer) collectIDsToKeep(structInstance interface{}) {
+func (a *anonymizer) collectIDsToKeep(structInstance structInstance) {
 	structName := structName(structInstance)
 	pkgName := pkgName(structInstance)
 	if !slices.Contains(a.anonInstruction.structsToNotAnon, structName) {
@@ -117,19 +117,19 @@ func (a *anonymizer) collectIDsToKeep(structInstance interface{}) {
 	}
 }
 
-func (a *anonymizer) anonymizeIDs(structInstance interface{}) {
+func (a *anonymizer) anonymizeIDs(structInstance structInstance) {
 	for _, f := range a.anonInstruction.idFields {
 		a.anonymizeID(structInstance, f)
 	}
 }
 
-func (a *anonymizer) anonymizeRefs(structInstance interface{}) {
+func (a *anonymizer) anonymizeRefs(structInstance structInstance) {
 	for _, f := range a.anonInstruction.idRefFields {
 		a.anonymizeRef(structInstance, f)
 	}
 }
 
-func (a *anonymizer) anonymizeFields(structInstance interface{}) {
+func (a *anonymizer) anonymizeFields(structInstance structInstance) {
 	structName := structName(structInstance)
 	if slices.Contains(a.anonInstruction.structsToNotAnon, structName) {
 		return
@@ -154,7 +154,7 @@ func (a *anonymizer) anonymizeFields(structInstance interface{}) {
 	}
 }
 
-func (a *anonymizer) collectPaths(structInstance interface{}) {
+func (a *anonymizer) collectPaths(structInstance structInstance) {
 	for _, fieldName := range a.anonInstruction.pathFields {
 		oldVal, ok := getField(structInstance, fieldName)
 		if ok {
@@ -163,7 +163,7 @@ func (a *anonymizer) collectPaths(structInstance interface{}) {
 	}
 }
 
-func (a *anonymizer) anonymizePaths(structInstance interface{}) {
+func (a *anonymizer) anonymizePaths(structInstance structInstance) {
 	for _, fieldName := range a.anonInstruction.pathFields {
 		oldVal, ok := getField(structInstance, fieldName)
 		if !ok {

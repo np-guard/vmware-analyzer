@@ -15,7 +15,7 @@ import (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func (a *anonymizer) anonymizeID(structInstance interface{}, fieldName string) {
+func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string) {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
 		return
@@ -42,7 +42,7 @@ func (a *anonymizer) anonymizeID(structInstance interface{}, fieldName string) {
 	setField(structInstance, fieldName, newValue)
 }
 
-func (a *anonymizer) anonymizeRef(structInstance interface{}, fieldName string) {
+func (a *anonymizer) anonymizeRef(structInstance structInstance, fieldName string) {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
 		return
@@ -56,11 +56,11 @@ func (a *anonymizer) anonymizeRef(structInstance interface{}, fieldName string) 
 	setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
 }
 
-func (a *anonymizer) anonymizeField(structInstance interface{}, fieldName string) {
+func (a *anonymizer) anonymizeField(structInstance structInstance, fieldName string) {
 	a.anonymizeFieldFunc(structInstance, fieldName, nil)
 }
 
-func (a *anonymizer) anonymizeFieldFunc(structInstance interface{}, fieldName string, filterFunc func(string) bool) {
+func (a *anonymizer) anonymizeFieldFunc(structInstance structInstance, fieldName string, filterFunc func(string) bool) {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok || oldVal == "" || (filterFunc != nil && !filterFunc(oldVal)) {
 		return
@@ -69,7 +69,7 @@ func (a *anonymizer) anonymizeFieldFunc(structInstance interface{}, fieldName st
 	setField(structInstance, fieldName, v)
 }
 
-func (a *anonymizer) anonymizeSliceFieldFunc(structInstance interface{}, fieldName string, index int, filterFunc func(string) bool) {
+func (a *anonymizer) anonymizeSliceFieldFunc(structInstance structInstance, fieldName string, index int, filterFunc func(string) bool) {
 	oldVal, ok := getSliceField(structInstance, fieldName, index)
 	if !ok || oldVal == "" || (filterFunc != nil && !filterFunc(oldVal)) {
 		return
@@ -78,7 +78,7 @@ func (a *anonymizer) anonymizeSliceFieldFunc(structInstance interface{}, fieldNa
 	setSliceField(structInstance, fieldName, v, index)
 }
 
-func (a *anonymizer) anonymizeFieldByRef(structInstance interface{}, fieldName, refIDName, refName string) {
+func (a *anonymizer) anonymizeFieldByRef(structInstance structInstance, fieldName, refIDName, refName string) {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok || oldVal == "" {
 		return

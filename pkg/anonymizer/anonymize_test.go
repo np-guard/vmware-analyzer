@@ -13,20 +13,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type inter interface {
-}
-
 type structA struct {
 	BAsStruct    structB
 	BAsPointer   *structB
-	BAsInterface inter
+	BAsInterface interface{}
 	BAsSlices    []structB
 	Id           *string
 	DisplayName  *string
 	Path         *string
 }
 type structB struct {
-	anInt       int
 	aSlice      []int
 	Id          *string
 	OwnerId     *string

@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func Anonymize(st interface{}) {
+func Anonymize(st structInstance) {
 	anonymizer := newAnonymizer(nxsAnonInstruction())
 	iterate(st, anonymizer, collectIDsToKeep, toAnonymizeFilter)
 	iterate(st, anonymizer, anonymizeIDs, toAnonymizeFilter)
@@ -50,8 +50,6 @@ func nxsAnonInstruction() *anonInstruction {
 			"Id",
 		},
 		idRefFields: []string{
-			"HostId",
-			"OwnerId",
 			"RealizationId",
 			"OwnerVmId",
 			"SectionId",
@@ -85,7 +83,11 @@ func nxsAnonInstruction() *anonInstruction {
 		fieldsByRef: [][]string{
 			{"TargetDisplayName", "TargetId", "DisplayName"},
 		},
-		fieldsToClear: []string{"ComputeIds"},
+		fieldsToClear: []string{
+			"ComputeIds",
+			"HostId",
+			"OwnerId",
+		},
 		pathFields: []string{
 			"Path",
 			"ParentPath",
@@ -115,25 +117,25 @@ func nxsAnonInstruction() *anonInstruction {
 	}
 }
 
-func toAnonymizeFilter(user, structInstance interface{}) bool {
+func toAnonymizeFilter(user iteratorUser, structInstance structInstance) bool {
 	return user.(*anonymizer).toAnonymizeFilter(structInstance)
 }
-func collectIDsToKeep(user, structInstance interface{}) {
+func collectIDsToKeep(user iteratorUser, structInstance structInstance) {
 	user.(*anonymizer).collectIDsToKeep(structInstance)
 }
-func anonymizeIDs(user, structInstance interface{}) {
+func anonymizeIDs(user iteratorUser, structInstance structInstance) {
 	user.(*anonymizer).anonymizeIDs(structInstance)
 }
-func anonymizeRefs(user, structInstance interface{}) {
+func anonymizeRefs(user iteratorUser, structInstance structInstance) {
 	user.(*anonymizer).anonymizeRefs(structInstance)
 }
-func anonymizeFields(user, structInstance interface{}) {
+func anonymizeFields(user iteratorUser, structInstance structInstance) {
 	user.(*anonymizer).anonymizeFields(structInstance)
 }
-func collectPaths(user, structInstance interface{}) {
+func collectPaths(user iteratorUser, structInstance structInstance) {
 	user.(*anonymizer).collectPaths(structInstance)
 }
-func anonymizePaths(user, structInstance interface{}) {
+func anonymizePaths(user iteratorUser, structInstance structInstance) {
 	user.(*anonymizer).anonymizePaths(structInstance)
 }
 
