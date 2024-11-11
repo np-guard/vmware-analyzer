@@ -25,8 +25,8 @@ type structA struct {
 type structB struct {
 	aSlice      []int
 	Id          *string
-	OwnerVmId     *string
-	TargetId   *string
+	OwnerVmId   *string
+	TargetId    *string
 	DisplayName *string
 	Path        *string
 }
@@ -45,7 +45,7 @@ func newStructB(OwnerVmId string) structB {
 	return structB{aSlice: []int{6, 7},
 		Id:          Id,
 		DisplayName: createUniqString(),
-		OwnerVmId:     &OwnerVmId,
+		OwnerVmId:   &OwnerVmId,
 		Path:        &path}
 }
 func newStructBPointer(OwnerVmId string) *structB {

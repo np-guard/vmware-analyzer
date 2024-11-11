@@ -1,4 +1,3 @@
-
 /*
 Copyright 2023- IBM Inc. All Rights Reserved.
 
@@ -12,6 +11,7 @@ import (
 	"reflect"
 	"unsafe"
 )
+
 type structInstance interface{}
 type pointer unsafe.Pointer
 
