@@ -4,6 +4,15 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
+// SM Comment:
+// each VirtualNetworkInterface  is mapped to a VirtualMachine, via vni.OwnerVmId
+// many (VirtualNetworkInterface) to one (VirtualMachine)
+// todo at the moment our code assumes one to one
+// each VirtualNetworkInterface is mapped to a Segment
+// many (VirtualNetworkInterface) to one (Segment)
+
+// GetSegmentPort SM comment: this matches VirtualNetworkInterfaces to Segments.
+
 package collector
 
 import (
