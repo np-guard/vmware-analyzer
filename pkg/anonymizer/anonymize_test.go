@@ -25,8 +25,8 @@ type structA struct {
 type structB struct {
 	aSlice      []int
 	Id          *string
-	OwnerId     *string
-	OwnerVmId   *string
+	OwnerVmId     *string
+	TargetId   *string
 	DisplayName *string
 	Path        *string
 }
@@ -38,24 +38,24 @@ func createUniqString() *string {
 	a := fmt.Sprintf("str%d", uniqStringCounter)
 	return &a
 }
-func newStructB(OwnerId string) structB {
+func newStructB(OwnerVmId string) structB {
 	Id := createUniqString()
-	path := fmt.Sprintf("/As/%s/Bs/%s", OwnerId, *Id)
+	path := fmt.Sprintf("/infra/As/%s/Bs/%s", OwnerVmId, *Id)
 
 	return structB{aSlice: []int{6, 7},
 		Id:          Id,
 		DisplayName: createUniqString(),
-		OwnerId:     &OwnerId,
+		OwnerVmId:     &OwnerVmId,
 		Path:        &path}
 }
-func newStructBPointer(OwnerId string) *structB {
-	b := newStructB(OwnerId)
+func newStructBPointer(OwnerVmId string) *structB {
+	b := newStructB(OwnerVmId)
 	return &b
 }
 
 func Test_anonymize(t *testing.T) {
 	Id := createUniqString()
-	path := fmt.Sprintf("/As/%s", *Id)
+	path := fmt.Sprintf("/infra/As/%s", *Id)
 	sa := &structA{
 		BAsStruct:    newStructB(*Id),
 		BAsPointer:   newStructBPointer(*Id),
@@ -68,13 +68,14 @@ func Test_anonymize(t *testing.T) {
 		DisplayName: createUniqString(),
 		Path:        &path,
 	}
-	Anonymize(sa)
-	saId := "structA.Id.10000"
-	bId := "structA.Id.10003"
+	err := AnonymizeNsx(sa)
+	require.Equal(t, nil, err)
+	saId := "structA.Id:10000"
+	bId := "structB.Id:10003"
 	require.Equal(t, saId, *sa.Id)
-	require.Equal(t, saId, *sa.BAsPointer.OwnerId)
-	require.Equal(t, saId, *sa.BAsStruct.OwnerId)
+	require.Equal(t, saId, *sa.BAsPointer.OwnerVmId)
+	require.Equal(t, saId, *sa.BAsStruct.OwnerVmId)
 	require.Equal(t, bId, *sa.BAsSlices[0].Id)
-	require.Equal(t, fmt.Sprintf("/As/%s/Bs/%s", saId, bId), *sa.BAsSlices[0].Path)
-	require.Equal(t, (*string)(nil), sa.BAsSlices[1].OwnerVmId)
+	require.Equal(t, fmt.Sprintf("/infra/As/%s/Bs/%s", saId, bId), *sa.BAsSlices[0].Path)
+	require.Equal(t, (*string)(nil), sa.BAsSlices[1].TargetId)
 }

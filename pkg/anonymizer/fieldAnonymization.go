@@ -15,10 +15,10 @@ import (
 
 ////////////////////////////////////////////////////////////////////////////////
 
-func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string) {
+func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string) error {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
-		return
+		return nil
 	}
 	structName := structName(structInstance)
 	pkgName := pkgName(structInstance)
@@ -29,31 +29,34 @@ func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string
 			a.setInstanceNumber(structInstance, anonInfo.instanceNumber)
 			setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
 		default:
-			fmt.Printf("error: id of field %s.%s.%s already anonymise by %s.%s.%s(%s)\n",
+			return fmt.Errorf("error: id of field %s.%s.%s already anonymise by %s.%s.%s(%s)",
 				pkgName, structName, fieldName,
 				anonInfo.structPackage, anonInfo.structName, anonInfo.field,
 				oldVal)
 		}
-		return
+		return nil
 	}
 	instanceNumber := a.instanceNumber(structInstance)
 	newValue := a.anonVal(structName, fieldName, instanceNumber)
 	a.addAnon(oldVal, newValue, pkgName, structName, fieldName, instanceNumber)
 	setField(structInstance, fieldName, newValue)
+	return nil
 }
 
-func (a *anonymizer) anonymizeRef(structInstance structInstance, fieldName string) {
+func (a *anonymizer) anonymizeRef(structInstance structInstance, fieldName string) error {
 	oldVal, ok := getField(structInstance, fieldName)
 	if !ok {
-		return
+		return nil
 	}
 	if _, ok = a.oldToAnonsInfo[oldVal]; !ok {
+		// todo - figure it out, and return error
 		fmt.Printf("id ref of field %s is not anonymise (%s)\n", fieldName, oldVal)
 		instanceNumber := a.instanceNumberCounter
 		a.instanceNumberCounter++
 		a.addAnon(oldVal, fmt.Sprintf("missing:%d", instanceNumber), "", "missing", "", instanceNumber)
 	}
 	setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
+	return nil
 }
 
 func (a *anonymizer) anonymizeField(structInstance structInstance, fieldName string) {
@@ -78,28 +81,29 @@ func (a *anonymizer) anonymizeSliceFieldFunc(structInstance structInstance, fiel
 	setSliceField(structInstance, fieldName, v, index)
 }
 
-func (a *anonymizer) anonymizeFieldByRef(structInstance structInstance, fieldName, refIDName, refName string) {
-	oldVal, ok := getField(structInstance, fieldName)
+func (a *anonymizer) anonymizeFieldByRef(structInstance structInstance, fs byRefField) error {
+	oldVal, ok := getField(structInstance, fs.fieldName)
 	if !ok || oldVal == "" {
-		return
+		return nil
 	}
-	oldRefVal, ok := getField(structInstance, refIDName)
+	oldRefVal, ok := getField(structInstance, fs.refIDName)
 	if !ok || oldVal == "" {
-		fmt.Printf("id ref of field %s has no ref at %s\n", fieldName, refIDName)
-		return
+		return fmt.Errorf("id ref of field %s has no ref at %s", fs.fieldName, fs.refIDName)
+
 	}
-	v := a.anonVal(a.newToAnonsInfo[oldRefVal].structName, refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
-	setField(structInstance, fieldName, v)
+	v := a.anonVal(a.newToAnonsInfo[oldRefVal].structName, fs.refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
+	setField(structInstance, fs.fieldName, v)
+	return nil
 }
 
-func (a *anonymizer)anonVal(sName, fieldName string, number int) string {
+func (a *anonymizer) anonVal(sName, fieldName string, number int) string {
 	if refName, ok := a.anonInstruction.refStructs[sName]; ok {
 		sName = refName
 	}
 	return fmt.Sprintf("%s.%s:%d", sName, fieldName, number)
 }
 
-func (a *anonymizer) anonymizeAllPaths() {
+func (a *anonymizer) anonymizeAllPaths() error{
 	slices.SortFunc(a.paths, func(p1, p2 string) int {
 		a := strings.Count(p1, "/") - strings.Count(p2, "/")
 		if a != 0 {
@@ -114,21 +118,22 @@ func (a *anonymizer) anonymizeAllPaths() {
 		a.anonymizedPaths[p] = p
 	}
 	for _, p := range a.paths {
-		a.anonymizePath(p)
+		if err := a.anonymizePath(p); err != nil{
+			return err
+		}
 	}
+	return nil
 }
 
-func (a *anonymizer) anonymizePath(p string) {
+func (a *anonymizer) anonymizePath(p string) error {
 	parent, id := path.Dir(p), path.Base(p)
 	if _, ok := a.oldToAnonsInfo[id]; !ok {
-		fmt.Printf("error - did not find anon Id %s from path %s\n", id, p)
-		a.anonymizedPaths[p] = p
-		return
+		return fmt.Errorf("error - did not find anon Id %s from path %s", id, p)
 	}
 	parent, title := path.Dir(parent), path.Base(parent)
 	if _, ok := a.anonymizedPaths[parent]; !ok {
-		fmt.Printf("error - did not find parent path of %s\n", p)
-		a.anonymizedPaths[parent] = parent
+		return fmt.Errorf("error - did not find parent path of %s", p)
 	}
 	a.anonymizedPaths[p] = path.Join(a.anonymizedPaths[parent], title, a.oldToAnonsInfo[id].newValue)
+	return nil
 }

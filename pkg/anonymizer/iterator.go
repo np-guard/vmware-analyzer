@@ -12,46 +12,41 @@ import (
 )
 
 // /////////////////////////////////////////////////////////////////////////////////
+// iterate() is iterating over a tree data structure, recursively.
+// for each struct, if the user supplied filter filterFunc() is satisfied, it call the user supplied function atStructFunc()
+// these two function also get as a parameter the user of the iterator.
 
 type iteratorUser interface{}
-type atStructFunc func(user iteratorUser, structInstance structInstance)
+type atStructFunc func(user iteratorUser, structInstance structInstance) error
 type filterFunc func(user iteratorUser, structInstance structInstance) bool
 
-func iterate(root structInstance, user iteratorUser, atStruct atStructFunc, filter filterFunc) error{
-	iter := basicIterator{
-		atStruct: atStruct,
-		filter:   filter,
-		user:     user,
-	}
-	return iter.iterateValue(reflect.ValueOf(root))
+func iterate(root structInstance, user iteratorUser, atStruct atStructFunc, filter filterFunc) error {
+	return iterateValue(reflect.ValueOf(root), user, atStruct, filter)
 }
 
-type basicIterator struct {
-	atStruct atStructFunc
-	filter   filterFunc
-	user     iteratorUser
-}
-
-func (iter *basicIterator) iterateValue(val reflect.Value) error{
+// the recursive function:
+func iterateValue(val reflect.Value, user iteratorUser, atStruct atStructFunc, filter filterFunc) error {
 	switch val.Kind() {
 	case reflect.Pointer, reflect.Interface:
 		if !val.IsNil() {
-			return iter.iterateValue(val.Elem())
+			return iterateValue(val.Elem(), user, atStruct, filter)
 		}
 	case reflect.Slice:
 		for j := 0; j < val.Len(); j++ {
 			e := val.Index(j)
-			if err := iter.iterateValue(e); err != nil{
+			if err := iterateValue(e, user, atStruct, filter); err != nil {
 				return err
 			}
 		}
 	case reflect.Struct:
-		if iter.filter == nil || iter.filter(iter.user, val.Addr().Interface()) {
-			iter.atStruct(iter.user, val.Addr().Interface())
+		if filter == nil || filter(user, val.Addr().Interface()) {
+			if err := atStruct(user, val.Addr().Interface()); err != nil {
+				return err
+			}
 		}
 		for i := 0; i < val.NumField(); i++ {
 			f := val.Field(i)
-			if err := iter.iterateValue(f); err != nil{
+			if err := iterateValue(f, user, atStruct, filter); err != nil {
 				return err
 			}
 		}
