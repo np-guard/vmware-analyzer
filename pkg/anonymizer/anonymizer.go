@@ -8,33 +8,86 @@ package anonymizer
 
 import (
 	"fmt"
+	"maps"
 	"slices"
+	"strings"
 )
+
+// the anonymization:
+// * each instance of a struct has a uniq number.
+// * there are three kind of fields, IDs, Paths and regular fields
+// * here some anonymization types by examples, all at the form:
+//     <struct name>.<field>                     = <new anon value>:
+// 1.  Service.Id                                = DCM_Java_Object_Cache_port
+// 2.  Service.UniqId                            = "Service.UniqueId:10010"
+// 3.  Service.RealizationId                     = "Service.UniqueId:10010"
+// 4.  VirtualMachine.ExternalId                 = "VirtualMachine.ExternalId:10784"
+// 5.  VirtualMachine.DisplayName                = "VirtualMachine.DisplayName:10784"
+// 6.  RealizedVirtualMachine.DisplayName        = "VirtualMachine.DisplayName:10784"
+// 7.  RealizedVirtualMachine.Id                 = "VirtualMachine.ExternalId:10784"
+// 8.  VirtualNetworkInterface.OwnerVmId         = "VirtualMachine.ExternalId:10784"
+// 9.  IpAddressInfo.IpAddresses                 = "IpAddressInfo.IpAddresses:10932.0"
+// 10. IpAddressInfo.IpAddresses                 = ""192.168.1.2""
+// 11. SegmentPort.Path                          = "/infra/segments/Segment.Id:10833/ports/SegmentPort.Id:10834"
+// 12. SegmentPort.RemotePath                    = nil
+// 13. FirewallRule.Sources[0].TargetId          = "Group.UniqueId:10884"
+// 14. FirewallRule.Sources[0].TargetDisplayName = "Group.DisplayName:10884"
+// 15. Service.DisplayName                       = "AD Server"
+
+// all these examples are different cases of anonymization, the anonymizer follow the anonInstruction struct.
+// the field in anonInstruction:
+// pkgsToSkip             - packages that it ignores (we ignores the collector pkg, )
+// structsToSkip          - structs that it skip (for "abstract" structs )
+// idFields               - fields that we anonymize using the instance number (see examples 2,4 )
+// idsToKeep              - ids that we do not anonymize (see example 1)
+// idRefFields            - ids that we update according to ids that we already anonymized (see example 3,7,8)
+// refStructs             - some structs are reference to another structs,
+//                          so we take the instance number from the referred structs (see example 7)
+// fields                 - fields that are not ids, we anonymize using the instance number (see example 5)
+// fieldsByCondition      - fields that are not ids, we anonymize only if it satisfy a condition function (see examples 9,10)
+// slicesByCondition      - same, but for slices
+// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given Id.
+//                          (see example 14, according to example 13)
+// structsToNotAnonFields - struct that we do not anonymize their fields(which are not Ids) ( see example 15)
+// fieldsToClear          - field to delete the content (see example 12)
+// pathFields             - paths to fix, according to the Ids ( see example 11)
+// pathToCleanFields      - paths to delete the content (see example 12)
+// rootPaths              - acceptable path prefixes
 
 const firstAnonNumber = 10000
 
+type byRefField struct {
+	fieldName, refIDName, refName string
+}
 type conditionField struct {
 	fieldName string
 	filter    func(string) bool
 }
-type anonInstruction struct {
-	theReferenceField string
-	pkgsToSkip        []string
-	structsToSkip     []string
-	refStructs        map[string]string
-	structsToNotAnon  []string
-	idFields          []string
-	idRefFields       []string
-	fields            []string
-	fieldsByCondition []conditionField
-	slicesByCondition []conditionField
-	fieldsByRef       [][]string
-	fieldsToClear     []string
-	pathFields        []string
-	pathToCleanFields []string
-	rootPaths         []string
+type idToKeep struct {
+	structName string
+	fieldName  string
 }
 
+type anonInstruction struct {
+	pkgsToSkip             []string
+	structsToSkip          []string
+	refStructs             map[string]string
+	structsToNotAnonFields []string
+	idFields               []string
+	idsToKeep              []idToKeep
+	idRefFields            []string
+	fields                 []string
+	fieldsByCondition      []conditionField
+	slicesByCondition      []conditionField
+	fieldsByRef            []byRefField
+	fieldsToClear          []string
+	idToCreateIfNotFound   []string
+	pathFields             []string
+	pathToCleanFields      []string
+	rootPaths              []string
+}
+
+// anonInfo holds the info of one ID anonymization
 type anonInfo struct {
 	newValue       string
 	oldValue       string
@@ -43,24 +96,50 @@ type anonInfo struct {
 	field          string
 	instanceNumber int
 }
+type statistic struct {
+	oldVal, newVal string
+}
+type statistics map[statistic]int
+
+func (s statistics) addStatistic(oldVal, newVal string) {
+	s[statistic{oldVal, newVal}] = s[statistic{oldVal, newVal}] + 1
+}
+
+func (s statistics) string() string {
+	res := ""
+	keys := slices.Collect(maps.Keys(s))
+	slices.SortFunc(keys, func(s1, s2 statistic) int { return strings.Compare(s1.oldVal, s2.oldVal) })
+	for i, k := range keys {
+		if i > 0 && keys[i-1].oldVal == k.oldVal {
+			res += "Warning- Duplication: "
+		}
+		res += fmt.Sprintf("%s\t:%s\t %d\n", k.oldVal, k.newVal, s[k])
+	}
+	return res
+}
+
 type anonymizer struct {
-	instancesNumber       map[interface{}]int
-	instanceNumberCounter int
-	oldToAnonsInfo        map[string]*anonInfo
-	newToAnonsInfo        map[string]*anonInfo
-	paths                 []string
-	anonymizedPaths       map[string]string
-	anonInstruction       *anonInstruction
+	instancesNumber       map[pointer]int        // the uniq anon number of each instance
+	numberToInstance      map[int]structInstance // uniq anon number the instance
+	instanceNumberCounter int                    // the counter, to create a new anonymization
+	oldToAnonsInfo        map[string]*anonInfo   // map from old value to anon info
+	newToAnonsInfo        map[string]*anonInfo   // map from new value to anon info
+	paths                 []string               // all the orig paths
+	anonymizedPaths       map[string]string      // map from orig to anon path
+	anonInstruction       *anonInstruction       // the instruction to anon with
+	statistics            statistics
 }
 
 func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
 	return &anonymizer{
 		instanceNumberCounter: firstAnonNumber,
-		instancesNumber:       map[interface{}]int{},
+		instancesNumber:       map[pointer]int{},
+		numberToInstance:      map[int]structInstance{},
 		oldToAnonsInfo:        map[string]*anonInfo{},
 		newToAnonsInfo:        map[string]*anonInfo{},
 		anonymizedPaths:       map[string]string{},
 		anonInstruction:       anonInstruction,
+		statistics:            statistics{},
 	}
 }
 
@@ -79,7 +158,7 @@ func (a *anonymizer) addAnon(oldVal, newVal string,
 	a.oldToAnonsInfo[oldVal] = anon
 }
 
-func (a *anonymizer) instanceNumber(structInstance interface{}) int {
+func (a *anonymizer) instanceNumber(structInstance structInstance) int {
 	p := instancePointer(structInstance)
 	if _, ok := a.instancesNumber[p]; !ok {
 		a.setInstanceNumber(structInstance, a.instanceNumberCounter)
@@ -88,12 +167,13 @@ func (a *anonymizer) instanceNumber(structInstance interface{}) int {
 	return a.instancesNumber[p]
 }
 
-func (a *anonymizer) setInstanceNumber(structInstance interface{}, number int) {
+func (a *anonymizer) setInstanceNumber(structInstance structInstance, number int) {
 	p := instancePointer(structInstance)
 	a.instancesNumber[p] = number
+	a.numberToInstance[number] = structInstance
 }
 
-func (a *anonymizer) toAnonymizeFilter(structInstance interface{}) bool {
+func (a *anonymizer) toAnonymizeFilter(structInstance structInstance) bool {
 	if slices.Contains(a.anonInstruction.pkgsToSkip, pkgName(structInstance)) {
 		return false
 	}
@@ -102,37 +182,50 @@ func (a *anonymizer) toAnonymizeFilter(structInstance interface{}) bool {
 	}
 	return true
 }
+func (a *anonymizer) setField(structInstance structInstance, fieldName, oldValue, value string) {
+	a.statistics.addStatistic(oldValue, value)
+	setField(structInstance, fieldName, value)
+}
 
-func (a *anonymizer) collectIDsToKeep(structInstance interface{}) {
+///////////////////////////////////////////////////////////////////////////////////////
+
+func (a *anonymizer) collectIDsToKeep(structInstance structInstance) error {
 	structName := structName(structInstance)
+	ids := slices.DeleteFunc(slices.Clone(a.anonInstruction.idsToKeep), func(f idToKeep) bool { return f.structName != structName })
 	pkgName := pkgName(structInstance)
-	if !slices.Contains(a.anonInstruction.structsToNotAnon, structName) {
-		return
+	for _, f := range ids {
+		if id, ok := getField(structInstance, f.fieldName); ok {
+			a.addAnon(id, id, pkgName, structName, f.fieldName, 0)
+		}
 	}
-	id, ok := getField(structInstance, a.anonInstruction.theReferenceField)
-	if !ok {
-		fmt.Printf("%s has no %s\n", structName, a.anonInstruction.theReferenceField)
-	} else {
-		a.addAnon(id, id, pkgName, structName, a.anonInstruction.theReferenceField, 0)
-	}
+	return nil
 }
 
-func (a *anonymizer) anonymizeIDs(structInstance interface{}) {
+func (a *anonymizer) anonymizeIDs(structInstance structInstance) error {
 	for _, f := range a.anonInstruction.idFields {
-		a.anonymizeID(structInstance, f)
+		if err := a.anonymizeID(structInstance, f); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (a *anonymizer) anonymizeRefs(structInstance interface{}) {
+func (a *anonymizer) anonymizeIDRefs(structInstance structInstance) error {
 	for _, f := range a.anonInstruction.idRefFields {
-		a.anonymizeRef(structInstance, f)
+		if err := a.anonymizeIDRef(structInstance, f); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func (a *anonymizer) anonymizeFields(structInstance interface{}) {
+func (a *anonymizer) anonymizeFields(structInstance structInstance) error {
 	structName := structName(structInstance)
-	if slices.Contains(a.anonInstruction.structsToNotAnon, structName) {
-		return
+	for _, f := range append(a.anonInstruction.fieldsToClear, a.anonInstruction.pathToCleanFields...) {
+		clearField(structInstance, f)
+	}
+	if slices.Contains(a.anonInstruction.structsToNotAnonFields, structName) {
+		return nil
 	}
 	for _, f := range a.anonInstruction.fields {
 		a.anonymizeField(structInstance, f)
@@ -147,23 +240,24 @@ func (a *anonymizer) anonymizeFields(structInstance interface{}) {
 	}
 
 	for _, fs := range a.anonInstruction.fieldsByRef {
-		a.anonymizeFieldByRef(structInstance, fs[0], fs[1], fs[2])
+		if err := a.anonymizeFieldByRef(structInstance, fs); err != nil {
+			return err
+		}
 	}
-	for _, f := range append(a.anonInstruction.fieldsToClear, a.anonInstruction.pathToCleanFields...) {
-		clearField(structInstance, f)
-	}
+	return nil
 }
 
-func (a *anonymizer) collectPaths(structInstance interface{}) {
+func (a *anonymizer) collectPaths(structInstance structInstance) error {
 	for _, fieldName := range a.anonInstruction.pathFields {
 		oldVal, ok := getField(structInstance, fieldName)
 		if ok {
 			a.paths = append(a.paths, oldVal)
 		}
 	}
+	return nil
 }
 
-func (a *anonymizer) anonymizePaths(structInstance interface{}) {
+func (a *anonymizer) anonymizePaths(structInstance structInstance) error {
 	for _, fieldName := range a.anonInstruction.pathFields {
 		oldVal, ok := getField(structInstance, fieldName)
 		if !ok {
@@ -171,9 +265,9 @@ func (a *anonymizer) anonymizePaths(structInstance interface{}) {
 		}
 		anonVal, ok := a.anonymizedPaths[oldVal]
 		if !ok {
-			fmt.Printf("error - did not find anonymise path of %s\n", oldVal)
-		} else {
-			setField(structInstance, fieldName, anonVal)
+			return fmt.Errorf("error - did not find anonymise path of %s", oldVal)
 		}
+		a.setField(structInstance, fieldName, oldVal, anonVal)
 	}
+	return nil
 }

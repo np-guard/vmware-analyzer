@@ -135,8 +135,10 @@ func runCommand(args *inArgs) error {
 			return err
 		}
 	}
-	if(args.anonymise){
-		anonymizer.Anonymize(recourses)
+	if args.anonymise {
+		if err := anonymizer.AnonymizeNsx(recourses); err != nil {
+			return err
+		}
 	}
 	if args.resourceDumpFile != "" {
 		jsonString, err := recourses.ToJSONString()

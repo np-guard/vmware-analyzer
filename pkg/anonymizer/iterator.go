@@ -8,103 +8,53 @@ package anonymizer
 
 import (
 	"fmt"
-	"path"
 	"reflect"
-	"unsafe"
 )
 
 // /////////////////////////////////////////////////////////////////////////////////
+// iterate() is iterating over a tree data structure, recursively.
+// for each struct, if the user supplied filter filterFunc() is satisfied, it call the user supplied function atStructFunc()
+// these two function also get as a parameter the user of the iterator.
 
 type iteratorUser interface{}
-type atStructFunc func(user interface{}, structInstance interface{})
-type filterFunc func(user interface{}, structInstance interface{}) bool
+type atStructFunc func(user iteratorUser, structInstance structInstance) error
+type filterFunc func(user iteratorUser, structInstance structInstance) bool
 
-func iterate(root interface{}, user iteratorUser, atStruct atStructFunc, filter filterFunc) {
-	iter := basicIterator{
-		atStruct: atStruct,
-		filter:   filter,
-		user:     user,
-	}
-	iter.iterateValue(reflect.ValueOf(root))
+func iterate(root structInstance, user iteratorUser, atStruct atStructFunc, filter filterFunc) error {
+	return iterateValue(reflect.ValueOf(root), user, atStruct, filter)
 }
 
-type basicIterator struct {
-	atStruct atStructFunc
-	filter   filterFunc
-	user     iteratorUser
-}
-
-func (iter *basicIterator) iterateValue(val reflect.Value) {
+// the recursive function:
+func iterateValue(val reflect.Value, user iteratorUser, atStruct atStructFunc, filter filterFunc) error {
 	switch val.Kind() {
 	case reflect.Pointer, reflect.Interface:
 		if !val.IsNil() {
-			iter.iterateValue(val.Elem())
+			return iterateValue(val.Elem(), user, atStruct, filter)
 		}
 	case reflect.Slice:
 		for j := 0; j < val.Len(); j++ {
 			e := val.Index(j)
-			iter.iterateValue(e)
+			if err := iterateValue(e, user, atStruct, filter); err != nil {
+				return err
+			}
 		}
 	case reflect.Struct:
-		if iter.filter == nil || iter.filter(iter.user, val.Addr().Interface()) {
-			iter.atStruct(iter.user, val.Addr().Interface())
+		if filter == nil || filter(user, val.Addr().Interface()) {
+			if err := atStruct(user, val.Addr().Interface()); err != nil {
+				return err
+			}
 		}
 		for i := 0; i < val.NumField(); i++ {
 			f := val.Field(i)
-			iter.iterateValue(f)
+			if err := iterateValue(f, user, atStruct, filter); err != nil {
+				return err
+			}
 		}
 	case reflect.String, reflect.Bool, reflect.Int:
 	default:
-		fmt.Printf("fail to parse %v\n", val.Kind().String())
-		return
+		return fmt.Errorf("parsing %v is not supported", val.Kind().String())
 	}
+	return nil
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
-
-func instancePointer(structInstance interface{}) unsafe.Pointer {
-	v := reflect.ValueOf(structInstance)
-	return v.UnsafePointer()
-}
-
-func structName(structInstance interface{}) string {
-	return reflect.TypeOf(structInstance).Elem().Name()
-}
-func pkgName(structInstance interface{}) string {
-	return path.Base(reflect.TypeOf(structInstance).Elem().PkgPath())
-}
-func getField(structInstance interface{}, fieldName string) (string, bool) {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		return f.Elem().String(), true
-	}
-	return "", false
-}
-func setField(structInstance interface{}, fieldName, value string) {
-	reflect.ValueOf(structInstance).Elem().FieldByName(fieldName).Elem().SetString(value)
-}
-func clearField(structInstance interface{}, fieldName string) {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		f.SetZero()
-	}
-}
-
-func getSliceLen(structInstance interface{}, fieldName string) int {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		return f.Len()
-	}
-	return 0
-}
-
-func getSliceField(structInstance interface{}, fieldName string, index int) (string, bool) {
-	f := reflect.ValueOf(structInstance).Elem().FieldByName(fieldName)
-	if f.IsValid() && !f.IsNil() {
-		return f.Index(index).String(), true
-	}
-	return "", false
-}
-func setSliceField(structInstance interface{}, fieldName, value string, index int) {
-	reflect.ValueOf(structInstance).Elem().FieldByName(fieldName).Index(index).SetString(value)
-}

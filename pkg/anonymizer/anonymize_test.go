@@ -13,24 +13,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type inter interface {
-}
-
 type structA struct {
 	BAsStruct    structB
 	BAsPointer   *structB
-	BAsInterface inter
+	BAsInterface interface{}
 	BAsSlices    []structB
-	Id           *string
+	Id           *string //nolint:stylecheck // names should be as in nsx_sdk.go
 	DisplayName  *string
 	Path         *string
 }
 type structB struct {
-	anInt       int
 	aSlice      []int
-	Id          *string
-	OwnerId     *string
-	OwnerVmId   *string
+	Id          *string //nolint:stylecheck // names should be as in nsx_sdk.go
+	OwnerVmId   *string //nolint:stylecheck // names should be as in nsx_sdk.go
+	TargetId    *string //nolint:stylecheck // names should be as in nsx_sdk.go
 	DisplayName *string
 	Path        *string
 }
@@ -42,43 +38,44 @@ func createUniqString() *string {
 	a := fmt.Sprintf("str%d", uniqStringCounter)
 	return &a
 }
-func newStructB(OwnerId string) structB {
-	Id := createUniqString()
-	path := fmt.Sprintf("/As/%s/Bs/%s", OwnerId, *Id)
+func newStructB(ownerVMID string) structB {
+	ID := createUniqString()
+	path := fmt.Sprintf("/infra/As/%s/Bs/%s", ownerVMID, *ID)
 
 	return structB{aSlice: []int{6, 7},
-		Id:          Id,
+		Id:          ID,
 		DisplayName: createUniqString(),
-		OwnerId:     &OwnerId,
+		OwnerVmId:   &ownerVMID,
 		Path:        &path}
 }
-func newStructBPointer(OwnerId string) *structB {
-	b := newStructB(OwnerId)
+func newStructBPointer(ownerVMId string) *structB {
+	b := newStructB(ownerVMId)
 	return &b
 }
 
 func Test_anonymize(t *testing.T) {
-	Id := createUniqString()
-	path := fmt.Sprintf("/As/%s", *Id)
+	ID := createUniqString()
+	path := fmt.Sprintf("/infra/As/%s", *ID)
 	sa := &structA{
-		BAsStruct:    newStructB(*Id),
-		BAsPointer:   newStructBPointer(*Id),
-		BAsInterface: newStructBPointer(*Id),
+		BAsStruct:    newStructB(*ID),
+		BAsPointer:   newStructBPointer(*ID),
+		BAsInterface: newStructBPointer(*ID),
 		BAsSlices: []structB{
-			newStructB(*Id),
-			newStructB(*Id),
+			newStructB(*ID),
+			newStructB(*ID),
 		},
-		Id:          Id,
+		Id:          ID,
 		DisplayName: createUniqString(),
 		Path:        &path,
 	}
-	Anonymize(sa)
-	saId := "structA.Id.10000"
-	bId := "structA.Id.10003"
-	require.Equal(t, saId, *sa.Id)
-	require.Equal(t, saId, *sa.BAsPointer.OwnerId)
-	require.Equal(t, saId, *sa.BAsStruct.OwnerId)
-	require.Equal(t, bId, *sa.BAsSlices[0].Id)
-	require.Equal(t, fmt.Sprintf("/As/%s/Bs/%s", saId, bId), *sa.BAsSlices[0].Path)
-	require.Equal(t, (*string)(nil), sa.BAsSlices[1].OwnerVmId)
+	err := AnonymizeNsx(sa)
+	require.Equal(t, nil, err)
+	saID := "structA.Id:10000"
+	bID := "structB.Id:10003"
+	require.Equal(t, saID, *sa.Id)
+	require.Equal(t, saID, *sa.BAsPointer.OwnerVmId)
+	require.Equal(t, saID, *sa.BAsStruct.OwnerVmId)
+	require.Equal(t, bID, *sa.BAsSlices[0].Id)
+	require.Equal(t, fmt.Sprintf("/infra/As/%s/Bs/%s", saID, bID), *sa.BAsSlices[0].Path)
+	require.Equal(t, (*string)(nil), sa.BAsSlices[1].TargetId)
 }
