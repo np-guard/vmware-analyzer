@@ -31,31 +31,13 @@ func (a *synthesisTest) file() string {
 
 func (a *synthesisTest) run(t *testing.T) {
 	//nolint:gocritic // comment here should stay
-	//override = true // uncommnet to override expected output
+	fmt.Println()
 	rc := data.ExamplesGeneration(a.exData)
 	params := model.OutputParameters{
 		Format: "txt",
 	}
 	err := SynthesisConfig(rc, params)
 	require.Nil(t, err)
-
-	//expectedFile := getExpectedTestPath(a.file())
-	//if override {
-	//	err := os.WriteFile(expectedFile, []byte(res), 0o600)
-	//	require.Nil(t, err)
-	//} else {
-	//	// compare expected with actual output
-	//	expected, err := os.ReadFile(expectedFile)
-	//	expectedStr := string(expected)
-	//	require.Nil(t, err)
-	//	if expectedStr != res {
-	//		// gen actual output to enable manual diff after test run
-	//		actual := getActualTestPath(a.file())
-	//		err := os.WriteFile(actual, []byte(res), 0o600)
-	//		require.Nil(t, err)
-	//	}
-	//	require.Equal(t, expectedStr, res)
-	//}
 	fmt.Println("done")
 }
 
