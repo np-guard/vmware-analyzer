@@ -10,7 +10,7 @@ import (
 	"net"
 )
 
-const validIpPrefix = 192
+const validIPPrefix = 192
 
 func AnonymizeNsx(st structInstance) error {
 	return anonymize(st, &inst)
@@ -18,11 +18,11 @@ func AnonymizeNsx(st structInstance) error {
 
 func ipAddressFilter(ip string) bool {
 	ip4 := net.ParseIP(ip).To4()
-	return ip4 == nil || ip4[0] != validIpPrefix
+	return ip4 == nil || ip4[0] != validIPPrefix
 }
 func cidrFilter(cidr string) bool {
 	ip, _, err := net.ParseCIDR(cidr)
-	return err != nil || ip.To4() == nil || ip.To4()[0] != validIpPrefix
+	return err != nil || ip.To4() == nil || ip.To4()[0] != validIPPrefix
 }
 
 //revive:disable // these are the fields names
