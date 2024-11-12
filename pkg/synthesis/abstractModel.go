@@ -29,13 +29,18 @@ type RuleForSynthesis struct {
 	// this includes the srcVMs implied by the rule that are not override by higher priority rules with opposite act
 	// note that a single fwRule may have more than one ruleForSynthesis
 	// computed only for allow rules (?)
-	actualSrcVMs    []*endpoints.VM
-	actualDstVms    []*endpoints.VM
-	actualConn      *netset.TransportSet
-	actualDirection string
+	actualSrcVMs []*endpoints.VM
+	actualDstVms []*endpoints.VM
+	actualConn   *netset.TransportSet
 	// single src to single dst enabled by this rule, not covered by the above actualSrcVMs, actualDstVms
 	// to be used for <src, dst> pairs that can not be described by actualSrcVMs and actualDstVms due to higher priority
 	// overriding rules; note that this is relevant only when |actualSrcVMs| > 1, |actualDstVms|>1 and there are higher
 	// priority  overriding rules
 	actualSrcDstVM []*srcDstVM
+}
+
+// todo: will have to combine different categories into a single list of inbound, outbound
+type abstractRules struct {
+	inbound  []*RuleForSynthesis // ordered list inbound RuleForSynthesis
+	outbound []*RuleForSynthesis // ordered list outbound RuleForSynthesis
 }

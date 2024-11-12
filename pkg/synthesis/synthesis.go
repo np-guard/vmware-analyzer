@@ -5,11 +5,18 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
 
-func SynthesisConfig(recourses *collector.ResourcesContainerModel, params model.OutputParameters) error {
+type synthesisRes struct {
+	segments SegmentsToVMs
+	rules    []*abstractRules // with default deny
+}
+
+func SynthesisConfig(recourses *collector.ResourcesContainerModel, params model.OutputParameters) (*synthesisRes, error) {
 	config, err := model.NSXConfigFromResourcesContainer(recourses)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	_ = config
-	return nil
+	return nil, nil
 }
+
+// todo handle default allow
