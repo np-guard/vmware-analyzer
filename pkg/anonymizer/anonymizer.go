@@ -108,24 +108,25 @@ func (s statistics) addStatistic(oldVal, newVal string) {
 func (s statistics) string() string {
 	res := ""
 	keys := slices.Collect(maps.Keys(s))
-	slices.SortFunc(keys, func(s1,s2 statistic) int { return strings.Compare(s1.oldVal,s2.oldVal)})
-	for i,k := range keys{
-		if i> 0 && keys[i-1].oldVal == k.oldVal{
+	slices.SortFunc(keys, func(s1, s2 statistic) int { return strings.Compare(s1.oldVal, s2.oldVal) })
+	for i, k := range keys {
+		if i > 0 && keys[i-1].oldVal == k.oldVal {
 			res += "Warning- Duplication: "
 		}
-		res += fmt.Sprintf("%s\t:%s\t %d\n", k.oldVal,k.newVal,s[k] )
+		res += fmt.Sprintf("%s\t:%s\t %d\n", k.oldVal, k.newVal, s[k])
 	}
 	return res
 }
 
 type anonymizer struct {
-	instancesNumber       map[pointer]int      // the uniq anon number of each instance
-	instanceNumberCounter int                  // the counter, to create a new anonymization
-	oldToAnonsInfo        map[string]*anonInfo // map from old value to anon info
-	newToAnonsInfo        map[string]*anonInfo // map from new value to anon info
-	paths                 []string             // all the orig paths
-	anonymizedPaths       map[string]string    // map from orig to anon path
-	anonInstruction       *anonInstruction     // the instruction to anon with
+	instancesNumber       map[pointer]int        // the uniq anon number of each instance
+	numberToInstance      map[int]structInstance // uniq anon number the instance
+	instanceNumberCounter int                    // the counter, to create a new anonymization
+	oldToAnonsInfo        map[string]*anonInfo   // map from old value to anon info
+	newToAnonsInfo        map[string]*anonInfo   // map from new value to anon info
+	paths                 []string               // all the orig paths
+	anonymizedPaths       map[string]string      // map from orig to anon path
+	anonInstruction       *anonInstruction       // the instruction to anon with
 	statistics            statistics
 }
 
@@ -133,6 +134,7 @@ func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
 	return &anonymizer{
 		instanceNumberCounter: firstAnonNumber,
 		instancesNumber:       map[pointer]int{},
+		numberToInstance:      map[int]structInstance{},
 		oldToAnonsInfo:        map[string]*anonInfo{},
 		newToAnonsInfo:        map[string]*anonInfo{},
 		anonymizedPaths:       map[string]string{},
@@ -168,6 +170,7 @@ func (a *anonymizer) instanceNumber(structInstance structInstance) int {
 func (a *anonymizer) setInstanceNumber(structInstance structInstance, number int) {
 	p := instancePointer(structInstance)
 	a.instancesNumber[p] = number
+	a.numberToInstance[number] = structInstance
 }
 
 func (a *anonymizer) toAnonymizeFilter(structInstance structInstance) bool {
@@ -180,7 +183,7 @@ func (a *anonymizer) toAnonymizeFilter(structInstance structInstance) bool {
 	return true
 }
 func (a *anonymizer) setField(structInstance structInstance, fieldName, oldValue, value string) {
-	a.statistics.addStatistic(oldValue,value)
+	a.statistics.addStatistic(oldValue, value)
 	setField(structInstance, fieldName, value)
 }
 
