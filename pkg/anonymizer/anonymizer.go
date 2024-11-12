@@ -83,6 +83,7 @@ type anonInstruction struct {
 	fieldsToClear          []string
 	idToCreateIfNotFound   []string
 	pathFields             []string
+	pathSliceFields        []string
 	pathToCleanFields      []string
 	rootPaths              []string
 }
@@ -254,6 +255,15 @@ func (a *anonymizer) collectPaths(structInstance structInstance) error {
 			a.paths = append(a.paths, oldVal)
 		}
 	}
+	for _, fieldName := range a.anonInstruction.pathSliceFields {
+		for i := 0; i < getSliceLen(structInstance, fieldName); i++ {
+			oldVal, ok := getSliceField(structInstance, fieldName, i)
+			if ok {
+				a.paths = append(a.paths, oldVal)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -268,6 +278,19 @@ func (a *anonymizer) anonymizePaths(structInstance structInstance) error {
 			return fmt.Errorf("error - did not find anonymise path of %s", oldVal)
 		}
 		a.setField(structInstance, fieldName, oldVal, anonVal)
+	}
+	for _, fieldName := range a.anonInstruction.pathSliceFields {
+		for i := 0; i < getSliceLen(structInstance, fieldName); i++ {
+			oldVal, ok := getSliceField(structInstance, fieldName, i)
+			if !ok {
+				continue
+			}
+			anonVal, ok := a.anonymizedPaths[oldVal]
+			if !ok {
+				return fmt.Errorf("error - did not find anonymise path of %s", oldVal)
+			}
+			setSliceField(structInstance, fieldName, anonVal, i)
+		}
 	}
 	return nil
 }

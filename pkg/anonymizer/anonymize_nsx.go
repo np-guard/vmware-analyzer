@@ -116,6 +116,10 @@ var inst anonInstruction = anonInstruction{
 		"ConnectivityPath",
 		"Tier0Path",
 	},
+	pathSliceFields: []string{
+		"SourceGroups",
+		"DestinationGroups",
+	},
 	pathToCleanFields: []string{
 		"BridgeProfilePath",
 		"DhcpConfigPath",
@@ -135,5 +139,6 @@ var inst anonInstruction = anonInstruction{
 	rootPaths: []string{
 		"/infra",
 		"/infra/realized-state",
+		"ANY",
 	},
 }
