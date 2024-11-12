@@ -91,11 +91,16 @@ func (a *anonymizer) anonymizeFieldByRef(structInstance structInstance, fs byRef
 	if !ok || oldVal == "" {
 		return fmt.Errorf("id ref of field %s has no ref at %s", fs.fieldName, fs.refIDName)
 	}
-	instanceNumber := a.newToAnonsInfo[oldRefVal].instanceNumber
-	// v := a.anonVal(a.newToAnonsInfo[oldRefVal].structName, fs.refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
-	newVal, ok := getField(a.numberToInstance[instanceNumber], fs.refName)
-	if !ok || newVal == "" {
-		return fmt.Errorf("struct %s has no val at field %s needed for %s.%s",a.newToAnonsInfo[oldRefVal].structName,fs.refName, structName(structInstance),fs.fieldName )
+	refNumber := a.newToAnonsInfo[oldRefVal].instanceNumber
+	refInstance := a.numberToInstance[refNumber]
+	var newVal string
+	if refInstance == nil {
+		newVal = a.anonVal(a.newToAnonsInfo[oldRefVal].structName, fs.refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
+	} else {
+		newVal, ok = getField(refInstance, fs.refName)
+		if !ok || newVal == "" {
+			return fmt.Errorf("struct %s has no val at field %s needed for %s.%s", a.newToAnonsInfo[oldRefVal].structName, fs.refName, structName(structInstance), fs.fieldName)
+		}
 	}
 	a.setField(structInstance, fs.fieldName, oldVal, newVal)
 	return nil
