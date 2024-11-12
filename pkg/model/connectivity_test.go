@@ -20,12 +20,12 @@ var dfwAllowNothingByDefault = dfw.NewEmptyDFW(false) // no rules and global def
 var dfwAllowAllByDefault = dfw.NewEmptyDFW(true)      // no rules and global default allow
 
 // basic test
-var config1 = &config{
+var config1 = &Config{
 	vms: allVms,
 	fw:  dfwAllowNothingByDefault,
 }
 
-var config2 = &config{
+var config2 = &Config{
 	vms: allVms,
 	fw:  dfwAllowAllByDefault,
 }

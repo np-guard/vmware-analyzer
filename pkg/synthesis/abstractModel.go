@@ -28,6 +28,7 @@ type RuleForSynthesis struct {
 	// src, dst, conn vms mentioned in the rule that ends up having the rule's action w.r.t. following actual direction
 	// this includes the srcVMs implied by the rule that are not override by higher priority rules with opposite act
 	// note that a single fwRule may have more than one ruleForSynthesis
+	// computed only for allow rules (?)
 	actualSrcVMs    []*endpoints.VM
 	actualDstVms    []*endpoints.VM
 	actualConn      *netset.TransportSet
@@ -36,5 +37,5 @@ type RuleForSynthesis struct {
 	// to be used for <src, dst> pairs that can not be described by actualSrcVMs and actualDstVms due to higher priority
 	// overriding rules; note that this is relevant only when |actualSrcVMs| > 1, |actualDstVms|>1 and there are higher
 	// priority  overriding rules
-	actualSrcDstVM srcDstVM
+	actualSrcDstVM []*srcDstVM
 }

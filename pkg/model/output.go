@@ -10,7 +10,7 @@ type OutputParameters struct {
 	VMs      []string
 }
 
-func (c *config) output(params OutputParameters) (res string, err error) {
+func (c *Config) output(params OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
 	var g common.Graph
 	switch params.Format {

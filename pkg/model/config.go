@@ -12,8 +12,8 @@ const (
 	outputSectionSep = "-------------------------------------------------------------------"
 )
 
-// config captures nsx config
-type config struct {
+// Config captures nsx config
+type Config struct {
 	vms                  []*endpoints.VM
 	vmsMap               map[string]*endpoints.VM
 	fw                   *dfw.DFW // currently assuming one DFW only (todo: rename pkg dfw)
@@ -21,14 +21,14 @@ type config struct {
 	analysisDone         bool
 }
 
-func (c *config) getConnectivity() connMap {
+func (c *Config) getConnectivity() connMap {
 	if !c.analysisDone {
 		c.ComputeConnectivity()
 	}
 	return c.analyzedConnectivity
 }
 
-func (c *config) ComputeConnectivity() {
+func (c *Config) ComputeConnectivity() {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connMap{}
 	// make sure all vm pairs are in the result, by init with global default
@@ -48,7 +48,7 @@ func (c *config) ComputeConnectivity() {
 }
 
 // getConfigInfoStr returns string describing the captured configuration content
-func (c *config) getConfigInfoStr() string {
+func (c *Config) getConfigInfoStr() string {
 	var sb strings.Builder
 	sb.WriteString("\n" + outputSectionSep + "\n")
 	sb.WriteString("VMs:\n")

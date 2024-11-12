@@ -41,19 +41,19 @@ func NewNSXConfigParserFromResourcesContainer(rc *collector.ResourcesContainerMo
 type NSXConfigParser struct {
 	file         string
 	rc           *collector.ResourcesContainerModel
-	configRes    *config
+	configRes    *Config
 	allGroupsVMs []*endpoints.VM
 }
 
 func (p *NSXConfigParser) RunParser() error {
 	logging.Debugf("started parsing the given NSX config")
-	p.configRes = &config{}
+	p.configRes = &Config{}
 	p.getVMs() // get vms config
 	p.getDFW() // get distributed firewall config
 	return nil
 }
 
-func (p *NSXConfigParser) GetConfig() *config {
+func (p *NSXConfigParser) GetConfig() *Config {
 	return p.configRes
 }
 
