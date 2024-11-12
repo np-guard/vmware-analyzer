@@ -12,8 +12,13 @@ type srcDstVM struct {
 	dstVM *endpoints.VM
 }
 
-// SegmentsToVMs topology
-type SegmentsToVMs map[string][]*endpoints.VM
+type segmentsWithVMs struct {
+	segment *collector.Segment
+	vms     []*collector.VirtualMachine //todo []*endpoints.VM?
+}
+
+// SegmentsToVMs topology; map from segment name to structs of the segments and its VMs
+type SegmentsToVMs map[string]segmentsWithVMs
 
 // RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
 type RuleForSynthesis struct {
