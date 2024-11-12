@@ -61,6 +61,7 @@ var inst anonInstruction = anonInstruction{
 		{"L4PortSetServiceEntry", "Id"},
 		{"EtherTypeServiceEntry", "Id"},
 		{"NestedServiceServiceEntry", "Id"},
+		{"FirewallRule", "Id"},
 	},
 
 	idRefFields: []string{

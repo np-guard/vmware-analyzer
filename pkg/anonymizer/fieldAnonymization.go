@@ -27,7 +27,7 @@ func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string
 		case oldVal == anonInfo.newValue:
 		case structName == anonInfo.structName, a.anonInstruction.refStructs[structName] == anonInfo.structName:
 			a.setInstanceNumber(structInstance, anonInfo.instanceNumber)
-			setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
+			a.setField(structInstance, fieldName, oldVal, a.oldToAnonsInfo[oldVal].newValue)
 		default:
 			return fmt.Errorf("error: id of field %s.%s.%s already anonymise by %s.%s.%s(%s)",
 				pkgName, structName, fieldName,
@@ -39,7 +39,7 @@ func (a *anonymizer) anonymizeID(structInstance structInstance, fieldName string
 	instanceNumber := a.instanceNumber(structInstance)
 	newValue := a.anonVal(structName, fieldName, instanceNumber)
 	a.addAnon(oldVal, newValue, pkgName, structName, fieldName, instanceNumber)
-	setField(structInstance, fieldName, newValue)
+	a.setField(structInstance, fieldName, oldVal, newValue)
 	return nil
 }
 
@@ -56,7 +56,7 @@ func (a *anonymizer) anonymizeIDRef(structInstance structInstance, fieldName str
 		a.instanceNumberCounter++
 		a.addAnon(oldVal, fmt.Sprintf("missing%s:%d", fieldName, instanceNumber), "", "missing", "", instanceNumber)
 	}
-	setField(structInstance, fieldName, a.oldToAnonsInfo[oldVal].newValue)
+	a.setField(structInstance, fieldName, oldVal, a.oldToAnonsInfo[oldVal].newValue)
 	return nil
 }
 
@@ -70,7 +70,7 @@ func (a *anonymizer) anonymizeFieldFunc(structInstance structInstance, fieldName
 		return
 	}
 	v := a.anonVal(structName(structInstance), fieldName, a.instanceNumber(structInstance))
-	setField(structInstance, fieldName, v)
+	a.setField(structInstance, fieldName, oldVal, v)
 }
 
 func (a *anonymizer) anonymizeSliceFieldFunc(structInstance structInstance, fieldName string, index int, filterFunc func(string) bool) {
@@ -92,7 +92,7 @@ func (a *anonymizer) anonymizeFieldByRef(structInstance structInstance, fs byRef
 		return fmt.Errorf("id ref of field %s has no ref at %s", fs.fieldName, fs.refIDName)
 	}
 	v := a.anonVal(a.newToAnonsInfo[oldRefVal].structName, fs.refName, a.newToAnonsInfo[oldRefVal].instanceNumber)
-	setField(structInstance, fs.fieldName, v)
+	a.setField(structInstance, fs.fieldName, oldVal, v)
 	return nil
 }
 

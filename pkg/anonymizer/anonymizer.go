@@ -8,32 +8,35 @@ package anonymizer
 
 import (
 	"fmt"
+	"maps"
 	"slices"
+	"strings"
 )
 
 // the anonymization:
-// each instance of a struct has a uniq number.
-// anonymization types by examples,at the form:
-//      <struct name>.<field>             = <new anon value>:
-// 1.  Service.Id                         = DCM_Java_Object_Cache_port
-// 2.  Service.UniqId                     = "Service.UniqueId:10010"
-// 3.  Service.RealizationId              = "Service.UniqueId:10010"
-// 4.  VirtualMachine.ExternalId          = "VirtualMachine.ExternalId:10784"
-// 5.  VirtualMachine.DisplayName         = "VirtualMachine.DisplayName:10784"
-// 6.  RealizedVirtualMachine.DisplayName = "VirtualMachine.DisplayName:10784"
-// 7.  RealizedVirtualMachine.Id          = "VirtualMachine.ExternalId:10784"
-// 8.  VirtualNetworkInterface.OwnerVmId  = "VirtualMachine.ExternalId:10784"
-// 9.  IpAddressInfo.IpAddresses          = "IpAddressInfo.IpAddresses:10932.0"
-// 10. IpAddressInfo.IpAddresses          = ""192.168.1.2""
-// 11. SegmentPort.Path                   = "/infra/segments/Segment.Id:10833/ports/SegmentPort.Id:10834"
-// 12. SegmentPort.RemotePath             = nil
-// 13. FirewallRule.Sources[0].TargetId   = "Group.UniqueId:10884"
+// * each instance of a struct has a uniq number.
+// * there are three kind of fields, IDs, Paths and regular fields
+// * here some anonymization types by examples, all at the form:
+//     <struct name>.<field>                     = <new anon value>:
+// 1.  Service.Id                                = DCM_Java_Object_Cache_port
+// 2.  Service.UniqId                            = "Service.UniqueId:10010"
+// 3.  Service.RealizationId                     = "Service.UniqueId:10010"
+// 4.  VirtualMachine.ExternalId                 = "VirtualMachine.ExternalId:10784"
+// 5.  VirtualMachine.DisplayName                = "VirtualMachine.DisplayName:10784"
+// 6.  RealizedVirtualMachine.DisplayName        = "VirtualMachine.DisplayName:10784"
+// 7.  RealizedVirtualMachine.Id                 = "VirtualMachine.ExternalId:10784"
+// 8.  VirtualNetworkInterface.OwnerVmId         = "VirtualMachine.ExternalId:10784"
+// 9.  IpAddressInfo.IpAddresses                 = "IpAddressInfo.IpAddresses:10932.0"
+// 10. IpAddressInfo.IpAddresses                 = ""192.168.1.2""
+// 11. SegmentPort.Path                          = "/infra/segments/Segment.Id:10833/ports/SegmentPort.Id:10834"
+// 12. SegmentPort.RemotePath                    = nil
+// 13. FirewallRule.Sources[0].TargetId          = "Group.UniqueId:10884"
 // 14. FirewallRule.Sources[0].TargetDisplayName = "Group.DisplayName:10884"
-// 15. Service.DisplayName                = "AD Server"
+// 15. Service.DisplayName                       = "AD Server"
 
 // all these examples are different cases of anonymization, the anonymizer follow the anonInstruction struct.
 // the field in anonInstruction:
-// pkgsToSkip             - packages the it ignores (we ignores the collector pkg, )
+// pkgsToSkip             - packages that it ignores (we ignores the collector pkg, )
 // structsToSkip          - structs that it skip (for "abstract" structs )
 // idFields               - fields that we anonymize using the instance number (see examples 2,4 )
 // idsToKeep              - ids that we do not anonymize (see example 1)
@@ -93,6 +96,27 @@ type anonInfo struct {
 	field          string
 	instanceNumber int
 }
+type statistic struct {
+	oldVal, newVal string
+}
+type statistics map[statistic]int
+
+func (s statistics) addStatistic(oldVal, newVal string) {
+	s[statistic{oldVal, newVal}] = s[statistic{oldVal, newVal}] + 1
+}
+
+func (s statistics) string() string {
+	res := ""
+	keys := slices.Collect(maps.Keys(s))
+	slices.SortFunc(keys, func(s1,s2 statistic) int { return strings.Compare(s1.oldVal,s2.oldVal)})
+	for i,k := range keys{
+		if i> 0 && keys[i-1].oldVal == k.oldVal{
+			res += "Warning- Duplication: "
+		}
+		res += fmt.Sprintf("%s\t:%s\t %d\n", k.oldVal,k.newVal,s[k] )
+	}
+	return res
+}
 
 type anonymizer struct {
 	instancesNumber       map[pointer]int      // the uniq anon number of each instance
@@ -102,6 +126,7 @@ type anonymizer struct {
 	paths                 []string             // all the orig paths
 	anonymizedPaths       map[string]string    // map from orig to anon path
 	anonInstruction       *anonInstruction     // the instruction to anon with
+	statistics            statistics
 }
 
 func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
@@ -112,6 +137,7 @@ func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
 		newToAnonsInfo:        map[string]*anonInfo{},
 		anonymizedPaths:       map[string]string{},
 		anonInstruction:       anonInstruction,
+		statistics:            statistics{},
 	}
 }
 
@@ -153,6 +179,12 @@ func (a *anonymizer) toAnonymizeFilter(structInstance structInstance) bool {
 	}
 	return true
 }
+func (a *anonymizer) setField(structInstance structInstance, fieldName, oldValue, value string) {
+	a.statistics.addStatistic(oldValue,value)
+	setField(structInstance, fieldName, value)
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 func (a *anonymizer) collectIDsToKeep(structInstance structInstance) error {
 	structName := structName(structInstance)
@@ -232,7 +264,7 @@ func (a *anonymizer) anonymizePaths(structInstance structInstance) error {
 		if !ok {
 			return fmt.Errorf("error - did not find anonymise path of %s", oldVal)
 		}
-		setField(structInstance, fieldName, anonVal)
+		a.setField(structInstance, fieldName, oldVal, anonVal)
 	}
 	return nil
 }

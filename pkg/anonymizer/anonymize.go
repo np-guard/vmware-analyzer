@@ -6,6 +6,13 @@ SPDX-License-Identifier: Apache-2.0
 
 package anonymizer
 
+import (
+	"fmt"
+
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+	// "github.com/np-guard/vmware-analyzer/pkg/logging"
+)
+
 // anonymize() is top function of the anonymization algorithm.
 // the anonymization is calling the iterate() function several time to do the anonymization.
 
@@ -32,6 +39,12 @@ func anonymize(st structInstance, anonInstruction *anonInstruction) error {
 	if err := iterate(st, anonymizer, anonymizeFields, toAnonymizeFilter); err != nil {
 		return err
 	}
+	// logging.Debugf("anonymization statistics:\n%s\n", anonymizer.statistics.string())
+	err:=common.WriteToFile("anon.txt", anonymizer.statistics.string())
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
 	return nil
 }
 
