@@ -62,13 +62,14 @@ func (p *NSXConfigParser) getVMs() {
 	p.configRes.vmsMap = map[string]*endpoints.VM{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
-		if vm.DisplayName == nil {
-			continue
+		if vm.DisplayName == nil || vm.ExternalId == nil {
 			// skip vm without name
+			logging.Debugf("warning: skipped vm without name/uid at index %d", i)
+			continue
 		}
-		vmObj := endpoints.NewVM(*vm.DisplayName)
+		vmObj := endpoints.NewVM(*vm.DisplayName, *vm.ExternalId)
 		p.configRes.vms = append(p.configRes.vms, vmObj)
-		p.configRes.vmsMap[*vm.DisplayName] = vmObj
+		p.configRes.vmsMap[vmObj.ID()] = vmObj
 	}
 }
 
@@ -270,14 +271,16 @@ func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMa
 	res := []*endpoints.VM{}
 	for i := range members {
 		vm := &members[i]
-		if vm.DisplayName == nil {
+		if vm.Id == nil { // use id instead of DisplayName, assuming matched to vm's external id
+			logging.Debugf("skipping member without id, at index %d", i)
 			continue
 		}
-		vmName := *vm.DisplayName
-		if vmObj, ok := p.configRes.vmsMap[vmName]; ok {
+		vmID := *vm.Id
+		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
 			res = append(res, vmObj)
 		}
 		// else: add warning that could not find that vm name in the config
+		logging.Debugf("could not find VM id %s in the parsed config", vmID)
 	}
 	return res
 }

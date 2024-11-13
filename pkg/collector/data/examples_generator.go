@@ -15,6 +15,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	for _, vmName := range e.vms {
 		newVM := nsx.VirtualMachine{
 			DisplayName: &vmName,
+			ExternalId:  &vmName,
 		}
 		newVMRes := collector.VirtualMachine{
 			VirtualMachine: newVM,
@@ -36,6 +37,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 		for _, member := range members {
 			vmMember := collector.RealizedVirtualMachine{}
 			vmMember.RealizedVirtualMachine.DisplayName = &member
+			vmMember.RealizedVirtualMachine.Id = &member
 			newGroup.Members = append(newGroup.Members, vmMember)
 		}
 		groupList = append(groupList, newGroup)
