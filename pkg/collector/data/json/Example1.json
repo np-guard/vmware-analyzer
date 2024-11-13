@@ -28442,10 +28442,12 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "A"
+            "display_name": "A",
+            "external_id": "A"
         },
         {
-            "display_name": "B"
+            "display_name": "B",
+            "external_id": "B"
         }
     ],
     "virtual_network_interface": null,
@@ -28510,21 +28512,23 @@
                 ],
                 "groups": [
                     {
-                        "display_name": "frontend",
-                        "path": "frontend",
+                        "display_name": "backend",
+                        "path": "backend",
                         "members": [
                             {
-                                "display_name": "A"
+                                "display_name": "B",
+                                "id": "B"
                             }
                         ],
                         "expression": null
                     },
                     {
-                        "display_name": "backend",
-                        "path": "backend",
+                        "display_name": "frontend",
+                        "path": "frontend",
                         "members": [
                             {
-                                "display_name": "B"
+                                "display_name": "A",
+                                "id": "A"
                             }
                         ],
                         "expression": null

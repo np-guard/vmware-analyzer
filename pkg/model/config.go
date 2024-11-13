@@ -14,10 +14,10 @@ const (
 
 // config captures nsx config
 type config struct {
-	vms                  []*endpoints.VM
-	vmsMap               map[string]*endpoints.VM
-	fw                   *dfw.DFW // currently assuming one DFW only (todo: rename pkg dfw)
-	analyzedConnectivity connMap  // the resulting connectivity map from analyzing this configuration
+	vms                  []*endpoints.VM          // list of all vms
+	vmsMap               map[string]*endpoints.VM // map from uid to vm objects
+	fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
+	analyzedConnectivity connMap                  // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
 

@@ -108,12 +108,9 @@ type ALGTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -793,12 +790,9 @@ type Condition struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -1442,12 +1436,9 @@ type ConjunctionOperator struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -1916,12 +1907,9 @@ type Domain struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -2064,12 +2052,9 @@ type EtherTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -2290,12 +2275,9 @@ type Expression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -2382,6 +2364,235 @@ func (j *Expression) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Represents external ID expressions in the form of an array, to support addition
+// of objects like virtual interfaces, virtual machines, CloudNativeServiceInstance
+// PhysicalServer to a group.
+type ExternalIDExpression struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// This array can consist of one or more external IDs for the specified member
+	// type.
+	ExternalIds []string `json:"external_ids,omitempty" yaml:"external_ids,omitempty" mapstructure:"external_ids,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// MemberType corresponds to the JSON schema field "member_type".
+	MemberType *ExternalIDExpressionMemberType `json:"member_type,omitempty" yaml:"member_type,omitempty" mapstructure:"member_type,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *ExternalIDExpressionResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type ExternalIDExpressionMemberType string
+
+const ExternalIDExpressionMemberTypeCloudNativeServiceInstance ExternalIDExpressionMemberType = "CloudNativeServiceInstance"
+const ExternalIDExpressionMemberTypePhysicalServer ExternalIDExpressionMemberType = "PhysicalServer"
+const ExternalIDExpressionMemberTypeVirtualMachine ExternalIDExpressionMemberType = "VirtualMachine"
+const ExternalIDExpressionMemberTypeVirtualNetworkInterface ExternalIDExpressionMemberType = "VirtualNetworkInterface"
+
+var enumValues_ExternalIDExpressionMemberType = []interface{}{
+	"VirtualMachine",
+	"VirtualNetworkInterface",
+	"CloudNativeServiceInstance",
+	"PhysicalServer",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExternalIDExpressionMemberType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ExternalIDExpressionMemberType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ExternalIDExpressionMemberType, v)
+	}
+	*j = ExternalIDExpressionMemberType(v)
+	return nil
+}
+
+type ExternalIDExpressionResourceType string
+
+const ExternalIDExpressionResourceTypeCondition ExternalIDExpressionResourceType = "Condition"
+const ExternalIDExpressionResourceTypeConjunctionOperator ExternalIDExpressionResourceType = "ConjunctionOperator"
+const ExternalIDExpressionResourceTypeExternalIDExpression ExternalIDExpressionResourceType = "ExternalIDExpression"
+const ExternalIDExpressionResourceTypeIPAddressExpression ExternalIDExpressionResourceType = "IPAddressExpression"
+const ExternalIDExpressionResourceTypeIdentityGroupExpression ExternalIDExpressionResourceType = "IdentityGroupExpression"
+const ExternalIDExpressionResourceTypeMACAddressExpression ExternalIDExpressionResourceType = "MACAddressExpression"
+const ExternalIDExpressionResourceTypeNestedExpression ExternalIDExpressionResourceType = "NestedExpression"
+const ExternalIDExpressionResourceTypePathExpression ExternalIDExpressionResourceType = "PathExpression"
+
+var enumValues_ExternalIDExpressionResourceType = []interface{}{
+	"Condition",
+	"ConjunctionOperator",
+	"NestedExpression",
+	"IPAddressExpression",
+	"MACAddressExpression",
+	"ExternalIDExpression",
+	"PathExpression",
+	"IdentityGroupExpression",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExternalIDExpressionResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ExternalIDExpressionResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ExternalIDExpressionResourceType, v)
+	}
+	*j = ExternalIDExpressionResourceType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ExternalIDExpression) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain ExternalIDExpression
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if plain.ExternalIds != nil && len(plain.ExternalIds) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "external_ids", 1)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = ExternalIDExpression(plain)
+	return nil
+}
+
 // Additional configuration required for federation.
 type FederationConnectivityConfig struct {
 	// Global id for by Layer3 services for federation usecases.
@@ -2392,10 +2603,6 @@ type FederationConnectivityConfig struct {
 type FederationGatewayConfig struct {
 	// Global id for by Layer3 services for federation usecases.
 	GlobalOverlayId *int `json:"global_overlay_id,omitempty" yaml:"global_overlay_id,omitempty" mapstructure:"global_overlay_id,omitempty"`
-
-	// InterSiteTransitVlanId corresponds to the JSON schema field
-	// "inter_site_transit_vlan_id".
-	InterSiteTransitVlanId *int `json:"inter_site_transit_vlan_id,omitempty" yaml:"inter_site_transit_vlan_id,omitempty" mapstructure:"inter_site_transit_vlan_id,omitempty"`
 
 	// Indicies for cross site allocation for edge cluster and its members referred by
 	// gateway.
@@ -3023,12 +3230,9 @@ type Group struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -3260,12 +3464,9 @@ type ICMPTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -3473,12 +3674,9 @@ type IGMPTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -3674,12 +3872,9 @@ type IPAddressExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -3877,12 +4072,9 @@ type IPProtocolServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -3998,6 +4190,226 @@ func (j *IcmpEchoRequestHeader) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Represents a list of identity group (Ad group SID) expressions.
+type IdentityGroupExpression struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// This array consists of set of identity group object. All members within this
+	// array are implicitly OR'ed together.
+	IdentityGroups []IdentityGroupInfo `json:"identity_groups,omitempty" yaml:"identity_groups,omitempty" mapstructure:"identity_groups,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *IdentityGroupExpressionResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type IdentityGroupExpressionResourceType string
+
+const IdentityGroupExpressionResourceTypeCondition IdentityGroupExpressionResourceType = "Condition"
+const IdentityGroupExpressionResourceTypeConjunctionOperator IdentityGroupExpressionResourceType = "ConjunctionOperator"
+const IdentityGroupExpressionResourceTypeExternalIDExpression IdentityGroupExpressionResourceType = "ExternalIDExpression"
+const IdentityGroupExpressionResourceTypeIPAddressExpression IdentityGroupExpressionResourceType = "IPAddressExpression"
+const IdentityGroupExpressionResourceTypeIdentityGroupExpression IdentityGroupExpressionResourceType = "IdentityGroupExpression"
+const IdentityGroupExpressionResourceTypeMACAddressExpression IdentityGroupExpressionResourceType = "MACAddressExpression"
+const IdentityGroupExpressionResourceTypeNestedExpression IdentityGroupExpressionResourceType = "NestedExpression"
+const IdentityGroupExpressionResourceTypePathExpression IdentityGroupExpressionResourceType = "PathExpression"
+
+var enumValues_IdentityGroupExpressionResourceType = []interface{}{
+	"Condition",
+	"ConjunctionOperator",
+	"NestedExpression",
+	"IPAddressExpression",
+	"MACAddressExpression",
+	"ExternalIDExpression",
+	"PathExpression",
+	"IdentityGroupExpression",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *IdentityGroupExpressionResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_IdentityGroupExpressionResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_IdentityGroupExpressionResourceType, v)
+	}
+	*j = IdentityGroupExpressionResourceType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *IdentityGroupExpression) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain IdentityGroupExpression
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if plain.IdentityGroups != nil && len(plain.IdentityGroups) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "identity_groups", 1)
+	}
+	if len(plain.IdentityGroups) > 500 {
+		return fmt.Errorf("field %s length: must be <= %d", "identity_groups", 500)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = IdentityGroupExpression(plain)
+	return nil
+}
+
+type IdentityGroupInfo struct {
+	// Each LDAP object is uniquely identified by its distinguished name (DN). A DN is
+	// a sequence of relative distinguished names (RDN) connected by commas. e.g.
+	// CN=Larry Cole,CN=admin,DC=corp,DC=acme,DC=com. A valid fully qualified
+	// distinguished name should be provided to include specific groups else the
+	// create / update realization of the Group containing an invalid/ partial DN will
+	// fail. This value is valid only if it matches to exactly 1 LDAP object on the
+	// LDAP server.
+	DistinguishedName *string `json:"distinguished_name,omitempty" yaml:"distinguished_name,omitempty" mapstructure:"distinguished_name,omitempty"`
+
+	// This is the base distinguished name for the domain where this particular group
+	// resides. (e.g. dc=example,dc=com) Each active directory domain has a domain
+	// naming context (NC), which contains domain-specific data. The root of this
+	// naming context is represented by a domain's distinguished name (DN) and is
+	// typically referred to as the NC head.
+	DomainBaseDistinguishedName *string `json:"domain_base_distinguished_name,omitempty" yaml:"domain_base_distinguished_name,omitempty" mapstructure:"domain_base_distinguished_name,omitempty"`
+
+	// A security identifier (SID) is a unique value of variable length used to
+	// identify a trustee. A SID consists of the following components: The revision
+	// level of the SID structure; A 48-bit identifier authority value that identifies
+	// the authority that issued the SID; A variable number of subauthority or
+	// relative identifier (RID) values that uniquely identify the trustee relative to
+	// the authority that issued the SID. This field is only populated for Microsoft
+	// Active Directory identity store.
+	Sid *string `json:"sid,omitempty" yaml:"sid,omitempty" mapstructure:"sid,omitempty"`
+}
+
 // Intersite gateway configuration.
 type IntersiteGatewayConfig struct {
 	// Fallback site to be used as new primary site on current primary site failure.
@@ -4008,8 +4420,6 @@ type IntersiteGatewayConfig struct {
 
 	// IPv4 subnet for inter-site transit segment connecting service routers across
 	// sites for stretched gateway. For IPv6 link local subnet is auto configured.
-	// This is unused field in VRF, only applicable for stretched  gateways and VRF
-	// will always use parent T0's intersite_transit_subnet.
 	IntersiteTransitSubnet string `json:"intersite_transit_subnet,omitempty" yaml:"intersite_transit_subnet,omitempty" mapstructure:"intersite_transit_subnet,omitempty"`
 
 	// Epoch(in seconds) is auto updated based on system current timestamp when
@@ -4281,12 +4691,9 @@ type L4PortSetServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -4471,6 +4878,203 @@ func (j *LocalEgress) UnmarshalJSON(b []byte) error {
 // separated by colons or dashes. Examples: 01:23:45:67:89:ab, 01-23-45-67-89-AB.
 type MACAddress string
 
+// Represents MAC address expressions in the form of an array, to support addition
+// of MAC addresses in a group. Avoid creating groups with multiple
+// MACAddressExpression. In future releases, group will be restricted to contain a
+// single MACAddressExpression. To group MAC addresses, use nested groups instead
+// of multiple MACAddressExpression.
+type MACAddressExpression struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// This array can consist of one or more MAC addresses. Max limit of 4000 MAC
+	// addresses applies across all the expressions.
+	MacAddresses []MACAddress `json:"mac_addresses,omitempty" yaml:"mac_addresses,omitempty" mapstructure:"mac_addresses,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *MACAddressExpressionResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type MACAddressExpressionResourceType string
+
+const MACAddressExpressionResourceTypeCondition MACAddressExpressionResourceType = "Condition"
+const MACAddressExpressionResourceTypeConjunctionOperator MACAddressExpressionResourceType = "ConjunctionOperator"
+const MACAddressExpressionResourceTypeExternalIDExpression MACAddressExpressionResourceType = "ExternalIDExpression"
+const MACAddressExpressionResourceTypeIPAddressExpression MACAddressExpressionResourceType = "IPAddressExpression"
+const MACAddressExpressionResourceTypeIdentityGroupExpression MACAddressExpressionResourceType = "IdentityGroupExpression"
+const MACAddressExpressionResourceTypeMACAddressExpression MACAddressExpressionResourceType = "MACAddressExpression"
+const MACAddressExpressionResourceTypeNestedExpression MACAddressExpressionResourceType = "NestedExpression"
+const MACAddressExpressionResourceTypePathExpression MACAddressExpressionResourceType = "PathExpression"
+
+var enumValues_MACAddressExpressionResourceType = []interface{}{
+	"Condition",
+	"ConjunctionOperator",
+	"NestedExpression",
+	"IPAddressExpression",
+	"MACAddressExpression",
+	"ExternalIDExpression",
+	"PathExpression",
+	"IdentityGroupExpression",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *MACAddressExpressionResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_MACAddressExpressionResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_MACAddressExpressionResourceType, v)
+	}
+	*j = MACAddressExpressionResourceType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *MACAddressExpression) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain MACAddressExpression
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if plain.MacAddresses != nil && len(plain.MacAddresses) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "mac_addresses", 1)
+	}
+	if len(plain.MacAddresses) > 4000 {
+		return fmt.Errorf("field %s length: must be <= %d", "mac_addresses", 4000)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = MACAddressExpression(plain)
+	return nil
+}
+
 type NSServiceElement struct {
 	// ResourceType corresponds to the JSON schema field "resource_type".
 	ResourceType *NSServiceElementResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
@@ -4575,6 +5179,202 @@ func (j *NdpHeader) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// Nested expressions is a list of condition expressions that must follow the below
+// criteria: 0. Only allowed expressions in a NestedExpression are Condition and
+// ConjunctionOperator. 1. A non-empty expression list, must be of odd size. In a
+// list, with indices starting from 0, all condition expressions must be at even
+// indices, separated by the conjunction expressions AND at odd indices. 2. There
+// may be at most 5 condition expressions inside a list. 3. NestedExpressions are
+// homogeneous in nature, i.e, all expressions inside a nested expression must have
+// the same member type.
+type NestedExpression struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Expression.
+	Expressions []Expression `json:"expressions,omitempty" yaml:"expressions,omitempty" mapstructure:"expressions,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType *NestedExpressionResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type NestedExpressionResourceType string
+
+const NestedExpressionResourceTypeCondition NestedExpressionResourceType = "Condition"
+const NestedExpressionResourceTypeConjunctionOperator NestedExpressionResourceType = "ConjunctionOperator"
+const NestedExpressionResourceTypeExternalIDExpression NestedExpressionResourceType = "ExternalIDExpression"
+const NestedExpressionResourceTypeIPAddressExpression NestedExpressionResourceType = "IPAddressExpression"
+const NestedExpressionResourceTypeIdentityGroupExpression NestedExpressionResourceType = "IdentityGroupExpression"
+const NestedExpressionResourceTypeMACAddressExpression NestedExpressionResourceType = "MACAddressExpression"
+const NestedExpressionResourceTypeNestedExpression NestedExpressionResourceType = "NestedExpression"
+const NestedExpressionResourceTypePathExpression NestedExpressionResourceType = "PathExpression"
+
+var enumValues_NestedExpressionResourceType = []interface{}{
+	"Condition",
+	"ConjunctionOperator",
+	"NestedExpression",
+	"IPAddressExpression",
+	"MACAddressExpression",
+	"ExternalIDExpression",
+	"PathExpression",
+	"IdentityGroupExpression",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NestedExpressionResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_NestedExpressionResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_NestedExpressionResourceType, v)
+	}
+	*j = NestedExpressionResourceType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NestedExpression) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain NestedExpression
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if plain.Expressions != nil && len(plain.Expressions) < 1 {
+		return fmt.Errorf("field %s length: must be >= %d", "expressions", 1)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = NestedExpression(plain)
+	return nil
+}
+
 type NestedServiceServiceEntry struct {
 	// Timestamp of resource creation
 	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
@@ -4671,12 +5471,9 @@ type NestedServiceServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -5006,12 +5803,9 @@ type PathExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -5184,12 +5978,9 @@ type PolicyAlarmResource struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -7081,12 +7872,9 @@ type RealizedVirtualMachine struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -7469,9 +8257,7 @@ type Rule struct {
 	// the search API to get these objects.
 	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
 
-	// User level field which will be printed in CLI and packet logs. Even though
-	// there is no limitation on length of the notes, internally notes will get
-	// truncated after 39 characters.
+	// Text for additional notes on changes.
 	Notes *string `json:"notes,omitempty" yaml:"notes,omitempty" mapstructure:"notes,omitempty"`
 
 	// This is a UUID generated by the system for knowing which site owns an object.
@@ -7513,12 +8299,9 @@ type Rule struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -7933,12 +8716,9 @@ type SecurityPolicy struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -8269,12 +9049,9 @@ type Segment struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// If this field is not set for overlay segment, then the default of MTEP will be
@@ -8738,12 +9515,9 @@ type SegmentPort struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -9115,12 +9889,9 @@ type Service struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -9234,12 +10005,9 @@ type ServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -9533,10 +10301,6 @@ type Tier0 struct {
 	// the search API to get these objects.
 	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
 
-	// Flag to enable/disable multi_vrf_inter_sr_routing. Warning: This is one time
-	// toggle flag and can't be disabled once enabled.
-	MultiVrfInterSrRouting *bool `json:"multi_vrf_inter_sr_routing,omitempty" yaml:"multi_vrf_inter_sr_routing,omitempty" mapstructure:"multi_vrf_inter_sr_routing,omitempty"`
-
 	// This is a UUID generated by the system for knowing which site owns an object.
 	// This is used in NSX+.
 	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
@@ -9573,12 +10337,9 @@ type Tier0 struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -10066,12 +10827,9 @@ type Tier1 struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -10567,12 +11325,9 @@ type TraceflowConfig struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This path is populated only in case of multi-site scenario. Currently it is
-	// supported only for LM objects. When LM is onboarded to multi-site platform like
-	// NAPP or GM, remote_path will be set to the globally unique path across
-	// multi-site topology . It is generated based on local site-name and uses /org
-	// tree namespace. Note: It is populated only for LM objects. Not supported on the
-	// GM.
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
