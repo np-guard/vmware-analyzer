@@ -3,7 +3,12 @@ package endpoints
 // intenal modeling for vmware endpoints
 type VM struct {
 	name string
+	uid  string
 	// address string
+}
+
+func (v *VM) ID() string {
+	return v.uid
 }
 
 func (v *VM) Name() string {
@@ -14,9 +19,10 @@ func (v *VM) Kind() string {
 	return "vm"
 }
 
-func NewVM(name string) *VM {
+func NewVM(name, uid string) *VM {
 	return &VM{
 		name: name,
+		uid:  uid,
 	}
 }
 
