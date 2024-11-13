@@ -131,24 +131,27 @@ func traceFlowsGraph(resources *ResourcesContainerModel, server ServerData, ips 
 		}
 	}
 	g := common.NewDotGraph(false)
-	for _, srcIp := range ips {
-		for _, dstIp := range ips {
-			key := fmt.Sprintf("%s:%s", srcIp, dstIp)
+	ipNodes := make([]*observationNode, len(ips))
+	for i, ip := range ips {
+		ipNodes[i] = &observationNode{ip: ip}
+		vni := resources.GetVirtualNetworkInterfaceByAddress(ip)
+		if vni != nil {
+			ipNodes[i].vmName = *resources.GetVirtualMachine(*vni.OwnerVmId).DisplayName
+		}
+	}
+	for _, srcIp := range ipNodes {
+		for _, dstIp := range ipNodes {
+			key := fmt.Sprintf("%s:%s", srcIp.ip, dstIp.ip)
 			if srcIp == dstIp || tfObservation[key] == nil {
 				continue
 			}
-			srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
-			srcVm := resources.GetVirtualMachine(*srcVni.OwnerVmId)
-			dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
-			lastObs := len(tfObservation[key]) - 1
-			g.AddEdge(srcVm, tfObservation[key][0], nil)
-			if dstVni != nil {
-				dstVm := resources.GetVirtualMachine(*dstVni.OwnerVmId)
-				g.AddEdge(tfObservation[key][lastObs], dstVm, nil)
-			}
-			for i := range tfObservation[key] {
+			observationNodes := tfObservation[key].observationNodes()
+			lastObs := len(observationNodes) - 1
+			g.AddEdge(srcIp, observationNodes[0], nil)
+			g.AddEdge(observationNodes[lastObs], dstIp, nil)
+			for i := range observationNodes {
 				if i != lastObs {
-					g.AddEdge(tfObservation[key][i], tfObservation[key][i+1], nil)
+					g.AddEdge(observationNodes[i], observationNodes[i+1], nil)
 				}
 			}
 		}
