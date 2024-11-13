@@ -153,5 +153,5 @@ func traceFlowsGraph(resources *ResourcesContainerModel, server ServerData, ips 
 			}
 		}
 	}
-	common.OutputGraph(g, "traceflow.dot", common.DotFormat)
+	common.OutputGraph(g, "out/traceflow.dot", common.DotFormat)
 }
