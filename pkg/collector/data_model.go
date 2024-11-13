@@ -257,22 +257,33 @@ type RealizedVirtualMachine struct {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-type ExpressionElement interface {
-	expressionElementIsMe()
-}
+type ExpressionElement interface{}
 
 type Condition struct {
 	nsx.Condition
 }
 
-func (Condition) expressionElementIsMe() {}
-
 type ConjunctionOperator struct {
 	nsx.ConjunctionOperator
 }
-
-func (ConjunctionOperator) expressionElementIsMe() {}
-
+type NestedExpression struct {
+	nsx.NestedExpression
+}
+type IPAddressExpression struct {
+	nsx.IPAddressExpression
+}
+type MACAddressExpression struct {
+	nsx.MACAddressExpression
+}
+type ExternalIDExpression struct {
+	nsx.ExternalIDExpression
+}
+type PathExpression struct {
+	nsx.PathExpression
+}
+type IdentityGroupExpression struct {
+	nsx.IdentityGroupExpression
+}
 type Expression []ExpressionElement
 
 func (e *Expression) UnmarshalJSON(b []byte) error {
@@ -296,6 +307,19 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 			res = &Condition{}
 		case "ConjunctionOperator":
 			res = &ConjunctionOperator{}
+		case "NestedExpression":
+			res = &NestedExpression{}
+		case "IPAddressExpression":
+			res = &IPAddressExpression{}
+		case "MACAddressExpression":
+			res = &MACAddressExpression{}
+		case "ExternalIDExpression":
+			res = &ExternalIDExpression{}
+		case "PathExpression":
+			res = &PathExpression{}
+		case "IdentityGroupExpression":
+			res = &IdentityGroupExpression{}
+
 		default:
 			return fmt.Errorf("fail to unmarshal expression %s", rawMessage)
 		}
