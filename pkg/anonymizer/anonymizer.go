@@ -287,7 +287,7 @@ func (a *anonymizer) anonymizePaths(structInstance structInstance) error {
 			}
 			anonVal, ok := a.anonymizedPaths[oldVal]
 			if !ok {
-				return fmt.Errorf("error - did not find anonymise path of %s for field entry %s[%d]", oldVal, fieldName,i)
+				return fmt.Errorf("error - did not find anonymise path of %s for field entry %s[%d]", oldVal, fieldName, i)
 			}
 			setSliceField(structInstance, fieldName, anonVal, i)
 		}
