@@ -10,10 +10,14 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
+func newVM(name string) *endpoints.VM {
+	return endpoints.NewVM(name, name)
+}
+
 // simple set of VMs for basic test
-var vmA = endpoints.NewVM("A")
-var vmB = endpoints.NewVM("B")
-var vmC = endpoints.NewVM("C")
+var vmA = newVM("A")
+var vmB = newVM("B")
+var vmC = newVM("C")
 var allVms = []*endpoints.VM{vmA, vmB, vmC}
 
 var dfwAllowNothingByDefault = dfw.NewEmptyDFW(false) // no rules and global default deny
