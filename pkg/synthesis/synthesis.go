@@ -1,15 +1,21 @@
 package synthesis
 
-//func SynthesisConfig(resources *collector.ResourcesContainerModel, params model.OutputParameters) (*synthesisRes, error) {
-//	segmentsToVms := getSegmentsToVMs(resources)
-//	config, err := model.NSXConfigFromResourcesContainer(resources)
-//	if err != nil {
-//		return nil, err
-//	}
-//	_ = config
-//	res := &synthesisRes{segments: segmentsToVms, rules: nil}
-//	return res, nil
-//}
+import (
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/model"
+)
+
+func SynthesisConfig(resources *collector.ResourcesContainerModel, params model.OutputParameters) error {
+	//segmentsToVms := //getSegmentsToVMs(resources)
+	//config, err := model.NSXConfigFromResourcesContainer(resources)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//_ = config
+	//res := &synthesisRes{segments: segmentsToVms, rules: nil}
+	//return res, nil
+	return nil
+}
 
 //func getSegmentsToVMs(resources *collector.ResourcesContainerModel) SegmentsToVMs {
 //	segmentsToVMs := SegmentsToVMs{}
