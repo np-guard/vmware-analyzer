@@ -6,18 +6,18 @@ import (
 )
 
 func SynthesisConfig(resources *collector.ResourcesContainerModel, params model.OutputParameters) error {
-	//segmentsToVms := //getSegmentsToVMs(resources)
-	//config, err := model.NSXConfigFromResourcesContainer(resources)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//_ = config
-	//res := &synthesisRes{segments: segmentsToVms, rules: nil}
-	//return res, nil
+	// segmentsToVms := //getSegmentsToVMs(resources)
+	config, err := model.NSXConfigFromResourcesContainer(resources)
+	if err != nil {
+		return nil
+	}
+	_ = config
+	// res := &synthesisRes{segments: segmentsToVms, rules: nil}
+	// return res, nil
 	return nil
 }
 
-//func getSegmentsToVMs(resources *collector.ResourcesContainerModel) SegmentsToVMs {
+// func getSegmentsToVMs(resources *collector.ResourcesContainerModel) SegmentsToVMs {
 //	segmentsToVMs := SegmentsToVMs{}
 //	for si := range resources.SegmentList {
 //		segment := &resources.SegmentList[si]
@@ -32,6 +32,6 @@ func SynthesisConfig(resources *collector.ResourcesContainerModel, params model.
 //		segmentsToVMs[segment.Name()] = segmentAndVMs
 //	}
 //	return segmentsToVMs
-//}
+// }
 
 // todo handle default allow
