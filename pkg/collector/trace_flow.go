@@ -130,7 +130,7 @@ func traceFlowsGraph(resources *ResourcesContainerModel, server ServerData, ips 
 			}
 		}
 	}
-	g := common.NewDotGraph(false, true)
+	g := common.NewDotGraph(false)
 	for _, srcIp := range ips {
 		for _, dstIp := range ips {
 			key := fmt.Sprintf("%s:%s", srcIp, dstIp)

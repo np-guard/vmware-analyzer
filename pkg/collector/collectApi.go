@@ -48,15 +48,25 @@ func collectResult[A any](server ServerData, resourceQuery string, resource *A) 
 }
 
 func collectResultList[A any](server ServerData, resourceQuery string, resourceList *[]A) error {
-	b, err := curlGetRequest(server, resourceQuery)
-	if err != nil {
-		return err
+	var totalRes []A
+	for cursor := ""; totalRes == nil || cursor != ""; {
+		currentQuery := resourceQuery
+		if cursor != "" {
+			currentQuery = fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor)
+		}
+		b, err := curlGetRequest(server, currentQuery)
+		if err != nil {
+			return err
+		}
+		b = fixLowerCaseEnums(b)
+		var currentRes []A
+		currentRes, cursor, err = unmarshalResultsToList[A](b)
+		if err != nil {
+			return err
+		}
+		totalRes = append(currentRes, totalRes...)
 	}
-	b = fixLowerCaseEnums(b)
-	*resourceList, err = unmarshalResultsToList[A](b)
-	if err != nil {
-		return err
-	}
+	*resourceList = totalRes
 	return nil
 }
 
@@ -138,16 +148,19 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 	return b, nil
 }
 
-func unmarshalResultsToList[A any](b []byte) ([]A, error) {
-	data := struct{ Results *[]A }{}
-	err := json.Unmarshal(b, &data)
+func unmarshalResultsToList[A any](b []byte) (res []A, cursor string, err error) {
+	data := struct {
+		Results *[]A
+		Cursor  string
+	}{}
+	err = json.Unmarshal(b, &data)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	if data.Results == nil {
-		return nil, getUnmarshalError(b)
+		return nil, "", getUnmarshalError(b)
 	}
-	return *data.Results, nil
+	return *data.Results, data.Cursor, nil
 }
 
 func unmarshalResults[A any](b []byte) (*A, error) {

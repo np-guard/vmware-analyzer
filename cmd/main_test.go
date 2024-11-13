@@ -10,8 +10,9 @@ import (
 	"strings"
 	"testing"
 )
-const noServerInfo = "--host no_host --username no_user --password no_password"
-const serverInfo = noServerInfo
+
+const serverInfo = "--host no_host --username no_user --password no_password"
+
 func Test_main(t *testing.T) {
 	tests := []struct {
 		name string
@@ -68,7 +69,7 @@ func Test_main(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if !strings.Contains(tt.args, noServerInfo) {
+			if !strings.Contains(tt.args, serverInfo) {
 				if err := _main(splitArgs(tt.args)); err != nil {
 					t.Errorf("_main() error = %v,", err)
 				}
