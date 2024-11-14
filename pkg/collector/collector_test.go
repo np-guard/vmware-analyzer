@@ -199,7 +199,8 @@ func testTraceflows(got *ResourcesContainerModel, server ServerData) error{
 		"192.168.1.3",
 		"192.0.1.3",
 	}
-	tfs := getTraceFlows(got, server, ips)
+	protocol := traceFlowProtocol{protocol: protocolICMP}
+	tfs := getTraceFlows(got, server, ips, protocol)
 	g := traceFlowsDotGraph(got, ips, tfs)
 	_, err := common.OutputGraph(g, path.Join(outDir, "traceflow.dot"), common.DotFormat)
 	return err

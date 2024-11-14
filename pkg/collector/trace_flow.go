@@ -16,6 +16,27 @@ const (
 	traceFlowQuery               = "policy/api/v1/infra/traceflows/%s"
 	getTraceFlowObservationQuery = "policy/api/v1/infra/traceflows/%s/observations"
 )
+const (
+	protocolTCP  = "tcp"
+	protocolUDP  = "udp"
+	protocolICMP = "icmp"
+)
+type traceFlowProtocol struct{
+	srcPort, dstPort int
+	protocol string
+}
+func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader{
+	h := &nsx.TransportProtocolHeader{}
+	switch t.protocol{
+	case protocolTCP:
+		h.TcpHeader = &nsx.TcpHeader{SrcPort: &t.srcPort,DstPort: &t.dstPort}
+	case protocolUDP:
+		h.UdpHeader = &nsx.UdpHeader{SrcPort: t.srcPort,DstPort: t.dstPort}
+	case protocolICMP:
+		h.IcmpEchoRequestHeader = &nsx.IcmpEchoRequestHeader{}
+	}
+	return h
+}
 
 func traceFlowRandomID() string {
 	rnd := make([]byte, 5)
@@ -24,7 +45,7 @@ func traceFlowRandomID() string {
 
 }
 
-func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dstIp string) (string, error) {
+func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dstIp string, protocol traceFlowProtocol) (string, error) {
 	traceFlowName := traceFlowRandomID()
 	srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
 	dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
@@ -52,8 +73,7 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dst
 	srcIPv4 := nsx.IPAddress(srcIp)
 	dstIPv4 := nsx.IPAddress(dstIp)
 	traceReq.Packet.IpHeader = &nsx.Ipv4Header{SrcIp: &srcIPv4, DstIp: &dstIPv4}
-	traceReq.Packet.TransportHeader = &nsx.TransportProtocolHeader{}
-	traceReq.Packet.TransportHeader.IcmpEchoRequestHeader = &nsx.IcmpEchoRequestHeader{}
+	traceReq.Packet.TransportHeader = protocol.header()
 	routed := bool(true)
 	traceReq.Packet.Routed = &routed
 
@@ -94,7 +114,7 @@ type traceFlowKey struct {
 }
 type traceFlows map[traceFlowKey]TraceFlowObservations
 
-func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string) *traceFlows {
+func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocol traceFlowProtocol) *traceFlows {
 	tfNames := map[traceFlowKey]string{}
 	for _, srcIp := range ips {
 		for _, dstIp := range ips {
@@ -102,7 +122,7 @@ func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []
 			if srcIp == dstIp {
 				continue
 			}
-			if name, err := traceFlow(resources, server, srcIp, dstIp); err != nil {
+			if name, err := traceFlow(resources, server, srcIp, dstIp, protocol); err != nil {
 				logging.Debug(err.Error())
 			} else {
 				tfNames[key] = name
