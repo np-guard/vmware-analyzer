@@ -352,7 +352,6 @@ func (domain *Domain) UnmarshalJSON(b []byte) error {
 	return UnmarshalBaseStructAndFields(b, &domain.Domain, resourcesJSONEntry, &domain.Resources, "", nilWithType)
 }
 
-
 // ///////////////////////////////////////////////////////////////////////////////////////
 func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *t) error {
 	if m, ok := raw[entry]; ok {

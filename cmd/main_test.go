@@ -54,12 +54,7 @@ func Test_main(t *testing.T) {
 		{
 			name: "analyze-topology-svg",
 			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
-				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg",
-		},
-		{
-			name: "analyze-topology-svg-filtered",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
-				" examples/output/topology-filtered.svg --filename examples/output/analysis-filtered.svg -o svg" +
+				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
 				` --output-filter="New Virtual Machine",New-VM-1`,
 		},
 		{

@@ -9,7 +9,6 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
-	"maps"
 	"strings"
 
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
@@ -31,10 +30,7 @@ func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-type TraceFlowObservationElement interface {
-	Name() string
-	Kind() string
-}
+type TraceFlowObservationElement interface {}
 
 type PolicyTraceflowObservationDelivered struct {
 	nsx.PolicyTraceflowObservationDelivered
@@ -85,117 +81,6 @@ type TraceflowObservationReplicationLogical struct {
 	nsx.TraceflowObservationReplicationLogical
 }
 
-func commonString(tf TraceFlowObservationElement) string {
-	b, _ := json.Marshal(tf)
-	var raw map[string]json.RawMessage
-	json.Unmarshal(b, &raw)
-	maps.DeleteFunc(raw, func(k string, v json.RawMessage) bool {
-		//return (strings.Contains(k, "_id") && !strings.Contains(k, "rule")) ||
-		return strings.Contains(k, "timestamp") || k == "sequence_no" ||
-			(k == "component_sub_type" && string(v) == "UNKNOWN") || k == "resource_type"
-	})
-	toPrint, _ := json.MarshalIndent(raw, "", "    ")
-	return string(toPrint)
-}
-
-func (tf *PolicyTraceflowObservationDelivered) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *PolicyTraceflowObservationDropped) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *PolicyTraceflowObservationDroppedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *PolicyTraceflowObservationForwardedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *PolicyTraceflowObservationReceivedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *PolicyTraceflowObservationRelayedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationDelivered) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationDropped) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationDroppedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationForwarded) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationForwardedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationProtected) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationReceived) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationReceivedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationRelayedLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-func (tf *TraceflowObservationReplicationLogical) Kind() string {
-	return string(tf.ResourceType)
-}
-
-func (tf *PolicyTraceflowObservationDelivered) Name() string {
-	return commonString(tf)
-}
-func (tf *PolicyTraceflowObservationDropped) Name() string {
-	return commonString(tf)
-}
-func (tf *PolicyTraceflowObservationDroppedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *PolicyTraceflowObservationForwardedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *PolicyTraceflowObservationReceivedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *PolicyTraceflowObservationRelayedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationDelivered) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationDropped) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationDroppedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationForwarded) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationForwardedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationProtected) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationReceived) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationReceivedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationRelayedLogical) Name() string {
-	return commonString(tf)
-}
-func (tf *TraceflowObservationReplicationLogical) Name() string {
-	return commonString(tf)
-}
-
 type observationNode struct {
 	ip        string
 	vmName    string
@@ -224,7 +109,7 @@ func (o *observationNode) Name() string {
 		res += fmt.Sprintf("dropped here, because %s\n", o.reason)
 	}
 	if o.delivered {
-		res += fmt.Sprintf("delivered here\n")
+		res += "delivered here\n"
 	}
 	if o.rule != nil {
 		res += fmt.Sprintf("rule id %s[%s]\n", *o.rule.Id, *o.rule.DisplayName)
