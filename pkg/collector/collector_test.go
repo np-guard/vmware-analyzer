@@ -58,7 +58,7 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			if err := testTraceflows(got, server); err != nil{
+			if err := testTraceflows(got, server); err != nil {
 				t.Errorf("testTraceflows() error = %v", err)
 				return
 			}
@@ -191,7 +191,7 @@ func testTopology(got *ResourcesContainerModel) {
 	}
 }
 
-func testTraceflows(got *ResourcesContainerModel, server ServerData) error{
+func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 	ips := []string{
 		"192.168.1.1",
 		"192.168.1.2",

@@ -30,7 +30,7 @@ func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-type TraceFlowObservationElement interface {}
+type TraceFlowObservationElement interface{}
 
 type PolicyTraceflowObservationDelivered struct {
 	nsx.PolicyTraceflowObservationDelivered
@@ -141,19 +141,16 @@ func isLastObservation(tf TraceFlowObservationElement) bool {
 	var raw map[string]json.RawMessage
 	json.Unmarshal(b, &raw)
 	eType := string(raw["resource_type"])
-	return  strings.Contains(eType, "Dropped") || strings.Contains(eType, "Delivered")
+	return strings.Contains(eType, "Dropped") || strings.Contains(eType, "Delivered")
 }
-
-
 
 //////////////////////////////////////////////////////////
 
 type TraceFlowObservations []TraceFlowObservationElement
 
 func (tfs TraceFlowObservations) completed() bool {
-	return  len(tfs) > 0 && isLastObservation(tfs[len(tfs)-1])
+	return len(tfs) > 0 && isLastObservation(tfs[len(tfs)-1])
 }
-
 
 func (tfs TraceFlowObservations) observationNodes(resources *ResourcesContainerModel) []*observationNode {
 	res := []*observationNode{}

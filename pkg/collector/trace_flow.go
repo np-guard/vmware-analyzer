@@ -21,17 +21,19 @@ const (
 	protocolUDP  = "udp"
 	protocolICMP = "icmp"
 )
-type traceFlowProtocol struct{
+
+type traceFlowProtocol struct {
 	srcPort, dstPort int
-	protocol string
+	protocol         string
 }
-func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader{
+
+func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	h := &nsx.TransportProtocolHeader{}
-	switch t.protocol{
+	switch t.protocol {
 	case protocolTCP:
-		h.TcpHeader = &nsx.TcpHeader{SrcPort: &t.srcPort,DstPort: &t.dstPort}
+		h.TcpHeader = &nsx.TcpHeader{SrcPort: &t.srcPort, DstPort: &t.dstPort}
 	case protocolUDP:
-		h.UdpHeader = &nsx.UdpHeader{SrcPort: t.srcPort,DstPort: t.dstPort}
+		h.UdpHeader = &nsx.UdpHeader{SrcPort: t.srcPort, DstPort: t.dstPort}
 	case protocolICMP:
 		h.IcmpEchoRequestHeader = &nsx.IcmpEchoRequestHeader{}
 	}
@@ -142,7 +144,7 @@ func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []
 	}
 	return &traceFlows
 }
-func traceFlowsDotGraph(resources *ResourcesContainerModel, ips []string, traceFlows *traceFlows) *common.DotGraph{
+func traceFlowsDotGraph(resources *ResourcesContainerModel, ips []string, traceFlows *traceFlows) *common.DotGraph {
 	g := common.NewDotGraph(false)
 	ipNodes := map[string]*observationNode{}
 	for _, ip := range ips {
