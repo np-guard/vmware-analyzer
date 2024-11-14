@@ -69,7 +69,9 @@ func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByPort(portI
 
 func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByAddress(address string) *VirtualNetworkInterface {
 	i := slices.IndexFunc(resources.VirtualNetworkInterfaceList, func(vni VirtualNetworkInterface) bool {
-		return len(vni.IpAddressInfo) > 0 && len(vni.IpAddressInfo[0].IpAddresses) > 0 && vni.IpAddressInfo[0].IpAddresses[0] == nsx.IPAddress(address)
+		return len(vni.IpAddressInfo) > 0 &&
+			len(vni.IpAddressInfo[0].IpAddresses) > 0 &&
+			vni.IpAddressInfo[0].IpAddresses[0] == nsx.IPAddress(address)
 	})
 	if i >= 0 {
 		return &resources.VirtualNetworkInterfaceList[i]

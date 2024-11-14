@@ -22,6 +22,12 @@ const (
 	protocolICMP = "icmp"
 )
 
+const (
+	traceflowIDSize          = 5
+	traceflowPoolingTime     = 3
+	traceflowNumberOfPooling = 10
+)
+
 type traceFlowProtocol struct {
 	srcPort, dstPort int
 	protocol         string
@@ -40,20 +46,24 @@ func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	return h
 }
 
-func traceFlowRandomID() string {
-	rnd := make([]byte, 5)
-	rand.Read(rnd)
-	return fmt.Sprintf("traceFlow%X", rnd)
-
+func traceFlowRandomID() (string, error) {
+	rnd := make([]byte, traceflowIDSize)
+	if _, err := rand.Read(rnd); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("traceFlow%X", rnd), nil
 }
 
-func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dstIp string, protocol traceFlowProtocol) (string, error) {
-	traceFlowName := traceFlowRandomID()
-	srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIp)
-	dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIp)
+func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIP, dstIP string, protocol traceFlowProtocol) (string, error) {
+	traceFlowName, err := traceFlowRandomID()
+	if err != nil {
+		return "", err
+	}
+	srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
+	dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
 
 	if srcVni == nil {
-		return "", fmt.Errorf("for traceflow, src %s must be a valid vni", srcIp)
+		return "", fmt.Errorf("for traceflow, src %s must be a valid vni", srcIP)
 	}
 	srcMac := srcVni.MacAddress
 	dstMac := srcMac
@@ -61,27 +71,36 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIp, dst
 		dstMac = dstVni.MacAddress
 	}
 	if srcVni.LportAttachmentId == nil {
-		return "", fmt.Errorf("for traceflow, src %s must have port", srcIp)
+		return "", fmt.Errorf("for traceflow, src %s must have port", srcIP)
 	}
 	port := resources.GetSegmentPort(*srcVni.LportAttachmentId)
 	if port == nil {
-		return "", fmt.Errorf("for traceflow, src %s must have port segment", srcIp)
+		return "", fmt.Errorf("for traceflow, src %s must have port segment", srcIP)
 	}
 
 	traceReq := &TraceflowConfig{}
 	traceReq.SourceId = port.UniqueId
 	traceReq.Packet = &nsx.FieldsPacketData{}
 	traceReq.Packet.EthHeader = &nsx.EthernetHeader{SrcMac: srcMac, DstMac: dstMac}
-	srcIPv4 := nsx.IPAddress(srcIp)
-	dstIPv4 := nsx.IPAddress(dstIp)
+	srcIPv4 := nsx.IPAddress(srcIP)
+	dstIPv4 := nsx.IPAddress(dstIP)
 	traceReq.Packet.IpHeader = &nsx.Ipv4Header{SrcIp: &srcIPv4, DstIp: &dstIPv4}
 	traceReq.Packet.TransportHeader = protocol.header()
 	routed := bool(true)
 	traceReq.Packet.Routed = &routed
 
-	b, _ := json.Marshal(traceReq)
-	json.Unmarshal(b, &traceReq)
-	PutResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName), traceReq)
+	b, err := json.Marshal(traceReq)
+	if err != nil {
+		return "", err
+	}
+	err = json.Unmarshal(b, &traceReq)
+	if err != nil {
+		return "", err
+	}
+	err = PutResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName), traceReq)
+	if err != nil {
+		return "", err
+	}
 	return traceFlowName, nil
 }
 
@@ -96,8 +115,7 @@ func collectTraceFlowObservation(server ServerData, traceFlowName string) (Trace
 }
 
 func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObservations, error) {
-	for i := 0; i < 10; i++ {
-		time.Sleep(3 * time.Second)
+	for i := 0; i < traceflowNumberOfPooling; i++ {
 		t, err := collectTraceFlowObservation(server, traceFlowName)
 		if err != nil {
 			return nil, err
@@ -105,6 +123,7 @@ func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlo
 		if t.completed() {
 			return t, nil
 		}
+		time.Sleep(traceflowPoolingTime * time.Second)
 	}
 	return nil, fmt.Errorf("trace flow is not completed")
 }
@@ -118,13 +137,13 @@ type traceFlows map[traceFlowKey]TraceFlowObservations
 
 func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocol traceFlowProtocol) *traceFlows {
 	tfNames := map[traceFlowKey]string{}
-	for _, srcIp := range ips {
-		for _, dstIp := range ips {
-			key := traceFlowKey{srcIp, dstIp}
-			if srcIp == dstIp {
+	for _, srcIP := range ips {
+		for _, dstIP := range ips {
+			key := traceFlowKey{srcIP, dstIP}
+			if srcIP == dstIP {
 				continue
 			}
-			if name, err := traceFlow(resources, server, srcIp, dstIp, protocol); err != nil {
+			if name, err := traceFlow(resources, server, srcIP, dstIP, protocol); err != nil {
 				logging.Debug(err.Error())
 			} else {
 				tfNames[key] = name
