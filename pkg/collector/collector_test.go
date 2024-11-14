@@ -58,19 +58,10 @@ func TestCollectResources(t *testing.T) {
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
 			}
-			err = deleteAllTraceFlows(server)
-			if err != nil {
-				t.Errorf("traceFlow() error = %v", err)
+			if err := testTraceflows(got, server); err != nil{
+				t.Errorf("testTraceflows() error = %v", err)
 				return
 			}
-			ips := []string{
-				"192.168.1.1",
-				"192.168.1.2",
-				"10.127.131.73",
-				"192.168.1.3",
-				"192.0.1.3",
-			}
-			traceFlowsGraph(got, server, ips)
 			testTopology(got)
 			if err := dotTopology(got); err != nil {
 				t.Errorf("dotTopology() error = %v", err)
@@ -198,6 +189,20 @@ func testTopology(got *ResourcesContainerModel) {
 			fmt.Printf("[segment(type)[addr], vm]: [%s, %s]\n", segmentName(segment), vniName(got, vif))
 		}
 	}
+}
+
+func testTraceflows(got *ResourcesContainerModel, server ServerData) error{
+	ips := []string{
+		"192.168.1.1",
+		"192.168.1.2",
+		"10.127.131.73",
+		"192.168.1.3",
+		"192.0.1.3",
+	}
+	tfs := getTraceFlows(got, server, ips)
+	g := traceFlowsDotGraph(got, ips, tfs)
+	_, err := common.OutputGraph(g, path.Join(outDir, "traceflow.dot"), common.DotFormat)
+	return err
 }
 
 func dotTopology(got *ResourcesContainerModel) error {

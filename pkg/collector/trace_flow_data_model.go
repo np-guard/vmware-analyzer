@@ -231,7 +231,7 @@ func (o *observationNode) Name() string {
 	}
 	return res
 }
-func createObservationNode(tf TraceFlowObservationElement, resources *ResourcesContainerModel) *observationNode {
+func toObservationNode(tf TraceFlowObservationElement, resources *ResourcesContainerModel) *observationNode {
 	res := observationNode{}
 	b, _ := json.Marshal(tf)
 	var raw map[string]json.RawMessage
@@ -251,14 +251,29 @@ func createObservationNode(tf TraceFlowObservationElement, resources *ResourcesC
 	return &res
 }
 
+func isLastObservation(tf TraceFlowObservationElement) bool {
+	b, _ := json.Marshal(tf)
+	var raw map[string]json.RawMessage
+	json.Unmarshal(b, &raw)
+	eType := string(raw["resource_type"])
+	return  strings.Contains(eType, "Dropped") || strings.Contains(eType, "Delivered")
+}
+
+
+
 //////////////////////////////////////////////////////////
 
 type TraceFlowObservations []TraceFlowObservationElement
 
+func (tfs TraceFlowObservations) completed() bool {
+	return  len(tfs) > 0 && isLastObservation(tfs[len(tfs)-1])
+}
+
+
 func (tfs TraceFlowObservations) observationNodes(resources *ResourcesContainerModel) []*observationNode {
 	res := []*observationNode{}
 	for _, tf := range tfs {
-		if o := createObservationNode(tf, resources); o != nil {
+		if o := toObservationNode(tf, resources); o != nil {
 			res = append(res, o)
 		}
 	}

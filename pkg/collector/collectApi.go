@@ -110,7 +110,6 @@ func curlPutRequest(server ServerData, query string, data any) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(string(bs))
 	body := bytes.NewReader(bs)
 	return curlRequest(server, query, http.MethodPut, "application/json", body)
 }
