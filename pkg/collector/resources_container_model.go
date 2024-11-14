@@ -112,6 +112,24 @@ func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort
 	return nil
 }
 
+func (resources *ResourcesContainerModel) GetRule(id string) *FirewallRule {
+	for d := range resources.DomainList {
+		for s := range resources.DomainList[d].Resources.SecurityPolicyList {
+			if resources.DomainList[d].Resources.SecurityPolicyList[s].DefaultRule != nil {
+				if *resources.DomainList[d].Resources.SecurityPolicyList[s].DefaultRule.Id == id {
+					return resources.DomainList[d].Resources.SecurityPolicyList[s].DefaultRule
+				}
+			}
+			for r := range resources.DomainList[d].Resources.SecurityPolicyList[s].Rules {
+				if *resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule.Id == id {
+					return &resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule
+				}
+			}
+		}
+	}
+	return nil
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 func (t0 *Tier0) Name() string                    { return *t0.DisplayName }

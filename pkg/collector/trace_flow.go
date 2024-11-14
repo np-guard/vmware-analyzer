@@ -145,7 +145,7 @@ func traceFlowsGraph(resources *ResourcesContainerModel, server ServerData, ips 
 			if srcIp == dstIp || tfObservation[key] == nil {
 				continue
 			}
-			observationNodes := tfObservation[key].observationNodes()
+			observationNodes := tfObservation[key].observationNodes(resources)
 			lastObs := len(observationNodes) - 1
 			g.AddEdge(srcIp, observationNodes[0], nil)
 			g.AddEdge(observationNodes[lastObs], dstIp, nil)

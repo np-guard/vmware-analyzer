@@ -196,37 +196,42 @@ func (tf *TraceflowObservationReplicationLogical) Name() string {
 	return commonString(tf)
 }
 
-
 type observationNode struct {
 	ip        string
 	vmName    string
 	reason    string
-	ruleId    string
-	ruleName  string
+	rule      *FirewallRule
 	dropped   bool
 	delivered bool
 }
 
 func (o *observationNode) Kind() string {
-	if o.ip != "" {
-		return "src/dst"
+	switch {
+	case o.vmName != "":
+		return "Virtual Machine"
+	case o.ip != "":
+		return "dst IP"
 	}
 	return "observation"
 }
+
 func (o *observationNode) Name() string {
-	res := ""
+	res := "\n"
 	if o.ip != "" {
 		res += fmt.Sprintf("%s[%s]\n", o.vmName, o.ip)
 	}
 	if o.dropped {
-		res += fmt.Sprintf("dropped because %s\n", o.reason)
+		res += fmt.Sprintf("dropped here, because %s\n", o.reason)
 	}
-	if o.ruleId != "" {
-		res += fmt.Sprintf("rule id %s[%s]\n", o.ruleId, o.ruleName)
+	if o.delivered {
+		res += fmt.Sprintf("delivered here\n")
+	}
+	if o.rule != nil {
+		res += fmt.Sprintf("rule id %s[%s]\n", *o.rule.Id, *o.rule.DisplayName)
 	}
 	return res
 }
-func createObservationNode(tf TraceFlowObservationElement) *observationNode {
+func createObservationNode(tf TraceFlowObservationElement, resources *ResourcesContainerModel) *observationNode {
 	res := observationNode{}
 	b, _ := json.Marshal(tf)
 	var raw map[string]json.RawMessage
@@ -234,7 +239,11 @@ func createObservationNode(tf TraceFlowObservationElement) *observationNode {
 	eType := string(raw["resource_type"])
 	res.dropped = strings.Contains(eType, "Dropped")
 	res.delivered = strings.Contains(eType, "Delivered")
-	res.ruleId = string(raw["acl_rule_id"])
+	ruleId := string(raw["acl_rule_id"])
+	if ruleId != "" {
+		res.rule = resources.GetRule(ruleId)
+	}
+	res.reason = string(raw["reason"])
 	empty := observationNode{}
 	if res == empty {
 		return nil
@@ -246,10 +255,10 @@ func createObservationNode(tf TraceFlowObservationElement) *observationNode {
 
 type TraceFlowObservations []TraceFlowObservationElement
 
-func (tfs TraceFlowObservations) observationNodes() []*observationNode {
+func (tfs TraceFlowObservations) observationNodes(resources *ResourcesContainerModel) []*observationNode {
 	res := []*observationNode{}
 	for _, tf := range tfs {
-		if o := createObservationNode(tf); o != nil {
+		if o := createObservationNode(tf, resources); o != nil {
 			res = append(res, o)
 		}
 	}
