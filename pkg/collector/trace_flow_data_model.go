@@ -22,11 +22,11 @@ type TraceflowConfig struct {
 	// Policy path or UUID (validated for syntax only) of segment port to start
 	// traceflow from. Auto-plumbed ports don't have corresponding policy path. Both
 	// overlay backed port and VLAN backed port are supported.
-	SourceId *string `json:"source_id,omitempty" yaml:"source_id,omitempty" mapstructure:"source_id,omitempty"` //stylecheck,gocritic // should be the same as in nsx_sdk.go
+	SourceID *string `json:"source_id,omitempty"`
 }
 
 func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, nilWithType, "packet", &config.Packet, "source_id", &config.SourceId)
+	return UnmarshalBaseStructAndFields(b, nilWithType, "packet", &config.Packet, "source_id", &config.SourceID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

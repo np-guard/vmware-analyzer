@@ -79,7 +79,7 @@ func traceFlow(resources *ResourcesContainerModel, server ServerData, srcIP, dst
 	}
 
 	traceReq := &TraceflowConfig{}
-	traceReq.SourceId = port.UniqueId
+	traceReq.SourceID = port.UniqueId
 	traceReq.Packet = &nsx.FieldsPacketData{}
 	traceReq.Packet.EthHeader = &nsx.EthernetHeader{SrcMac: srcMac, DstMac: dstMac}
 	srcIPv4 := nsx.IPAddress(srcIP)
