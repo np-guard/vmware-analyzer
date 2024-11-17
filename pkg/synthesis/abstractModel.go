@@ -21,6 +21,7 @@ type GroupsWithVMs struct {
 	vms   []*endpoints.VM
 }
 
+// map from...
 type GroupsToVMs map[string]GroupsWithVMs
 
 type SegmentsWithVMs struct {
@@ -31,9 +32,11 @@ type SegmentsWithVMs struct {
 // SegmentsToVMs topology; map from segment name to structs of the segments and its VMs
 type SegmentsToVMs map[string]SegmentsWithVMs
 
+// RuleVMs todo: 1st stage ignore vmsGroup
 type RuleVMs struct {
-	vms      []*endpoints.VM
-	vmsGroup *collector.Group // nil if vms do not form a group
+	vms              []*endpoints.VM
+	vmsGroup         []*collector.Group // nil if vms do not form a group or a set of groups
+	groupsOfOrigRule bool               // are the vmsGroup the ones defined by orig rule
 }
 
 type srcsToDstsConn struct {
@@ -45,13 +48,6 @@ type srcsToDstsConn struct {
 // RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
 type RuleForSynthesis struct {
 	dfw.FwRule
-	// src, dst, scope src as described in the original rule, e.g. segment, service. This is to ease later reference,
-	// e.g. in naming the labels
-	// todo: is this useful? how broad is collector TreeNode actually? is it suffice? or perhaps
-	// just use raw data from collector.Rule? or define an abstract interface?
-	abstractSrc   collector.TreeNode
-	abstractDst   collector.TreeNode
-	abstractScope collector.TreeNode
 	// src, dst, conn vms mentioned in the rule that ends up having the rule's action w.r.t. following actual direction
 	// this includes the srcVMs implied by the rule that are not override by higher priority rules with opposite act
 	// note that a single fwRule may have more than one ruleForSynthesis

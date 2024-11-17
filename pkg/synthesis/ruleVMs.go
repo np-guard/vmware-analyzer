@@ -1,5 +1,7 @@
 package synthesis
 
+// todo: 1st stage ignore vmsGroup
+
 // operators on RuleVMs to be used in synthesis
 
 // union of two RulesVMs
@@ -28,9 +30,7 @@ func (thisVMs *RuleVMs) intersection(otherVMs *RuleVMs) *RuleVMs {
 
 // optimize RuleVMs representation, by grouping where possible.
 // E.g. [{m1} -> {m3}, {m1} -> {m4}, {m2} -> {m3}, {m2} -> {m4}, {m5} -> {m6}] is
-//
-//	[{m1, m2} -> {m3, m4}, {m5} -> {m6}]
-//
+// [{m1, m2} -> {m3, m4}, {m5} -> {m6}]
 // note: differentiating between vms that form a group to those that are not is left to the actual synthesis
 func (thisVMs *RuleVMs) group() *RuleVMs {
 	return nil // todo: implement

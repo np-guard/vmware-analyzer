@@ -55,6 +55,7 @@ func actionFromString(s string) ruleAction {
 	}
 }
 
+// FwRule todo: add groups of src and dst
 type FwRule struct {
 	srcVMs        []*endpoints.VM
 	dstVMs        []*endpoints.VM
