@@ -59,19 +59,20 @@ type Clause []*Atomic
 // ToDo: when we simplify CNFExpr, clauses will be translated to map[string]int
 type CNFExpr []Clause
 
-// SymbolicPaths all path from a src VM satisfying src to dst VM satisfying dst
-type SymbolicPaths struct {
+// SymbolicSrcDst all path from a src VM satisfying src to dst VM satisfying dst
+type SymbolicSrcDst struct {
 	src CNFExpr
 	dst CNFExpr
 }
 
+type SymbolicPaths []SymbolicSrcDst
+
 // RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
 type RuleForSynthesis struct {
-	dfw.FwRule                         // original rule
-	actualSymbolicRule []SymbolicPaths // symbolic paths enabled by this rule
+	dfw.FwRule                       // original rule
+	actualSymbolicRule SymbolicPaths // symbolic paths enabled by this rule
 }
 
-// todo: will have to combine different categories into a single list of inbound, outbound
 type symbolicRules struct {
 	inbound  []*RuleForSynthesis // ordered list inbound RuleForSynthesis
 	outbound []*RuleForSynthesis // ordered list outbound RuleForSynthesis
@@ -90,3 +91,17 @@ type VMs map[string]*endpoints.VM
 
 // Atomics map from Atomics string to *Atomic
 type Atomics map[string]*Atomic
+
+// computes for a given rule the symbolic paths it allows; this is done by unrolling higher priority denies with
+// the SymbolicSrcDst of the rule
+func computeSymbolicPathOfRule(myRule dfw.FwRule, denyPath SymbolicPaths) SymbolicPaths {
+	_ = myRule
+	_ = denyPath
+	return nil
+}
+
+// todo: will have to combine different categories into a single list of inbound, outbound
+func computeSymbolicRules(dfw dfw.DFW) symbolicRules {
+	_ = dfw
+	return symbolicRules{nil, nil}
+}
