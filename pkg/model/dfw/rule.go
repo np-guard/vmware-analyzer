@@ -55,7 +55,7 @@ func actionFromString(s string) ruleAction {
 	}
 }
 
-type fwRule struct {
+type FwRule struct {
 	srcVMs        []*endpoints.VM
 	dstVMs        []*endpoints.VM
 	scope         []*endpoints.VM
@@ -68,7 +68,7 @@ type fwRule struct {
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
-func (f *fwRule) effectiveRules() (inbound, outbound *fwRule) {
+func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 	if len(f.scope) == 0 {
 		logging.Debugf("rule %d has no effective inbound/outbound component, since its scope component is empty", f.ruleID)
 		return nil, nil
@@ -80,7 +80,7 @@ func (f *fwRule) effectiveRules() (inbound, outbound *fwRule) {
 	return f.getInboundRule(), f.getOutboundRule()
 }
 
-func (f *fwRule) getInboundRule() *fwRule {
+func (f *FwRule) getInboundRule() *FwRule {
 	// if action is OUT -> return nil
 	if f.direction == string(nsx.RuleDirectionOUT) {
 		logging.Debugf("rule %d has no effective inbound component, since its direction is OUT only", f.ruleID)
@@ -101,7 +101,7 @@ func (f *fwRule) getInboundRule() *fwRule {
 		logging.Debugf("rule %d has no effective inbound component, since its intersction for dest & scope is empty", f.ruleID)
 		return nil
 	}
-	return &fwRule{
+	return &FwRule{
 		srcVMs:        f.srcVMs,
 		dstVMs:        newDest,
 		conn:          f.conn,
@@ -113,7 +113,7 @@ func (f *fwRule) getInboundRule() *fwRule {
 	}
 }
 
-func (f *fwRule) getOutboundRule() *fwRule {
+func (f *FwRule) getOutboundRule() *FwRule {
 	// if action is IN -> return nil
 	if f.direction == string(nsx.RuleDirectionIN) {
 		logging.Debugf("rule %d has no effective outbound component, since its direction is IN only", f.ruleID)
@@ -135,7 +135,7 @@ func (f *fwRule) getOutboundRule() *fwRule {
 		logging.Debugf("rule %d has no effective outbound component, since its intersction for src & scope is empty", f.ruleID)
 		return nil
 	}
-	return &fwRule{
+	return &FwRule{
 		srcVMs:        newSrc,
 		dstVMs:        f.dstVMs,
 		conn:          f.conn,
@@ -147,14 +147,14 @@ func (f *fwRule) getOutboundRule() *fwRule {
 	}
 }
 
-func (f *fwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
+func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 	// in processed rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
 	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 }
 
 // return whether the rule captures the input src,dst VMs on the given direction
-/*func (f *fwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
+/*func (f *FwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
 	vmsCaptured := slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 	if !vmsCaptured {
 		return false
@@ -174,12 +174,12 @@ func vmsString(vms []*endpoints.VM) string {
 }
 
 // return a string representation of a single rule
-func (f *fwRule) string() string {
+func (f *FwRule) string() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
-func (f *fwRule) effectiveRuleStr() string {
+func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, f.secPolicyName)
 }

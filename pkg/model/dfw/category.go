@@ -77,17 +77,17 @@ var categoriesList = []dfwCategory{
 // effectiveRules are built from original rules, split to separate inbound & outbound rules
 // consider already the scope from the original rules
 type effectiveRules struct {
-	inbound  []*fwRule
-	outbound []*fwRule
+	inbound  []*FwRule
+	outbound []*FwRule
 }
 
-func (e *effectiveRules) addInboundRule(r *fwRule) {
+func (e *effectiveRules) addInboundRule(r *FwRule) {
 	if r != nil {
 		e.inbound = append(e.inbound, r)
 	}
 }
 
-func (e *effectiveRules) addOutboundRule(r *fwRule) {
+func (e *effectiveRules) addOutboundRule(r *FwRule) {
 	if r != nil {
 		e.outbound = append(e.outbound, r)
 	}
@@ -95,7 +95,7 @@ func (e *effectiveRules) addOutboundRule(r *fwRule) {
 
 type categorySpec struct {
 	category       dfwCategory
-	rules          []*fwRule // ordered list of rules
+	rules          []*FwRule // ordered list of rules
 	defaultAction  ruleAction
 	processedRules *effectiveRules // ordered list of effective rules
 }
@@ -173,7 +173,7 @@ func (c *categorySpec) outboundEffectiveRules() string {
 
 func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
 	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string) {
-	newRule := &fwRule{
+	newRule := &FwRule{
 		srcVMs:        src,
 		dstVMs:        dst,
 		conn:          conn,
