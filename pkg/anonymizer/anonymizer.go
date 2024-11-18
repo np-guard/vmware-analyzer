@@ -239,7 +239,10 @@ func (a *anonymizer) anonymizeFields(structInstance structInstance) error {
 	for _, f := range a.anonInstruction.fieldsByCondition {
 		a.anonymizeFieldFunc(structInstance, f.fieldName, f.filter)
 	}
+	return nil
+}
 
+func (a *anonymizer) anonymizeFieldsByRef(structInstance structInstance) error {
 	for _, fs := range a.anonInstruction.fieldsByRef {
 		if err := a.anonymizeFieldByRef(structInstance, fs); err != nil {
 			return err

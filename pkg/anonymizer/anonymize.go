@@ -55,6 +55,9 @@ func anonymizeIDRefs(user iteratorUser, structInstance structInstance) error {
 func anonymizeFields(user iteratorUser, structInstance structInstance) error {
 	return user.(*anonymizer).anonymizeFields(structInstance)
 }
+func anonymizeFieldsByRef(user iteratorUser, structInstance structInstance) error {
+	return user.(*anonymizer).anonymizeFieldsByRef(structInstance)
+}
 func collectPaths(user iteratorUser, structInstance structInstance) error {
 	return user.(*anonymizer).collectPaths(structInstance)
 }
