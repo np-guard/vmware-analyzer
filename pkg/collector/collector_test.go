@@ -195,7 +195,7 @@ func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 	ips := []string{
 		"192.168.1.1",
 		"192.168.1.2",
-		"10.127.131.73",
+		"11.12.13.14",
 		"192.168.1.3",
 		"192.0.1.3",
 	}
