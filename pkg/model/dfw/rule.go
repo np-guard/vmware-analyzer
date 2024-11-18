@@ -2,6 +2,7 @@ package dfw
 
 import (
 	"fmt"
+	"github.com/np-guard/vmware-analyzer/pkg/model/synthesis"
 	"slices"
 	"strings"
 
@@ -65,6 +66,11 @@ type FwRule struct {
 	origRuleObj   *collector.Rule
 	ruleID        int
 	secPolicyName string
+	// clause of symbolic src abd symbolic dst
+	// todo: in order to compute these will have to mantain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
+	//       keep it there?
+	symbolicSrc []synthesis.SymbolicPaths
+	symbolicDst []synthesis.SymbolicPaths
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
