@@ -7,6 +7,7 @@ import (
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
+// AbstractModelSyn is an abstraction from which the synthesis is done
 type AbstractModelSyn struct {
 	segments Segments
 	tags     Tags // todo: should be computed by the collector or here?
@@ -26,17 +27,16 @@ type vmLabel interface {
 // Tag a tag used by VMs for labeling in NSX
 // todo: move to collector?
 type Tag struct {
-	name    string
 	tagOrig resources.Tag
 }
 
 func (tag *Tag) Name() string {
-	return tag.name
+	return tag.tagOrig.Tag
 }
 
-// Atomic -> label equal const_string, not Atomic
-// represent a simple condition used for defining a group:
+// Atomic represent a simple condition used for defining a group:
 // tag/segment/name(/computer_Name/OS_Name?) equal/not equal string
+// formally, Atomic -> label equal const_string, not Atomic
 type Atomic struct {
 	label   vmLabel
 	equalTo string
@@ -44,11 +44,38 @@ type Atomic struct {
 }
 
 func (*Atomic) string() string {
-	return "" // todo: implement
+	return ""
+}
+
+// negate an Atomic expression; return pointer to corresponding expression from Atomics, if not there yet then add it
+func (*Atomic) negate(atomics Atomics) *Atomic {
+	return nil
 }
 
 // Clause a CNF Clause of Atomics
 type Clause []*Atomic
+
+// CNFExpr presenting Clauses of Atomics - conditions used for defining a group in NSX
+// ToDo: when we simplify CNFExpr, clauses will be translated to map[string]int
+type CNFExpr []Clause
+
+// SymbolicPaths all path from a src VM satisfying src to dst VM satisfying dst
+type SymbolicPaths struct {
+	src CNFExpr
+	dst CNFExpr
+}
+
+// RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
+type RuleForSynthesis struct {
+	dfw.FwRule                         // original rule
+	actualSymbolicRule []SymbolicPaths // symbolic paths enabled by this rule
+}
+
+// todo: will have to combine different categories into a single list of inbound, outbound
+type symbolicRules struct {
+	inbound  []*RuleForSynthesis // ordered list inbound RuleForSynthesis
+	outbound []*RuleForSynthesis // ordered list outbound RuleForSynthesis
+}
 
 // maps used by AbstractModelSyn
 
@@ -61,27 +88,5 @@ type Tags map[string]*Tag
 // VMs map from VM name to the VM
 type VMs map[string]*endpoints.VM
 
-// Atomics map from Atomics's string to *Atomic
+// Atomics map from Atomics string to *Atomic
 type Atomics map[string]*Atomic
-
-// ToDo: when we simplify CNFExpr, clauses will be translated to map[string]int
-
-type CNFExpr []Clause
-
-// SymbolicPaths all path from a src VM satisfying src to dst VM satisfying dst
-type SymbolicPaths struct {
-	src CNFExpr
-	dst CNFExpr
-}
-
-// RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
-type RuleForSynthesis struct {
-	dfw.FwRule
-	actualSymbolicRule []SymbolicPaths // paths enabled by this rule
-}
-
-// todo: will have to combine different categories into a single list of inbound, outbound
-type symbolicRules struct {
-	inbound  []*RuleForSynthesis // ordered list inbound RuleForSynthesis
-	outbound []*RuleForSynthesis // ordered list outbound RuleForSynthesis
-}
