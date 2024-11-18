@@ -34,6 +34,10 @@ func Test_main(t *testing.T) {
 			args: serverInfo + " --resource-dump-file examples/output/resources.json --skip-analysis",
 		},
 		{
+			name: "collect-anonymize",
+			args: serverInfo + " --resource-dump-file examples/output/resources.json --skip-analysis --anonymize",
+		},
+		{
 			name: "anonymize-only",
 			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json" +
 				" --skip-analysis --anonymize",
