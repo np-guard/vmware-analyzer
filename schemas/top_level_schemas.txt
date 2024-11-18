@@ -25,3 +25,4 @@ L4PortSetServiceEntry
 EtherTypeServiceEntry
 NestedServiceServiceEntry
 FirewallRule
+PolicyGroupMemberDetails

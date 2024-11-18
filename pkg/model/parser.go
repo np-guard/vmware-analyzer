@@ -174,7 +174,7 @@ func (p *NSXConfigParser) allGroups() []*endpoints.VM {
 	for i := range p.rc.DomainList {
 		domainRsc := &p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
-			res = append(res, p.membersToVMsList(domainRsc.GroupList[j].Members)...)
+			res = append(res, p.membersToVMsList(domainRsc.GroupList[j].VMs)...)
 		}
 	}
 	p.allGroupsVMs = res
@@ -291,7 +291,7 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
 		for j := range domainRsc.GroupList {
 			g := &domainRsc.GroupList[j]
 			if g.Path != nil && groupPath == *g.Path {
-				return p.membersToVMsList(g.Members)
+				return p.membersToVMsList(g.VMs)
 			}
 		}
 	}

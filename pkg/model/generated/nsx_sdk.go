@@ -5129,6 +5129,18 @@ type PolicyApiError struct {
 
 type PolicyApiErrorErrorData map[string]interface{}
 
+// Details of the member belonging to a Group
+type PolicyGroupMemberDetails struct {
+	// DisplayName corresponds to the JSON schema field "display_name".
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Path corresponds to the JSON schema field "path".
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+}
+
 type PolicyRelatedApiError struct {
 	// Details corresponds to the JSON schema field "details".
 	Details *string `json:"details,omitempty" yaml:"details,omitempty" mapstructure:"details,omitempty"`

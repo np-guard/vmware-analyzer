@@ -18,7 +18,7 @@ import (
 
 const (
 	rulesJSONEntry          = "rules"
-	membersJSONEntry        = "members"
+	vmsJSONEntry            = "vms"
 	expressionJSONEntry     = "expression"
 	resourcesJSONEntry      = "resources"
 	serviceEntriesJSONEntry = "service_entries"
@@ -254,6 +254,9 @@ type Tier1 struct {
 type RealizedVirtualMachine struct {
 	nsx.RealizedVirtualMachine
 }
+type PolicyGroupMemberDetails struct {
+	nsx.PolicyGroupMemberDetails
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -333,12 +336,18 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 
 type Group struct {
 	nsx.Group
-	Members    []RealizedVirtualMachine `json:"members"`
-	Expression Expression               `json:"expression"`
+	VMs            []RealizedVirtualMachine   `json:"vms,omitempty"`
+	VIFs           []VirtualNetworkInterface  `json:"vifs,omitempty"`
+	Segments       []PolicyGroupMemberDetails `json:"segments,omitempty"`
+	SegmentPorts   []PolicyGroupMemberDetails `json:"segment_ports,omitempty"`
+	TransportNodes []PolicyGroupMemberDetails `json:"transport_nodes,omitempty"`
+	IPAddresses    []string                   `json:"ip_addresses,omitempty"`
+	Expression     Expression                 `json:"expression"`
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &group.Group, membersJSONEntry, &group.Members, expressionJSONEntry, &group.Expression)
+	// todo - to fix for all fields
+	return UnmarshalBaseStructAndFields(b, &group.Group, vmsJSONEntry, &group.VMs, expressionJSONEntry, &group.Expression)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
