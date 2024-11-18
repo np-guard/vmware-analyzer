@@ -4,6 +4,7 @@ package endpoints
 type VM struct {
 	name string
 	uid  string
+	tags []string //todo: implement
 	// address string
 }
 
