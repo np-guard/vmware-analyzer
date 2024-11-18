@@ -28442,37 +28442,48 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin-Web"
+            "display_name": "Slytherin-Web",
+            "external_id": "Slytherin-Web"
         },
         {
-            "display_name": "Slytherin-App"
+            "display_name": "Slytherin-App",
+            "external_id": "Slytherin-App"
         },
         {
-            "display_name": "Slytherin-DB"
+            "display_name": "Slytherin-DB",
+            "external_id": "Slytherin-DB"
         },
         {
-            "display_name": "Hufflepuff-Web"
+            "display_name": "Hufflepuff-Web",
+            "external_id": "Hufflepuff-Web"
         },
         {
-            "display_name": "Hufflepuff-App"
+            "display_name": "Hufflepuff-App",
+            "external_id": "Hufflepuff-App"
         },
         {
-            "display_name": "Hufflepuff-DB"
+            "display_name": "Hufflepuff-DB",
+            "external_id": "Hufflepuff-DB"
         },
         {
-            "display_name": "Gryffindor-Web"
+            "display_name": "Gryffindor-Web",
+            "external_id": "Gryffindor-Web"
         },
         {
-            "display_name": "Gryffindor-App"
+            "display_name": "Gryffindor-App",
+            "external_id": "Gryffindor-App"
         },
         {
-            "display_name": "Gryffindor-DB"
+            "display_name": "Gryffindor-DB",
+            "external_id": "Gryffindor-DB"
         },
         {
-            "display_name": "Dumbledore1"
+            "display_name": "Dumbledore1",
+            "external_id": "Dumbledore1"
         },
         {
-            "display_name": "Dumbledore2"
+            "display_name": "Dumbledore2",
+            "external_id": "Dumbledore2"
         }
     ],
     "virtual_network_interface": null,
@@ -28890,120 +28901,12 @@
                 ],
                 "groups": [
                     {
-                        "display_name": "Gryffindor-Web",
-                        "path": "Gryffindor-Web",
-                        "members": [
-                            {
-                                "display_name": "Gryffindor-Web"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Gryffindor-DB",
-                        "path": "Gryffindor-DB",
-                        "members": [
-                            {
-                                "display_name": "Gryffindor-DB"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
                         "display_name": "Hufflepuff-DB",
                         "path": "Hufflepuff-DB",
                         "members": [
                             {
-                                "display_name": "Hufflepuff-DB"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
-                        "members": [
-                            {
-                                "display_name": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App"
-                            },
-                            {
-                                "display_name": "Slytherin-DB"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Slytherin-Web",
-                        "path": "Slytherin-Web",
-                        "members": [
-                            {
-                                "display_name": "Slytherin-Web"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Dumbledore",
-                        "path": "Dumbledore",
-                        "members": [
-                            {
-                                "display_name": "Dumbledore1"
-                            },
-                            {
-                                "display_name": "Dumbledore2"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Slytherin-App",
-                        "path": "Slytherin-App",
-                        "members": [
-                            {
-                                "display_name": "Slytherin-App"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Slytherin-DB",
-                        "path": "Slytherin-DB",
-                        "members": [
-                            {
-                                "display_name": "Slytherin-DB"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Gryffindor-App",
-                        "path": "Gryffindor-App",
-                        "members": [
-                            {
-                                "display_name": "Gryffindor-App"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Hufflepuff-Web",
-                        "path": "Hufflepuff-Web",
-                        "members": [
-                            {
-                                "display_name": "Hufflepuff-Web"
-                            }
-                        ],
-                        "expression": null
-                    },
-                    {
-                        "display_name": "Hufflepuff-App",
-                        "path": "Hufflepuff-App",
-                        "members": [
-                            {
-                                "display_name": "Hufflepuff-App"
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
                             }
                         ],
                         "expression": null
@@ -29013,13 +28916,94 @@
                         "path": "Hufflepuff",
                         "members": [
                             {
-                                "display_name": "Hufflepuff-Web"
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
                             },
                             {
-                                "display_name": "Hufflepuff-App"
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
                             },
                             {
-                                "display_name": "Hufflepuff-DB"
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Dumbledore",
+                        "path": "Dumbledore",
+                        "members": [
+                            {
+                                "display_name": "Dumbledore1",
+                                "id": "Dumbledore1"
+                            },
+                            {
+                                "display_name": "Dumbledore2",
+                                "id": "Dumbledore2"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Slytherin-Web",
+                        "path": "Slytherin-Web",
+                        "members": [
+                            {
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Slytherin-App",
+                        "path": "Slytherin-App",
+                        "members": [
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Gryffindor-App",
+                        "path": "Gryffindor-App",
+                        "members": [
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Hufflepuff-App",
+                        "path": "Hufflepuff-App",
+                        "members": [
+                            {
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Slytherin",
+                        "path": "Slytherin",
+                        "members": [
+                            {
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            },
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
                             }
                         ],
                         "expression": null
@@ -29029,13 +29013,60 @@
                         "path": "Gryffindor",
                         "members": [
                             {
-                                "display_name": "Gryffindor-Web"
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
                             },
                             {
-                                "display_name": "Gryffindor-App"
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
                             },
                             {
-                                "display_name": "Gryffindor-DB"
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Slytherin-DB",
+                        "path": "Slytherin-DB",
+                        "members": [
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Gryffindor-Web",
+                        "path": "Gryffindor-Web",
+                        "members": [
+                            {
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Gryffindor-DB",
+                        "path": "Gryffindor-DB",
+                        "members": [
+                            {
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
+                            }
+                        ],
+                        "expression": null
+                    },
+                    {
+                        "display_name": "Hufflepuff-Web",
+                        "path": "Hufflepuff-Web",
+                        "members": [
+                            {
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
                             }
                         ],
                         "expression": null
