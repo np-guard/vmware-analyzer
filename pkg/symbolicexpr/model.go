@@ -1,10 +1,10 @@
 package symbolicexpr
 
-// the package implements a symbolic expression of enabled paths from symbolic Src to symbolic Dst, expressed as CNF
+// the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
-// Virtual machines' labels used in Atomic, e.g. tag = "backend"
-// the following are used by NSX: Tag, Segment, (VM) Name, OS_Name, Computer_Name
-// implemented by collector.Segment, endpoints.vm, synthesis.Tag
+// Virtual machines' labels used in atomic group expr, e.g. tag = "backend"
+// Used by NSX: Tag, Segment, (VM) Name, OS_Name, Computer_Name
+// vmLabel implemented by collector.Segment, endpoints.vm, synthesis.Tag
 // todo: Support OSName and ComputerName at POC?
 type vmLabel interface {
 	Name() string
