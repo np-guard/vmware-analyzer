@@ -25,9 +25,9 @@ type Atomic struct {
 }
 
 func (atomic *Atomic) string() string {
-	equalSign := "="
+	equalSign := " = "
 	if atomic.neg {
-		equalSign = "!="
+		equalSign = " != "
 	}
 	labelType := ""
 	switch atomic.label.(type) {

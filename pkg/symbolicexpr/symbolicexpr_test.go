@@ -1,0 +1,32 @@
+package symbolicexpr
+
+import (
+	"fmt"
+	"testing"
+)
+
+type testTag struct {
+	name string
+}
+
+func initTestTag(name string) *testTag {
+	return &testTag{name: name}
+}
+
+func (testT *testTag) Name() string {
+	return testT.name
+}
+
+func TestSymbolicExpr(t *testing.T) {
+	atomics := Atomics{}
+	for i := 1; i <= 10; i++ {
+		testTag := initTestTag(fmt.Sprintf("tag%v", i))
+		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("equalTo%v", i), neg: i%2 == 0}
+		fmt.Println(atomic.string())
+		atomics[atomic.string()] = atomic
+	}
+	for key, myAtomic := range atomics {
+		// todo: what's wrong with myAtomic.negate().string()?
+		fmt.Printf("key: %v, neg?: %v\n", key, myAtomic.neg)
+	}
+}
