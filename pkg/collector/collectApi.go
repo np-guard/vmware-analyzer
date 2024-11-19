@@ -174,17 +174,23 @@ func unmarshalResults[A any](b []byte) (*A, error) {
 	return data.Results, nil
 }
 
+
+type nestedError struct {
+	ErrorMessage  string            `json:"error_message"`
+	ErrorCode     int               `json:"error_code"`
+	RelatedErrors []nestedError `json:"related_errors"`
+}
 func getUnmarshalError(b []byte) error {
-	errorData := struct {
-		ErrorMessage string `json:"error_message"`
-		ErrorCode    int    `json:"error_code"`
-	}{}
+	errorData := nestedError{}
 	err := json.Unmarshal(b, &errorData)
 	if err != nil {
 		return err
 	}
 	if errorData.ErrorCode != 0 || errorData.ErrorMessage != "" {
-		return fmt.Errorf("http error %d: %s", errorData.ErrorCode, errorData.ErrorMessage)
+		for _,e := range errorData.RelatedErrors{
+			fmt.Println(e.ErrorMessage)
+		}
+		return fmt.Errorf("api error %d: %s", errorData.ErrorCode, errorData.ErrorMessage)
 	}
-	return fmt.Errorf("fail to unmarshal %s", b)
+	return fmt.Errorf("fail to unmarshal %s", string(b))
 }

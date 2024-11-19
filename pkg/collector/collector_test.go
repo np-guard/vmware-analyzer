@@ -193,16 +193,27 @@ func testTopology(got *ResourcesContainerModel) {
 
 func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 	ips := []string{
+		"192.168.0.1",
 		"192.168.1.1",
-		"192.168.1.2",
-		"11.12.13.14",
-		"192.168.1.3",
-		"192.0.1.3",
+		// "192.168.1.2",
+		// "11.12.13.14",
+		// "192.168.1.3",
+		// "192.0.1.3",
 	}
-	protocol := traceFlowProtocol{protocol: protocolICMP}
-	tfs := getTraceFlows(got, server, ips, protocol)
-	g := traceFlowsDotGraph(got, ips, tfs)
-	_, err := common.OutputGraph(g, path.Join(outDir, "traceflow.dot"), common.DotFormat)
+	protocols := []traceFlowProtocol{
+		{Protocol: protocolICMP},
+		// 		{Protocol: protocolTCP, SrcPort: 8080, DstPort: 9080},
+	}
+	tfs := getTraceFlows(got, server, ips, protocols)
+	jOut, err := tfs.toJSONString()
+	if err != nil {
+		return err
+	}
+	if err = common.WriteToFile(path.Join(outDir, "traceflowsObservations.json"), jOut); err != nil {
+		return err
+	}
+	// g := traceFlowsDotGraph(got, ips, tfs)
+	// _, err := common.OutputGraph(g, path.Join(outDir, "traceflow.dot"), common.DotFormat)
 	return err
 }
 
