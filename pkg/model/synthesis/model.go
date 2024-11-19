@@ -4,7 +4,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -19,18 +18,8 @@ type AbstractModelSyn struct {
 	rules    []*symbolicRules     // with default deny
 }
 
-// Tag a tag used by VMs for labeling in NSX
-// todo: move to collector?
-type Tag struct {
-	tagOrig resources.Tag
-}
-
-func (tag *Tag) Name() string {
-	return tag.tagOrig.Tag
-}
-
 // Tags map from tag's name to the tag
-type Tags map[string]*Tag
+type Tags map[string]*collector.Tag
 
 // RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
 //
