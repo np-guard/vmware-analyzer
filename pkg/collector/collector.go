@@ -8,6 +8,8 @@ package collector
 
 import (
 	"fmt"
+
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -144,4 +146,13 @@ func FixResourcesForJSON(res *ResourcesContainerModel) {
 			}
 		}
 	}
+}
+
+// Tag a tag used by VMs for labeling in NSX
+type Tag struct {
+	tagOrig resources.Tag
+}
+
+func (tag *Tag) Name() string {
+	return tag.tagOrig.Tag
 }
