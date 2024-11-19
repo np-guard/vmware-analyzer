@@ -94,14 +94,18 @@ type Atomics map[string]*Atomic
 
 // computes for a given rule the symbolic paths it allows; this is done by unrolling higher priority denies with
 // the SymbolicSrcDst of the rule
-func computeSymbolicPathOfRule(myRule dfw.FwRule, denyPath SymbolicPaths) SymbolicPaths {
+func computeSymbolicPathOfRule(myRule *dfw.FwRule, denyPath SymbolicPaths) SymbolicPaths {
+	// temp for lint
 	_ = myRule
 	_ = denyPath
 	return nil
 }
 
+// ComputeSymbolicRules computes abstract rules in model for synthesis
 // todo: will have to combine different categories into a single list of inbound, outbound
-func computeSymbolicRules(dfw dfw.DFW) symbolicRules {
-	_ = dfw
+func ComputeSymbolicRules(fireWall dfw.DFW) symbolicRules {
+	// temp for lint
+	_ = fireWall
+	computeSymbolicPathOfRule(nil, nil)
 	return symbolicRules{nil, nil}
 }

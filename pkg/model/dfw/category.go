@@ -2,6 +2,7 @@ package dfw
 
 import (
 	"fmt"
+	"github.com/np-guard/vmware-analyzer/pkg/model/synthesis"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
@@ -183,6 +184,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 		origRuleObj:   origRule,
 		scope:         scope,
 		secPolicyName: secPolicyName,
+		symbolicSrc:   []*synthesis.SymbolicSrcDst{}, // todo tmp
+		symbolicDst:   []*synthesis.SymbolicSrcDst{}, // todo tmp
 	}
 	c.rules = append(c.rules, newRule)
 
