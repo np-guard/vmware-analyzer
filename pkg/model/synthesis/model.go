@@ -8,7 +8,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
-// AbstractModelSyn is an abstraction from which the synthesis is done
+// AbstractModelSyn is an abstraction from which the synthesis is performed
 //
 //nolint:all // todo: tmp for defs without implementation
 type AbstractModelSyn struct {
@@ -59,7 +59,6 @@ type VMs map[string]*endpoints.VM
 //
 //nolint:all // todo: tmp for defs without implementation
 func computeSymbolicRules(fireWall dfw.DFW) symbolicRules {
-	// temp for lint
 	_ = fireWall
 	symbolicexpr.ComputeAllowGivenDenys(symbolicexpr.SymbolicSrcDst{}, nil)
 	return symbolicRules{nil, nil}
