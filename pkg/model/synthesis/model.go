@@ -9,6 +9,8 @@ import (
 )
 
 // AbstractModelSyn is an abstraction from which the synthesis is done
+//
+//nolint:all // todo: tmp for defs without implementation
 type AbstractModelSyn struct {
 	segments Segments
 	tags     Tags // todo: should be computed by the collector or here?
@@ -31,6 +33,8 @@ func (tag *Tag) Name() string {
 type Tags map[string]*Tag
 
 // RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
+//
+//nolint:all // todo: tmp for defs without implementation
 type RuleForSynthesis struct {
 	dfw.FwRule                                    // original rule
 	actualSymbolicRule symbolicexpr.SymbolicPaths // symbolic paths enabled by this rule
