@@ -1,6 +1,6 @@
 package endpoints
 
-// intenal modeling for vmware endpoints
+// VM intenal modeling for vmware endpoints
 type VM struct {
 	name string
 	uid  string
@@ -13,6 +13,7 @@ func (v *VM) ID() string {
 }
 
 func (v *VM) Name() string {
+	_ = v.tags // todo tmp
 	return v.name
 }
 
@@ -24,6 +25,7 @@ func NewVM(name, uid string) *VM {
 	return &VM{
 		name: name,
 		uid:  uid,
+		tags: []string{}, // todo tmp
 	}
 }
 
