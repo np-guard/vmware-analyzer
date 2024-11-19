@@ -2,13 +2,13 @@ package dfw
 
 import (
 	"fmt"
-	"github.com/np-guard/vmware-analyzer/pkg/model/synthesis"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
@@ -184,8 +184,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 		origRuleObj:   origRule,
 		scope:         scope,
 		secPolicyName: secPolicyName,
-		symbolicSrc:   []*synthesis.SymbolicSrcDst{}, // todo tmp
-		symbolicDst:   []*synthesis.SymbolicSrcDst{}, // todo tmp
+		symbolicSrc:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
 	}
 	c.rules = append(c.rules, newRule)
 

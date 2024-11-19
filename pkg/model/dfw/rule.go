@@ -2,7 +2,6 @@ package dfw
 
 import (
 	"fmt"
-	"github.com/np-guard/vmware-analyzer/pkg/model/synthesis"
 	"slices"
 	"strings"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -67,10 +67,10 @@ type FwRule struct {
 	ruleID        int
 	secPolicyName string
 	// clause of symbolic src abd symbolic dst
-	// todo: in order to compute these will have to mantain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
+	// todo: in order to compute these will have to maintain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
 	//       keep it there?
-	symbolicSrc []*synthesis.SymbolicSrcDst
-	symbolicDst []*synthesis.SymbolicSrcDst
+	symbolicSrc []*symbolicexpr.SymbolicSrcDst
+	symbolicDst []*symbolicexpr.SymbolicSrcDst
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
@@ -116,8 +116,8 @@ func (f *FwRule) getInboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*synthesis.SymbolicSrcDst{}, // todo tmp
-		symbolicDst:   []*synthesis.SymbolicSrcDst{}, // todo tmp
+		symbolicSrc:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
 	}
 }
 
@@ -152,8 +152,8 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*synthesis.SymbolicSrcDst{}, // todo tmp
-		symbolicDst:   []*synthesis.SymbolicSrcDst{}, // todo tmp
+		symbolicSrc:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
 	}
 }
 
