@@ -40,6 +40,7 @@ type RuleForSynthesis struct {
 	actualSymbolicRule symbolicexpr.SymbolicPaths // symbolic paths enabled by this rule
 }
 
+//nolint:all // todo: tmp for defs without implementation
 type symbolicRules struct {
 	inbound  []*RuleForSynthesis // ordered list inbound RuleForSynthesis
 	outbound []*RuleForSynthesis // ordered list outbound RuleForSynthesis
@@ -56,7 +57,7 @@ type VMs map[string]*endpoints.VM
 // computeSymbolicRules computes abstract rules in model for synthesis
 // todo: will have to combine different categories into a single list of inbound, outbound
 //
-//nolint:all // todo tmp
+//nolint:all // todo: tmp for defs without implementation
 func computeSymbolicRules(fireWall dfw.DFW) symbolicRules {
 	// temp for lint
 	_ = fireWall
