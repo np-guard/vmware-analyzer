@@ -94,12 +94,12 @@ func toRawMap(tf TraceFlowObservationElement) (map[string]json.RawMessage, error
 	return raw, nil
 }
 
-func getRule(tf TraceFlowObservationElement) (string, error) {
+func getRule(tf TraceFlowObservationElement) (string, string, error) {
 	raw, err := toRawMap(tf)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
-	return string(raw["acl_rule_id"]), nil
+	return string(raw["acl_rule_id"]), string(raw["component_type"][1:len(raw["component_type"])-1]), nil
 }
 
 func isLastObservation(tf TraceFlowObservationElement) bool {
@@ -134,6 +134,7 @@ func (tfs TraceFlowObservations) isDelivered() bool {
 type traceflowResult struct {
 	Delivered bool   `json:"delivered"`
 	SrcRuleID string `json:"src_rule_id,omitempty"`
+	NatRuleID string `json:"nat_rule_id,omitempty"`
 	DstRuleID string `json:"dst_rule_id,omitempty"`
 	Error     string `json:"error,omitempty"`
 }
@@ -146,12 +147,16 @@ func (tfs TraceFlowObservations) results() traceflowResult {
 		res.Delivered = tfs.isDelivered()
 	}
 	for _, tf := range tfs {
-		ruleId, err := getRule(tf)
+		ruleId, comType, err := getRule(tf)
 		switch {
 		case err != nil:
 			res.Error = err.Error()
 			return res
 		case ruleId == "":
+		case comType == "NAT" && res.NatRuleID != "":
+			res.Error = "got two nat rules in one traceflow"
+		case comType == "NAT":
+			res.NatRuleID = ruleId
 		case res.SrcRuleID == "":
 			res.SrcRuleID = ruleId
 		case res.DstRuleID == "":

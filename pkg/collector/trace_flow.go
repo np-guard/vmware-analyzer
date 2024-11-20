@@ -24,8 +24,21 @@ const (
 const (
 	traceflowIDSize          = 5
 	traceflowPoolingTime     = 3 * time.Second
+	traceflowCreationTime    = time.Second
 	traceflowNumberOfPooling = 10
 )
+
+type traceFlow struct {
+	Src          string                `json:"src,omitempty"`
+	Dst          string                `json:"dst,omitempty"`
+	SrcVM        string                `json:"src_vm,omitempty"`
+	DstVM        string                `json:"dst_vm,omitempty"`
+	Protocol     traceFlowProtocol     `json:"protocol,omitempty"`
+	Name         string                `json:"name,omitempty"`
+	Errors       []string              `json:"errors,omitempty"`
+	Results      traceflowResult       `json:"results,omitempty"`
+	Observations TraceFlowObservations `json:"observation,omitempty"`
+}
 
 type traceFlowProtocol struct {
 	SrcPort  int    `json:"src_port,omitempty"`
@@ -45,6 +58,65 @@ func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	}
 	return h
 }
+
+type traceFlows []*traceFlow
+
+// ToJSONString converts a traceFlows into a json-formatted-string
+func (tfs *traceFlows) toJSONString() (string, error) {
+	toPrint, err := json.MarshalIndent(tfs, "", "    ")
+	return string(toPrint), err
+}
+
+func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []traceFlowProtocol) *traceFlows {
+	traceFlows := traceFlows{}
+	for _, srcIP := range ips {
+		for _, dstIP := range ips {
+			for _, protocol := range protocols {
+				if srcIP == dstIP {
+					continue
+				}
+				srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
+				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
+				traceFlow := &traceFlow{Src: srcIP, Dst: dstIP, Protocol: protocol}
+				if srcVni != nil {
+					traceFlow.SrcVM = *resources.GetVirtualMachine(*srcVni.OwnerVmId).DisplayName
+				}
+				if dstVni != nil {
+					traceFlow.DstVM = *resources.GetVirtualMachine(*dstVni.OwnerVmId).DisplayName
+				}
+
+				traceFlows = append(traceFlows, traceFlow)
+				if name, err := createTraceFlow(resources, server, srcIP, dstIP, protocol); err != nil {
+					logging.Debug(err.Error())
+					traceFlow.Errors = append(traceFlow.Errors, err.Error())
+				} else {
+					traceFlow.Name = name
+				}
+				time.Sleep(traceflowCreationTime)
+			}
+		}
+	}
+	time.Sleep(traceflowPoolingTime)
+	for _, traceFlow := range traceFlows {
+		if len(traceFlow.Errors) > 0 {
+			continue
+		}
+		if obs, err := poolTraceFlowObservation(server, traceFlow.Name); err != nil {
+			logging.Debug(err.Error())
+			traceFlow.Errors = append(traceFlow.Errors, err.Error())
+		} else {
+			traceFlow.Observations = obs
+		}
+		if err := deleteTraceFlow(server, traceFlow.Name); err != nil {
+			logging.Debug(err.Error())
+			traceFlow.Errors = append(traceFlow.Errors, err.Error())
+		}
+		traceFlow.Results = traceFlow.Observations.results()
+	}
+	return &traceFlows
+}
+
+/////////////////////////////////////////////////////////////////////////////////
 
 func traceFlowRandomID() (string, error) {
 	rnd := make([]byte, traceflowIDSize)
@@ -131,70 +203,3 @@ func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlo
 }
 
 //////////////////////////////////////////////////////////////////
-
-type traceFlow struct {
-	Src         string                `json:"src,omitempty"`
-	Dst         string                `json:"dst,omitempty"`
-	SrcVM       string                `json:"src_vm,omitempty"`
-	DstVM       string                `json:"dst_vm,omitempty"`
-	Protocol    traceFlowProtocol     `json:"protocol,omitempty"`
-	Name        string                `json:"name,omitempty"`
-	Errors      []string              `json:"errors,omitempty"`
-	Results     traceflowResult       `json:"results,omitempty"`
-	Observations TraceFlowObservations `json:"observation,omitempty"`
-}
-type traceFlows []*traceFlow
-
-// ToJSONString converts a traceFlows into a json-formatted-string
-func (tfs *traceFlows) toJSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(tfs, "", "    ")
-	return string(toPrint), err
-}
-
-func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []traceFlowProtocol) *traceFlows {
-	traceFlows := traceFlows{}
-	for _, srcIP := range ips {
-		for _, dstIP := range ips {
-			for _, protocol := range protocols {
-				if srcIP == dstIP {
-					continue
-				}
-				srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
-				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
-				traceFlow := &traceFlow{Src: srcIP, Dst: dstIP, Protocol: protocol}
-				if srcVni != nil {
-					traceFlow.SrcVM = *resources.GetVirtualMachine(*srcVni.OwnerVmId).DisplayName
-				}
-				if dstVni != nil {
-					traceFlow.DstVM = *resources.GetVirtualMachine(*dstVni.OwnerVmId).DisplayName
-				}
-
-				traceFlows = append(traceFlows, traceFlow)
-				if name, err := createTraceFlow(resources, server, srcIP, dstIP, protocol); err != nil {
-					logging.Debug(err.Error())
-					traceFlow.Errors = append(traceFlow.Errors, err.Error())
-				} else {
-					traceFlow.Name = name
-				}
-			}
-		}
-	}
-	time.Sleep(traceflowPoolingTime)
-	for _, traceFlow := range traceFlows {
-		if len(traceFlow.Errors) > 0 {
-			continue
-		}
-		if obs, err := poolTraceFlowObservation(server, traceFlow.Name); err != nil {
-			logging.Debug(err.Error())
-			traceFlow.Errors = append(traceFlow.Errors, err.Error())
-		} else {
-			traceFlow.Observations = obs
-		}
-		if err := deleteTraceFlow(server, traceFlow.Name); err != nil {
-			logging.Debug(err.Error())
-			traceFlow.Errors = append(traceFlow.Errors, err.Error())
-		}
-		traceFlow.Results = traceFlow.Observations.results()
-	}
-	return &traceFlows
-}

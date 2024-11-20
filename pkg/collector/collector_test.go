@@ -202,7 +202,7 @@ func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 	}
 	protocols := []traceFlowProtocol{
 		{Protocol: protocolICMP},
-		{Protocol: protocolTCP, SrcPort: 8080, DstPort: 9080},
+		{Protocol: protocolUDP, SrcPort: 8080, DstPort: 9080},
 	}
 	tfs := getTraceFlows(got, server, ips, protocols)
 	jOut, err := tfs.toJSONString()
