@@ -1,10 +1,5 @@
 package symbolicexpr
 
-import (
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-)
-
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
 // Virtual machines' labels used in atomic group expr, e.g. tag = "backend"
@@ -22,28 +17,6 @@ type Atomic struct {
 	label vmLabel
 	toVal string
 	neg   bool
-}
-
-func (atomic *Atomic) string() string {
-	equalSign := " = "
-	if atomic.neg {
-		equalSign = " != "
-	}
-	labelType := ""
-	switch atomic.label.(type) {
-	case *collector.Segment:
-		labelType = "segment "
-	case *endpoints.VM:
-		labelType = "virtual machine "
-	case *collector.Tag:
-		labelType = "tag "
-	}
-	return labelType + atomic.label.Name() + equalSign + atomic.toVal
-}
-
-// negate an Atomic expression; return pointer to corresponding expression from Atomics, if not there yet then add it
-func (atomic *Atomic) negate() *Atomic {
-	return &Atomic{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
 }
 
 // Conjunction a DNF Conjunction of Atomics
