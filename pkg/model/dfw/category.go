@@ -13,10 +13,10 @@ import (
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
 
-type dfwCategory int
+type DfwCategory int
 
 const (
-	ethernetCategory dfwCategory = iota
+	ethernetCategory DfwCategory = iota
 	emergencyCategory
 	infrastructureCategory
 	envCategory
@@ -33,7 +33,7 @@ const (
 	EmptyStr          = "<Empty>"
 )
 
-/*func dfwCategoryFromString(s string) dfwCategory {
+/*func dfwCategoryFromString(s string) DfwCategory {
 	switch s {
 	case EthernetStr:
 		return ethernetCategory
@@ -52,7 +52,7 @@ const (
 	}
 }*/
 
-func (d dfwCategory) string() string {
+func (d DfwCategory) string() string {
 	switch d {
 	case ethernetCategory:
 		return EthernetStr
@@ -71,7 +71,7 @@ func (d dfwCategory) string() string {
 	}
 }
 
-var categoriesList = []dfwCategory{
+var categoriesList = []DfwCategory{
 	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, appCategoty, emptyCategory,
 }
 
@@ -95,7 +95,7 @@ func (e *effectiveRules) addOutboundRule(r *FwRule) {
 }
 
 type categorySpec struct {
-	category       dfwCategory
+	category       DfwCategory
 	rules          []*FwRule // ordered list of rules
 	defaultAction  ruleAction
 	processedRules *effectiveRules // ordered list of effective rules
@@ -198,7 +198,7 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 	}
 }
 
-func newEmptyCategory(c dfwCategory) *categorySpec {
+func newEmptyCategory(c DfwCategory) *categorySpec {
 	return &categorySpec{
 		category:       c,
 		defaultAction:  actionNone,
