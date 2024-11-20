@@ -25,8 +25,11 @@ type Tags map[string]*collector.Tag
 //
 //nolint:all // todo: tmp for defs without implementation
 type RuleForSynthesis struct {
-	dfw.FwRule                                    // original rule
-	actualSymbolicRule symbolicexpr.SymbolicPaths // symbolic paths enabled by this rule
+	origRule dfw.FwRule // original rule
+	// category; needed for interpreting path
+	// a pass rule is interpreted as deny for the current category
+	category         dfw.DfwCategory
+	flatSymbolicRule symbolicexpr.SymbolicPaths // symbolic paths enabled by this rule
 }
 
 //nolint:all // todo: tmp for defs without implementation
