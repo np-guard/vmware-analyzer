@@ -18,13 +18,11 @@ func (testT *testTag) Name() string {
 }
 
 func TestSymbolicExpr(t *testing.T) {
-	atomics := Atomics{}
+	conj1 := Conjunction{}
 	for i := 1; i <= 10; i++ {
 		testTag := initTestTag(fmt.Sprintf("tag%v", i))
 		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("equalTo%v", i), neg: i%2 == 0}
-		atomics[atomic.string()] = atomic
+		conj1 = *conj1.add(atomic)
 	}
-	for key, myAtomic := range atomics {
-		fmt.Printf("key: %v, negate: %s\n", key, myAtomic.negate().string())
-	}
+	println(conj1.string())
 }
