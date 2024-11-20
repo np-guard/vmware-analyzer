@@ -13,10 +13,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
+
+const rateTimeLimit = 200 * time.Millisecond
 
 func fixLowerCaseEnums(b []byte) []byte {
 	enumVals := []nsx.RealizedVirtualMachinePowerState{
@@ -135,6 +139,7 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
+	time.Sleep(rateTimeLimit)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -174,12 +179,12 @@ func unmarshalResults[A any](b []byte) (*A, error) {
 	return data.Results, nil
 }
 
-
 type nestedError struct {
-	ErrorMessage  string            `json:"error_message"`
-	ErrorCode     int               `json:"error_code"`
+	ErrorMessage  string        `json:"error_message"`
+	ErrorCode     int           `json:"error_code"`
 	RelatedErrors []nestedError `json:"related_errors"`
 }
+
 func getUnmarshalError(b []byte) error {
 	errorData := nestedError{}
 	err := json.Unmarshal(b, &errorData)
@@ -187,10 +192,11 @@ func getUnmarshalError(b []byte) error {
 		return err
 	}
 	if errorData.ErrorCode != 0 || errorData.ErrorMessage != "" {
-		for _,e := range errorData.RelatedErrors{
-			fmt.Println(e.ErrorMessage)
+		eStrings := []string{fmt.Sprintf("api error %d: %s", errorData.ErrorCode, errorData.ErrorMessage)}
+		for _, e := range errorData.RelatedErrors {
+			eStrings = append(eStrings, fmt.Sprintf("related error %d: %s", e.ErrorCode, e.ErrorMessage))
 		}
-		return fmt.Errorf("api error %d: %s", errorData.ErrorCode, errorData.ErrorMessage)
+		return fmt.Errorf(strings.Join(eStrings, "\n"))
 	}
 	return fmt.Errorf("fail to unmarshal %s", string(b))
 }

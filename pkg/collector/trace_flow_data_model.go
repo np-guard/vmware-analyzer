@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -82,41 +81,6 @@ type TraceflowObservationReplicationLogical struct {
 	nsx.TraceflowObservationReplicationLogical
 }
 
-type observationNode struct {
-	ip        string
-	vmName    string
-	reason    string
-	rule      *FirewallRule
-	dropped   bool
-	delivered bool
-}
-
-func (o *observationNode) Kind() string {
-	switch {
-	case o.vmName != "":
-		return "Virtual Machine"
-	case o.ip != "":
-		return "dst IP"
-	}
-	return "observation"
-}
-
-func (o *observationNode) Name() string {
-	res := "\n"
-	if o.ip != "" {
-		res += fmt.Sprintf("%s[%s]\n", o.vmName, o.ip)
-	}
-	if o.dropped {
-		res += fmt.Sprintf("dropped here, because %s\n", o.reason)
-	}
-	if o.delivered {
-		res += "delivered here\n"
-	}
-	if o.rule != nil {
-		res += fmt.Sprintf("rule id %s[%s]\n", *o.rule.Id, *o.rule.DisplayName)
-	}
-	return res
-}
 func toRawMap(tf TraceFlowObservationElement) (map[string]json.RawMessage, error) {
 	b, err := json.Marshal(tf)
 	if err != nil {
@@ -130,25 +94,12 @@ func toRawMap(tf TraceFlowObservationElement) (map[string]json.RawMessage, error
 	return raw, nil
 }
 
-func toObservationNode(tf TraceFlowObservationElement, resources *ResourcesContainerModel) (*observationNode, error) {
-	res := observationNode{}
+func getRule(tf TraceFlowObservationElement) (string, error) {
 	raw, err := toRawMap(tf)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	eType := string(raw["resource_type"])
-	res.dropped = strings.Contains(eType, "Drop")
-	res.delivered = strings.Contains(eType, "Deliver")
-	ruleID := string(raw["acl_rule_id"])
-	if ruleID != "" {
-		res.rule = resources.GetRule(ruleID)
-	}
-	res.reason = string(raw["reason"])
-	empty := observationNode{}
-	if res == empty {
-		return nil, nil
-	}
-	return &res, nil
+	return string(raw["acl_rule_id"]), nil
 }
 
 func isLastObservation(tf TraceFlowObservationElement) bool {
@@ -167,16 +118,52 @@ type TraceFlowObservations []TraceFlowObservationElement
 func (tfs TraceFlowObservations) completed() bool {
 	return len(tfs) > 0 && isLastObservation(tfs[len(tfs)-1])
 }
+func (tfs TraceFlowObservations) isDelivered() bool {
+	if len(tfs) == 0 {
+		return false
+	}
+	lastObservation := tfs[len(tfs)-1]
+	raw, err := toRawMap(lastObservation)
+	if err != nil {
+		return false
+	}
+	eType := string(raw["resource_type"])
+	return strings.Contains(eType, "Delivered")
+}
 
-func (tfs TraceFlowObservations) observationNodes(resources *ResourcesContainerModel) []*observationNode {
-	res := []*observationNode{}
+type traceflowResult struct {
+	Delivered bool   `json:"delivered"`
+	SrcRuleID string `json:"src_rule_id,omitempty"`
+	DstRuleID string `json:"dst_rule_id,omitempty"`
+	Error     string `json:"error,omitempty"`
+}
+
+func (tfs TraceFlowObservations) results() traceflowResult {
+	res := traceflowResult{}
+	if !tfs.completed() {
+		res.Error = "traceflow is not completed"
+	} else {
+		res.Delivered = tfs.isDelivered()
+	}
 	for _, tf := range tfs {
-		o, err := toObservationNode(tf, resources)
-		if err != nil {
-			logging.Debug(err.Error())
-		} else if o != nil {
-			res = append(res, o)
+		ruleId, err := getRule(tf)
+		switch {
+		case err != nil:
+			res.Error = err.Error()
+			return res
+		case ruleId == "":
+		case res.SrcRuleID == "":
+			res.SrcRuleID = ruleId
+		case res.DstRuleID == "":
+			res.DstRuleID = ruleId
+		default:
+			res.Error = "got three rules in one traceflow"
+			return res
 		}
+	}
+	if res.DstRuleID == "" && res.Delivered {
+		res.Error = "traceflow was delivered without destination rule"
+
 	}
 	return res
 }

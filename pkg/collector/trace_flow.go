@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -24,14 +23,14 @@ const (
 
 const (
 	traceflowIDSize          = 5
-	traceflowPoolingTime     = 3
+	traceflowPoolingTime     = 3 * time.Second
 	traceflowNumberOfPooling = 10
 )
 
 type traceFlowProtocol struct {
-	SrcPort  int `json:"src_port,omitempty"`
-	DstPort  int `json:"dst_port,omitempty"`
-	Protocol string
+	SrcPort  int    `json:"src_port,omitempty"`
+	DstPort  int    `json:"dst_port,omitempty"`
+	Protocol string `json:"protocol,omitempty"`
 }
 
 func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader {
@@ -104,6 +103,7 @@ func createTraceFlow(resources *ResourcesContainerModel, server ServerData, srcI
 	}
 	return traceFlowName, nil
 }
+
 /////////////////////////////////////////////////////////
 
 func deleteTraceFlow(server ServerData, traceFlowName string) error {
@@ -125,7 +125,7 @@ func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlo
 		if t.completed() {
 			return t, nil
 		}
-		time.Sleep(traceflowPoolingTime * time.Second)
+		time.Sleep(traceflowPoolingTime)
 	}
 	return nil, fmt.Errorf("trace flow is not completed")
 }
@@ -133,12 +133,15 @@ func poolTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlo
 //////////////////////////////////////////////////////////////////
 
 type traceFlow struct {
-	Src         string                `json:"src"`
-	Dst         string                `json:"dst"`
-	Protocol    traceFlowProtocol     `json:"protocol"`
-	Observation TraceFlowObservations `json:"observation"`
-	Name        string                `json:"name"`
-	Error       string                `json:"error"`
+	Src         string                `json:"src,omitempty"`
+	Dst         string                `json:"dst,omitempty"`
+	SrcVM       string                `json:"src_vm,omitempty"`
+	DstVM       string                `json:"dst_vm,omitempty"`
+	Protocol    traceFlowProtocol     `json:"protocol,omitempty"`
+	Name        string                `json:"name,omitempty"`
+	Errors      []string              `json:"errors,omitempty"`
+	Results     traceflowResult       `json:"results,omitempty"`
+	Observations TraceFlowObservations `json:"observation,omitempty"`
 }
 type traceFlows []*traceFlow
 
@@ -156,54 +159,42 @@ func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []
 				if srcIP == dstIP {
 					continue
 				}
+				srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
+				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
 				traceFlow := &traceFlow{Src: srcIP, Dst: dstIP, Protocol: protocol}
+				if srcVni != nil {
+					traceFlow.SrcVM = *resources.GetVirtualMachine(*srcVni.OwnerVmId).DisplayName
+				}
+				if dstVni != nil {
+					traceFlow.DstVM = *resources.GetVirtualMachine(*dstVni.OwnerVmId).DisplayName
+				}
+
 				traceFlows = append(traceFlows, traceFlow)
 				if name, err := createTraceFlow(resources, server, srcIP, dstIP, protocol); err != nil {
 					logging.Debug(err.Error())
-					traceFlow.Error = err.Error()
-					} else {
+					traceFlow.Errors = append(traceFlow.Errors, err.Error())
+				} else {
 					traceFlow.Name = name
 				}
 			}
 		}
 	}
-	time.Sleep(traceflowPoolingTime * time.Second)
+	time.Sleep(traceflowPoolingTime)
 	for _, traceFlow := range traceFlows {
-		if traceFlow.Error != ""{
+		if len(traceFlow.Errors) > 0 {
 			continue
 		}
 		if obs, err := poolTraceFlowObservation(server, traceFlow.Name); err != nil {
 			logging.Debug(err.Error())
-			traceFlow.Error = err.Error()
+			traceFlow.Errors = append(traceFlow.Errors, err.Error())
 		} else {
-			traceFlow.Observation = obs
+			traceFlow.Observations = obs
 		}
 		if err := deleteTraceFlow(server, traceFlow.Name); err != nil {
 			logging.Debug(err.Error())
+			traceFlow.Errors = append(traceFlow.Errors, err.Error())
 		}
+		traceFlow.Results = traceFlow.Observations.results()
 	}
 	return &traceFlows
-}
-func traceFlowsDotGraph(resources *ResourcesContainerModel, ips []string, traceFlows *traceFlows) *common.DotGraph {
-	g := common.NewDotGraph(false)
-	ipNodes := map[string]*observationNode{}
-	for _, ip := range ips {
-		ipNodes[ip] = &observationNode{ip: ip}
-		vni := resources.GetVirtualNetworkInterfaceByAddress(ip)
-		if vni != nil {
-			ipNodes[ip].vmName = *resources.GetVirtualMachine(*vni.OwnerVmId).DisplayName
-		}
-	}
-	for _, tf := range *traceFlows {
-		observationNodes := tf.Observation.observationNodes(resources)
-		lastObs := len(observationNodes) - 1
-		g.AddEdge(ipNodes[tf.Src], observationNodes[0], nil)
-		g.AddEdge(observationNodes[lastObs], ipNodes[tf.Dst], nil)
-		for i := range observationNodes {
-			if i != lastObs {
-				g.AddEdge(observationNodes[i], observationNodes[i+1], nil)
-			}
-		}
-	}
-	return g
 }
