@@ -19,6 +19,7 @@ const (
 	protocolTCP  = "tcp"
 	protocolUDP  = "udp"
 	protocolICMP = "icmp"
+	TCPFlagSYN = 2
 )
 
 const (
@@ -50,7 +51,8 @@ func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	h := &nsx.TransportProtocolHeader{}
 	switch t.Protocol {
 	case protocolTCP:
-		h.TcpHeader = &nsx.TcpHeader{SrcPort: &t.SrcPort, DstPort: &t.DstPort}
+		flags := TCPFlagSYN
+		h.TcpHeader = &nsx.TcpHeader{SrcPort: &t.SrcPort, DstPort: &t.DstPort, TcpFlags: &flags}
 	case protocolUDP:
 		h.UdpHeader = &nsx.UdpHeader{SrcPort: t.SrcPort, DstPort: t.DstPort}
 	case protocolICMP:

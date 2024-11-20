@@ -95,6 +95,10 @@ func PutResource[A json.Unmarshaler](server ServerData, query string, resource A
 	if err != nil {
 		return err
 	}
+	err = checkForUnmarshalError(bs)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 func DeleteResource(server ServerData, query string) error {
@@ -186,17 +190,32 @@ type nestedError struct {
 }
 
 func getUnmarshalError(b []byte) error {
+	apiErrors, err := TryUnmarshalError(b)
+	if err != nil {
+		return err
+	}
+	return fmt.Errorf(strings.Join(apiErrors, "\n"))
+}
+func checkForUnmarshalError(b []byte) error {
+	apiErrors, err := TryUnmarshalError(b)
+	if err != nil {
+		return nil
+	}
+	return fmt.Errorf(strings.Join(apiErrors, "\n"))
+}
+
+func TryUnmarshalError(b []byte) ([]string, error) {
 	errorData := nestedError{}
 	err := json.Unmarshal(b, &errorData)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if errorData.ErrorCode != 0 || errorData.ErrorMessage != "" {
 		eStrings := []string{fmt.Sprintf("api error %d: %s", errorData.ErrorCode, errorData.ErrorMessage)}
 		for _, e := range errorData.RelatedErrors {
 			eStrings = append(eStrings, fmt.Sprintf("related error %d: %s", e.ErrorCode, e.ErrorMessage))
 		}
-		return fmt.Errorf(strings.Join(eStrings, "\n"))
+		return eStrings, nil
 	}
-	return fmt.Errorf("fail to unmarshal %s", string(b))
+	return nil, fmt.Errorf("fail to unmarshal %s", string(b))
 }
