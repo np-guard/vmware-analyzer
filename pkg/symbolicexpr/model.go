@@ -46,17 +46,17 @@ func (atomic *Atomic) negate() *Atomic {
 	return &Atomic{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
 }
 
-// Clause a CNF Clause of Atomics
-type Clause []*Atomic
+// Conjunction a DNF Conjunction of Atomics
+type Conjunction []*Atomic
 
-// CNFExpr presenting Clauses of Atomics - conditions used for defining a group in NSX
-// ToDo: when we simplify CNFExpr, clauses will be translated to map[string]int
-type CNFExpr []Clause
+// DNFExpr presenting Clauses of Atomics - conditions used for defining a group in NSX
+// ToDo: when we simplify DNFExpr, clauses will be translated to map[string]int
+type DNFExpr []Conjunction
 
 // SymbolicSrcDst all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicSrcDst struct {
-	Src CNFExpr
-	Dst CNFExpr
+	Src DNFExpr
+	Dst DNFExpr
 }
 
 type SymbolicPaths []SymbolicSrcDst
