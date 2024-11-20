@@ -22,11 +22,9 @@ func TestSymbolicExpr(t *testing.T) {
 	for i := 1; i <= 10; i++ {
 		testTag := initTestTag(fmt.Sprintf("tag%v", i))
 		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("equalTo%v", i), neg: i%2 == 0}
-		fmt.Println(atomic.string())
 		atomics[atomic.string()] = atomic
 	}
 	for key, myAtomic := range atomics {
-		// todo: what's wrong with myAtomic.negate().string()?
-		fmt.Printf("key: %v, neg?: %v\n", key, myAtomic.neg)
+		fmt.Printf("key: %v, negate: %s\n", key, myAtomic.negate().string())
 	}
 }

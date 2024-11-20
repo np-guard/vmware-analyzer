@@ -43,8 +43,7 @@ func (atomic *Atomic) string() string {
 
 // negate an Atomic expression; return pointer to corresponding expression from Atomics, if not there yet then add it
 func (atomic *Atomic) negate() *Atomic {
-	_ = atomic
-	return nil
+	return &Atomic{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
 }
 
 // Clause a CNF Clause of Atomics
