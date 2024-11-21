@@ -28,7 +28,9 @@ func TestSymbolicExpr(t *testing.T) {
 		atomicDst := &Atomic{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
 		dst := Conjunction{atomicDst}
 		path := SymbolicPath{src, dst}
+		simpPath := simplePath{atomicSrc, atomicDst}
 		fmt.Printf("path%v: %v\n", i, path.string())
+		fmt.Printf("simplePath: %v\n", simpPath.string())
 	}
 	println("\npaths:\n", paths.string())
 	for i := 1; i <= 7; i++ {

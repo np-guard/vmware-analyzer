@@ -22,6 +22,11 @@ type Atomic struct {
 // Conjunction a DNF Conjunction of Atomics
 type Conjunction []*Atomic
 
+type simplePath struct {
+	src *Atomic
+	dst *Atomic
+}
+
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
 	Src Conjunction
