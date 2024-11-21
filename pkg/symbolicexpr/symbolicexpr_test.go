@@ -18,24 +18,24 @@ func (testT *testTag) Name() string {
 }
 
 func TestSymbolicExpr(t *testing.T) {
-	conj1, conj2, conj3, conj4 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	for i := 1; i <= 10; i++ {
-		testTag := initTestTag(fmt.Sprintf("t1-%v", i))
-		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
-		conj1 = *conj1.add(atomic)
+	conj, conjEmpty := Conjunction{}, Conjunction{}
+	paths := SymbolicPaths{}
+	for i := 1; i <= 5; i++ {
+		testTag1 := initTestTag(fmt.Sprintf("src-%v", i))
+		atomicSrc := &Atomic{label: testTag1, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
+		src := Conjunction{atomicSrc}
+		testTag2 := initTestTag(fmt.Sprintf("dst-%v", i))
+		atomicDst := &Atomic{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
+		dst := Conjunction{atomicDst}
+		path := SymbolicPath{src, dst}
+		fmt.Printf("path%v: %v\n", i, path.string())
 	}
-	println("conj1:\n", conj1.string())
-	for i := 1; i <= 4; i++ {
-		testTag := initTestTag(fmt.Sprintf("t2-%v", i))
-		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
-		conj2 = *conj2.add(atomic)
-	}
-	println("conj2:\n", conj2.string())
+	println("\npaths:\n", paths.string())
 	for i := 1; i <= 7; i++ {
-		testTag := initTestTag(fmt.Sprintf("t3-%v", i))
+		testTag := initTestTag(fmt.Sprintf("t-%v", i))
 		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("str3-%v", i), neg: i%2 == 0}
-		conj3 = *conj3.add(atomic)
+		conj = *conj.add(atomic)
 	}
-	println("conj3:\n", conj3.string())
-	println("conj4:\n", conj4.string())
+	println("conj3:\n", conj.string())
+	println("conj4:\n", conjEmpty.string())
 }
