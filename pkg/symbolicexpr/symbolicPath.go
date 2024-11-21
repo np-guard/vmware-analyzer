@@ -11,5 +11,5 @@ func (paths *SymbolicPaths) string() string {
 	for i, path := range *paths {
 		res[i] = path.string()
 	}
-	return strings.Join(res, "/n")
+	return strings.Join(res, "\n")
 }

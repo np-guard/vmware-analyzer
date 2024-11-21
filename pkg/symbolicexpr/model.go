@@ -27,6 +27,8 @@ type simplePath struct {
 	dst *Atomic
 }
 
+type simplePaths []*simplePath
+
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
 	Src Conjunction
