@@ -7,7 +7,7 @@ func (d *DNFExpr) string() string {
 	for i, c := range *d {
 		resArray[i] = c.string()
 	}
-	return "(" + strings.Join(resArray, " or\n") + ")"
+	return strings.Join(resArray, " or\n")
 }
 
 func (d *DNFExpr) add(c Conjunction) *DNFExpr {
