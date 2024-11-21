@@ -38,10 +38,4 @@ func TestSymbolicExpr(t *testing.T) {
 	}
 	println("conj3:\n", conj3.string())
 	println("conj4:\n", conj4.string())
-	dnf1 := DNFExpr{}
-	dnf1 = *dnf1.add(conj1)
-	dnf1 = *dnf1.add(conj2)
-	dnf1 = *dnf1.add(conj3)
-	dnf1 = *dnf1.add(conj4)
-	println("dnf1:\n", dnf1.string())
 }

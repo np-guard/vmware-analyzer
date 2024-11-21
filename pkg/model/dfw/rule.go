@@ -69,8 +69,8 @@ type FwRule struct {
 	// clause of symbolic src abd symbolic dst
 	// todo: in order to compute these will have to maintain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
 	//       keep it there?
-	symbolicSrc []*symbolicexpr.SymbolicSrcDst
-	symbolicDst []*symbolicexpr.SymbolicSrcDst
+	symbolicSrc []*symbolicexpr.SymbolicPath
+	symbolicDst []*symbolicexpr.SymbolicPath
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 }
 
@@ -116,8 +116,8 @@ func (f *FwRule) getInboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
+		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 }
 
@@ -152,8 +152,8 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
+		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 }
 

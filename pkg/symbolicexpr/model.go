@@ -22,36 +22,20 @@ type Atomic struct {
 // Conjunction a DNF Conjunction of Atomics
 type Conjunction []*Atomic
 
-// DNFExpr presenting Clauses of Atomics - conditions used for defining a group in NSX
-// ToDo: when we simplify DNFExpr, clauses will be translated to map[string]int
-type DNFExpr []Conjunction
-
-// SymbolicSrcDst all path from a Src VM satisfying Src to Dst VM satisfying Dst
-type SymbolicSrcDst struct {
-	Src DNFExpr
-	Dst DNFExpr
+// SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
+type SymbolicPath struct {
+	Src Conjunction
+	Dst Conjunction
 }
 
-type SymbolicPaths []SymbolicSrcDst
+type SymbolicPaths []*SymbolicPath
 
 // Atomics map from Atomics string to *Atomic
 type Atomics map[string]*Atomic
 
-// ComputeAllowGivenDenys computes for a given rule the symbolic paths it allows; this is done by unrolling higher priority denies with
-// the SymbolicSrcDst of the rule
-func ComputeAllowGivenDenys(allowPaths SymbolicSrcDst, denyPaths SymbolicPaths) SymbolicPaths {
-	// temp for lint
-	_ = allowPaths
-	_ = denyPaths
-	for _, tmp1 := range denyPaths {
-		_, _ = tmp1.Src, tmp1.Dst
-		for _, tmp2 := range tmp1.Src {
-			for _, tmp3 := range tmp2 {
-				_ = tmp3.string()
-				_ = tmp3.negate()
-			}
-		}
-	}
-
+// ComputeAllowGivenDeny converts a set of symbolic allow paths (given as type SymbolicPaths) and a symbolic deny path
+// (given an type SymbolicPath) the resulting allow paths in SymbolicPaths
+// the motivation here is to unroll allow rule given higher priority deny rule
+func ComputeAllowGivenDeny(allowPaths SymbolicPaths, denyPath SymbolicPath) *SymbolicPaths {
 	return nil
 }

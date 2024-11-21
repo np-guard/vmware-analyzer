@@ -184,8 +184,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 		origRuleObj:   origRule,
 		scope:         scope,
 		secPolicyName: secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicSrcDst{}, // todo tmp
+		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 	c.rules = append(c.rules, newRule)
 
