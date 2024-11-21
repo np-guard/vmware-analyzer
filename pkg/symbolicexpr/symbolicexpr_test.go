@@ -18,7 +18,7 @@ func (testT *testTag) Name() string {
 }
 
 func TestSymbolicExpr(t *testing.T) {
-	conj, conjEmpty := Conjunction{}, Conjunction{}
+	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	simplePaths := simplePaths{}
 	for i := 1; i <= 10; i++ {
 		testTag1 := initTestTag(fmt.Sprintf("src-%v", i))
@@ -41,11 +41,17 @@ func TestSymbolicExpr(t *testing.T) {
 		paths = append(paths, &path)
 	}
 	fmt.Printf("\npaths:\n%v\n", paths.string())
-	for i := 1; i <= 7; i++ {
-		testTag := initTestTag(fmt.Sprintf("t-%v", i))
-		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("str3-%v", i), neg: i%2 == 0}
-		conj = *conj.add(atomic)
+	fmt.Printf("\npath[0]:\n%v\n", paths[0].string())
+	fmt.Printf("\nnegate(path[0]):\n%v\n", paths[0].negate().string())
+	for i := 1; i <= 4; i++ {
+		testTag := initTestTag(fmt.Sprintf("t%v", i))
+		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("str%v", i)}
+		conjSrc = *conjSrc.add(atomic)
+		conjDst = *conjDst.add(atomic.negate())
 	}
-	println("\nconj3:\n", conj.string())
-	println("\nconj4:\n", conjEmpty.string())
+	conjSymbolicPath := SymbolicPath{conjSrc, conjDst}
+	fmt.Printf("conjSrc: %v -> conjDst : %v\n", conjSrc.string(), conjDst.string())
+	fmt.Printf("\nconjSymbolicPath:\n%v", conjSymbolicPath.string())
+	fmt.Printf("\nnegate conjSymbolicPath:\n%v", conjSymbolicPath.negate().string())
+	println("conjEmpty", conjEmpty.string())
 }
