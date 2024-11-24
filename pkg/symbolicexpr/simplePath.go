@@ -16,7 +16,3 @@ func (paths *simplePaths) string() string {
 	}
 	return strings.Join(res, "\n")
 }
-
-func (path *simplePath) negate() *simplePath {
-	return &simplePath{src: path.src.negate(), dst: path.dst.negate()}
-}
