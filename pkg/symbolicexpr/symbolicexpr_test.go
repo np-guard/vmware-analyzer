@@ -65,3 +65,21 @@ func TestSymbolicPaths(t *testing.T) {
 	println("conjEmpty", conjEmpty.string())
 	require.Equal(t, "", conjEmpty.string(), "empty path not as expected")
 }
+
+func TestComputeAllowGivenDeny(t *testing.T) {
+	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
+	testTag1 := initTestTag(fmt.Sprintf("t1"))
+	atomic1 := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1")}
+	conjSrc1 = *conjSrc1.add(atomic1)
+	negateAtomic := atomic1.negate().(atomicTerm)
+	conjDst1 = *conjDst1.add(&negateAtomic)
+	testTag2 := initTestTag(fmt.Sprintf("t2"))
+	atomic2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("str1")}
+	negateAtomic2 := atomic2.negate().(atomicTerm)
+	conjSrc2 = *conjSrc1.add(atomic2)
+	conjDst2 = *conjDst1.add(&negateAtomic2)
+	allowPath := SymbolicPath{conjSrc1, conjDst1}
+	denyPath := SymbolicPath{conjSrc2, conjDst2}
+	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
+	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath)%v\n", computeAllowGivenDeny(allowPath, denyPath))
+}
