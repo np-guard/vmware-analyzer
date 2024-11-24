@@ -31,11 +31,11 @@ type atomic interface {
 }
 
 // Conjunction a DNF Conjunction of Atomics
-type Conjunction []*atomicTerm
+type Conjunction []atomic
 
 type simplePath struct {
-	src *atomicTerm
-	dst *atomicTerm
+	src atomic
+	dst atomic
 }
 
 type simplePaths []*simplePath
@@ -49,7 +49,7 @@ type SymbolicPath struct {
 type SymbolicPaths []*SymbolicPath
 
 // Atomics map from Atomics string to *atomicTerm
-type Atomics map[string]*atomicTerm
+type Atomics map[string]atomic
 
 // ComputeAllowGivenDeny converts a set of symbolic allow paths (given as type SymbolicPaths) and a symbolic deny path
 // (given an type SymbolicPath) the resulting allow paths in SymbolicPaths

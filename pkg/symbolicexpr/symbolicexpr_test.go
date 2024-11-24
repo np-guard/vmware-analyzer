@@ -44,7 +44,8 @@ func TestSymbolicPaths(t *testing.T) {
 		testTag := initTestTag(fmt.Sprintf("t%v", i))
 		atomic := &atomicTerm{label: testTag, toVal: fmt.Sprintf("str%v", i)}
 		conjSrc = *conjSrc.add(atomic)
-		conjDst = *conjDst.add(atomic.negate())
+		negateAtomic := atomic.negate().(atomicTerm)
+		conjDst = *conjDst.add(&negateAtomic)
 	}
 	conjSymbolicPath := SymbolicPath{conjSrc, conjDst}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.string())
