@@ -22,9 +22,9 @@ func TestSimplePaths(t *testing.T) {
 	simplePaths := simplePaths{}
 	for i := 1; i <= 5; i++ {
 		testTag1 := initTestTag(fmt.Sprintf("src-%v", i))
-		atomicSrc := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
+		atomicSrc := atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
 		testTag2 := initTestTag(fmt.Sprintf("dst-%v", i))
-		atomicDst := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
+		atomicDst := atomicTerm{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
 		simplePaths = append(simplePaths, &simplePath{atomicSrc, atomicDst})
 	}
 	fmt.Printf("\nsimple paths:\n%v\n", simplePaths.string())
@@ -36,6 +36,17 @@ func TestSimplePaths(t *testing.T) {
 		"simple path3 not as expected")
 	require.Contains(t, simplePaths.string(), "src-5 = str1-5 to dst-5 = str2-5",
 		"simple path4 not as expected")
+
+	testSrc := initTestTag(fmt.Sprintf("srcTag"))
+	testDst := initTestTag(fmt.Sprintf("srcDst"))
+	atomicSrc := atomicTerm{label: testSrc, toVal: fmt.Sprintf("str1")}
+	atomicDst := atomicTerm{label: testDst, toVal: fmt.Sprintf("dst1")}
+	taut := &tautology{}
+	allDsts := simplePath{atomicSrc, taut}
+	allSrcs := simplePath{taut, atomicDst}
+	fmt.Printf("allSrcs path: %v\nallDsts path: %v\n", allSrcs.string(), allDsts.string())
+	require.Equal(t, "* to srcDst = dst1", allSrcs.string(), "allSrcs not as expected")
+	require.Equal(t, "srcTag = str1 to *", allDsts.string(), "allDsts not as expected")
 }
 
 func TestSymbolicPaths(t *testing.T) {

@@ -52,6 +52,6 @@ type VMs map[string]*endpoints.VM
 //nolint:all // todo: tmp for defs without implementation
 func computeSymbolicRules(fireWall dfw.DFW) symbolicRules {
 	_ = fireWall
-	symbolicexpr.ComputeAllowGivenDeny(symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPath{})
+	symbolicexpr.ComputeAllowGivenDenies(symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{})
 	return symbolicRules{nil, nil}
 }

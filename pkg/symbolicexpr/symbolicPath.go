@@ -13,3 +13,15 @@ func (paths *SymbolicPaths) string() string {
 	}
 	return strings.Join(res, "\n")
 }
+
+// ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)
+// the resulting allow paths in SymbolicPaths
+// The motivation here is to unroll allow rule given higher priority deny rule
+// todo: describe alg
+func ComputeAllowGivenDenies(allowPaths, denyPaths SymbolicPaths) *SymbolicPaths {
+	return nil
+}
+
+func ComputeAllowGivenDeny(allowPaths SymbolicPaths, denyPath SymbolicPath) *SymbolicPaths {
+	return nil
+}
