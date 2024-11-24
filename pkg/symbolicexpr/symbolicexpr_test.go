@@ -47,6 +47,9 @@ func TestSymbolicPaths(t *testing.T) {
 		conjDst = *conjDst.add(atomic.negate())
 	}
 	conjSymbolicPath := SymbolicPath{conjSrc, conjDst}
-	fmt.Printf("\nconjSymbolicPath:\n%v", conjSymbolicPath.string())
+	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.string())
+	require.Equal(t, "(t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
+		conjSymbolicPath.string(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
+	require.Equal(t, "", conjEmpty.string(), "empty path not as expected")
 }
