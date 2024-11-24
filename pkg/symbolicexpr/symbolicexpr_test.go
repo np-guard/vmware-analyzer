@@ -22,9 +22,9 @@ func TestSimplePaths(t *testing.T) {
 	simplePaths := simplePaths{}
 	for i := 1; i <= 5; i++ {
 		testTag1 := initTestTag(fmt.Sprintf("src-%v", i))
-		atomicSrc := &Atomic{label: testTag1, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
+		atomicSrc := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
 		testTag2 := initTestTag(fmt.Sprintf("dst-%v", i))
-		atomicDst := &Atomic{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
+		atomicDst := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
 		simplePaths = append(simplePaths, &simplePath{atomicSrc, atomicDst})
 	}
 	fmt.Printf("\nsimple paths:\n%v\n", simplePaths.string())
@@ -42,7 +42,7 @@ func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
 		testTag := initTestTag(fmt.Sprintf("t%v", i))
-		atomic := &Atomic{label: testTag, toVal: fmt.Sprintf("str%v", i)}
+		atomic := &atomicTerm{label: testTag, toVal: fmt.Sprintf("str%v", i)}
 		conjSrc = *conjSrc.add(atomic)
 		conjDst = *conjDst.add(atomic.negate())
 	}

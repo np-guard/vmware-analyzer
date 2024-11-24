@@ -10,21 +10,32 @@ type vmLabel interface {
 	Name() string
 }
 
-// Atomic represent a simple condition, atom of defining a group:
+// atomicTerm represent a simple condition, atom of defining a group:
 // tag/segment/name(/computer_Name/OS_Name?) equal/not equal string
-// formally, Atomic -> label equal const_string, not Atomic
-type Atomic struct {
+// formally, atomicTerm -> label equal const_string, not atomicTerm
+type atomicTerm struct {
 	label vmLabel
 	toVal string
 	neg   bool
 }
 
+// tautology represents a condition that always holds.
+// To be used as src or dst for cases where only dst or only src is restricted
+type tautology struct {
+}
+
+// atomic interface for atomic expression - implemented by atomicTerm and tautology
+type atomic interface {
+	string() string
+	negate() atomic
+}
+
 // Conjunction a DNF Conjunction of Atomics
-type Conjunction []*Atomic
+type Conjunction []*atomicTerm
 
 type simplePath struct {
-	src *Atomic
-	dst *Atomic
+	src *atomicTerm
+	dst *atomicTerm
 }
 
 type simplePaths []*simplePath
@@ -37,8 +48,8 @@ type SymbolicPath struct {
 
 type SymbolicPaths []*SymbolicPath
 
-// Atomics map from Atomics string to *Atomic
-type Atomics map[string]*Atomic
+// Atomics map from Atomics string to *atomicTerm
+type Atomics map[string]*atomicTerm
 
 // ComputeAllowGivenDeny converts a set of symbolic allow paths (given as type SymbolicPaths) and a symbolic deny path
 // (given an type SymbolicPath) the resulting allow paths in SymbolicPaths

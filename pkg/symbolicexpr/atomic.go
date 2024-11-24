@@ -5,7 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-func (atomic *Atomic) string() string {
+func (atomic *atomicTerm) string() string {
 	equalSign := " = "
 	if atomic.neg {
 		equalSign = " != "
@@ -22,7 +22,15 @@ func (atomic *Atomic) string() string {
 	return labelType + atomic.label.Name() + equalSign + atomic.toVal
 }
 
-// negate an Atomic expression; return pointer to corresponding expression from Atomics, if not there yet then add it
-func (atomic *Atomic) negate() *Atomic {
-	return &Atomic{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
+// negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
+func (atomic *atomicTerm) negate() *atomicTerm {
+	return &atomicTerm{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
+}
+
+func (*tautology) string() string {
+	return "*"
+}
+
+func (*tautology) negate() *tautology {
+	return &tautology{}
 }
