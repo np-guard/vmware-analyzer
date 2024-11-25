@@ -37,10 +37,10 @@ func TestSimplePaths(t *testing.T) {
 	require.Contains(t, simplePaths.string(), "src-5 = str1-5 to dst-5 = str2-5",
 		"simple path4 not as expected")
 
-	testSrc := initTestTag(fmt.Sprintf("srcTag"))
-	testDst := initTestTag(fmt.Sprintf("srcDst"))
-	atomicSrc := atomicTerm{label: testSrc, toVal: fmt.Sprintf("str1")}
-	atomicDst := atomicTerm{label: testDst, toVal: fmt.Sprintf("dst1")}
+	testSrc := initTestTag("srcTag")
+	testDst := initTestTag("srcDst")
+	atomicSrc := atomicTerm{label: testSrc, toVal: "str1"}
+	atomicDst := atomicTerm{label: testDst, toVal: "dst1"}
 	taut := &tautology{}
 	allDsts := simplePath{atomicSrc, taut}
 	allSrcs := simplePath{taut, atomicDst}
@@ -68,13 +68,13 @@ func TestSymbolicPaths(t *testing.T) {
 
 func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	testTag1 := initTestTag(fmt.Sprintf("t1"))
-	atomic1 := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1")}
+	testTag1 := initTestTag("t1")
+	atomic1 := &atomicTerm{label: testTag1, toVal: "str1"}
 	conjSrc1 = *conjSrc1.add(atomic1)
 	negateAtomic := atomic1.negate().(atomicTerm)
 	conjDst1 = *conjDst1.add(&negateAtomic)
-	testTag2 := initTestTag(fmt.Sprintf("t2"))
-	atomic2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("str2")}
+	testTag2 := initTestTag("t2")
+	atomic2 := &atomicTerm{label: testTag2, toVal: "str2"}
 	negateAtomic2 := atomic2.negate().(atomicTerm)
 	conjSrc2 = *conjSrc2.add(atomic2)
 	conjDst2 = *conjDst2.add(&negateAtomic2)

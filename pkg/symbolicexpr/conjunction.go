@@ -22,9 +22,7 @@ func (c *Conjunction) add(atomic *atomicTerm) *Conjunction {
 
 func (c *Conjunction) copy() *Conjunction {
 	newC := Conjunction{}
-	for _, v := range *c {
-		newC = append(newC, v)
-	}
+	newC = append(newC, *c...)
 	return &newC
 }
 
