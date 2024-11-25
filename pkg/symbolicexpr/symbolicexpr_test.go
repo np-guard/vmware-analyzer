@@ -63,7 +63,7 @@ func TestSymbolicPaths(t *testing.T) {
 	require.Equal(t, "(t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
 		conjSymbolicPath.string(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
-	require.Equal(t, "empty set ", conjEmpty.string(), "empty conjunction not as expected")
+	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
 }
 
 func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
@@ -144,6 +144,6 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
-	require.Equal(t, "empty set ", allowGivenDeny.string(),
+	require.Equal(t, emptySet, allowGivenDeny.string(),
 		"allowGivenDeny deny tautology computation not as expected")
 }

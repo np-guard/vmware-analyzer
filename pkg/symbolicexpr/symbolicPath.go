@@ -10,7 +10,7 @@ func (path *SymbolicPath) string() string {
 
 func (paths *SymbolicPaths) string() string {
 	if len(*paths) == 0 {
-		return "empty set "
+		return emptySet
 	}
 	res := make([]string, len(*paths))
 	for i, path := range *paths {
