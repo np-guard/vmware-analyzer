@@ -19,8 +19,10 @@ func (paths *SymbolicPaths) string() string {
 // ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
-// todo: describe alg
+// todo: describe alg and implement
 func ComputeAllowGivenDenies(allowPaths, denyPaths SymbolicPaths) *SymbolicPaths {
+	_, _ = allowPaths, denyPaths
+	computeAllowGivenDeny(SymbolicPath{}, SymbolicPath{})
 	return nil
 }
 
@@ -33,13 +35,21 @@ func computeAllowGivenDeny(allowPath SymbolicPath, denyPath SymbolicPath) *Symbo
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{*allowPath.Src.copy().add(&srcAtomNegate), allowPath.Dst})
+			if allowPath.Src.isTautology() {
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{Conjunction{&srcAtomNegate}, allowPath.Dst})
+			} else {
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{*allowPath.Src.copy().add(&srcAtomNegate), allowPath.Dst})
+			}
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Src.copy().add(&dstAtomNegate)})
+			if allowPath.Dst.isTautology() {
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, Conjunction{&dstAtomNegate}})
+			} else {
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Src.copy().add(&dstAtomNegate)})
+			}
 		}
 	}
 	return &resAllowPaths

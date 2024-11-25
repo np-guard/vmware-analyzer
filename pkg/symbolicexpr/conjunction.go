@@ -25,3 +25,10 @@ func (c *Conjunction) copy() *Conjunction {
 	}
 	return &newC
 }
+
+func (c *Conjunction) isTautology() bool {
+	if len(*c) == 1 && (*c)[0].isTautology() {
+		return true
+	}
+	return false
+}

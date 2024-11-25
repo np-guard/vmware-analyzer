@@ -46,7 +46,7 @@ type Segments map[string]*collector.Segment
 // VMs map from VM name to the VM
 type VMs map[string]*endpoints.VM
 
-// computeSymbolicRules computes abstract rules in model for synthesis
+// ComputeSymbolicRules computes abstract rules in model for synthesis
 // todo: will have to combine different categories into a single list of inbound, outbound
 //
 //nolint:all // todo: tmp for defs without implementation
