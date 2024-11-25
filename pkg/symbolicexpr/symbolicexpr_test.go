@@ -111,3 +111,22 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)",
 		allowGivenDeny.string(), "allowGivenDeny three terms computation not as expected")
 }
+
+func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
+	conjDeny := Conjunction{}
+	for i := 1; i <= 3; i++ {
+		testDeny := initTestTag(fmt.Sprintf("s%v`", i))
+		atomicDeny := &atomicTerm{label: testDeny, toVal: fmt.Sprintf("str%v`", i)}
+		conjDeny = *conjDeny.add(atomicDeny)
+	}
+	tautologyConj := Conjunction{tautology{}}
+	allowPath := SymbolicPath{tautologyConj, tautologyConj}
+	denyPath := SymbolicPath{conjDeny, conjDeny}
+	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
+	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	require.Equal(t,
+		"(s1` != str1`) to (*)\n(s2` != str2`) to (*)\n(s3` != str3`) to (*)\n(*) to (s1` != str1`)\n"+
+			"(*) to (s2` != str2`)\n(*) to (s3` != str3`)", allowGivenDeny.string(),
+		"allowGivenDeny allow tautology computation not as expected")
+}
