@@ -86,3 +86,28 @@ func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	require.Equal(t, "(t1 = str1 and t2 != str2) to (t1 != str1)\n(t1 = str1) to (t1 = str1 and t2 = str2)",
 		allowGivenDeny.string(), "allowGivenDeny single term computation not as expected")
 }
+
+func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
+	conjAllow, conjDeny := Conjunction{}, Conjunction{}
+	for i := 1; i <= 3; i++ {
+		testAllow := initTestTag(fmt.Sprintf("s%v", i))
+		atomicAllow := &atomicTerm{label: testAllow, toVal: fmt.Sprintf("str%v", i)}
+		conjAllow = *conjAllow.add(atomicAllow)
+		testDeny := initTestTag(fmt.Sprintf("s%v`", i))
+		atomicDeny := &atomicTerm{label: testDeny, toVal: fmt.Sprintf("str%v`", i)}
+		conjDeny = *conjDeny.add(atomicDeny)
+	}
+	allowPath := SymbolicPath{conjAllow, conjAllow}
+	denyPath := SymbolicPath{conjDeny, conjDeny}
+	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
+	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	require.Equal(t,
+		"(s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)",
+		allowGivenDeny.string(), "allowGivenDeny three terms computation not as expected")
+}
