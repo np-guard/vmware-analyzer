@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -194,14 +195,14 @@ func getUnmarshalError(b []byte) error {
 	if err != nil {
 		return err
 	}
-	return fmt.Errorf(strings.Join(apiErrors, "\n"))
+	return errors.New(strings.Join(apiErrors, "\n"))
 }
 func checkForUnmarshalError(b []byte) error {
 	apiErrors, err := TryUnmarshalError(b)
 	if err != nil {
-		return nil
+		return nil //nolint:nilerr // there is no error in the code
 	}
-	return fmt.Errorf(strings.Join(apiErrors, "\n"))
+	return errors.New(strings.Join(apiErrors, "\n"))
 }
 
 func TryUnmarshalError(b []byte) ([]string, error) {

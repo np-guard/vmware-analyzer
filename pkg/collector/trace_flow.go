@@ -128,7 +128,8 @@ func traceFlowRandomID() (string, error) {
 	return fmt.Sprintf("traceFlow%X", rnd), nil
 }
 
-func createTraceFlow(resources *ResourcesContainerModel, server ServerData, srcIP, dstIP string, protocol traceFlowProtocol) (string, error) {
+func createTraceFlow(resources *ResourcesContainerModel, server ServerData,
+	srcIP, dstIP string, protocol traceFlowProtocol) (string, error) {
 	traceFlowName, err := traceFlowRandomID()
 	if err != nil {
 		return "", err

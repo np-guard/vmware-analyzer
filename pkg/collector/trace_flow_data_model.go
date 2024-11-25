@@ -94,7 +94,7 @@ func toRawMap(tf TraceFlowObservationElement) (map[string]json.RawMessage, error
 	return raw, nil
 }
 
-func getRule(tf TraceFlowObservationElement) (ruleID string, comType string, err error) {
+func getRule(tf TraceFlowObservationElement) (ruleID, comType string, err error) {
 	raw, err := toRawMap(tf)
 	if err != nil {
 		return "", "", err

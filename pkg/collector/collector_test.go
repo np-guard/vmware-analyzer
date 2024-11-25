@@ -209,7 +209,7 @@ func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 	if err != nil {
 		return err
 	}
-	if err = common.WriteToFile(path.Join(outDir, "traceflowsObservations.json"), jOut); err != nil {
+	if err := common.WriteToFile(path.Join(outDir, "traceflowsObservations.json"), jOut); err != nil {
 		return err
 	}
 	return err
