@@ -29,25 +29,19 @@ func computeAllowGivenDeny(allowPath SymbolicPath, denyPath SymbolicPath) *Symbo
 	//resAllowPaths := make([]*SymbolicPath, len(allowPaths)*(len(denyPath.Src)+len(denyPath.Dst))) // todo uncomment
 	resAllowPaths := SymbolicPaths{}
 	// in case deny path is open from both ends - empty set of allow paths, as will be the result
-	// assumption: if more than one term, then non is tautology
+	// assumption: if more than one term, then none is tautology
 	for _, srcAtom := range denyPath.Src {
 		switch srcAtom.(type) {
-		case atomicTerm:
-			var newSrc Conjunction
-			copy(newSrc, allowPath.Src)
-			newSrc = append(newSrc, srcAtom.negate())
-			newPath := &SymbolicPath{newSrc, allowPath.Dst}
-			resAllowPaths = append(resAllowPaths, newPath)
+		case *atomicTerm:
+			srcAtomNegate := srcAtom.negate().(atomicTerm)
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{*allowPath.Src.copy().add(&srcAtomNegate), allowPath.Dst})
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		switch dstAtom.(type) {
-		case atomicTerm:
-			var newDst Conjunction
-			copy(newDst, allowPath.Src)
-			newDst = append(newDst, dstAtom.negate())
-			newPath := &SymbolicPath{allowPath.Src, newDst}
-			resAllowPaths = append(resAllowPaths, newPath)
+		case *atomicTerm:
+			dstAtomNegate := dstAtom.negate().(atomicTerm)
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Src.copy().add(&dstAtomNegate)})
 		}
 	}
 	return &resAllowPaths

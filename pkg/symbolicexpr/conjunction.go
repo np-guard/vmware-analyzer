@@ -17,3 +17,11 @@ func (c *Conjunction) add(atomic *atomicTerm) *Conjunction {
 	res := append(*c, atomic)
 	return &res
 }
+
+func (c *Conjunction) copy() *Conjunction {
+	newC := Conjunction{}
+	for _, v := range *c {
+		newC = append(newC, v)
+	}
+	return &newC
+}

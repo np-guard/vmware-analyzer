@@ -66,7 +66,7 @@ func TestSymbolicPaths(t *testing.T) {
 	require.Equal(t, "", conjEmpty.string(), "empty path not as expected")
 }
 
-func TestComputeAllowGivenDeny(t *testing.T) {
+func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	testTag1 := initTestTag(fmt.Sprintf("t1"))
 	atomic1 := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1")}
@@ -74,12 +74,15 @@ func TestComputeAllowGivenDeny(t *testing.T) {
 	negateAtomic := atomic1.negate().(atomicTerm)
 	conjDst1 = *conjDst1.add(&negateAtomic)
 	testTag2 := initTestTag(fmt.Sprintf("t2"))
-	atomic2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("str1")}
+	atomic2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("str2")}
 	negateAtomic2 := atomic2.negate().(atomicTerm)
-	conjSrc2 = *conjSrc1.add(atomic2)
-	conjDst2 = *conjDst1.add(&negateAtomic2)
+	conjSrc2 = *conjSrc2.add(atomic2)
+	conjDst2 = *conjDst2.add(&negateAtomic2)
 	allowPath := SymbolicPath{conjSrc1, conjDst1}
 	denyPath := SymbolicPath{conjSrc2, conjDst2}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
-	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath)%v\n", computeAllowGivenDeny(allowPath, denyPath))
+	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	require.Equal(t, "(t1 = str1 and t2 != str2) to (t1 != str1)\n(t1 = str1) to (t1 = str1 and t2 = str2)",
+		allowGivenDeny.string(), "allowGivenDeny single term computation not as expected")
 }
