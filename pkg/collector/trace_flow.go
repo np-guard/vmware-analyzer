@@ -19,7 +19,7 @@ const (
 	protocolTCP  = "tcp"
 	protocolUDP  = "udp"
 	protocolICMP = "icmp"
-	TCPFlagSYN = 2
+	TCPFlagSYN   = 2
 )
 
 const (

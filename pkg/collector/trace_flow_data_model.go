@@ -94,21 +94,32 @@ func toRawMap(tf TraceFlowObservationElement) (map[string]json.RawMessage, error
 	return raw, nil
 }
 
-func getRule(tf TraceFlowObservationElement) (string, string, error) {
+func getRule(tf TraceFlowObservationElement) (ruleID string, comType string, err error) {
 	raw, err := toRawMap(tf)
 	if err != nil {
 		return "", "", err
 	}
-	return string(raw["acl_rule_id"]), string(raw["component_type"][1:len(raw["component_type"])-1]), nil
+	return string(raw["acl_rule_id"]), string(raw["component_type"][1 : len(raw["component_type"])-1]), nil
 }
 
 func isLastObservation(tf TraceFlowObservationElement) bool {
+	return isDropObservation(tf) || isDeliverObservation(tf)
+}
+func isDropObservation(tf TraceFlowObservationElement) bool {
 	raw, err := toRawMap(tf)
 	if err != nil {
 		return false
 	}
 	eType := string(raw["resource_type"])
-	return strings.Contains(eType, "Dropped") || strings.Contains(eType, "Delivered")
+	return strings.Contains(eType, "Dropped")
+}
+func isDeliverObservation(tf TraceFlowObservationElement) bool {
+	raw, err := toRawMap(tf)
+	if err != nil {
+		return false
+	}
+	eType := string(raw["resource_type"])
+	return strings.Contains(eType, "Delivered")
 }
 
 //////////////////////////////////////////////////////////
@@ -122,13 +133,7 @@ func (tfs TraceFlowObservations) isDelivered() bool {
 	if len(tfs) == 0 {
 		return false
 	}
-	lastObservation := tfs[len(tfs)-1]
-	raw, err := toRawMap(lastObservation)
-	if err != nil {
-		return false
-	}
-	eType := string(raw["resource_type"])
-	return strings.Contains(eType, "Delivered")
+	return isDeliverObservation(tfs[len(tfs)-1])
 }
 
 type traceflowResult struct {
@@ -147,20 +152,21 @@ func (tfs TraceFlowObservations) results() traceflowResult {
 		res.Delivered = tfs.isDelivered()
 	}
 	for _, tf := range tfs {
-		ruleId, comType, err := getRule(tf)
+		ruleID, comType, err := getRule(tf)
+		isNatRule := comType == "NAT"
 		switch {
 		case err != nil:
 			res.Error = err.Error()
 			return res
-		case ruleId == "":
-		case comType == "NAT" && res.NatRuleID != "":
+		case ruleID == "":
+		case isNatRule && res.NatRuleID != "":
 			res.Error = "got two nat rules in one traceflow"
-		case comType == "NAT":
-			res.NatRuleID = ruleId
+		case isNatRule:
+			res.NatRuleID = ruleID
 		case res.SrcRuleID == "":
-			res.SrcRuleID = ruleId
+			res.SrcRuleID = ruleID
 		case res.DstRuleID == "":
-			res.DstRuleID = ruleId
+			res.DstRuleID = ruleID
 		default:
 			res.Error = "got three rules in one traceflow"
 			return res
@@ -168,7 +174,6 @@ func (tfs TraceFlowObservations) results() traceflowResult {
 	}
 	if res.DstRuleID == "" && res.Delivered {
 		res.Error = "traceflow was delivered without destination rule"
-
 	}
 	return res
 }
