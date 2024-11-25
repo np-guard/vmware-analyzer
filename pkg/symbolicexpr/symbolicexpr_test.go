@@ -63,7 +63,7 @@ func TestSymbolicPaths(t *testing.T) {
 	require.Equal(t, "(t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
 		conjSymbolicPath.string(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
-	require.Equal(t, "", conjEmpty.string(), "empty path not as expected")
+	require.Equal(t, "empty set ", conjEmpty.string(), "empty conjunction not as expected")
 }
 
 func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {

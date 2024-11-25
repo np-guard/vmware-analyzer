@@ -8,7 +8,7 @@ func (c *Conjunction) string() string {
 		resArray[i] = atomic.string()
 	}
 	if len(resArray) == 0 {
-		return ""
+		return "empty set "
 	}
 	return "(" + strings.Join(resArray, " and ") + ")"
 }
