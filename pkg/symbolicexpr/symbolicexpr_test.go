@@ -130,3 +130,20 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 			"(*) to (s2` != str2`)\n(*) to (s3` != str3`)", allowGivenDeny.string(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
+
+func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
+	conjAllow := Conjunction{}
+	for i := 1; i <= 3; i++ {
+		testAllow := initTestTag(fmt.Sprintf("s%v`", i))
+		atomicAllow := &atomicTerm{label: testAllow, toVal: fmt.Sprintf("str%v`", i)}
+		conjAllow = *conjAllow.add(atomicAllow)
+	}
+	tautologyConj := Conjunction{tautology{}}
+	allowPath := SymbolicPath{conjAllow, conjAllow}
+	denyPath := SymbolicPath{tautologyConj, tautologyConj}
+	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
+	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	require.Equal(t, "empty set ", allowGivenDeny.string(),
+		"allowGivenDeny deny tautology computation not as expected")
+}

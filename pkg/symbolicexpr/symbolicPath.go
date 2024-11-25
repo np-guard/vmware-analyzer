@@ -9,6 +9,9 @@ func (path *SymbolicPath) string() string {
 }
 
 func (paths *SymbolicPaths) string() string {
+	if len(*paths) == 0 {
+		return "empty set "
+	}
 	res := make([]string, len(*paths))
 	for i, path := range *paths {
 		res[i] = path.string()
