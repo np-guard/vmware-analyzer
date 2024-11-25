@@ -27,10 +27,18 @@ func (atomic atomicTerm) negate() atomic {
 	return atomicTerm{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
 }
 
+func (atomicTerm) isTautology() bool {
+	return false
+}
+
 func (tautology) string() string {
 	return "*"
 }
 
 func (tautology) negate() atomic {
 	return tautology{}
+}
+
+func (tautology) isTautology() bool {
+	return true
 }

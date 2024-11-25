@@ -31,15 +31,13 @@ func computeAllowGivenDeny(allowPath SymbolicPath, denyPath SymbolicPath) *Symbo
 	// in case deny path is open from both ends - empty set of allow paths, as will be the result
 	// assumption: if more than one term, then none is tautology
 	for _, srcAtom := range denyPath.Src {
-		switch srcAtom.(type) {
-		case *atomicTerm:
+		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
 			resAllowPaths = append(resAllowPaths, &SymbolicPath{*allowPath.Src.copy().add(&srcAtomNegate), allowPath.Dst})
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
-		switch dstAtom.(type) {
-		case *atomicTerm:
+		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
 			resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Src.copy().add(&dstAtomNegate)})
 		}

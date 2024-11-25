@@ -28,6 +28,7 @@ type tautology struct {
 type atomic interface {
 	string() string
 	negate() atomic
+	isTautology() bool
 }
 
 // Conjunction a DNF Conjunction of Atomics
