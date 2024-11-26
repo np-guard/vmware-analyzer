@@ -155,8 +155,8 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	allowPaths, denyPaths := SymbolicPaths{}, SymbolicPaths{}
 	testTag := initTestTag("tag")
 	testSegment := initTestTag("segment")
-	for i := 0; i < 2; i++ {
-		if i == 0 {
+	for i := 0; i < 3; i++ {
+		if i < 2 {
 			atomicAllowSrc := &atomicTerm{label: testTag, toVal: fmt.Sprintf("t%v", 2*i)}
 			atomicAllowDst := &atomicTerm{label: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
 			conjAllowSrc := Conjunction{atomicAllowSrc}
@@ -171,5 +171,23 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	}
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.string(), denyPaths.string())
 	ComputeAllowGivenDenies(&allowPaths, &denyPaths)
-	//fmt.Printf("ComputeAllowGivenDenies:\n%v\n", ComputeAllowGivenDenies(&allowPaths, &denyPaths).string())
+	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", ComputeAllowGivenDenies(&allowPaths, &denyPaths).string())
+	require.Equal(t, "(tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1)\n"+
+		"(tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5)\n"+
+		"(tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3)\n"+
+		"(tag = t0 and segment != s0) to (tag = t1 and segment != s3 and segment != s5)\n"+
+		"(tag = t0 and segment != s2 and segment != s4) to (tag = t1 and segment != s1)\n"+
+		"(tag = t0 and segment != s2) to (tag = t1 and segment != s1 and segment != s5)\n"+
+		"(tag = t0 and segment != s4) to (tag = t1 and segment != s1 and segment != s3)\n"+
+		"(tag = t0) to (tag = t1 and segment != s1 and segment != s3 and segment != s5)\n"+
+		"(tag = t2 and segment != s0 and segment != s2 and segment != s4) to (tag = t3)\n"+
+		"(tag = t2 and segment != s0 and segment != s2) to (tag = t3 and segment != s5)\n"+
+		"(tag = t2 and segment != s0 and segment != s4) to (tag = t3 and segment != s3)\n"+
+		"(tag = t2 and segment != s0) to (tag = t3 and segment != s3 and segment != s5)\n"+
+		"(tag = t2 and segment != s2 and segment != s4) to (tag = t3 and segment != s1)\n"+
+		"(tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5)\n"+
+		"(tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3)\n"+
+		"(tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
+		ComputeAllowGivenDenies(&allowPaths, &denyPaths).string(),
+		"ComputeAllowGivenDenies computation not as expected")
 }

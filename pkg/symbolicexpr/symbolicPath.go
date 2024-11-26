@@ -39,18 +39,13 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 		for _, denyPath := range *denyPaths {
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
-			fmt.Printf("\ncomputedAllowPaths are\n%v\n", computedAllowPaths.string())
 			for _, computedAllow := range computedAllowPaths {
-				fmt.Printf("computedAllow is %v\n", computedAllow.string())
 				thisComputed := *computeAllowGivenDeny(*computedAllow, *denyPath)
-				fmt.Printf("thisComputed is\n%v\n\n", thisComputed.string())
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
 			computedAllowPaths = newComputedAllowPaths
 		}
 		res = append(res, computedAllowPaths...)
-		//fmt.Println("\tappended", computedAllowPaths.string())
-		//fmt.Println("end appended")
 		fmt.Println()
 	}
 	return &res
