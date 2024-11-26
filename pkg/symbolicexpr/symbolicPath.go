@@ -77,7 +77,7 @@ func computeAllowGivenDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
 			if allowPath.Dst.isTautology() {
 				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, Conjunction{&dstAtomNegate}})
 			} else {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Src.copy().add(&dstAtomNegate)})
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Dst.copy().add(&dstAtomNegate)})
 			}
 		}
 	}
