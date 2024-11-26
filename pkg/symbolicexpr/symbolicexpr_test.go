@@ -150,26 +150,3 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	require.Equal(t, emptySet, allowGivenDeny.string(),
 		"allowGivenDeny deny tautology computation not as expected")
 }
-
-func TestComputeAllowGivenDenies(t *testing.T) {
-	allowPaths, denyPaths := SymbolicPaths{}, SymbolicPaths{}
-	testTag := initTestTag("tag")
-	testSegment := initTestTag("segment")
-	for i := 0; i < 2; i++ {
-		if i == 0 {
-			atomicAllowSrc := &atomicTerm{label: testTag, toVal: fmt.Sprintf("t%v", 2*i)}
-			atomicAllowDst := &atomicTerm{label: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
-			conjAllowSrc := Conjunction{atomicAllowSrc}
-			conjAllowDst := Conjunction{atomicAllowDst}
-			allowPaths = append(allowPaths, &SymbolicPath{conjAllowSrc, conjAllowDst})
-		}
-		atomicDenySrc := &atomicTerm{label: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
-		atomicDenyDst := &atomicTerm{label: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
-		conjDenySrc := Conjunction{atomicDenySrc}
-		conjDenyDst := Conjunction{atomicDenyDst}
-		denyPaths = append(denyPaths, &SymbolicPath{conjDenySrc, conjDenyDst})
-	}
-	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.string(), denyPaths.string())
-	ComputeAllowGivenDenies(&allowPaths, &denyPaths)
-	//fmt.Printf("ComputeAllowGivenDenies:\n%v\n", ComputeAllowGivenDenies(&allowPaths, &denyPaths).string())
-}
