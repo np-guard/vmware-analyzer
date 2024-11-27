@@ -140,6 +140,7 @@ var Example2 = Example{
 					services: []string{"ANY"},
 					action:   jumpToApp,
 				},
+				defaultDenyRule(denyRuleID),
 			},
 		},
 
@@ -179,7 +180,6 @@ var Example2 = Example{
 					services: []string{"/infra/services/SMB"},
 					action:   allow,
 				},
-				defaultDenyRule(denyRuleID),
 			},
 		},
 
