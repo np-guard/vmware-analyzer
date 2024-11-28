@@ -21,7 +21,7 @@ const (
 //nolint:gocyclo // one function with lots of checks
 func TestCollectResources(t *testing.T) {
 	type args struct {
-		server          string
+		server             string
 		userName, password string
 	}
 	tests := []struct {

@@ -17,14 +17,13 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-
 type serverData struct {
 	server, userName, password string
-	session string
+	session                    string
 }
 
-func (s *serverData) getSession() string{
-	if s.session != ""{
+func (s *serverData) getSession() string {
+	if s.session != "" {
 		return s.session
 	}
 
@@ -59,16 +58,16 @@ func curlRequestSession(server *serverData) error {
 	if err != nil {
 		return err
 	}
-	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s",server.userName,server.password)))
-    fmt.Println(auth)
+	auth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", server.userName, server.password)))
+	fmt.Println(auth)
 
-	req.Header.Set("Authorization", "Basic " + auth)
+	req.Header.Set("Authorization", "Basic "+auth)
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	fmt.Fscanf(resp.Body,"%q", &server.session)
+	fmt.Fscanf(resp.Body, "%q", &server.session)
 
 	return nil
 }

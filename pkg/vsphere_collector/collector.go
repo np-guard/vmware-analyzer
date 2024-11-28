@@ -37,7 +37,6 @@ type portResource struct {
 	Allow_guest_control bool
 }
 
-
 type vmResource struct {
 	Vm              string
 	Name            string
@@ -55,7 +54,7 @@ type vmInfo struct {
 		Bios_uuid     string
 		Instance_uuid string
 	}
-	Nics map[int]portResource
+	Nics           map[int]portResource
 	Parallel_ports map[int]struct {
 		Label   string
 		Backing struct {
@@ -87,10 +86,11 @@ type vmInfo struct {
 	}
 }
 type ResourcesContainerModel struct {
-	Vms []vmResource
+	Vms   []vmResource
 	Ports map[string]*portResource
 }
-func NewResourcesContainerModel()*ResourcesContainerModel{
+
+func NewResourcesContainerModel() *ResourcesContainerModel {
 	return &ResourcesContainerModel{
 		Ports: map[string]*portResource{},
 	}
@@ -109,7 +109,7 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 	if err != nil {
 		return nil, err
 	}
-	for vi, _ := range res.Vms {
+	for vi := range res.Vms {
 		err = collectResource(server, virtualMachineQuery+"/"+res.Vms[vi].Vm, &res.Vms[vi].VmInfo)
 		if err != nil {
 			return nil, err
