@@ -45,10 +45,10 @@ Dumbledore {vms: D1, D2}
 Macro Segmentation
 - Houses (tenants / apps) must not communicate with each other
 - each house must be able to communicate to Hogwarts (shared services)
-- only Gryffindor house muse be able to coummunicate to Dumbledore (ML server / other special use case server, etc )
+- only Gryffindor house must be able to communicate to Dumbledore (ML server / other special use case server, etc )
 - Within each house (tenants/apps) tiers must be able to communicate with each other
 
-Macro Segmentation - the starting point to the land of zero truse
+Macro Segmentation - the starting point to the land of zero trust
 
 micro segmentation
 - within each house (tenants/apps) tiers must have granular firewall policies
@@ -140,6 +140,7 @@ var Example2 = Example{
 					services: []string{"ANY"},
 					action:   jumpToApp,
 				},
+				defaultDenyRule(denyRuleID),
 			},
 		},
 
@@ -151,7 +152,7 @@ var Example2 = Example{
 					name:     "new-rule",
 					id:       9198,
 					source:   "Gryffindor-App",
-					dest:     "Hufflepuff-App",
+					dest:     "Gryffindor-App",
 					services: []string{"ANY"},
 					action:   allow,
 				},
