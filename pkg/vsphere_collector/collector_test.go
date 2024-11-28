@@ -62,7 +62,6 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("fail to write to file error = %v", err)
 				return
 			}
-
 		})
 	}
 }

@@ -105,7 +105,7 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
 	server := &serverData{nsxServer, userName, password, ""}
 	res := NewResourcesContainerModel()
-	err := collectResources(server, virtualMachineQuery, &res.Vms)
+	err := collectResource(server, virtualMachineQuery, &res.Vms)
 	if err != nil {
 		return nil, err
 	}
