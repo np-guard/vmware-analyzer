@@ -45,7 +45,8 @@ func TestCollectResources(t *testing.T) {
 				fmt.Println("didn't got any server")
 				return
 			}
-			got, err := CollectResources(tt.args.nsxServer, tt.args.userName, tt.args.password)
+			server := NewServerData(tt.args.nsxServer, tt.args.userName, tt.args.password)
+			got, err := CollectResources(server)
 			if err != nil {
 				t.Errorf("CollectResources() error = %v", err)
 				return
@@ -56,6 +57,10 @@ func TestCollectResources(t *testing.T) {
 			}
 			if len(got.VirtualMachineList) == 0 {
 				t.Errorf("didnt find VirtualMachineList")
+			}
+			if err := testTraceflows(got, server); err != nil {
+				t.Errorf("testTraceflows() error = %v", err)
+				return
 			}
 			testTopology(got)
 			if err := dotTopology(got); err != nil {
@@ -184,6 +189,30 @@ func testTopology(got *ResourcesContainerModel) {
 			fmt.Printf("[segment(type)[addr], vm]: [%s, %s]\n", segmentName(segment), vniName(got, vif))
 		}
 	}
+}
+
+func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
+	ips := []string{
+		"192.168.0.1",
+		"192.168.1.1",
+		"192.168.1.2",
+		"11.12.13.14",
+		"192.168.1.3",
+		"192.0.1.3",
+	}
+	protocols := []traceFlowProtocol{
+		{Protocol: protocolICMP},
+		{Protocol: protocolTCP, SrcPort: 8080, DstPort: 9080},
+	}
+	tfs := getTraceFlows(got, server, ips, protocols)
+	jOut, err := tfs.toJSONString()
+	if err != nil {
+		return err
+	}
+	if err := common.WriteToFile(path.Join(outDir, "traceflowsObservations.json"), jOut); err != nil {
+		return err
+	}
+	return err
 }
 
 func dotTopology(got *ResourcesContainerModel) error {

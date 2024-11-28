@@ -370,17 +370,18 @@ func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if err := json.Unmarshal(b, base); err != nil {
-		return err
+	if base != nil {
+		if err := json.Unmarshal(b, base); err != nil {
+			return err
+		}
 	}
 	if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
 		return err
 	}
-	if field2 == nil {
-		return nil
-	}
-	if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
-		return err
+	if field2 != nil {
+		if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
+			return err
+		}
 	}
 	return nil
 }
