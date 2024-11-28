@@ -34,6 +34,10 @@ class NSXSchemasParser(HTMLParser):
         for line in self.schema.splitlines():
             if line.find('"required"') != -1: # required tag is not used according to schema standard, and doesn't interest us
                 continue
+            if line.find('"default": "TraceflowObservationReceived",') != -1: # somehow there is a comma to remove
+                line = '"default": "TraceflowObservationReceived"'
+            if line.find('"$ref": "IPv4Address') != -1: 
+                line = line.replace('"$ref": "IPv4Address', '"$ref": "IPAddress')
             if line.find("$ref") != -1:  # for some reason the html misses a closing '"' for $ref values
                 if line.endswith(", "):
                     line = line.replace(',', '",')

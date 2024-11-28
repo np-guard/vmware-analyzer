@@ -120,7 +120,8 @@ func runCommand(args *inArgs) error {
 	var err error
 	if args.host != "" {
 		logging.Infof("collecting NSX resources from given host %s", args.host)
-		recourses, err = collector.CollectResources(args.host, args.user, args.password)
+		server := collector.NewServerData(args.host, args.user, args.password)
+		recourses, err = collector.CollectResources(server)
 		if err != nil {
 			return err
 		}
