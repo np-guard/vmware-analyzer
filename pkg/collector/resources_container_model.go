@@ -67,6 +67,18 @@ func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByPort(portI
 	return &resources.VirtualNetworkInterfaceList[i]
 }
 
+func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByAddress(address string) *VirtualNetworkInterface {
+	i := slices.IndexFunc(resources.VirtualNetworkInterfaceList, func(vni VirtualNetworkInterface) bool {
+		return len(vni.IpAddressInfo) > 0 &&
+			len(vni.IpAddressInfo[0].IpAddresses) > 0 &&
+			vni.IpAddressInfo[0].IpAddresses[0] == nsx.IPAddress(address)
+	})
+	if i >= 0 {
+		return &resources.VirtualNetworkInterfaceList[i]
+	}
+	return nil
+}
+
 func (resources *ResourcesContainerModel) GetVirtualMachine(id string) *VirtualMachine {
 	i := slices.IndexFunc(resources.VirtualMachineList, func(vm VirtualMachine) bool { return id == *vm.ExternalId })
 	return &resources.VirtualMachineList[i]
@@ -97,6 +109,24 @@ func (resources *ResourcesContainerModel) GetSegmentPort(id string) *SegmentPort
 		i := slices.IndexFunc(resources.SegmentList[si].SegmentPorts, func(s SegmentPort) bool { return id == *s.Attachment.Id })
 		if i >= 0 {
 			return &resources.SegmentList[si].SegmentPorts[i]
+		}
+	}
+	return nil
+}
+
+func (resources *ResourcesContainerModel) GetRule(id string) *FirewallRule {
+	for d := range resources.DomainList {
+		for s := range resources.DomainList[d].Resources.SecurityPolicyList {
+			if resources.DomainList[d].Resources.SecurityPolicyList[s].DefaultRule != nil {
+				if *resources.DomainList[d].Resources.SecurityPolicyList[s].DefaultRule.Id == id {
+					return resources.DomainList[d].Resources.SecurityPolicyList[s].DefaultRule
+				}
+			}
+			for r := range resources.DomainList[d].Resources.SecurityPolicyList[s].Rules {
+				if *resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule.Id == id {
+					return &resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule
+				}
+			}
 		}
 	}
 	return nil
