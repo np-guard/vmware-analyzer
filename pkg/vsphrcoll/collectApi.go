@@ -4,7 +4,7 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package vsphere_collector
+package vsphrcoll
 
 import (
 	"crypto/tls"
@@ -22,13 +22,11 @@ type serverData struct {
 	session                    string
 }
 
-func (s *serverData) getSession() string {
+func (s *serverData) getSession() error {
 	if s.session != "" {
-		return s.session
+		return nil
 	}
-
-	curlRequestSession(s)
-	return s.session
+	return curlRequestSession(s)
 }
 
 func collectResource[A any](server *serverData, resourceQuery string, resource A) error {
@@ -67,8 +65,9 @@ func curlRequestSession(server *serverData) error {
 		return err
 	}
 	defer resp.Body.Close()
-	fmt.Fscanf(resp.Body, "%q", &server.session)
-
+	if _, err := fmt.Fscanf(resp.Body, "%q", &server.session); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -87,7 +86,11 @@ func curlRequest(server *serverData, query string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("vmware-api-session-id", server.getSession())
+
+	if err := server.getSession(); err != nil {
+		return nil, err
+	}
+	req.Header.Set("vmware-api-session-id", server.session)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

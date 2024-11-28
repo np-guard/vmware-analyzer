@@ -4,7 +4,8 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package vsphere_collector
+//nolint:stylecheck // names should be as in rest output
+package vsphrcoll
 
 import "encoding/json"
 
@@ -54,7 +55,7 @@ type vmInfo struct {
 		Bios_uuid     string
 		Instance_uuid string
 	}
-	Nics           map[int]portResource
+	Nics           map[int]*portResource
 	Parallel_ports map[int]struct {
 		Label   string
 		Backing struct {
@@ -115,9 +116,8 @@ func CollectResources(nsxServer, userName, password string) (*ResourcesContainer
 			return nil, err
 		}
 		for _, p := range res.Vms[vi].VmInfo.Nics {
-			res.Ports[p.Backing.Network] = &p
+			res.Ports[p.Backing.Network] = p
 		}
-
 	}
 	return res, nil
 }
