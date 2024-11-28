@@ -8,8 +8,10 @@ package vsphere_collector
 
 import (
 	"fmt"
+	"path"
 	"testing"
 
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
 const (
@@ -50,6 +52,17 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("didnt got resources")
 				return
 			}
+			jsonOut, err := got.ToJSONString()
+			if err != nil {
+				t.Errorf("fail to convert to json error = %v", err)
+				return
+			}
+			err = common.WriteToFile(path.Join(outDir, tt.name+".json"), jsonOut)
+			if err != nil {
+				t.Errorf("fail to write to file error = %v", err)
+				return
+			}
+
 		})
 	}
 }

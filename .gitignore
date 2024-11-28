@@ -26,6 +26,7 @@ schemas/*.json
 
 # For tests output
 pkg/collector/out/*
+pkg/vsphere_collector/out/*
 cmd/examples/output/*
 
 # For temporary examples and pkgs
