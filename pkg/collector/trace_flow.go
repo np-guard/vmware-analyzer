@@ -4,8 +4,9 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/json"
 	"fmt"
+	math_rand "math/rand"
 	"time"
-    math_rand "math/rand"
+
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -16,11 +17,11 @@ const (
 	getTraceFlowObservationQuery = "policy/api/v1/infra/traceflows/%s/observations"
 )
 const (
-	ProtocolTCP  = "tcp"
-	ProtocolUDP  = "udp"
-	ProtocolICMP = "icmp"
-	TCPFlagSYN   = 2
-	maxTraceFlows = 16
+	ProtocolTCP   = "tcp"
+	ProtocolUDP   = "udp"
+	ProtocolICMP  = "icmp"
+	TCPFlagSYN    = 2
+	maxTraceFlows = 128
 )
 
 const (
@@ -65,13 +66,13 @@ func (t *TraceFlowProtocol) header() *nsx.TransportProtocolHeader {
 type TraceFlows []*traceFlow
 
 // ToJSONString converts a traceFlows into a json-formatted-string
-func (tfs *TraceFlows) toJSONString() (string, error) {
+func (tfs *TraceFlows) ToJSONString() (string, error) {
 	toPrint, err := json.MarshalIndent(tfs, "", "    ")
 	return string(toPrint), err
 }
 
 func GetTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []TraceFlowProtocol) *TraceFlows {
-	nPotentialTraceFlows := len(ips)* (len(ips) -1)*len(protocols)
+	nPotentialTraceFlows := len(ips) * (len(ips) - 1) * len(protocols)
 	traceFlows := TraceFlows{}
 	for _, srcIP := range ips {
 		for _, dstIP := range ips {
@@ -79,7 +80,7 @@ func GetTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []
 				if srcIP == dstIP {
 					continue
 				}
-				if nPotentialTraceFlows > maxTraceFlows && math_rand.Intn(nPotentialTraceFlows) > maxTraceFlows{
+				if nPotentialTraceFlows > maxTraceFlows && math_rand.Intn(nPotentialTraceFlows) > maxTraceFlows {
 					continue
 				}
 				srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)

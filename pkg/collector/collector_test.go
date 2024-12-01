@@ -205,7 +205,7 @@ func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 		{Protocol: ProtocolTCP, SrcPort: 8080, DstPort: 9080},
 	}
 	tfs := GetTraceFlows(got, server, ips, protocols)
-	jOut, err := tfs.toJSONString()
+	jOut, err := tfs.ToJSONString()
 	if err != nil {
 		return err
 	}

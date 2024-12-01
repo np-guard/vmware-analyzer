@@ -2,9 +2,15 @@ package model
 
 import (
 	"fmt"
+	"path"
 	"testing"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+)
+
+const (
+	outDir = "out/"
 )
 
 func Test_verifyTraceflow(t *testing.T) {
@@ -41,7 +47,17 @@ func Test_verifyTraceflow(t *testing.T) {
 				t.Errorf("didnt got resources")
 				return
 			}
-			verifyTraceflow(got,server)
+			tfs, err := verifyTraceflow(got, server)
+			if err != nil {
+				t.Errorf("verifyTraceflow() error = %v", err)
+			}
+			jOut, err := tfs.ToJSONString()
+			if err != nil {
+				t.Errorf("ToJSONString() error = %v", err)
+			}
+			if err := common.WriteToFile(path.Join(outDir, "traceflowsObservations.json"), jOut); err != nil {
+				t.Errorf("ToJSONString() error = %v", err)
+			}
 		})
 	}
 }

@@ -25,7 +25,7 @@ bin/
 schemas/*.json
 
 # For tests output
-pkg/collector/out/*
+pkg/*/out/*
 cmd/examples/output/*
 
 # For temporary examples and pkgs
