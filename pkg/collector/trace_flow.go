@@ -1,11 +1,11 @@
 package collector
 
 import (
-	"crypto/rand"
+	crypto_rand "crypto/rand"
 	"encoding/json"
 	"fmt"
 	"time"
-
+    math_rand "math/rand"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -16,10 +16,11 @@ const (
 	getTraceFlowObservationQuery = "policy/api/v1/infra/traceflows/%s/observations"
 )
 const (
-	protocolTCP  = "tcp"
-	protocolUDP  = "udp"
-	protocolICMP = "icmp"
+	ProtocolTCP  = "tcp"
+	ProtocolUDP  = "udp"
+	ProtocolICMP = "icmp"
 	TCPFlagSYN   = 2
+	maxTraceFlows = 16
 )
 
 const (
@@ -34,47 +35,51 @@ type traceFlow struct {
 	Dst          string                `json:"dst,omitempty"`
 	SrcVM        string                `json:"src_vm,omitempty"`
 	DstVM        string                `json:"dst_vm,omitempty"`
-	Protocol     traceFlowProtocol     `json:"protocol,omitempty"`
+	Protocol     TraceFlowProtocol     `json:"protocol,omitempty"`
 	Name         string                `json:"name,omitempty"`
 	Errors       []string              `json:"errors,omitempty"`
 	Results      traceflowResult       `json:"results,omitempty"`
 	Observations TraceFlowObservations `json:"observation,omitempty"`
 }
 
-type traceFlowProtocol struct {
+type TraceFlowProtocol struct {
 	SrcPort  int    `json:"src_port,omitempty"`
 	DstPort  int    `json:"dst_port,omitempty"`
 	Protocol string `json:"protocol,omitempty"`
 }
 
-func (t *traceFlowProtocol) header() *nsx.TransportProtocolHeader {
+func (t *TraceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	h := &nsx.TransportProtocolHeader{}
 	switch t.Protocol {
-	case protocolTCP:
+	case ProtocolTCP:
 		flags := TCPFlagSYN
 		h.TcpHeader = &nsx.TcpHeader{SrcPort: &t.SrcPort, DstPort: &t.DstPort, TcpFlags: &flags}
-	case protocolUDP:
+	case ProtocolUDP:
 		h.UdpHeader = &nsx.UdpHeader{SrcPort: t.SrcPort, DstPort: t.DstPort}
-	case protocolICMP:
+	case ProtocolICMP:
 		h.IcmpEchoRequestHeader = &nsx.IcmpEchoRequestHeader{}
 	}
 	return h
 }
 
-type traceFlows []*traceFlow
+type TraceFlows []*traceFlow
 
 // ToJSONString converts a traceFlows into a json-formatted-string
-func (tfs *traceFlows) toJSONString() (string, error) {
+func (tfs *TraceFlows) toJSONString() (string, error) {
 	toPrint, err := json.MarshalIndent(tfs, "", "    ")
 	return string(toPrint), err
 }
 
-func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []traceFlowProtocol) *traceFlows {
-	traceFlows := traceFlows{}
+func GetTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []TraceFlowProtocol) *TraceFlows {
+	nPotentialTraceFlows := len(ips)* (len(ips) -1)*len(protocols)
+	traceFlows := TraceFlows{}
 	for _, srcIP := range ips {
 		for _, dstIP := range ips {
 			for _, protocol := range protocols {
 				if srcIP == dstIP {
+					continue
+				}
+				if nPotentialTraceFlows > maxTraceFlows && math_rand.Intn(nPotentialTraceFlows) > maxTraceFlows{
 					continue
 				}
 				srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
@@ -122,14 +127,14 @@ func getTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []
 
 func traceFlowRandomID() (string, error) {
 	rnd := make([]byte, traceflowIDSize)
-	if _, err := rand.Read(rnd); err != nil {
+	if _, err := crypto_rand.Read(rnd); err != nil {
 		return "", err
 	}
 	return fmt.Sprintf("traceFlow%X", rnd), nil
 }
 
 func createTraceFlow(resources *ResourcesContainerModel, server ServerData,
-	srcIP, dstIP string, protocol traceFlowProtocol) (string, error) {
+	srcIP, dstIP string, protocol TraceFlowProtocol) (string, error) {
 	traceFlowName, err := traceFlowRandomID()
 	if err != nil {
 		return "", err
