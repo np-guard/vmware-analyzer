@@ -8,14 +8,15 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
 
-type dfwCategory int
+type DfwCategory int
 
 const (
-	ethernetCategory dfwCategory = iota
+	ethernetCategory DfwCategory = iota
 	emergencyCategory
 	infrastructureCategory
 	envCategory
@@ -32,7 +33,7 @@ const (
 	EmptyStr          = "<Empty>"
 )
 
-/*func dfwCategoryFromString(s string) dfwCategory {
+/*func dfwCategoryFromString(s string) DfwCategory {
 	switch s {
 	case EthernetStr:
 		return ethernetCategory
@@ -51,7 +52,7 @@ const (
 	}
 }*/
 
-func (d dfwCategory) string() string {
+func (d DfwCategory) string() string {
 	switch d {
 	case ethernetCategory:
 		return EthernetStr
@@ -70,32 +71,32 @@ func (d dfwCategory) string() string {
 	}
 }
 
-var categoriesList = []dfwCategory{
+var categoriesList = []DfwCategory{
 	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, appCategoty, emptyCategory,
 }
 
 // effectiveRules are built from original rules, split to separate inbound & outbound rules
 // consider already the scope from the original rules
 type effectiveRules struct {
-	inbound  []*fwRule
-	outbound []*fwRule
+	inbound  []*FwRule
+	outbound []*FwRule
 }
 
-func (e *effectiveRules) addInboundRule(r *fwRule) {
+func (e *effectiveRules) addInboundRule(r *FwRule) {
 	if r != nil {
 		e.inbound = append(e.inbound, r)
 	}
 }
 
-func (e *effectiveRules) addOutboundRule(r *fwRule) {
+func (e *effectiveRules) addOutboundRule(r *FwRule) {
 	if r != nil {
 		e.outbound = append(e.outbound, r)
 	}
 }
 
 type categorySpec struct {
-	category       dfwCategory
-	rules          []*fwRule // ordered list of rules
+	category       DfwCategory
+	rules          []*FwRule // ordered list of rules
 	defaultAction  ruleAction
 	processedRules *effectiveRules // ordered list of effective rules
 }
@@ -173,7 +174,7 @@ func (c *categorySpec) outboundEffectiveRules() string {
 
 func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
 	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string) {
-	newRule := &fwRule{
+	newRule := &FwRule{
 		srcVMs:        src,
 		dstVMs:        dst,
 		conn:          conn,
@@ -183,6 +184,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 		origRuleObj:   origRule,
 		scope:         scope,
 		secPolicyName: secPolicyName,
+		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 	c.rules = append(c.rules, newRule)
 
@@ -195,7 +198,7 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 	}
 }
 
-func newEmptyCategory(c dfwCategory) *categorySpec {
+func newEmptyCategory(c DfwCategory) *categorySpec {
 	return &categorySpec{
 		category:       c,
 		defaultAction:  actionNone,
