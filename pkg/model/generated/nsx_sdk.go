@@ -4,6 +4,7 @@ package resources
 
 import "encoding/json"
 import "fmt"
+import "net/netip"
 import "reflect"
 
 type ALGTypeServiceEntry struct {
@@ -318,6 +319,66 @@ func (j *ApplicationConnectivityStrategy) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type ArpHeader struct {
+	// DstIp corresponds to the JSON schema field "dst_ip".
+	DstIp *IPAddress `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// This field specifies the nature of the Arp message being sent.
+	OpCode ArpHeaderOpCode `json:"op_code,omitempty" yaml:"op_code,omitempty" mapstructure:"op_code,omitempty"`
+
+	// This field specifies the IP address of the sender. If omitted, the src_ip is
+	// set to 0.0.0.0.
+	SrcIp *IPAddress `json:"src_ip,omitempty" yaml:"src_ip,omitempty" mapstructure:"src_ip,omitempty"`
+}
+
+type ArpHeaderOpCode string
+
+const ArpHeaderOpCodeARPREPLY ArpHeaderOpCode = "ARP_REPLY"
+const ArpHeaderOpCodeARPREQUEST ArpHeaderOpCode = "ARP_REQUEST"
+
+var enumValues_ArpHeaderOpCode = []interface{}{
+	"ARP_REQUEST",
+	"ARP_REPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ArpHeaderOpCode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_ArpHeaderOpCode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_ArpHeaderOpCode, v)
+	}
+	*j = ArpHeaderOpCode(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *ArpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain ArpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["op_code"]; !ok || v == nil {
+		plain.OpCode = "ARP_REQUEST"
+	}
+	*j = ArpHeader(plain)
+	return nil
+}
+
 // The Attached interface is only effective for the segment port on Bare metal
 // server.
 type AttachedInterfaceEntry struct {
@@ -333,6 +394,149 @@ type AttachedInterfaceEntry struct {
 
 	// RoutingTable corresponds to the JSON schema field "routing_table".
 	RoutingTable []string `json:"routing_table,omitempty" yaml:"routing_table,omitempty" mapstructure:"routing_table,omitempty"`
+}
+
+type BinaryPacketData struct {
+	// If the requested frame_size is too small (given the payload and traceflow
+	// metadata requirement of 16 bytes), the traceflow request will fail with an
+	// appropriate message.  The frame will be zero padded to the requested size.
+	FrameSize int `json:"frame_size,omitempty" yaml:"frame_size,omitempty" mapstructure:"frame_size,omitempty"`
+
+	// Up to 1000 bytes of payload may be supplied (with a base64-encoded length of
+	// 1336 bytes.) Additional bytes of traceflow metadata will be appended to the
+	// payload. The payload must contain all headers (Ethernet, IP, etc). Note that
+	// VLAN is not supported in the logical space. Hence, payload must not contain
+	// 802.1Q headers.
+	Payload *string `json:"payload,omitempty" yaml:"payload,omitempty" mapstructure:"payload,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType BinaryPacketDataResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// When this flag is set, traceflow packet will have its destination overwritten
+	// as the gateway address of the logical router to which the source logical switch
+	// is connected. More specifically: - For ARP request, the target IP will be
+	// overwritten as gateway IP if the target   IP is not in the same subnet of
+	// gateway. - For ARP response, the target IP and destination MAC will be
+	// overwritten as   gateway IP/MAC respectively, if the target IP is not in the
+	// same subnet of gateway. - For IP packet, the destination MAC will be
+	// overwritten as gateway MAC. However, this flag will not be effective when
+	// injecting the traceflow packet to a VLAN backed port. This is because the
+	// gateway in this case is a physical gateway that is outside the scope of NSX.
+	// Therefore, users need to manually populate the gateway MAC address. If the user
+	// still sets this flag in this case, a validation error will be thrown. The
+	// scenario where a user injects a packet with a VLAN tag into a parent port is
+	// referred to as the traceflow container case. Please note that the value of
+	// `routed` depends on the connected network of the child segment rather than the
+	// connected network of segment of the parent port in this case. Here is the
+	// explanation: The parent port in this context is the port on a segment which is
+	// referred to by a SegmentConnectionBindingMap. The bound segment of the
+	// SegmentConnectionBindingMap is the child segment. The user-crafted traceflow
+	// packet will be directly forwarded to the corresponding child segment of the
+	// parent port without interacting with any layer 2 forwarding/layer 3 routing in
+	// this scenario. The crafted packet will follow the forwarding/routing polices of
+	// the child segment's connected network. For example, if a user injects a crafted
+	// packet to port_p, and the segment (seg_p) of port_p is referred to by the
+	// binding map m1, where m1 is bound to segment seg_c, and the destination port
+	// (port_d) of the packet is the VM vNIC connected to seg_p. Although port_p and
+	// port_d are on the same segment, the 'routed' value should be set to true if the
+	// user expects the crafted packet to be correctly delivered to the destination.
+	// This is because the child segments seg_c and seg_d are on different segments
+	// and require router interaction to communicate.
+	Routed *bool `json:"routed,omitempty" yaml:"routed,omitempty" mapstructure:"routed,omitempty"`
+
+	// This type takes effect only for IP packet.
+	TransportType BinaryPacketDataTransportType `json:"transport_type,omitempty" yaml:"transport_type,omitempty" mapstructure:"transport_type,omitempty"`
+}
+
+type BinaryPacketDataResourceType string
+
+const BinaryPacketDataResourceTypeBinaryPacketData BinaryPacketDataResourceType = "BinaryPacketData"
+const BinaryPacketDataResourceTypeFieldsPacketData BinaryPacketDataResourceType = "FieldsPacketData"
+
+var enumValues_BinaryPacketDataResourceType = []interface{}{
+	"BinaryPacketData",
+	"FieldsPacketData",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BinaryPacketDataResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_BinaryPacketDataResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BinaryPacketDataResourceType, v)
+	}
+	*j = BinaryPacketDataResourceType(v)
+	return nil
+}
+
+type BinaryPacketDataTransportType string
+
+const BinaryPacketDataTransportTypeBROADCAST BinaryPacketDataTransportType = "BROADCAST"
+const BinaryPacketDataTransportTypeMULTICAST BinaryPacketDataTransportType = "MULTICAST"
+const BinaryPacketDataTransportTypeUNICAST BinaryPacketDataTransportType = "UNICAST"
+const BinaryPacketDataTransportTypeUNKNOWN BinaryPacketDataTransportType = "UNKNOWN"
+
+var enumValues_BinaryPacketDataTransportType = []interface{}{
+	"BROADCAST",
+	"UNICAST",
+	"MULTICAST",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BinaryPacketDataTransportType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_BinaryPacketDataTransportType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_BinaryPacketDataTransportType, v)
+	}
+	*j = BinaryPacketDataTransportType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *BinaryPacketData) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain BinaryPacketData
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["frame_size"]; !ok || v == nil {
+		plain.FrameSize = 128.0
+	}
+	if plain.Payload != nil && len(*plain.Payload) > 1336 {
+		return fmt.Errorf("field %s length: must be <= %d", "payload", 1336)
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "FieldsPacketData"
+	}
+	if v, ok := raw["transport_type"]; !ok || v == nil {
+		plain.TransportType = "UNICAST"
+	}
+	*j = BinaryPacketData(plain)
+	return nil
 }
 
 // configuration parameters for Bridge Profile
@@ -1351,6 +1555,131 @@ func (j *ConjunctionOperator) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type DhcpHeader struct {
+	// This is used to specify the general type of message. A client sending request
+	// to a server uses an op code of BOOTREQUEST, while a server replying uses an op
+	// code of BOOTREPLY.
+	OpCode DhcpHeaderOpCode `json:"op_code,omitempty" yaml:"op_code,omitempty" mapstructure:"op_code,omitempty"`
+}
+
+type DhcpHeaderOpCode string
+
+const DhcpHeaderOpCodeBOOTREPLY DhcpHeaderOpCode = "BOOTREPLY"
+const DhcpHeaderOpCodeBOOTREQUEST DhcpHeaderOpCode = "BOOTREQUEST"
+
+var enumValues_DhcpHeaderOpCode = []interface{}{
+	"BOOTREQUEST",
+	"BOOTREPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DhcpHeaderOpCode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DhcpHeaderOpCode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DhcpHeaderOpCode, v)
+	}
+	*j = DhcpHeaderOpCode(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DhcpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain DhcpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["op_code"]; !ok || v == nil {
+		plain.OpCode = "BOOTREQUEST"
+	}
+	*j = DhcpHeader(plain)
+	return nil
+}
+
+type Dhcpv6Header struct {
+	// This is used to specify the DHCP v6 message. To request the assignment of one
+	// or more IPv6 addresses, a client first locates a DHCP server and then requests
+	// the assignment of addresses and other configuration information from the
+	// server. The client sends a Solicit message to the
+	// All_DHCP_Relay_Agents_and_Servers address to find available DHCP servers. Any
+	// server that can meet the client's requirements responds with an Advertise
+	// message. The client then chooses one of the servers and sends a Request message
+	// to the server asking for confirmed assignment of addresses and other
+	// configuration information. The server responds with a Reply message that
+	// contains the confirmed addresses and configuration. SOLICIT - A client sends a
+	// Solicit message to locate servers. ADVERTISE - A server sends and Advertise
+	// message to indicate that it is available. REQUEST - A client sends a Request
+	// message to request configuration parameters. REPLY - A server sends a Reply
+	// message containing assigned addresses and configuration parameters.
+	MsgType Dhcpv6HeaderMsgType `json:"msg_type,omitempty" yaml:"msg_type,omitempty" mapstructure:"msg_type,omitempty"`
+}
+
+type Dhcpv6HeaderMsgType string
+
+const Dhcpv6HeaderMsgTypeADVERTISE Dhcpv6HeaderMsgType = "ADVERTISE"
+const Dhcpv6HeaderMsgTypeREPLY Dhcpv6HeaderMsgType = "REPLY"
+const Dhcpv6HeaderMsgTypeREQUEST Dhcpv6HeaderMsgType = "REQUEST"
+const Dhcpv6HeaderMsgTypeSOLICIT Dhcpv6HeaderMsgType = "SOLICIT"
+
+var enumValues_Dhcpv6HeaderMsgType = []interface{}{
+	"SOLICIT",
+	"ADVERTISE",
+	"REQUEST",
+	"REPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Dhcpv6HeaderMsgType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_Dhcpv6HeaderMsgType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_Dhcpv6HeaderMsgType, v)
+	}
+	*j = Dhcpv6HeaderMsgType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Dhcpv6Header) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Dhcpv6Header
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["msg_type"]; !ok || v == nil {
+		plain.MsgType = "SOLICIT"
+	}
+	*j = Dhcpv6Header(plain)
+	return nil
+}
+
 type DiscoveredResourceScope struct {
 	// Specifies the scope id of discovered resource.
 	ScopeId *string `json:"scope_id,omitempty" yaml:"scope_id,omitempty" mapstructure:"scope_id,omitempty"`
@@ -1386,6 +1715,101 @@ func (j *DiscoveredResourceScopeScopeType) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DiscoveredResourceScopeScopeType, v)
 	}
 	*j = DiscoveredResourceScopeScopeType(v)
+	return nil
+}
+
+type DnsHeader struct {
+	// This is used to define what is being asked or responded.
+	Address *string `json:"address,omitempty" yaml:"address,omitempty" mapstructure:"address,omitempty"`
+
+	// This is used to specify the type of the address. V4 - The address provided is
+	// an IPv4 domain name/IP address, the Type in query or response will be A V6 -
+	// The address provided is an IPv6 domain name/IP address, the Type in query or
+	// response will be AAAA
+	AddressType DnsHeaderAddressType `json:"address_type,omitempty" yaml:"address_type,omitempty" mapstructure:"address_type,omitempty"`
+
+	// MessageType corresponds to the JSON schema field "message_type".
+	MessageType DnsHeaderMessageType `json:"message_type,omitempty" yaml:"message_type,omitempty" mapstructure:"message_type,omitempty"`
+}
+
+type DnsHeaderAddressType string
+
+const DnsHeaderAddressTypeV4 DnsHeaderAddressType = "V4"
+const DnsHeaderAddressTypeV6 DnsHeaderAddressType = "V6"
+
+var enumValues_DnsHeaderAddressType = []interface{}{
+	"V4",
+	"V6",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DnsHeaderAddressType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DnsHeaderAddressType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DnsHeaderAddressType, v)
+	}
+	*j = DnsHeaderAddressType(v)
+	return nil
+}
+
+type DnsHeaderMessageType string
+
+const DnsHeaderMessageTypeQUERY DnsHeaderMessageType = "QUERY"
+const DnsHeaderMessageTypeRESPONSE DnsHeaderMessageType = "RESPONSE"
+
+var enumValues_DnsHeaderMessageType = []interface{}{
+	"QUERY",
+	"RESPONSE",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DnsHeaderMessageType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_DnsHeaderMessageType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_DnsHeaderMessageType, v)
+	}
+	*j = DnsHeaderMessageType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *DnsHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain DnsHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["address_type"]; !ok || v == nil {
+		plain.AddressType = "V4"
+	}
+	if v, ok := raw["message_type"]; !ok || v == nil {
+		plain.MessageType = "QUERY"
+	}
+	*j = DnsHeader(plain)
 	return nil
 }
 
@@ -1712,6 +2136,37 @@ func (j *EtherTypeServiceEntry) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
 	}
 	*j = EtherTypeServiceEntry(plain)
+	return nil
+}
+
+type EthernetHeader struct {
+	// The destination MAC address of form:
+	// "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$". For example: 00:00:00:00:00:00.
+	DstMac *string `json:"dst_mac,omitempty" yaml:"dst_mac,omitempty" mapstructure:"dst_mac,omitempty"`
+
+	// This field defaults to IPv4.
+	EthType int `json:"eth_type,omitempty" yaml:"eth_type,omitempty" mapstructure:"eth_type,omitempty"`
+
+	// The source MAC address of form: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".
+	// For example: 00:00:00:00:00:00.
+	SrcMac *string `json:"src_mac,omitempty" yaml:"src_mac,omitempty" mapstructure:"src_mac,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *EthernetHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain EthernetHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["eth_type"]; !ok || v == nil {
+		plain.EthType = 2048.0
+	}
+	*j = EthernetHeader(plain)
 	return nil
 }
 
@@ -2156,6 +2611,164 @@ type FederationGatewayConfig struct {
 	// Global UUID for transit segment id to be used by Layer2 services for federation
 	// usecases.
 	TransitSegmentId *string `json:"transit_segment_id,omitempty" yaml:"transit_segment_id,omitempty" mapstructure:"transit_segment_id,omitempty"`
+}
+
+type FieldsPacketData struct {
+	// ArpHeader corresponds to the JSON schema field "arp_header".
+	ArpHeader *ArpHeader `json:"arp_header,omitempty" yaml:"arp_header,omitempty" mapstructure:"arp_header,omitempty"`
+
+	// EthHeader corresponds to the JSON schema field "eth_header".
+	EthHeader *EthernetHeader `json:"eth_header,omitempty" yaml:"eth_header,omitempty" mapstructure:"eth_header,omitempty"`
+
+	// If the requested frame_size is too small (given the payload and traceflow
+	// metadata requirement of 16 bytes), the traceflow request will fail with an
+	// appropriate message.  The frame will be zero padded to the requested size.
+	FrameSize int `json:"frame_size,omitempty" yaml:"frame_size,omitempty" mapstructure:"frame_size,omitempty"`
+
+	// IpHeader corresponds to the JSON schema field "ip_header".
+	IpHeader *Ipv4Header `json:"ip_header,omitempty" yaml:"ip_header,omitempty" mapstructure:"ip_header,omitempty"`
+
+	// Ipv6Header corresponds to the JSON schema field "ipv6_header".
+	Ipv6Header *Ipv6Header `json:"ipv6_header,omitempty" yaml:"ipv6_header,omitempty" mapstructure:"ipv6_header,omitempty"`
+
+	// Up to 1000 bytes of payload may be supplied (with a base64-encoded length of
+	// 1336 bytes.) Additional bytes of traceflow metadata will be appended to the
+	// payload. The payload contains any data the user wants to put after the
+	// transport header.
+	Payload *string `json:"payload,omitempty" yaml:"payload,omitempty" mapstructure:"payload,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType FieldsPacketDataResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// When this flag is set, traceflow packet will have its destination overwritten
+	// as the gateway address of the logical router to which the source logical switch
+	// is connected. More specifically: - For ARP request, the target IP will be
+	// overwritten as gateway IP if the target   IP is not in the same subnet of
+	// gateway. - For ARP response, the target IP and destination MAC will be
+	// overwritten as   gateway IP/MAC respectively, if the target IP is not in the
+	// same subnet of gateway. - For IP packet, the destination MAC will be
+	// overwritten as gateway MAC. However, this flag will not be effective when
+	// injecting the traceflow packet to a VLAN backed port. This is because the
+	// gateway in this case is a physical gateway that is outside the scope of NSX.
+	// Therefore, users need to manually populate the gateway MAC address. If the user
+	// still sets this flag in this case, a validation error will be thrown. The
+	// scenario where a user injects a packet with a VLAN tag into a parent port is
+	// referred to as the traceflow container case. Please note that the value of
+	// `routed` depends on the connected network of the child segment rather than the
+	// connected network of segment of the parent port in this case. Here is the
+	// explanation: The parent port in this context is the port on a segment which is
+	// referred to by a SegmentConnectionBindingMap. The bound segment of the
+	// SegmentConnectionBindingMap is the child segment. The user-crafted traceflow
+	// packet will be directly forwarded to the corresponding child segment of the
+	// parent port without interacting with any layer 2 forwarding/layer 3 routing in
+	// this scenario. The crafted packet will follow the forwarding/routing polices of
+	// the child segment's connected network. For example, if a user injects a crafted
+	// packet to port_p, and the segment (seg_p) of port_p is referred to by the
+	// binding map m1, where m1 is bound to segment seg_c, and the destination port
+	// (port_d) of the packet is the VM vNIC connected to seg_p. Although port_p and
+	// port_d are on the same segment, the 'routed' value should be set to true if the
+	// user expects the crafted packet to be correctly delivered to the destination.
+	// This is because the child segments seg_c and seg_d are on different segments
+	// and require router interaction to communicate.
+	Routed *bool `json:"routed,omitempty" yaml:"routed,omitempty" mapstructure:"routed,omitempty"`
+
+	// This field contains a protocol that is above IP. It is not restricted to the
+	// 'transport' defined by the OSI model (e.g., ICMP is supported).
+	TransportHeader *TransportProtocolHeader `json:"transport_header,omitempty" yaml:"transport_header,omitempty" mapstructure:"transport_header,omitempty"`
+
+	// This type takes effect only for IP packet.
+	TransportType FieldsPacketDataTransportType `json:"transport_type,omitempty" yaml:"transport_type,omitempty" mapstructure:"transport_type,omitempty"`
+}
+
+type FieldsPacketDataResourceType string
+
+const FieldsPacketDataResourceTypeBinaryPacketData FieldsPacketDataResourceType = "BinaryPacketData"
+const FieldsPacketDataResourceTypeFieldsPacketData FieldsPacketDataResourceType = "FieldsPacketData"
+
+var enumValues_FieldsPacketDataResourceType = []interface{}{
+	"BinaryPacketData",
+	"FieldsPacketData",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FieldsPacketDataResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FieldsPacketDataResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FieldsPacketDataResourceType, v)
+	}
+	*j = FieldsPacketDataResourceType(v)
+	return nil
+}
+
+type FieldsPacketDataTransportType string
+
+const FieldsPacketDataTransportTypeBROADCAST FieldsPacketDataTransportType = "BROADCAST"
+const FieldsPacketDataTransportTypeMULTICAST FieldsPacketDataTransportType = "MULTICAST"
+const FieldsPacketDataTransportTypeUNICAST FieldsPacketDataTransportType = "UNICAST"
+const FieldsPacketDataTransportTypeUNKNOWN FieldsPacketDataTransportType = "UNKNOWN"
+
+var enumValues_FieldsPacketDataTransportType = []interface{}{
+	"BROADCAST",
+	"UNICAST",
+	"MULTICAST",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FieldsPacketDataTransportType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_FieldsPacketDataTransportType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_FieldsPacketDataTransportType, v)
+	}
+	*j = FieldsPacketDataTransportType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *FieldsPacketData) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain FieldsPacketData
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["frame_size"]; !ok || v == nil {
+		plain.FrameSize = 128.0
+	}
+	if plain.Payload != nil && len(*plain.Payload) > 1336 {
+		return fmt.Errorf("field %s length: must be <= %d", "payload", 1336)
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "FieldsPacketData"
+	}
+	if v, ok := raw["transport_type"]; !ok || v == nil {
+		plain.TransportType = "UNICAST"
+	}
+	*j = FieldsPacketData(plain)
+	return nil
 }
 
 type FirewallRule struct {
@@ -3546,6 +4159,37 @@ func (j *IPProtocolServiceEntry) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type IPv6Address netip.Addr
+
+type IcmpEchoRequestHeader struct {
+	// Id corresponds to the JSON schema field "id".
+	Id int `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Sequence corresponds to the JSON schema field "sequence".
+	Sequence int `json:"sequence,omitempty" yaml:"sequence,omitempty" mapstructure:"sequence,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *IcmpEchoRequestHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain IcmpEchoRequestHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["id"]; !ok || v == nil {
+		plain.Id = 0.0
+	}
+	if v, ok := raw["sequence"]; !ok || v == nil {
+		plain.Sequence = 0.0
+	}
+	*j = IcmpEchoRequestHeader(plain)
+	return nil
+}
+
 // Represents a list of identity group (Ad group SID) expressions.
 type IdentityGroupExpression struct {
 	// Timestamp of resource creation
@@ -3844,6 +4488,87 @@ func (j *IpAddressInfoSource) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_IpAddressInfoSource, v)
 	}
 	*j = IpAddressInfoSource(v)
+	return nil
+}
+
+type Ipv4Header struct {
+	// DstIp corresponds to the JSON schema field "dst_ip".
+	DstIp *IPAddress `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// Flags corresponds to the JSON schema field "flags".
+	Flags int `json:"flags,omitempty" yaml:"flags,omitempty" mapstructure:"flags,omitempty"`
+
+	// Protocol corresponds to the JSON schema field "protocol".
+	Protocol int `json:"protocol,omitempty" yaml:"protocol,omitempty" mapstructure:"protocol,omitempty"`
+
+	// SrcIp corresponds to the JSON schema field "src_ip".
+	SrcIp *IPAddress `json:"src_ip,omitempty" yaml:"src_ip,omitempty" mapstructure:"src_ip,omitempty"`
+
+	// This is used together with src_ip to calculate dst_ip for broadcast when dst_ip
+	// is not given; not used in all other cases.
+	SrcSubnetPrefixLen *int `json:"src_subnet_prefix_len,omitempty" yaml:"src_subnet_prefix_len,omitempty" mapstructure:"src_subnet_prefix_len,omitempty"`
+
+	// Ttl corresponds to the JSON schema field "ttl".
+	Ttl int `json:"ttl,omitempty" yaml:"ttl,omitempty" mapstructure:"ttl,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Ipv4Header) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Ipv4Header
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["flags"]; !ok || v == nil {
+		plain.Flags = 0.0
+	}
+	if v, ok := raw["protocol"]; !ok || v == nil {
+		plain.Protocol = 1.0
+	}
+	if v, ok := raw["ttl"]; !ok || v == nil {
+		plain.Ttl = 64.0
+	}
+	*j = Ipv4Header(plain)
+	return nil
+}
+
+type Ipv6Header struct {
+	// DstIp corresponds to the JSON schema field "dst_ip".
+	DstIp *IPv6Address `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// Decremented by 1 by each node that forwards the packets. The packet is
+	// discarded if Hop Limit is decremented to zero.
+	HopLimit int `json:"hop_limit,omitempty" yaml:"hop_limit,omitempty" mapstructure:"hop_limit,omitempty"`
+
+	// NextHeader corresponds to the JSON schema field "next_header".
+	NextHeader int `json:"next_header,omitempty" yaml:"next_header,omitempty" mapstructure:"next_header,omitempty"`
+
+	// SrcIp corresponds to the JSON schema field "src_ip".
+	SrcIp *IPv6Address `json:"src_ip,omitempty" yaml:"src_ip,omitempty" mapstructure:"src_ip,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *Ipv6Header) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain Ipv6Header
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["hop_limit"]; !ok || v == nil {
+		plain.HopLimit = 64.0
+	}
+	if v, ok := raw["next_header"]; !ok || v == nil {
+		plain.NextHeader = 58.0
+	}
+	*j = Ipv6Header(plain)
 	return nil
 }
 
@@ -4393,6 +5118,67 @@ func (j *NSServiceElementResourceType) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type NdpHeader struct {
+	// The IP address of the destination of the solicitation. It MUST NOT be a
+	// multicast address.
+	DstIp *IPv6Address `json:"dst_ip,omitempty" yaml:"dst_ip,omitempty" mapstructure:"dst_ip,omitempty"`
+
+	// This field specifies the type of the Neighbor discover message being sent.
+	// NEIGHBOR_SOLICITATION - Neighbor Solicitation message to discover the
+	// link-layer address of an on-link IPv6 node or to confirm a previously
+	// determined link-layer address. NEIGHBOR_ADVERTISEMENT - Neighbor Advertisement
+	// message in response to a Neighbor Solicitation message.
+	MsgType NdpHeaderMsgType `json:"msg_type,omitempty" yaml:"msg_type,omitempty" mapstructure:"msg_type,omitempty"`
+}
+
+type NdpHeaderMsgType string
+
+const NdpHeaderMsgTypeNEIGHBORADVERTISEMENT NdpHeaderMsgType = "NEIGHBOR_ADVERTISEMENT"
+const NdpHeaderMsgTypeNEIGHBORSOLICITATION NdpHeaderMsgType = "NEIGHBOR_SOLICITATION"
+
+var enumValues_NdpHeaderMsgType = []interface{}{
+	"NEIGHBOR_SOLICITATION",
+	"NEIGHBOR_ADVERTISEMENT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NdpHeaderMsgType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_NdpHeaderMsgType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_NdpHeaderMsgType, v)
+	}
+	*j = NdpHeaderMsgType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *NdpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain NdpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["msg_type"]; !ok || v == nil {
+		plain.MsgType = "NEIGHBOR_SOLICITATION"
+	}
+	*j = NdpHeader(plain)
+	return nil
+}
+
 // Nested expressions is a list of condition expressions that must follow the below
 // criteria: 0. Only allowed expressions in a NestedExpression are Condition and
 // ConjunctionOperator. 1. A non-empty expression list, must be of odd size. In a
@@ -4785,6 +5571,139 @@ type OwnerResourceLink struct {
 	Rel *string `json:"rel,omitempty" yaml:"rel,omitempty" mapstructure:"rel,omitempty"`
 }
 
+type PacketData struct {
+	// If the requested frame_size is too small (given the payload and traceflow
+	// metadata requirement of 16 bytes), the traceflow request will fail with an
+	// appropriate message.  The frame will be zero padded to the requested size.
+	FrameSize int `json:"frame_size,omitempty" yaml:"frame_size,omitempty" mapstructure:"frame_size,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType PacketDataResourceType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// When this flag is set, traceflow packet will have its destination overwritten
+	// as the gateway address of the logical router to which the source logical switch
+	// is connected. More specifically: - For ARP request, the target IP will be
+	// overwritten as gateway IP if the target   IP is not in the same subnet of
+	// gateway. - For ARP response, the target IP and destination MAC will be
+	// overwritten as   gateway IP/MAC respectively, if the target IP is not in the
+	// same subnet of gateway. - For IP packet, the destination MAC will be
+	// overwritten as gateway MAC. However, this flag will not be effective when
+	// injecting the traceflow packet to a VLAN backed port. This is because the
+	// gateway in this case is a physical gateway that is outside the scope of NSX.
+	// Therefore, users need to manually populate the gateway MAC address. If the user
+	// still sets this flag in this case, a validation error will be thrown. The
+	// scenario where a user injects a packet with a VLAN tag into a parent port is
+	// referred to as the traceflow container case. Please note that the value of
+	// `routed` depends on the connected network of the child segment rather than the
+	// connected network of segment of the parent port in this case. Here is the
+	// explanation: The parent port in this context is the port on a segment which is
+	// referred to by a SegmentConnectionBindingMap. The bound segment of the
+	// SegmentConnectionBindingMap is the child segment. The user-crafted traceflow
+	// packet will be directly forwarded to the corresponding child segment of the
+	// parent port without interacting with any layer 2 forwarding/layer 3 routing in
+	// this scenario. The crafted packet will follow the forwarding/routing polices of
+	// the child segment's connected network. For example, if a user injects a crafted
+	// packet to port_p, and the segment (seg_p) of port_p is referred to by the
+	// binding map m1, where m1 is bound to segment seg_c, and the destination port
+	// (port_d) of the packet is the VM vNIC connected to seg_p. Although port_p and
+	// port_d are on the same segment, the 'routed' value should be set to true if the
+	// user expects the crafted packet to be correctly delivered to the destination.
+	// This is because the child segments seg_c and seg_d are on different segments
+	// and require router interaction to communicate.
+	Routed *bool `json:"routed,omitempty" yaml:"routed,omitempty" mapstructure:"routed,omitempty"`
+
+	// This type takes effect only for IP packet.
+	TransportType PacketDataTransportType `json:"transport_type,omitempty" yaml:"transport_type,omitempty" mapstructure:"transport_type,omitempty"`
+}
+
+type PacketDataResourceType string
+
+const PacketDataResourceTypeBinaryPacketData PacketDataResourceType = "BinaryPacketData"
+const PacketDataResourceTypeFieldsPacketData PacketDataResourceType = "FieldsPacketData"
+
+var enumValues_PacketDataResourceType = []interface{}{
+	"BinaryPacketData",
+	"FieldsPacketData",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PacketDataResourceType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PacketDataResourceType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PacketDataResourceType, v)
+	}
+	*j = PacketDataResourceType(v)
+	return nil
+}
+
+type PacketDataTransportType string
+
+const PacketDataTransportTypeBROADCAST PacketDataTransportType = "BROADCAST"
+const PacketDataTransportTypeMULTICAST PacketDataTransportType = "MULTICAST"
+const PacketDataTransportTypeUNICAST PacketDataTransportType = "UNICAST"
+const PacketDataTransportTypeUNKNOWN PacketDataTransportType = "UNKNOWN"
+
+var enumValues_PacketDataTransportType = []interface{}{
+	"BROADCAST",
+	"UNICAST",
+	"MULTICAST",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PacketDataTransportType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PacketDataTransportType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PacketDataTransportType, v)
+	}
+	*j = PacketDataTransportType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PacketData) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PacketData
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["frame_size"]; !ok || v == nil {
+		plain.FrameSize = 128.0
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "FieldsPacketData"
+	}
+	if v, ok := raw["transport_type"]; !ok || v == nil {
+		plain.TransportType = "UNICAST"
+	}
+	*j = PacketData(plain)
+	return nil
+}
+
 // Represents policy path expressions in the form of an array, to support addition
 // of objects like groups, segments and policy logical ports in a group.
 type PathExpression struct {
@@ -5152,6 +6071,1462 @@ type PolicyRelatedApiErrorErrorData map[string]interface{}
 type PolicyRequestParameter struct {
 	// The type of this request parameter.
 	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+}
+
+type PolicyTraceflowObservationDelivered struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// The path of the interface into which the traceflow packet was delivered (e.g.,
+	// Tier0 Interface, Tier1 Interface, Service Interface, and Virtual Tunnel
+	// Interface).
+	//
+	InterfacePath *string `json:"interface_path,omitempty" yaml:"interface_path,omitempty" mapstructure:"interface_path,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// The port path of the corresponding parent port for current deliver observation
+	// point.
+	//
+	ParentPortPath *string `json:"parent_port_path,omitempty" yaml:"parent_port_path,omitempty" mapstructure:"parent_port_path,omitempty"`
+
+	// This field specifies the resolution type of ARP ARP_SUPPRESSION_PORT_CACHE -
+	// ARP request is suppressed by IP table. ARP_SUPPRESSION_TABLE - ARP request is
+	// suppressed by ARP table. ARP_SUPPRESSION_CP_QUERY - ARP request is suppressed
+	// by info derived from CP. ARP_VM - No suppression and the ARP request is
+	// resolved by VM. ARP_LRP - No suppression and the ARP request is resolved by
+	// logical router.
+	ResolutionType *PolicyTraceflowObservationDeliveredResolutionType `json:"resolution_type,omitempty" yaml:"resolution_type,omitempty" mapstructure:"resolution_type,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// The path of the segment port into
+	// which the traceflow packet was delivered.
+	//
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// The source MAC address of form: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".
+	// For example: 00:00:00:00:00:00.
+	TargetMac *string `json:"target_mac,omitempty" yaml:"target_mac,omitempty" mapstructure:"target_mac,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// VlanId corresponds to the JSON schema field "vlan_id".
+	VlanId *VlanID `json:"vlan_id,omitempty" yaml:"vlan_id,omitempty" mapstructure:"vlan_id,omitempty"`
+}
+
+type PolicyTraceflowObservationDeliveredResolutionType string
+
+const PolicyTraceflowObservationDeliveredResolutionTypeARPLRP PolicyTraceflowObservationDeliveredResolutionType = "ARP_LRP"
+const PolicyTraceflowObservationDeliveredResolutionTypeARPSUPPRESSIONCPQUERY PolicyTraceflowObservationDeliveredResolutionType = "ARP_SUPPRESSION_CP_QUERY"
+const PolicyTraceflowObservationDeliveredResolutionTypeARPSUPPRESSIONPORTCACHE PolicyTraceflowObservationDeliveredResolutionType = "ARP_SUPPRESSION_PORT_CACHE"
+const PolicyTraceflowObservationDeliveredResolutionTypeARPSUPPRESSIONTABLE PolicyTraceflowObservationDeliveredResolutionType = "ARP_SUPPRESSION_TABLE"
+const PolicyTraceflowObservationDeliveredResolutionTypeARPVM PolicyTraceflowObservationDeliveredResolutionType = "ARP_VM"
+const PolicyTraceflowObservationDeliveredResolutionTypeUNKNOWN PolicyTraceflowObservationDeliveredResolutionType = "UNKNOWN"
+
+var enumValues_PolicyTraceflowObservationDeliveredResolutionType = []interface{}{
+	"UNKNOWN",
+	"ARP_SUPPRESSION_PORT_CACHE",
+	"ARP_SUPPRESSION_TABLE",
+	"ARP_SUPPRESSION_CP_QUERY",
+	"ARP_VM",
+	"ARP_LRP",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDeliveredResolutionType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDeliveredResolutionType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDeliveredResolutionType, v)
+	}
+	*j = PolicyTraceflowObservationDeliveredResolutionType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDelivered) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyTraceflowObservationDelivered
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = PolicyTraceflowObservationDelivered(plain)
+	return nil
+}
+
+type PolicyTraceflowObservationDropped struct {
+	// This field is specified when the traceflow packet matched a L3 firewall rule.
+	AclRuleId *int `json:"acl_rule_id,omitempty" yaml:"acl_rule_id,omitempty" mapstructure:"acl_rule_id,omitempty"`
+
+	// The path of the ACL rule that was applied to forward the traceflow packet
+	AclRulePath *string `json:"acl_rule_path,omitempty" yaml:"acl_rule_path,omitempty" mapstructure:"acl_rule_path,omitempty"`
+
+	// This field specifies the ARP fails reason ARP_TIMEOUT - ARP failure due to
+	// query control plane timeout ARP_CPFAIL - ARP failure due post ARP query message
+	// to control plane failure ARP_FROMCP - ARP failure due to deleting ARP entry
+	// from control plane ARP_PORTDESTROY - ARP failure due to port destruction
+	// ARP_TABLEDESTROY - ARP failure due to ARP table destruction ARP_NETDESTROY -
+	// ARP failure due to overlay network destruction
+	ArpFailReason *PolicyTraceflowObservationDroppedArpFailReason `json:"arp_fail_reason,omitempty" yaml:"arp_fail_reason,omitempty" mapstructure:"arp_fail_reason,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// The path of the interface at which the traceflow packet was dropped (e.g.,
+	// Tier0 Interface, Tier1 Interface, Service Interface, and Virtual Tunnel
+	// Interface).
+	//
+	InterfacePath *string `json:"interface_path,omitempty" yaml:"interface_path,omitempty" mapstructure:"interface_path,omitempty"`
+
+	// This field specifies the IPSec VPN fails reason IPSEC_SA_NOT_FOUND   - IPSec SA
+	// required for processing the packet does not exist IPSEC_UDP_ENC_STATE_MISMATCH
+	// - ESP packet is UDP encapsulated but IPsec SA does not expect UDP encapsulation
+	// IPSEC_SEQ_ROLLOVER   - IPSec SA sequence number has exceeded the maximum value
+	// IPSEC_FRAG_NEEDED   - Received packet has DF bit set in IP header but requires
+	// fragmentation due to ESP encapsulation IPSEC_TUN_IFACE_DOWN   - IPSec tunnel
+	// interface is down IPSEC_POLICY_NOMATCH   - Received packet does not match IPSec
+	// policy IPSEC_POLICY_BLOCK   - IPSec packet processing failed IPSEC_POLICY_ERROR
+	// - IPSec packet processing failed IPSEC_REPLAY_SEQ_NUM_REPEAT   - IPSec packet
+	// is dropped due to replay IPSEC_REPLAY_RECV_DELAY   - IPSec packet is dropped
+	// due to replay IPSEC_REPLAY_PROC_DELAY   - IPSec packet is dropped due to replay
+	// IPSEC_ZERO_SEQ_NUM_RECVD   - ESP packet is received with sequence number as
+	// zero IPSEC_ENQUEUE_FAIL   - Packet processing failed during crypto operation
+	// IPSEC_AUTH_DGST_MISMATCH   - Packet integrity check failed due to digest
+	// mismatch IPSEC_AUTH_DGST_SIZE_MISMATCH   - Packet integrity check failed due to
+	// invalid digest length IPSEC_AUTH_UNSUPPORTED_ALGO   - Packet integrity check
+	// failed due to unsupported hash algorithm IPSEC_CRYPTO_FAIL   - Packet
+	// processing failed during crypto operation IPSEC_CRYPTO_PROC_INCOMPLETE   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_SESSION_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_ARGS_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_PROC_ERROR   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_NO_BUF_SPACE   -
+	// Packet processing failed during crypto operation
+	// IPSEC_CRYPTO_UNSUPPORTED_CIPHER   - Packet processing failed during crypto
+	// operation IPSEC_MALFORMED   - Received ESP packet is malformed
+	// IPSEC_MALFORMED_INV_PADDING   - Received ESP packet is malformed
+	// IPSEC_PADDING_REMOVAL_FAILED   - Received ESP packet is malformed
+	// IPSEC_INNER_MALFORMED   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_IP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_UDP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_TCP   - IP packet after ESP decryption is malformed
+	// IPSEC_UNKNOWN   - IPSec VPN failure reason is unknown
+	IpsecFailReason *PolicyTraceflowObservationDroppedIpsecFailReason `json:"ipsec_fail_reason,omitempty" yaml:"ipsec_fail_reason,omitempty" mapstructure:"ipsec_fail_reason,omitempty"`
+
+	// This field is specified when the traceflow packet matched a jump-to rule.
+	JumptoRuleId *int `json:"jumpto_rule_id,omitempty" yaml:"jumpto_rule_id,omitempty" mapstructure:"jumpto_rule_id,omitempty"`
+
+	// This field is specified when the traceflow packet matched a l2 rule.
+	L2RuleId *int `json:"l2_rule_id,omitempty" yaml:"l2_rule_id,omitempty" mapstructure:"l2_rule_id,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field is specified when the traceflow packet matched a NAT rule.
+	NatRuleId *int `json:"nat_rule_id,omitempty" yaml:"nat_rule_id,omitempty" mapstructure:"nat_rule_id,omitempty"`
+
+	// The path of the NAT rule that was applied to forward the traceflow packet
+	NatRulePath *string `json:"nat_rule_path,omitempty" yaml:"nat_rule_path,omitempty" mapstructure:"nat_rule_path,omitempty"`
+
+	// This field specifies the drop reason of traceflow packet. ARP_FAIL - ARP
+	// request fails for some reasons, please refer arp_fail_reason for detail BFD -
+	// BFD packet is dropped because traversed by non-operative interface or
+	// encountering internal error (e.g., memory insufficient) BROADCAST - Packet is
+	// dropped during traversing the interface (e.g., Edge uplink, Edge centralized
+	// service port) which disallow ethernet broadcast DHCP - DHCP packet is malformed
+	// DLB - The packet is disallowed by distributed load balancing FW_RULE - The
+	// packet matches a drop or reject rule of DFW or Edge firewall GENEVE - GENEVE
+	// packet is malformed GRE - GRE packet is malformed or traverses a non-operative
+	// interface IFACE - Packet traverses a non-operative interface IP - Packet is
+	// dropped because of IP related causes (e.g., ICMPv4/ICMPv6 packet is malformed,
+	// or DF flag is set but fragment must be performed for the packet) or
+	// corresponding interface is not found or inoperative IP_REASS - Packet is
+	// dropped during IP reassembly IPSEC - IPsec protocol related packet is dropped
+	// IPSEC_VTI - IPsec required SA is not found or traversing inoperative interface
+	// cause packet dropped L2VPN - VLAN id of GRE packet is invalid L4PORT - Layer 4
+	// packet (e.g., BFD, DHCP) is dropped LB - Packet is dropped by load balancing
+	// rule LROUTER - Packet is dropped by logical router LSERVICE - Packet is
+	// malformed or traverses inoperative logical service interface LSWITCH - Packet
+	// is dropped by logical switch MANAGEMENT - Packet is dropped by Edge datapath
+	// MANAGEMENT service port MD_PROXY - Packet is dropped by metadata proxy NAT -
+	// Packet is dropped by NAT rule RTEP_TUNNEL - Unused drop reason ND_NS_FAIL -
+	// Neighbor Discovery packet fails NEIGH - ARP or Neighbor Discovery packet fails
+	// NO_EIP_FOUND - Destination IP is not an elastic IP NO_EIP_ASSOCIATION - Elastic
+	// IP is not associated with active edge VDR ENI NO_ENI_FOR_IP - There is no ENI
+	// found for the destination IP NO_ENI_FOR_LIF - Cannot find an ENI associated
+	// with uplink LIF NO_ROUTE - Cannot find route for destination IP
+	// NO_ROUTE_TABLE_FOUND - Cannot find associated route table
+	// NO_UNDERLAY_ROUTE_FOUND - Cannot find AWS route to destination NOT_VDR_DOWNLINK
+	// - Packet is not forwarded to VMC unmanaged VDR downlink NO_VDR_FOUND - VMC
+	// unmanaged VDR associated with Edge uplink is not found NO_VDR_ON_HOST - Cannot
+	// find VMC unmanaged VDR list on this host NOT_VDR_UPLINK - Packet is not
+	// forwarded to VDR uplink SERVICE_INSERT - Packet from guest VM to service VM or
+	// from service VM to guest VM is dropped by firewall rule SPOOFGUARD - Packet is
+	// blocked by SpoofGuard policy TTL_ZERO - The IPv4 time to live field or the IPv6
+	// hop limit field of packet is zero TUNNEL - Overlay tunnel management packet
+	// (VNI value of GENEVE header is 0, e.g., BFD) is dropped VLAN - VLAN id of
+	// packet is disallowed by the given port VXLAN - VXLAN packet is malformed or
+	// cannot find tunnel port for it VXSTT - Unused drop reason VMC_NO_RESPONSE -
+	// Failed to query VMC observations as no response from VMC app WRONG_UPLINK -
+	// Packet is not routed to the expected Edge uplink by VMC unmanaged VDR FW_STATE
+	// - Packet is dropped by stateful firewall NO_MAC - Drop by vswitch as no
+	// destination MAC hit MAC Table. FILTERED_UPLINK - Filtering applied at the
+	// corresponding UPLINK having no aggregation.
+	Reason *PolicyTraceflowObservationDroppedReason `json:"reason,omitempty" yaml:"reason,omitempty" mapstructure:"reason,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// The path of the segment port at which the
+	// traceflow packet was dropped.
+	//
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+type PolicyTraceflowObservationDroppedArpFailReason string
+
+const PolicyTraceflowObservationDroppedArpFailReasonARPCPFAIL PolicyTraceflowObservationDroppedArpFailReason = "ARP_CPFAIL"
+const PolicyTraceflowObservationDroppedArpFailReasonARPFROMCP PolicyTraceflowObservationDroppedArpFailReason = "ARP_FROMCP"
+const PolicyTraceflowObservationDroppedArpFailReasonARPNETDESTROY PolicyTraceflowObservationDroppedArpFailReason = "ARP_NETDESTROY"
+const PolicyTraceflowObservationDroppedArpFailReasonARPPORTDESTROY PolicyTraceflowObservationDroppedArpFailReason = "ARP_PORTDESTROY"
+const PolicyTraceflowObservationDroppedArpFailReasonARPTABLEDESTROY PolicyTraceflowObservationDroppedArpFailReason = "ARP_TABLEDESTROY"
+const PolicyTraceflowObservationDroppedArpFailReasonARPTIMEOUT PolicyTraceflowObservationDroppedArpFailReason = "ARP_TIMEOUT"
+const PolicyTraceflowObservationDroppedArpFailReasonARPUNKNOWN PolicyTraceflowObservationDroppedArpFailReason = "ARP_UNKNOWN"
+
+var enumValues_PolicyTraceflowObservationDroppedArpFailReason = []interface{}{
+	"ARP_UNKNOWN",
+	"ARP_TIMEOUT",
+	"ARP_CPFAIL",
+	"ARP_FROMCP",
+	"ARP_PORTDESTROY",
+	"ARP_TABLEDESTROY",
+	"ARP_NETDESTROY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedArpFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDroppedArpFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDroppedArpFailReason, v)
+	}
+	*j = PolicyTraceflowObservationDroppedArpFailReason(v)
+	return nil
+}
+
+type PolicyTraceflowObservationDroppedIpsecFailReason string
+
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECAUTHDGSTMISMATCH PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_AUTH_DGST_MISMATCH"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECAUTHDGSTSIZEMISMATCH PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_AUTH_DGST_SIZE_MISMATCH"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECAUTHUNSUPPORTEDALGO PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_AUTH_UNSUPPORTED_ALGO"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOARGSINV PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_ARGS_INV"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOFAIL PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_FAIL"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTONOBUFSPACE PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_NO_BUF_SPACE"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOPROCERROR PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_PROC_ERROR"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOPROCINCOMPLETE PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_PROC_INCOMPLETE"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOSESSIONINV PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_SESSION_INV"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOUNSUPPORTEDCIPHER PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_UNSUPPORTED_CIPHER"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECENQUEUEFAIL PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_ENQUEUE_FAIL"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECFRAGNEEDED PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_FRAG_NEEDED"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMED PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMEDIP PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED_IP"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMEDTCP PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED_TCP"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMEDUDP PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED_UDP"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECMALFORMED PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_MALFORMED"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECMALFORMEDINVPADDING PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_MALFORMED_INV_PADDING"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECPADDINGREMOVALFAILED PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_PADDING_REMOVAL_FAILED"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECPOLICYBLOCK PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_POLICY_BLOCK"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECPOLICYERROR PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_POLICY_ERROR"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECPOLICYNOMATCH PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_POLICY_NOMATCH"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECREPLAYPROCDELAY PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_REPLAY_PROC_DELAY"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECREPLAYRECVDELAY PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_REPLAY_RECV_DELAY"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECREPLAYSEQNUMREPEAT PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_REPLAY_SEQ_NUM_REPEAT"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECSANOTFOUND PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_SA_NOT_FOUND"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECSEQROLLOVER PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_SEQ_ROLLOVER"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECTUNIFACEDOWN PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_TUN_IFACE_DOWN"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECUDPENCSTATEMISMATCH PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_UDP_ENC_STATE_MISMATCH"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECUNKNOWN PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_UNKNOWN"
+const PolicyTraceflowObservationDroppedIpsecFailReasonIPSECZEROSEQNUMRECVD PolicyTraceflowObservationDroppedIpsecFailReason = "IPSEC_ZERO_SEQ_NUM_RECVD"
+
+var enumValues_PolicyTraceflowObservationDroppedIpsecFailReason = []interface{}{
+	"IPSEC_SA_NOT_FOUND",
+	"IPSEC_UDP_ENC_STATE_MISMATCH",
+	"IPSEC_SEQ_ROLLOVER",
+	"IPSEC_FRAG_NEEDED",
+	"IPSEC_TUN_IFACE_DOWN",
+	"IPSEC_POLICY_NOMATCH",
+	"IPSEC_POLICY_BLOCK",
+	"IPSEC_POLICY_ERROR",
+	"IPSEC_REPLAY_SEQ_NUM_REPEAT",
+	"IPSEC_REPLAY_RECV_DELAY",
+	"IPSEC_REPLAY_PROC_DELAY",
+	"IPSEC_ZERO_SEQ_NUM_RECVD",
+	"IPSEC_ENQUEUE_FAIL",
+	"IPSEC_AUTH_DGST_MISMATCH",
+	"IPSEC_AUTH_DGST_SIZE_MISMATCH",
+	"IPSEC_AUTH_UNSUPPORTED_ALGO",
+	"IPSEC_CRYPTO_FAIL",
+	"IPSEC_CRYPTO_PROC_INCOMPLETE",
+	"IPSEC_CRYPTO_SESSION_INV",
+	"IPSEC_CRYPTO_ARGS_INV",
+	"IPSEC_CRYPTO_PROC_ERROR",
+	"IPSEC_CRYPTO_NO_BUF_SPACE",
+	"IPSEC_CRYPTO_UNSUPPORTED_CIPHER",
+	"IPSEC_MALFORMED",
+	"IPSEC_MALFORMED_INV_PADDING",
+	"IPSEC_PADDING_REMOVAL_FAILED",
+	"IPSEC_INNER_MALFORMED",
+	"IPSEC_INNER_MALFORMED_IP",
+	"IPSEC_INNER_MALFORMED_UDP",
+	"IPSEC_INNER_MALFORMED_TCP",
+	"IPSEC_UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedIpsecFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDroppedIpsecFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDroppedIpsecFailReason, v)
+	}
+	*j = PolicyTraceflowObservationDroppedIpsecFailReason(v)
+	return nil
+}
+
+type PolicyTraceflowObservationDroppedLogical struct {
+	// This field is specified when the traceflow packet matched a L3 firewall rule.
+	AclRuleId *int `json:"acl_rule_id,omitempty" yaml:"acl_rule_id,omitempty" mapstructure:"acl_rule_id,omitempty"`
+
+	// The path of the ACL rule that was applied to forward the traceflow packet
+	AclRulePath *string `json:"acl_rule_path,omitempty" yaml:"acl_rule_path,omitempty" mapstructure:"acl_rule_path,omitempty"`
+
+	// This field specifies the ARP fails reason ARP_TIMEOUT - ARP failure due to
+	// query control plane timeout ARP_CPFAIL - ARP failure due post ARP query message
+	// to control plane failure ARP_FROMCP - ARP failure due to deleting ARP entry
+	// from control plane ARP_PORTDESTROY - ARP failure due to port destruction
+	// ARP_TABLEDESTROY - ARP failure due to ARP table destruction ARP_NETDESTROY -
+	// ARP failure due to overlay network destruction
+	ArpFailReason *PolicyTraceflowObservationDroppedLogicalArpFailReason `json:"arp_fail_reason,omitempty" yaml:"arp_fail_reason,omitempty" mapstructure:"arp_fail_reason,omitempty"`
+
+	// ComponentId corresponds to the JSON schema field "component_id".
+	ComponentId *string `json:"component_id,omitempty" yaml:"component_id,omitempty" mapstructure:"component_id,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentPath corresponds to the JSON schema field "component_path".
+	ComponentPath *string `json:"component_path,omitempty" yaml:"component_path,omitempty" mapstructure:"component_path,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// The path of the interface at which traceflow packet was dropped (e.g.,
+	// Tier0 Interface, Tier1 Interface, Service Interface, and Virtual Tunnel
+	// Interface).
+	//
+	InterfacePath *string `json:"interface_path,omitempty" yaml:"interface_path,omitempty" mapstructure:"interface_path,omitempty"`
+
+	// This field specifies the IPSec VPN fails reason IPSEC_SA_NOT_FOUND   - IPSec SA
+	// required for processing the packet does not exist IPSEC_UDP_ENC_STATE_MISMATCH
+	// - ESP packet is UDP encapsulated but IPsec SA does not expect UDP encapsulation
+	// IPSEC_SEQ_ROLLOVER   - IPSec SA sequence number has exceeded the maximum value
+	// IPSEC_FRAG_NEEDED   - Received packet has DF bit set in IP header but requires
+	// fragmentation due to ESP encapsulation IPSEC_TUN_IFACE_DOWN   - IPSec tunnel
+	// interface is down IPSEC_POLICY_NOMATCH   - Received packet does not match IPSec
+	// policy IPSEC_POLICY_BLOCK   - IPSec packet processing failed IPSEC_POLICY_ERROR
+	// - IPSec packet processing failed IPSEC_REPLAY_SEQ_NUM_REPEAT   - IPSec packet
+	// is dropped due to replay IPSEC_REPLAY_RECV_DELAY   - IPSec packet is dropped
+	// due to replay IPSEC_REPLAY_PROC_DELAY   - IPSec packet is dropped due to replay
+	// IPSEC_ZERO_SEQ_NUM_RECVD   - ESP packet is received with sequence number as
+	// zero IPSEC_ENQUEUE_FAIL   - Packet processing failed during crypto operation
+	// IPSEC_AUTH_DGST_MISMATCH   - Packet integrity check failed due to digest
+	// mismatch IPSEC_AUTH_DGST_SIZE_MISMATCH   - Packet integrity check failed due to
+	// invalid digest length IPSEC_AUTH_UNSUPPORTED_ALGO   - Packet integrity check
+	// failed due to unsupported hash algorithm IPSEC_CRYPTO_FAIL   - Packet
+	// processing failed during crypto operation IPSEC_CRYPTO_PROC_INCOMPLETE   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_SESSION_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_ARGS_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_PROC_ERROR   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_NO_BUF_SPACE   -
+	// Packet processing failed during crypto operation
+	// IPSEC_CRYPTO_UNSUPPORTED_CIPHER   - Packet processing failed during crypto
+	// operation IPSEC_MALFORMED   - Received ESP packet is malformed
+	// IPSEC_MALFORMED_INV_PADDING   - Received ESP packet is malformed
+	// IPSEC_PADDING_REMOVAL_FAILED   - Received ESP packet is malformed
+	// IPSEC_INNER_MALFORMED   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_IP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_UDP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_TCP   - IP packet after ESP decryption is malformed
+	// IPSEC_UNKNOWN   - IPSec VPN failure reason is unknown
+	IpsecFailReason *PolicyTraceflowObservationDroppedLogicalIpsecFailReason `json:"ipsec_fail_reason,omitempty" yaml:"ipsec_fail_reason,omitempty" mapstructure:"ipsec_fail_reason,omitempty"`
+
+	// This field is specified when the traceflow packet matched a jump-to rule.
+	JumptoRuleId *int `json:"jumpto_rule_id,omitempty" yaml:"jumpto_rule_id,omitempty" mapstructure:"jumpto_rule_id,omitempty"`
+
+	// The path of the jump-to rule that was applied to the traceflow packet
+	JumptoRulePath *string `json:"jumpto_rule_path,omitempty" yaml:"jumpto_rule_path,omitempty" mapstructure:"jumpto_rule_path,omitempty"`
+
+	// This field is specified when the traceflow packet matched a l2 rule.
+	L2RuleId *int `json:"l2_rule_id,omitempty" yaml:"l2_rule_id,omitempty" mapstructure:"l2_rule_id,omitempty"`
+
+	// The path of the l2 rule that was applied to the traceflow packet
+	L2RulePath *string `json:"l2_rule_path,omitempty" yaml:"l2_rule_path,omitempty" mapstructure:"l2_rule_path,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field is specified when the traceflow packet matched a NAT rule.
+	NatRuleId *int `json:"nat_rule_id,omitempty" yaml:"nat_rule_id,omitempty" mapstructure:"nat_rule_id,omitempty"`
+
+	// The path of the NAT rule that was applied to forward the traceflow packet
+	NatRulePath *string `json:"nat_rule_path,omitempty" yaml:"nat_rule_path,omitempty" mapstructure:"nat_rule_path,omitempty"`
+
+	// This field specifies the drop reason of traceflow packet. ARP_FAIL - ARP
+	// request fails for some reasons, please refer arp_fail_reason for detail BFD -
+	// BFD packet is dropped because traversed by non-operative interface or
+	// encountering internal error (e.g., memory insufficient) BROADCAST - Packet is
+	// dropped during traversing the interface (e.g., Edge uplink, Edge centralized
+	// service port) which disallow ethernet broadcast DHCP - DHCP packet is malformed
+	// DLB - The packet is disallowed by distributed load balancing FW_RULE - The
+	// packet matches a drop or reject rule of DFW or Edge firewall GENEVE - GENEVE
+	// packet is malformed GRE - GRE packet is malformed or traverses a non-operative
+	// interface IFACE - Packet traverses a non-operative interface IP - Packet is
+	// dropped because of IP related causes (e.g., ICMPv4/ICMPv6 packet is malformed,
+	// or DF flag is set but fragment must be performed for the packet) or
+	// corresponding interface is not found or inoperative IP_REASS - Packet is
+	// dropped during IP reassembly IPSEC - IPsec protocol related packet is dropped
+	// IPSEC_VTI - IPsec required SA is not found or traversing inoperative interface
+	// cause packet dropped L2VPN - VLAN id of GRE packet is invalid L4PORT - Layer 4
+	// packet (e.g., BFD, DHCP) is dropped LB - Packet is dropped by load balancing
+	// rule LROUTER - Packet is dropped by logical router LSERVICE - Packet is
+	// malformed or traverses inoperative logical service interface LSWITCH - Packet
+	// is dropped by logical switch MANAGEMENT - Packet is dropped by Edge datapath
+	// MANAGEMENT service port MD_PROXY - Packet is dropped by metadata proxy NAT -
+	// Packet is dropped by NAT rule RTEP_TUNNEL - Unused drop reason ND_NS_FAIL -
+	// Neighbor Discovery packet fails NEIGH - ARP or Neighbor Discovery packet fails
+	// NO_EIP_FOUND - Destination IP is not an elastic IP NO_EIP_ASSOCIATION - Elastic
+	// IP is not associated with active edge VDR ENI NO_ENI_FOR_IP - There is no ENI
+	// found for the destination IP NO_ENI_FOR_LIF - Cannot find an ENI associated
+	// with uplink LIF NO_ROUTE - Cannot find route for destination IP
+	// NO_ROUTE_TABLE_FOUND - Cannot find associated route table
+	// NO_UNDERLAY_ROUTE_FOUND - Cannot find AWS route to destination NOT_VDR_DOWNLINK
+	// - Packet is not forwarded to VMC unmanaged VDR downlink NO_VDR_FOUND - VMC
+	// unmanaged VDR associated with Edge uplink is not found NO_VDR_ON_HOST - Cannot
+	// find VMC unmanaged VDR list on this host NOT_VDR_UPLINK - Packet is not
+	// forwarded to VDR uplink SERVICE_INSERT - Packet from guest VM to service VM or
+	// from service VM to guest VM is dropped by firewall rule SPOOFGUARD - Packet is
+	// blocked by SpoofGuard policy TTL_ZERO - The IPv4 time to live field or the IPv6
+	// hop limit field of packet is zero TUNNEL - Overlay tunnel management packet
+	// (VNI value of GENEVE header is 0, e.g., BFD) is dropped VLAN - VLAN id of
+	// packet is disallowed by the given port VXLAN - VXLAN packet is malformed or
+	// cannot find tunnel port for it VXSTT - Unused drop reason VMC_NO_RESPONSE -
+	// Failed to query VMC observations as no response from VMC app WRONG_UPLINK -
+	// Packet is not routed to the expected Edge uplink by VMC unmanaged VDR FW_STATE
+	// - Packet is dropped by stateful firewall NO_MAC - Drop by vswitch as no
+	// destination MAC hit MAC Table. FILTERED_UPLINK - Filtering applied at the
+	// corresponding UPLINK having no aggregation.
+	Reason *PolicyTraceflowObservationDroppedLogicalReason `json:"reason,omitempty" yaml:"reason,omitempty" mapstructure:"reason,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// The path of the segment port at which traceflow packet
+	// was dropped.
+	//
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// The index of service path that is a chain of services represents the point
+	// where the traceflow packet was dropped.
+	ServicePathIndex *int `json:"service_path_index,omitempty" yaml:"service_path_index,omitempty" mapstructure:"service_path_index,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+type PolicyTraceflowObservationDroppedLogicalArpFailReason string
+
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPCPFAIL PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_CPFAIL"
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPFROMCP PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_FROMCP"
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPNETDESTROY PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_NETDESTROY"
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPPORTDESTROY PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_PORTDESTROY"
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPTABLEDESTROY PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_TABLEDESTROY"
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPTIMEOUT PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_TIMEOUT"
+const PolicyTraceflowObservationDroppedLogicalArpFailReasonARPUNKNOWN PolicyTraceflowObservationDroppedLogicalArpFailReason = "ARP_UNKNOWN"
+
+var enumValues_PolicyTraceflowObservationDroppedLogicalArpFailReason = []interface{}{
+	"ARP_UNKNOWN",
+	"ARP_TIMEOUT",
+	"ARP_CPFAIL",
+	"ARP_FROMCP",
+	"ARP_PORTDESTROY",
+	"ARP_TABLEDESTROY",
+	"ARP_NETDESTROY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedLogicalArpFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDroppedLogicalArpFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDroppedLogicalArpFailReason, v)
+	}
+	*j = PolicyTraceflowObservationDroppedLogicalArpFailReason(v)
+	return nil
+}
+
+type PolicyTraceflowObservationDroppedLogicalIpsecFailReason string
+
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECAUTHDGSTMISMATCH PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_AUTH_DGST_MISMATCH"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECAUTHDGSTSIZEMISMATCH PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_AUTH_DGST_SIZE_MISMATCH"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECAUTHUNSUPPORTEDALGO PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_AUTH_UNSUPPORTED_ALGO"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOARGSINV PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_ARGS_INV"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOFAIL PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_FAIL"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTONOBUFSPACE PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_NO_BUF_SPACE"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOPROCERROR PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_PROC_ERROR"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOPROCINCOMPLETE PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_PROC_INCOMPLETE"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOSESSIONINV PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_SESSION_INV"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOUNSUPPORTEDCIPHER PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_UNSUPPORTED_CIPHER"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECENQUEUEFAIL PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_ENQUEUE_FAIL"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECFRAGNEEDED PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_FRAG_NEEDED"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMED PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMEDIP PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED_IP"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMEDTCP PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED_TCP"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMEDUDP PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED_UDP"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECMALFORMED PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_MALFORMED"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECMALFORMEDINVPADDING PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_MALFORMED_INV_PADDING"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECPADDINGREMOVALFAILED PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_PADDING_REMOVAL_FAILED"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECPOLICYBLOCK PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_POLICY_BLOCK"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECPOLICYERROR PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_POLICY_ERROR"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECPOLICYNOMATCH PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_POLICY_NOMATCH"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECREPLAYPROCDELAY PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_REPLAY_PROC_DELAY"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECREPLAYRECVDELAY PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_REPLAY_RECV_DELAY"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECREPLAYSEQNUMREPEAT PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_REPLAY_SEQ_NUM_REPEAT"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECSANOTFOUND PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_SA_NOT_FOUND"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECSEQROLLOVER PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_SEQ_ROLLOVER"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECTUNIFACEDOWN PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_TUN_IFACE_DOWN"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECUDPENCSTATEMISMATCH PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_UDP_ENC_STATE_MISMATCH"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECUNKNOWN PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_UNKNOWN"
+const PolicyTraceflowObservationDroppedLogicalIpsecFailReasonIPSECZEROSEQNUMRECVD PolicyTraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_ZERO_SEQ_NUM_RECVD"
+
+var enumValues_PolicyTraceflowObservationDroppedLogicalIpsecFailReason = []interface{}{
+	"IPSEC_SA_NOT_FOUND",
+	"IPSEC_UDP_ENC_STATE_MISMATCH",
+	"IPSEC_SEQ_ROLLOVER",
+	"IPSEC_FRAG_NEEDED",
+	"IPSEC_TUN_IFACE_DOWN",
+	"IPSEC_POLICY_NOMATCH",
+	"IPSEC_POLICY_BLOCK",
+	"IPSEC_POLICY_ERROR",
+	"IPSEC_REPLAY_SEQ_NUM_REPEAT",
+	"IPSEC_REPLAY_RECV_DELAY",
+	"IPSEC_REPLAY_PROC_DELAY",
+	"IPSEC_ZERO_SEQ_NUM_RECVD",
+	"IPSEC_ENQUEUE_FAIL",
+	"IPSEC_AUTH_DGST_MISMATCH",
+	"IPSEC_AUTH_DGST_SIZE_MISMATCH",
+	"IPSEC_AUTH_UNSUPPORTED_ALGO",
+	"IPSEC_CRYPTO_FAIL",
+	"IPSEC_CRYPTO_PROC_INCOMPLETE",
+	"IPSEC_CRYPTO_SESSION_INV",
+	"IPSEC_CRYPTO_ARGS_INV",
+	"IPSEC_CRYPTO_PROC_ERROR",
+	"IPSEC_CRYPTO_NO_BUF_SPACE",
+	"IPSEC_CRYPTO_UNSUPPORTED_CIPHER",
+	"IPSEC_MALFORMED",
+	"IPSEC_MALFORMED_INV_PADDING",
+	"IPSEC_PADDING_REMOVAL_FAILED",
+	"IPSEC_INNER_MALFORMED",
+	"IPSEC_INNER_MALFORMED_IP",
+	"IPSEC_INNER_MALFORMED_UDP",
+	"IPSEC_INNER_MALFORMED_TCP",
+	"IPSEC_UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedLogicalIpsecFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDroppedLogicalIpsecFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDroppedLogicalIpsecFailReason, v)
+	}
+	*j = PolicyTraceflowObservationDroppedLogicalIpsecFailReason(v)
+	return nil
+}
+
+type PolicyTraceflowObservationDroppedLogicalReason string
+
+const PolicyTraceflowObservationDroppedLogicalReasonARPFAIL PolicyTraceflowObservationDroppedLogicalReason = "ARP_FAIL"
+const PolicyTraceflowObservationDroppedLogicalReasonBFD PolicyTraceflowObservationDroppedLogicalReason = "BFD"
+const PolicyTraceflowObservationDroppedLogicalReasonBROADCAST PolicyTraceflowObservationDroppedLogicalReason = "BROADCAST"
+const PolicyTraceflowObservationDroppedLogicalReasonDHCP PolicyTraceflowObservationDroppedLogicalReason = "DHCP"
+const PolicyTraceflowObservationDroppedLogicalReasonDLB PolicyTraceflowObservationDroppedLogicalReason = "DLB"
+const PolicyTraceflowObservationDroppedLogicalReasonFILTEREDUPLINK PolicyTraceflowObservationDroppedLogicalReason = "FILTERED_UPLINK"
+const PolicyTraceflowObservationDroppedLogicalReasonFWRULE PolicyTraceflowObservationDroppedLogicalReason = "FW_RULE"
+const PolicyTraceflowObservationDroppedLogicalReasonFWSTATE PolicyTraceflowObservationDroppedLogicalReason = "FW_STATE"
+const PolicyTraceflowObservationDroppedLogicalReasonGENEVE PolicyTraceflowObservationDroppedLogicalReason = "GENEVE"
+const PolicyTraceflowObservationDroppedLogicalReasonGRE PolicyTraceflowObservationDroppedLogicalReason = "GRE"
+const PolicyTraceflowObservationDroppedLogicalReasonIFACE PolicyTraceflowObservationDroppedLogicalReason = "IFACE"
+const PolicyTraceflowObservationDroppedLogicalReasonIP PolicyTraceflowObservationDroppedLogicalReason = "IP"
+const PolicyTraceflowObservationDroppedLogicalReasonIPREASS PolicyTraceflowObservationDroppedLogicalReason = "IP_REASS"
+const PolicyTraceflowObservationDroppedLogicalReasonIPSEC PolicyTraceflowObservationDroppedLogicalReason = "IPSEC"
+const PolicyTraceflowObservationDroppedLogicalReasonIPSECVTI PolicyTraceflowObservationDroppedLogicalReason = "IPSEC_VTI"
+const PolicyTraceflowObservationDroppedLogicalReasonL2VPN PolicyTraceflowObservationDroppedLogicalReason = "L2VPN"
+const PolicyTraceflowObservationDroppedLogicalReasonL4PORT PolicyTraceflowObservationDroppedLogicalReason = "L4PORT"
+const PolicyTraceflowObservationDroppedLogicalReasonLB PolicyTraceflowObservationDroppedLogicalReason = "LB"
+const PolicyTraceflowObservationDroppedLogicalReasonLROUTER PolicyTraceflowObservationDroppedLogicalReason = "LROUTER"
+const PolicyTraceflowObservationDroppedLogicalReasonLSERVICE PolicyTraceflowObservationDroppedLogicalReason = "LSERVICE"
+const PolicyTraceflowObservationDroppedLogicalReasonLSWITCH PolicyTraceflowObservationDroppedLogicalReason = "LSWITCH"
+const PolicyTraceflowObservationDroppedLogicalReasonMANAGEMENT PolicyTraceflowObservationDroppedLogicalReason = "MANAGEMENT"
+const PolicyTraceflowObservationDroppedLogicalReasonMDPROXY PolicyTraceflowObservationDroppedLogicalReason = "MD_PROXY"
+const PolicyTraceflowObservationDroppedLogicalReasonNAT PolicyTraceflowObservationDroppedLogicalReason = "NAT"
+const PolicyTraceflowObservationDroppedLogicalReasonNDNSFAIL PolicyTraceflowObservationDroppedLogicalReason = "ND_NS_FAIL"
+const PolicyTraceflowObservationDroppedLogicalReasonNEIGH PolicyTraceflowObservationDroppedLogicalReason = "NEIGH"
+const PolicyTraceflowObservationDroppedLogicalReasonNOEIPASSOCIATION PolicyTraceflowObservationDroppedLogicalReason = "NO_EIP_ASSOCIATION"
+const PolicyTraceflowObservationDroppedLogicalReasonNOEIPFOUND PolicyTraceflowObservationDroppedLogicalReason = "NO_EIP_FOUND"
+const PolicyTraceflowObservationDroppedLogicalReasonNOENIFORIP PolicyTraceflowObservationDroppedLogicalReason = "NO_ENI_FOR_IP"
+const PolicyTraceflowObservationDroppedLogicalReasonNOENIFORLIF PolicyTraceflowObservationDroppedLogicalReason = "NO_ENI_FOR_LIF"
+const PolicyTraceflowObservationDroppedLogicalReasonNOMAC PolicyTraceflowObservationDroppedLogicalReason = "NO_MAC"
+const PolicyTraceflowObservationDroppedLogicalReasonNOROUTE PolicyTraceflowObservationDroppedLogicalReason = "NO_ROUTE"
+const PolicyTraceflowObservationDroppedLogicalReasonNOROUTETABLEFOUND PolicyTraceflowObservationDroppedLogicalReason = "NO_ROUTE_TABLE_FOUND"
+const PolicyTraceflowObservationDroppedLogicalReasonNOTVDRDOWNLINK PolicyTraceflowObservationDroppedLogicalReason = "NOT_VDR_DOWNLINK"
+const PolicyTraceflowObservationDroppedLogicalReasonNOTVDRUPLINK PolicyTraceflowObservationDroppedLogicalReason = "NOT_VDR_UPLINK"
+const PolicyTraceflowObservationDroppedLogicalReasonNOUNDERLAYROUTEFOUND PolicyTraceflowObservationDroppedLogicalReason = "NO_UNDERLAY_ROUTE_FOUND"
+const PolicyTraceflowObservationDroppedLogicalReasonNOVDRFOUND PolicyTraceflowObservationDroppedLogicalReason = "NO_VDR_FOUND"
+const PolicyTraceflowObservationDroppedLogicalReasonNOVDRONHOST PolicyTraceflowObservationDroppedLogicalReason = "NO_VDR_ON_HOST"
+const PolicyTraceflowObservationDroppedLogicalReasonRTEPTUNNEL PolicyTraceflowObservationDroppedLogicalReason = "RTEP_TUNNEL"
+const PolicyTraceflowObservationDroppedLogicalReasonSERVICEINSERT PolicyTraceflowObservationDroppedLogicalReason = "SERVICE_INSERT"
+const PolicyTraceflowObservationDroppedLogicalReasonSPOOFGUARD PolicyTraceflowObservationDroppedLogicalReason = "SPOOFGUARD"
+const PolicyTraceflowObservationDroppedLogicalReasonTTLZERO PolicyTraceflowObservationDroppedLogicalReason = "TTL_ZERO"
+const PolicyTraceflowObservationDroppedLogicalReasonTUNNEL PolicyTraceflowObservationDroppedLogicalReason = "TUNNEL"
+const PolicyTraceflowObservationDroppedLogicalReasonUNKNOWN PolicyTraceflowObservationDroppedLogicalReason = "UNKNOWN"
+const PolicyTraceflowObservationDroppedLogicalReasonVLAN PolicyTraceflowObservationDroppedLogicalReason = "VLAN"
+const PolicyTraceflowObservationDroppedLogicalReasonVMCNORESPONSE PolicyTraceflowObservationDroppedLogicalReason = "VMC_NO_RESPONSE"
+const PolicyTraceflowObservationDroppedLogicalReasonVXLAN PolicyTraceflowObservationDroppedLogicalReason = "VXLAN"
+const PolicyTraceflowObservationDroppedLogicalReasonVXSTT PolicyTraceflowObservationDroppedLogicalReason = "VXSTT"
+const PolicyTraceflowObservationDroppedLogicalReasonWRONGUPLINK PolicyTraceflowObservationDroppedLogicalReason = "WRONG_UPLINK"
+
+var enumValues_PolicyTraceflowObservationDroppedLogicalReason = []interface{}{
+	"ARP_FAIL",
+	"BFD",
+	"BROADCAST",
+	"DHCP",
+	"DLB",
+	"FW_RULE",
+	"GENEVE",
+	"GRE",
+	"IFACE",
+	"IP",
+	"IP_REASS",
+	"IPSEC",
+	"IPSEC_VTI",
+	"L2VPN",
+	"L4PORT",
+	"LB",
+	"LROUTER",
+	"LSERVICE",
+	"LSWITCH",
+	"MANAGEMENT",
+	"MD_PROXY",
+	"NAT",
+	"RTEP_TUNNEL",
+	"ND_NS_FAIL",
+	"NEIGH",
+	"NO_EIP_FOUND",
+	"NO_EIP_ASSOCIATION",
+	"NO_ENI_FOR_IP",
+	"NO_ENI_FOR_LIF",
+	"NO_ROUTE",
+	"NO_ROUTE_TABLE_FOUND",
+	"NO_UNDERLAY_ROUTE_FOUND",
+	"NOT_VDR_DOWNLINK",
+	"NO_VDR_FOUND",
+	"NO_VDR_ON_HOST",
+	"NOT_VDR_UPLINK",
+	"SERVICE_INSERT",
+	"SPOOFGUARD",
+	"TTL_ZERO",
+	"TUNNEL",
+	"VLAN",
+	"VXLAN",
+	"VXSTT",
+	"VMC_NO_RESPONSE",
+	"WRONG_UPLINK",
+	"FW_STATE",
+	"NO_MAC",
+	"UNKNOWN",
+	"FILTERED_UPLINK",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedLogicalReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDroppedLogicalReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDroppedLogicalReason, v)
+	}
+	*j = PolicyTraceflowObservationDroppedLogicalReason(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyTraceflowObservationDroppedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = PolicyTraceflowObservationDroppedLogical(plain)
+	return nil
+}
+
+type PolicyTraceflowObservationDroppedReason string
+
+const PolicyTraceflowObservationDroppedReasonARPFAIL PolicyTraceflowObservationDroppedReason = "ARP_FAIL"
+const PolicyTraceflowObservationDroppedReasonBFD PolicyTraceflowObservationDroppedReason = "BFD"
+const PolicyTraceflowObservationDroppedReasonBROADCAST PolicyTraceflowObservationDroppedReason = "BROADCAST"
+const PolicyTraceflowObservationDroppedReasonDHCP PolicyTraceflowObservationDroppedReason = "DHCP"
+const PolicyTraceflowObservationDroppedReasonDLB PolicyTraceflowObservationDroppedReason = "DLB"
+const PolicyTraceflowObservationDroppedReasonFILTEREDUPLINK PolicyTraceflowObservationDroppedReason = "FILTERED_UPLINK"
+const PolicyTraceflowObservationDroppedReasonFWRULE PolicyTraceflowObservationDroppedReason = "FW_RULE"
+const PolicyTraceflowObservationDroppedReasonFWSTATE PolicyTraceflowObservationDroppedReason = "FW_STATE"
+const PolicyTraceflowObservationDroppedReasonGENEVE PolicyTraceflowObservationDroppedReason = "GENEVE"
+const PolicyTraceflowObservationDroppedReasonGRE PolicyTraceflowObservationDroppedReason = "GRE"
+const PolicyTraceflowObservationDroppedReasonIFACE PolicyTraceflowObservationDroppedReason = "IFACE"
+const PolicyTraceflowObservationDroppedReasonIP PolicyTraceflowObservationDroppedReason = "IP"
+const PolicyTraceflowObservationDroppedReasonIPREASS PolicyTraceflowObservationDroppedReason = "IP_REASS"
+const PolicyTraceflowObservationDroppedReasonIPSEC PolicyTraceflowObservationDroppedReason = "IPSEC"
+const PolicyTraceflowObservationDroppedReasonIPSECVTI PolicyTraceflowObservationDroppedReason = "IPSEC_VTI"
+const PolicyTraceflowObservationDroppedReasonL2VPN PolicyTraceflowObservationDroppedReason = "L2VPN"
+const PolicyTraceflowObservationDroppedReasonL4PORT PolicyTraceflowObservationDroppedReason = "L4PORT"
+const PolicyTraceflowObservationDroppedReasonLB PolicyTraceflowObservationDroppedReason = "LB"
+const PolicyTraceflowObservationDroppedReasonLROUTER PolicyTraceflowObservationDroppedReason = "LROUTER"
+const PolicyTraceflowObservationDroppedReasonLSERVICE PolicyTraceflowObservationDroppedReason = "LSERVICE"
+const PolicyTraceflowObservationDroppedReasonLSWITCH PolicyTraceflowObservationDroppedReason = "LSWITCH"
+const PolicyTraceflowObservationDroppedReasonMANAGEMENT PolicyTraceflowObservationDroppedReason = "MANAGEMENT"
+const PolicyTraceflowObservationDroppedReasonMDPROXY PolicyTraceflowObservationDroppedReason = "MD_PROXY"
+const PolicyTraceflowObservationDroppedReasonNAT PolicyTraceflowObservationDroppedReason = "NAT"
+const PolicyTraceflowObservationDroppedReasonNDNSFAIL PolicyTraceflowObservationDroppedReason = "ND_NS_FAIL"
+const PolicyTraceflowObservationDroppedReasonNEIGH PolicyTraceflowObservationDroppedReason = "NEIGH"
+const PolicyTraceflowObservationDroppedReasonNOEIPASSOCIATION PolicyTraceflowObservationDroppedReason = "NO_EIP_ASSOCIATION"
+const PolicyTraceflowObservationDroppedReasonNOEIPFOUND PolicyTraceflowObservationDroppedReason = "NO_EIP_FOUND"
+const PolicyTraceflowObservationDroppedReasonNOENIFORIP PolicyTraceflowObservationDroppedReason = "NO_ENI_FOR_IP"
+const PolicyTraceflowObservationDroppedReasonNOENIFORLIF PolicyTraceflowObservationDroppedReason = "NO_ENI_FOR_LIF"
+const PolicyTraceflowObservationDroppedReasonNOMAC PolicyTraceflowObservationDroppedReason = "NO_MAC"
+const PolicyTraceflowObservationDroppedReasonNOROUTE PolicyTraceflowObservationDroppedReason = "NO_ROUTE"
+const PolicyTraceflowObservationDroppedReasonNOROUTETABLEFOUND PolicyTraceflowObservationDroppedReason = "NO_ROUTE_TABLE_FOUND"
+const PolicyTraceflowObservationDroppedReasonNOTVDRDOWNLINK PolicyTraceflowObservationDroppedReason = "NOT_VDR_DOWNLINK"
+const PolicyTraceflowObservationDroppedReasonNOTVDRUPLINK PolicyTraceflowObservationDroppedReason = "NOT_VDR_UPLINK"
+const PolicyTraceflowObservationDroppedReasonNOUNDERLAYROUTEFOUND PolicyTraceflowObservationDroppedReason = "NO_UNDERLAY_ROUTE_FOUND"
+const PolicyTraceflowObservationDroppedReasonNOVDRFOUND PolicyTraceflowObservationDroppedReason = "NO_VDR_FOUND"
+const PolicyTraceflowObservationDroppedReasonNOVDRONHOST PolicyTraceflowObservationDroppedReason = "NO_VDR_ON_HOST"
+const PolicyTraceflowObservationDroppedReasonRTEPTUNNEL PolicyTraceflowObservationDroppedReason = "RTEP_TUNNEL"
+const PolicyTraceflowObservationDroppedReasonSERVICEINSERT PolicyTraceflowObservationDroppedReason = "SERVICE_INSERT"
+const PolicyTraceflowObservationDroppedReasonSPOOFGUARD PolicyTraceflowObservationDroppedReason = "SPOOFGUARD"
+const PolicyTraceflowObservationDroppedReasonTTLZERO PolicyTraceflowObservationDroppedReason = "TTL_ZERO"
+const PolicyTraceflowObservationDroppedReasonTUNNEL PolicyTraceflowObservationDroppedReason = "TUNNEL"
+const PolicyTraceflowObservationDroppedReasonUNKNOWN PolicyTraceflowObservationDroppedReason = "UNKNOWN"
+const PolicyTraceflowObservationDroppedReasonVLAN PolicyTraceflowObservationDroppedReason = "VLAN"
+const PolicyTraceflowObservationDroppedReasonVMCNORESPONSE PolicyTraceflowObservationDroppedReason = "VMC_NO_RESPONSE"
+const PolicyTraceflowObservationDroppedReasonVXLAN PolicyTraceflowObservationDroppedReason = "VXLAN"
+const PolicyTraceflowObservationDroppedReasonVXSTT PolicyTraceflowObservationDroppedReason = "VXSTT"
+const PolicyTraceflowObservationDroppedReasonWRONGUPLINK PolicyTraceflowObservationDroppedReason = "WRONG_UPLINK"
+
+var enumValues_PolicyTraceflowObservationDroppedReason = []interface{}{
+	"ARP_FAIL",
+	"BFD",
+	"BROADCAST",
+	"DHCP",
+	"DLB",
+	"FW_RULE",
+	"GENEVE",
+	"GRE",
+	"IFACE",
+	"IP",
+	"IP_REASS",
+	"IPSEC",
+	"IPSEC_VTI",
+	"L2VPN",
+	"L4PORT",
+	"LB",
+	"LROUTER",
+	"LSERVICE",
+	"LSWITCH",
+	"MANAGEMENT",
+	"MD_PROXY",
+	"NAT",
+	"RTEP_TUNNEL",
+	"ND_NS_FAIL",
+	"NEIGH",
+	"NO_EIP_FOUND",
+	"NO_EIP_ASSOCIATION",
+	"NO_ENI_FOR_IP",
+	"NO_ENI_FOR_LIF",
+	"NO_ROUTE",
+	"NO_ROUTE_TABLE_FOUND",
+	"NO_UNDERLAY_ROUTE_FOUND",
+	"NOT_VDR_DOWNLINK",
+	"NO_VDR_FOUND",
+	"NO_VDR_ON_HOST",
+	"NOT_VDR_UPLINK",
+	"SERVICE_INSERT",
+	"SPOOFGUARD",
+	"TTL_ZERO",
+	"TUNNEL",
+	"VLAN",
+	"VXLAN",
+	"VXSTT",
+	"VMC_NO_RESPONSE",
+	"WRONG_UPLINK",
+	"FW_STATE",
+	"NO_MAC",
+	"UNKNOWN",
+	"FILTERED_UPLINK",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDroppedReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationDroppedReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationDroppedReason, v)
+	}
+	*j = PolicyTraceflowObservationDroppedReason(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationDropped) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyTraceflowObservationDropped
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = PolicyTraceflowObservationDropped(plain)
+	return nil
+}
+
+type PolicyTraceflowObservationForwardedLogical struct {
+	// This field is specified when the traceflow packet matched a L3 firewall rule.
+	AclRuleId *int `json:"acl_rule_id,omitempty" yaml:"acl_rule_id,omitempty" mapstructure:"acl_rule_id,omitempty"`
+
+	// The path of the ACL rule that was applied to forward the traceflow packet
+	AclRulePath *string `json:"acl_rule_path,omitempty" yaml:"acl_rule_path,omitempty" mapstructure:"acl_rule_path,omitempty"`
+
+	// ComponentId corresponds to the JSON schema field "component_id".
+	ComponentId *string `json:"component_id,omitempty" yaml:"component_id,omitempty" mapstructure:"component_id,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentPath corresponds to the JSON schema field "component_path".
+	ComponentPath *string `json:"component_path,omitempty" yaml:"component_path,omitempty" mapstructure:"component_path,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// DstComponentId corresponds to the JSON schema field "dst_component_id".
+	DstComponentId *string `json:"dst_component_id,omitempty" yaml:"dst_component_id,omitempty" mapstructure:"dst_component_id,omitempty"`
+
+	// DstComponentName corresponds to the JSON schema field "dst_component_name".
+	DstComponentName *string `json:"dst_component_name,omitempty" yaml:"dst_component_name,omitempty" mapstructure:"dst_component_name,omitempty"`
+
+	// DstComponentPath corresponds to the JSON schema field "dst_component_path".
+	DstComponentPath *string `json:"dst_component_path,omitempty" yaml:"dst_component_path,omitempty" mapstructure:"dst_component_path,omitempty"`
+
+	// DstComponentType corresponds to the JSON schema field "dst_component_type".
+	DstComponentType *TraceflowComponentType `json:"dst_component_type,omitempty" yaml:"dst_component_type,omitempty" mapstructure:"dst_component_type,omitempty"`
+
+	// The path of the interface through which the traceflow packet was forwarded
+	// (e.g.,
+	// Tier0 Interface, Tier1 Interface, Service Interface, and Virtual Tunnel
+	// Interface).
+	//
+	InterfacePath *string `json:"interface_path,omitempty" yaml:"interface_path,omitempty" mapstructure:"interface_path,omitempty"`
+
+	// This field is specified when the traceflow packet was forwarded through IPSec
+	// VPN.
+	IpsecVpn *TraceflowObservationIpsecVpn `json:"ipsec_vpn,omitempty" yaml:"ipsec_vpn,omitempty" mapstructure:"ipsec_vpn,omitempty"`
+
+	// IpsecVpnPath corresponds to the JSON schema field "ipsec_vpn_path".
+	IpsecVpnPath *PolicyTraceflowObservationIpsecVpn `json:"ipsec_vpn_path,omitempty" yaml:"ipsec_vpn_path,omitempty" mapstructure:"ipsec_vpn_path,omitempty"`
+
+	// This field is specified when the traceflow packet matched a jump-to rule.
+	JumptoRuleId *int `json:"jumpto_rule_id,omitempty" yaml:"jumpto_rule_id,omitempty" mapstructure:"jumpto_rule_id,omitempty"`
+
+	// The path of the jump-to rule that was applied to the traceflow packet
+	JumptoRulePath *string `json:"jumpto_rule_path,omitempty" yaml:"jumpto_rule_path,omitempty" mapstructure:"jumpto_rule_path,omitempty"`
+
+	// This field is specified when the traceflow packet matched a l2 rule.
+	L2RuleId *int `json:"l2_rule_id,omitempty" yaml:"l2_rule_id,omitempty" mapstructure:"l2_rule_id,omitempty"`
+
+	// The path of the l2 rule that was applied to the traceflow packet
+	L2RulePath *string `json:"l2_rule_path,omitempty" yaml:"l2_rule_path,omitempty" mapstructure:"l2_rule_path,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field is specified when the traceflow packet matched a NAT rule.
+	NatRuleId *int `json:"nat_rule_id,omitempty" yaml:"nat_rule_id,omitempty" mapstructure:"nat_rule_id,omitempty"`
+
+	// The path of the NAT rule that was applied to forward the traceflow packet
+	NatRulePath *string `json:"nat_rule_path,omitempty" yaml:"nat_rule_path,omitempty" mapstructure:"nat_rule_path,omitempty"`
+
+	// This field is specified when the traceflow packet was routed by logical router.
+	NextHop *IPAddress `json:"next_hop,omitempty" yaml:"next_hop,omitempty" mapstructure:"next_hop,omitempty"`
+
+	// ARP_UNKNOWN_FROM_CP - Unknown ARP query result emitted by control plane
+	// ND_NS_UNKNOWN_FROM_CP - Unknown neighbor solicitation query result emitted by
+	// control plane UNKNOWN - Unknown resend type
+	ResendType *PolicyTraceflowObservationForwardedLogicalResendType `json:"resend_type,omitempty" yaml:"resend_type,omitempty" mapstructure:"resend_type,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// This field is specified when the traceflow packet was routed by logical router.
+	RoutePrefix *IPCIDRBlock `json:"route_prefix,omitempty" yaml:"route_prefix,omitempty" mapstructure:"route_prefix,omitempty"`
+
+	// The path of the segment port through which the
+	// traceflow packet was forwarded.
+	//
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// ServiceIndex corresponds to the JSON schema field "service_index".
+	ServiceIndex *int `json:"service_index,omitempty" yaml:"service_index,omitempty" mapstructure:"service_index,omitempty"`
+
+	// ServicePathIndex corresponds to the JSON schema field "service_path_index".
+	ServicePathIndex *int `json:"service_path_index,omitempty" yaml:"service_path_index,omitempty" mapstructure:"service_path_index,omitempty"`
+
+	// ServiceTtl corresponds to the JSON schema field "service_ttl".
+	ServiceTtl *int `json:"service_ttl,omitempty" yaml:"service_ttl,omitempty" mapstructure:"service_ttl,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// This field specified the prefix IP address a traceflow packet matched in the
+	// whitelist in spoofguard.
+	SpoofguardIp *IPCIDRBlock `json:"spoofguard_ip,omitempty" yaml:"spoofguard_ip,omitempty" mapstructure:"spoofguard_ip,omitempty"`
+
+	// The source MAC address of form: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".
+	// For example: 00:00:00:00:00:00.
+	SpoofguardMac *MACAddress `json:"spoofguard_mac,omitempty" yaml:"spoofguard_mac,omitempty" mapstructure:"spoofguard_mac,omitempty"`
+
+	// This field specified the VLAN id a traceflow packet matched in the whitelist in
+	// spoofguard.
+	SpoofguardVlanId *VlanID `json:"spoofguard_vlan_id,omitempty" yaml:"spoofguard_vlan_id,omitempty" mapstructure:"spoofguard_vlan_id,omitempty"`
+
+	// MAC address of nexthop for service insertion(SI) in service VM(SVM) where the
+	// traceflow packet was received.
+	SvcNhMac *string `json:"svc_nh_mac,omitempty" yaml:"svc_nh_mac,omitempty" mapstructure:"svc_nh_mac,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TranslatedDstIp corresponds to the JSON schema field "translated_dst_ip".
+	TranslatedDstIp *IPAddress `json:"translated_dst_ip,omitempty" yaml:"translated_dst_ip,omitempty" mapstructure:"translated_dst_ip,omitempty"`
+
+	// TranslatedSrcIp corresponds to the JSON schema field "translated_src_ip".
+	TranslatedSrcIp *IPAddress `json:"translated_src_ip,omitempty" yaml:"translated_src_ip,omitempty" mapstructure:"translated_src_ip,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// This field is specified when the traceflow packet was forwarded by a VLAN
+	// logical network.
+	Vlan *VlanID `json:"vlan,omitempty" yaml:"vlan,omitempty" mapstructure:"vlan,omitempty"`
+
+	// This field is specified when the traceflow packet was forwarded by an overlay
+	// logical network.
+	Vni *int `json:"vni,omitempty" yaml:"vni,omitempty" mapstructure:"vni,omitempty"`
+}
+
+type PolicyTraceflowObservationForwardedLogicalResendType string
+
+const PolicyTraceflowObservationForwardedLogicalResendTypeARPUNKNOWNFROMCP PolicyTraceflowObservationForwardedLogicalResendType = "ARP_UNKNOWN_FROM_CP"
+const PolicyTraceflowObservationForwardedLogicalResendTypeNDNSUNKNWONFROMCP PolicyTraceflowObservationForwardedLogicalResendType = "ND_NS_UNKNWON_FROM_CP"
+const PolicyTraceflowObservationForwardedLogicalResendTypeUNKNOWN PolicyTraceflowObservationForwardedLogicalResendType = "UNKNOWN"
+
+var enumValues_PolicyTraceflowObservationForwardedLogicalResendType = []interface{}{
+	"UNKNOWN",
+	"ARP_UNKNOWN_FROM_CP",
+	"ND_NS_UNKNWON_FROM_CP",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationForwardedLogicalResendType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationForwardedLogicalResendType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationForwardedLogicalResendType, v)
+	}
+	*j = PolicyTraceflowObservationForwardedLogicalResendType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationForwardedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyTraceflowObservationForwardedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = PolicyTraceflowObservationForwardedLogical(plain)
+	return nil
+}
+
+type PolicyTraceflowObservationIpsecVpn struct {
+	// SessionPath corresponds to the JSON schema field "session_path".
+	SessionPath *string `json:"session_path,omitempty" yaml:"session_path,omitempty" mapstructure:"session_path,omitempty"`
+
+	// VtiPath corresponds to the JSON schema field "vti_path".
+	VtiPath *string `json:"vti_path,omitempty" yaml:"vti_path,omitempty" mapstructure:"vti_path,omitempty"`
+}
+
+type PolicyTraceflowObservationReceivedLogical struct {
+	// ComponentId corresponds to the JSON schema field "component_id".
+	ComponentId *string `json:"component_id,omitempty" yaml:"component_id,omitempty" mapstructure:"component_id,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentPath corresponds to the JSON schema field "component_path".
+	ComponentPath *string `json:"component_path,omitempty" yaml:"component_path,omitempty" mapstructure:"component_path,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// The path of the interface at which the traceflow packet was received (e.g.,
+	// Tier0 Interface, Tier1 Interface, Service Interface, and Virtual Tunnel
+	// Interface).
+	//
+	InterfacePath *string `json:"interface_path,omitempty" yaml:"interface_path,omitempty" mapstructure:"interface_path,omitempty"`
+
+	// This field is specified when the traceflow packet was received on IPSec VPN.
+	IpsecVpn *TraceflowObservationIpsecVpn `json:"ipsec_vpn,omitempty" yaml:"ipsec_vpn,omitempty" mapstructure:"ipsec_vpn,omitempty"`
+
+	// IpsecVpnPath corresponds to the JSON schema field "ipsec_vpn_path".
+	IpsecVpnPath *PolicyTraceflowObservationIpsecVpn `json:"ipsec_vpn_path,omitempty" yaml:"ipsec_vpn_path,omitempty" mapstructure:"ipsec_vpn_path,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// The path of the segment port at which the
+	// traceflow packet was received.
+	//
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// SrcComponentId corresponds to the JSON schema field "src_component_id".
+	SrcComponentId *string `json:"src_component_id,omitempty" yaml:"src_component_id,omitempty" mapstructure:"src_component_id,omitempty"`
+
+	// SrcComponentName corresponds to the JSON schema field "src_component_name".
+	SrcComponentName *string `json:"src_component_name,omitempty" yaml:"src_component_name,omitempty" mapstructure:"src_component_name,omitempty"`
+
+	// SrcComponentPath corresponds to the JSON schema field "src_component_path".
+	SrcComponentPath *string `json:"src_component_path,omitempty" yaml:"src_component_path,omitempty" mapstructure:"src_component_path,omitempty"`
+
+	// SrcComponentType corresponds to the JSON schema field "src_component_type".
+	SrcComponentType *TraceflowComponentType `json:"src_component_type,omitempty" yaml:"src_component_type,omitempty" mapstructure:"src_component_type,omitempty"`
+
+	// MAC address of SAN volume controller for service insertion(SI) in service
+	// VM(SVM) where the traceflow packet was received.
+	SvcMac *string `json:"svc_mac,omitempty" yaml:"svc_mac,omitempty" mapstructure:"svc_mac,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// This field is specified when the traceflow packet was received by a VLAN
+	// logical network.
+	Vlan *VlanID `json:"vlan,omitempty" yaml:"vlan,omitempty" mapstructure:"vlan,omitempty"`
+
+	// This field is specified when the traceflow packet was received by an overlay
+	// logical network.
+	Vni *int `json:"vni,omitempty" yaml:"vni,omitempty" mapstructure:"vni,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationReceivedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyTraceflowObservationReceivedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = PolicyTraceflowObservationReceivedLogical(plain)
+	return nil
+}
+
+type PolicyTraceflowObservationRelayedLogical struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// This field specified the IP address of the destination which the packet will be
+	// relayed.
+	DstServerAddress *IPAddress `json:"dst_server_address,omitempty" yaml:"dst_server_address,omitempty" mapstructure:"dst_server_address,omitempty"`
+
+	// This field specified the logical component that relay service located.
+	LogicalCompUuid *string `json:"logical_comp_uuid,omitempty" yaml:"logical_comp_uuid,omitempty" mapstructure:"logical_comp_uuid,omitempty"`
+
+	// This field specifies the logical component that relay service located on.
+	LogicalComponentPath *string `json:"logical_component_path,omitempty" yaml:"logical_component_path,omitempty" mapstructure:"logical_component_path,omitempty"`
+
+	// This field specified the message type of the relay service REQUEST - The relay
+	// service will relay a request message to the destination server REPLY - The
+	// relay service will relay a reply message to the client
+	MessageType PolicyTraceflowObservationRelayedLogicalMessageType `json:"message_type,omitempty" yaml:"message_type,omitempty" mapstructure:"message_type,omitempty"`
+
+	// This field specified the IP address of the relay service.
+	RelayServerAddress *IPAddress `json:"relay_server_address,omitempty" yaml:"relay_server_address,omitempty" mapstructure:"relay_server_address,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+type PolicyTraceflowObservationRelayedLogicalMessageType string
+
+const PolicyTraceflowObservationRelayedLogicalMessageTypeREPLY PolicyTraceflowObservationRelayedLogicalMessageType = "REPLY"
+const PolicyTraceflowObservationRelayedLogicalMessageTypeREQUEST PolicyTraceflowObservationRelayedLogicalMessageType = "REQUEST"
+
+var enumValues_PolicyTraceflowObservationRelayedLogicalMessageType = []interface{}{
+	"REQUEST",
+	"REPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationRelayedLogicalMessageType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyTraceflowObservationRelayedLogicalMessageType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyTraceflowObservationRelayedLogicalMessageType, v)
+	}
+	*j = PolicyTraceflowObservationRelayedLogicalMessageType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyTraceflowObservationRelayedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyTraceflowObservationRelayedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["message_type"]; !ok || v == nil {
+		plain.MessageType = "REQUEST"
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = PolicyTraceflowObservationRelayedLogical(plain)
+	return nil
 }
 
 // Detailed information about static address for the port.
@@ -7795,6 +10170,17 @@ func (j *Tag) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type TcpHeader struct {
+	// DstPort corresponds to the JSON schema field "dst_port".
+	DstPort *int `json:"dst_port,omitempty" yaml:"dst_port,omitempty" mapstructure:"dst_port,omitempty"`
+
+	// SrcPort corresponds to the JSON schema field "src_port".
+	SrcPort *int `json:"src_port,omitempty" yaml:"src_port,omitempty" mapstructure:"src_port,omitempty"`
+
+	// TcpFlags corresponds to the JSON schema field "tcp_flags".
+	TcpFlags *int `json:"tcp_flags,omitempty" yaml:"tcp_flags,omitempty" mapstructure:"tcp_flags,omitempty"`
+}
+
 // Tier-0 configuration for external connectivity.
 type Tier0 struct {
 	// Timestamp of resource creation
@@ -8696,6 +11082,2164 @@ func (j *Tier1) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
 	}
 	*j = Tier1(plain)
+	return nil
+}
+
+type TraceflowComponentSubType string
+
+const TraceflowComponentSubTypeAWSGATEWAY TraceflowComponentSubType = "AWS_GATEWAY"
+const TraceflowComponentSubTypeDELLGATEWAY TraceflowComponentSubType = "DELL_GATEWAY"
+const TraceflowComponentSubTypeEDGEUPLINK TraceflowComponentSubType = "EDGE_UPLINK"
+const TraceflowComponentSubTypeENI TraceflowComponentSubType = "ENI"
+const TraceflowComponentSubTypeLGWROUTE TraceflowComponentSubType = "LGW_ROUTE"
+const TraceflowComponentSubTypeLRKNI TraceflowComponentSubType = "LR_KNI"
+const TraceflowComponentSubTypeLRTIER0 TraceflowComponentSubType = "LR_TIER0"
+const TraceflowComponentSubTypeLRTIER1 TraceflowComponentSubType = "LR_TIER1"
+const TraceflowComponentSubTypeLRVRFTIER0 TraceflowComponentSubType = "LR_VRF_TIER0"
+const TraceflowComponentSubTypeLSTRANSIT TraceflowComponentSubType = "LS_TRANSIT"
+const TraceflowComponentSubTypeSICLASSIFIER TraceflowComponentSubType = "SI_CLASSIFIER"
+const TraceflowComponentSubTypeSIPROXY TraceflowComponentSubType = "SI_PROXY"
+const TraceflowComponentSubTypeTGWROUTE TraceflowComponentSubType = "TGW_ROUTE"
+const TraceflowComponentSubTypeUNKNOWN TraceflowComponentSubType = "UNKNOWN"
+const TraceflowComponentSubTypeVDR TraceflowComponentSubType = "VDR"
+
+var enumValues_TraceflowComponentSubType = []interface{}{
+	"LR_TIER0",
+	"LR_TIER1",
+	"LR_VRF_TIER0",
+	"LS_TRANSIT",
+	"SI_CLASSIFIER",
+	"SI_PROXY",
+	"VDR",
+	"ENI",
+	"AWS_GATEWAY",
+	"TGW_ROUTE",
+	"EDGE_UPLINK",
+	"DELL_GATEWAY",
+	"LGW_ROUTE",
+	"LR_KNI",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowComponentSubType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowComponentSubType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowComponentSubType, v)
+	}
+	*j = TraceflowComponentSubType(v)
+	return nil
+}
+
+type TraceflowComponentType string
+
+const TraceflowComponentTypeANTREADFW TraceflowComponentType = "ANTREA_DFW"
+const TraceflowComponentTypeANTREAFORWARDING TraceflowComponentType = "ANTREA_FORWARDING"
+const TraceflowComponentTypeANTREALB TraceflowComponentType = "ANTREA_LB"
+const TraceflowComponentTypeANTREAROUTING TraceflowComponentType = "ANTREA_ROUTING"
+const TraceflowComponentTypeANTREASPOOFGUARD TraceflowComponentType = "ANTREA_SPOOFGUARD"
+const TraceflowComponentTypeBRIDGE TraceflowComponentType = "BRIDGE"
+const TraceflowComponentTypeDFW TraceflowComponentType = "DFW"
+const TraceflowComponentTypeDLB TraceflowComponentType = "DLB"
+const TraceflowComponentTypeEDGEFW TraceflowComponentType = "EDGE_FW"
+const TraceflowComponentTypeEDGEHOSTSWITCH TraceflowComponentType = "EDGE_HOSTSWITCH"
+const TraceflowComponentTypeEDGERTEPTUNNEL TraceflowComponentType = "EDGE_RTEP_TUNNEL"
+const TraceflowComponentTypeEDGETUNNEL TraceflowComponentType = "EDGE_TUNNEL"
+const TraceflowComponentTypeFWBRIDGE TraceflowComponentType = "FW_BRIDGE"
+const TraceflowComponentTypeHOSTSWITCH TraceflowComponentType = "HOST_SWITCH"
+const TraceflowComponentTypeIPSEC TraceflowComponentType = "IPSEC"
+const TraceflowComponentTypeLOADBALANCER TraceflowComponentType = "LOAD_BALANCER"
+const TraceflowComponentTypeLR TraceflowComponentType = "LR"
+const TraceflowComponentTypeLS TraceflowComponentType = "LS"
+const TraceflowComponentTypeNAT TraceflowComponentType = "NAT"
+const TraceflowComponentTypePHYSICAL TraceflowComponentType = "PHYSICAL"
+const TraceflowComponentTypeSERVICEINSERTION TraceflowComponentType = "SERVICE_INSERTION"
+const TraceflowComponentTypeSPOOFGUARD TraceflowComponentType = "SPOOFGUARD"
+const TraceflowComponentTypeUNKNOWN TraceflowComponentType = "UNKNOWN"
+const TraceflowComponentTypeVMC TraceflowComponentType = "VMC"
+
+var enumValues_TraceflowComponentType = []interface{}{
+	"PHYSICAL",
+	"LR",
+	"LS",
+	"DFW",
+	"BRIDGE",
+	"EDGE_TUNNEL",
+	"EDGE_HOSTSWITCH",
+	"FW_BRIDGE",
+	"EDGE_RTEP_TUNNEL",
+	"LOAD_BALANCER",
+	"NAT",
+	"IPSEC",
+	"SERVICE_INSERTION",
+	"VMC",
+	"SPOOFGUARD",
+	"EDGE_FW",
+	"DLB",
+	"ANTREA_SPOOFGUARD",
+	"ANTREA_LB",
+	"ANTREA_ROUTING",
+	"ANTREA_DFW",
+	"ANTREA_FORWARDING",
+	"HOST_SWITCH",
+	"UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowComponentType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowComponentType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowComponentType, v)
+	}
+	*j = TraceflowComponentType(v)
+	return nil
+}
+
+// TraceflowConfig mainly records what type of packets the user wants to inject
+// into which port. This configuration will be cleaned up by the system after two
+// hours of inactivity if is_transient is true. Traceflow is not supported for VPC
+// Admin role.
+type TraceflowConfig struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Policy path of child segment connected to container port. Child segment
+	// connection is configured through SegmentConnectionBindingMapDto. This field
+	// should be provided only when source_id/segment_port_path is a VIF attached port
+	// on the parent segment.
+	ConnectedParentPathAsSource *string `json:"connected_parent_path_as_source,omitempty" yaml:"connected_parent_path_as_source,omitempty" mapstructure:"connected_parent_path_as_source,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// This field indicates if intent is transient and will be cleaned up by the
+	// system if set to true
+	IsTransient bool `json:"is_transient,omitempty" yaml:"is_transient,omitempty" mapstructure:"is_transient,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Configuration of packet data
+	Packet *PacketData `json:"packet,omitempty" yaml:"packet,omitempty" mapstructure:"packet,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Policy path or UUID of segment port to start traceflow from. Auto-plumbed ports
+	// don't have corresponding policy path. Ports auto-created by policy as part of
+	// connecting segment to Tier-0 or Tier-1 or DHCP server cannot be used. UUID is
+	// validated for syntax only. This configuration will be cleaned up by the system
+	// after two hours of inactivity.
+	SegmentPortPath *string `json:"segment_port_path,omitempty" yaml:"segment_port_path,omitempty" mapstructure:"segment_port_path,omitempty"`
+
+	// Policy path or UUID (validated for syntax only) of segment port to start
+	// traceflow from. Auto-plumbed ports don't have corresponding policy path. Both
+	// overlay backed port and VLAN backed port are supported.
+	SourceId *string `json:"source_id,omitempty" yaml:"source_id,omitempty" mapstructure:"source_id,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Maximum time in seconds the management plane will wait for observation result
+	// to be generated. The default, minimum and maximum timeout values, in seconds,
+	// for: Single site environment - minimum 5, default 10, maximum 15. Federated
+	// enviroment - minimum 15, default 30, maximum 60. These values are validated by
+	// the system based on type of environment.
+	Timeout int `json:"timeout,omitempty" yaml:"timeout,omitempty" mapstructure:"timeout,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowConfig) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowConfig
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["is_transient"]; !ok || v == nil {
+		plain.IsTransient = true
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	if v, ok := raw["timeout"]; !ok || v == nil {
+		plain.Timeout = 10.0
+	}
+	*j = TraceflowConfig(plain)
+	return nil
+}
+
+type TraceflowObservationDelivered struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field specifies the resolution type of ARP ARP_SUPPRESSION_PORT_CACHE -
+	// ARP request is suppressed by IP table. ARP_SUPPRESSION_TABLE - ARP request is
+	// suppressed by ARP table. ARP_SUPPRESSION_CP_QUERY - ARP request is suppressed
+	// by info derived from CP. ARP_VM - No suppression and the ARP request is
+	// resolved by VM. ARP_LRP - No suppression and the ARP request is resolved by
+	// logical router.
+	ResolutionType *TraceflowObservationDeliveredResolutionType `json:"resolution_type,omitempty" yaml:"resolution_type,omitempty" mapstructure:"resolution_type,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// The source MAC address of form: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".
+	// For example: 00:00:00:00:00:00.
+	TargetMac *string `json:"target_mac,omitempty" yaml:"target_mac,omitempty" mapstructure:"target_mac,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// VlanId corresponds to the JSON schema field "vlan_id".
+	VlanId *VlanID `json:"vlan_id,omitempty" yaml:"vlan_id,omitempty" mapstructure:"vlan_id,omitempty"`
+}
+
+type TraceflowObservationDeliveredResolutionType string
+
+const TraceflowObservationDeliveredResolutionTypeARPLRP TraceflowObservationDeliveredResolutionType = "ARP_LRP"
+const TraceflowObservationDeliveredResolutionTypeARPSUPPRESSIONCPQUERY TraceflowObservationDeliveredResolutionType = "ARP_SUPPRESSION_CP_QUERY"
+const TraceflowObservationDeliveredResolutionTypeARPSUPPRESSIONPORTCACHE TraceflowObservationDeliveredResolutionType = "ARP_SUPPRESSION_PORT_CACHE"
+const TraceflowObservationDeliveredResolutionTypeARPSUPPRESSIONTABLE TraceflowObservationDeliveredResolutionType = "ARP_SUPPRESSION_TABLE"
+const TraceflowObservationDeliveredResolutionTypeARPVM TraceflowObservationDeliveredResolutionType = "ARP_VM"
+const TraceflowObservationDeliveredResolutionTypeUNKNOWN TraceflowObservationDeliveredResolutionType = "UNKNOWN"
+
+var enumValues_TraceflowObservationDeliveredResolutionType = []interface{}{
+	"UNKNOWN",
+	"ARP_SUPPRESSION_PORT_CACHE",
+	"ARP_SUPPRESSION_TABLE",
+	"ARP_SUPPRESSION_CP_QUERY",
+	"ARP_VM",
+	"ARP_LRP",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDeliveredResolutionType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDeliveredResolutionType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDeliveredResolutionType, v)
+	}
+	*j = TraceflowObservationDeliveredResolutionType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDelivered) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationDelivered
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationDelivered(plain)
+	return nil
+}
+
+type TraceflowObservationDropped struct {
+	// This field is specified when the traceflow packet matched a L3 firewall rule.
+	AclRuleId *int `json:"acl_rule_id,omitempty" yaml:"acl_rule_id,omitempty" mapstructure:"acl_rule_id,omitempty"`
+
+	// This field specifies the ARP fails reason ARP_TIMEOUT - ARP failure due to
+	// query control plane timeout ARP_CPFAIL - ARP failure due post ARP query message
+	// to control plane failure ARP_FROMCP - ARP failure due to deleting ARP entry
+	// from control plane ARP_PORTDESTROY - ARP failure due to port destruction
+	// ARP_TABLEDESTROY - ARP failure due to ARP table destruction ARP_NETDESTROY -
+	// ARP failure due to overlay network destruction
+	ArpFailReason *TraceflowObservationDroppedArpFailReason `json:"arp_fail_reason,omitempty" yaml:"arp_fail_reason,omitempty" mapstructure:"arp_fail_reason,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// This field specifies the IPSec VPN fails reason IPSEC_SA_NOT_FOUND   - IPSec SA
+	// required for processing the packet does not exist IPSEC_UDP_ENC_STATE_MISMATCH
+	// - ESP packet is UDP encapsulated but IPsec SA does not expect UDP encapsulation
+	// IPSEC_SEQ_ROLLOVER   - IPSec SA sequence number has exceeded the maximum value
+	// IPSEC_FRAG_NEEDED   - Received packet has DF bit set in IP header but requires
+	// fragmentation due to ESP encapsulation IPSEC_TUN_IFACE_DOWN   - IPSec tunnel
+	// interface is down IPSEC_POLICY_NOMATCH   - Received packet does not match IPSec
+	// policy IPSEC_POLICY_BLOCK   - IPSec packet processing failed IPSEC_POLICY_ERROR
+	// - IPSec packet processing failed IPSEC_REPLAY_SEQ_NUM_REPEAT   - IPSec packet
+	// is dropped due to replay IPSEC_REPLAY_RECV_DELAY   - IPSec packet is dropped
+	// due to replay IPSEC_REPLAY_PROC_DELAY   - IPSec packet is dropped due to replay
+	// IPSEC_ZERO_SEQ_NUM_RECVD   - ESP packet is received with sequence number as
+	// zero IPSEC_ENQUEUE_FAIL   - Packet processing failed during crypto operation
+	// IPSEC_AUTH_DGST_MISMATCH   - Packet integrity check failed due to digest
+	// mismatch IPSEC_AUTH_DGST_SIZE_MISMATCH   - Packet integrity check failed due to
+	// invalid digest length IPSEC_AUTH_UNSUPPORTED_ALGO   - Packet integrity check
+	// failed due to unsupported hash algorithm IPSEC_CRYPTO_FAIL   - Packet
+	// processing failed during crypto operation IPSEC_CRYPTO_PROC_INCOMPLETE   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_SESSION_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_ARGS_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_PROC_ERROR   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_NO_BUF_SPACE   -
+	// Packet processing failed during crypto operation
+	// IPSEC_CRYPTO_UNSUPPORTED_CIPHER   - Packet processing failed during crypto
+	// operation IPSEC_MALFORMED   - Received ESP packet is malformed
+	// IPSEC_MALFORMED_INV_PADDING   - Received ESP packet is malformed
+	// IPSEC_PADDING_REMOVAL_FAILED   - Received ESP packet is malformed
+	// IPSEC_INNER_MALFORMED   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_IP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_UDP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_TCP   - IP packet after ESP decryption is malformed
+	// IPSEC_UNKNOWN   - IPSec VPN failure reason is unknown
+	IpsecFailReason *TraceflowObservationDroppedIpsecFailReason `json:"ipsec_fail_reason,omitempty" yaml:"ipsec_fail_reason,omitempty" mapstructure:"ipsec_fail_reason,omitempty"`
+
+	// This field is specified when the traceflow packet matched a jump-to rule.
+	JumptoRuleId *int `json:"jumpto_rule_id,omitempty" yaml:"jumpto_rule_id,omitempty" mapstructure:"jumpto_rule_id,omitempty"`
+
+	// This field is specified when the traceflow packet matched a l2 rule.
+	L2RuleId *int `json:"l2_rule_id,omitempty" yaml:"l2_rule_id,omitempty" mapstructure:"l2_rule_id,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field is specified when the traceflow packet matched a NAT rule.
+	NatRuleId *int `json:"nat_rule_id,omitempty" yaml:"nat_rule_id,omitempty" mapstructure:"nat_rule_id,omitempty"`
+
+	// This field specifies the drop reason of traceflow packet. ARP_FAIL - ARP
+	// request fails for some reasons, please refer arp_fail_reason for detail BFD -
+	// BFD packet is dropped because traversed by non-operative interface or
+	// encountering internal error (e.g., memory insufficient) BROADCAST - Packet is
+	// dropped during traversing the interface (e.g., Edge uplink, Edge centralized
+	// service port) which disallow ethernet broadcast DHCP - DHCP packet is malformed
+	// DLB - The packet is disallowed by distributed load balancing FW_RULE - The
+	// packet matches a drop or reject rule of DFW or Edge firewall GENEVE - GENEVE
+	// packet is malformed GRE - GRE packet is malformed or traverses a non-operative
+	// interface IFACE - Packet traverses a non-operative interface IP - Packet is
+	// dropped because of IP related causes (e.g., ICMPv4/ICMPv6 packet is malformed,
+	// or DF flag is set but fragment must be performed for the packet) or
+	// corresponding interface is not found or inoperative IP_REASS - Packet is
+	// dropped during IP reassembly IPSEC - IPsec protocol related packet is dropped
+	// IPSEC_VTI - IPsec required SA is not found or traversing inoperative interface
+	// cause packet dropped L2VPN - VLAN id of GRE packet is invalid L4PORT - Layer 4
+	// packet (e.g., BFD, DHCP) is dropped LB - Packet is dropped by load balancing
+	// rule LROUTER - Packet is dropped by logical router LSERVICE - Packet is
+	// malformed or traverses inoperative logical service interface LSWITCH - Packet
+	// is dropped by logical switch MANAGEMENT - Packet is dropped by Edge datapath
+	// MANAGEMENT service port MD_PROXY - Packet is dropped by metadata proxy NAT -
+	// Packet is dropped by NAT rule RTEP_TUNNEL - Unused drop reason ND_NS_FAIL -
+	// Neighbor Discovery packet fails NEIGH - ARP or Neighbor Discovery packet fails
+	// NO_EIP_FOUND - Destination IP is not an elastic IP NO_EIP_ASSOCIATION - Elastic
+	// IP is not associated with active edge VDR ENI NO_ENI_FOR_IP - There is no ENI
+	// found for the destination IP NO_ENI_FOR_LIF - Cannot find an ENI associated
+	// with uplink LIF NO_ROUTE - Cannot find route for destination IP
+	// NO_ROUTE_TABLE_FOUND - Cannot find associated route table
+	// NO_UNDERLAY_ROUTE_FOUND - Cannot find AWS route to destination NOT_VDR_DOWNLINK
+	// - Packet is not forwarded to VMC unmanaged VDR downlink NO_VDR_FOUND - VMC
+	// unmanaged VDR associated with Edge uplink is not found NO_VDR_ON_HOST - Cannot
+	// find VMC unmanaged VDR list on this host NOT_VDR_UPLINK - Packet is not
+	// forwarded to VDR uplink SERVICE_INSERT - Packet from guest VM to service VM or
+	// from service VM to guest VM is dropped by firewall rule SPOOFGUARD - Packet is
+	// blocked by SpoofGuard policy TTL_ZERO - The IPv4 time to live field or the IPv6
+	// hop limit field of packet is zero TUNNEL - Overlay tunnel management packet
+	// (VNI value of GENEVE header is 0, e.g., BFD) is dropped VLAN - VLAN id of
+	// packet is disallowed by the given port VXLAN - VXLAN packet is malformed or
+	// cannot find tunnel port for it VXSTT - Unused drop reason VMC_NO_RESPONSE -
+	// Failed to query VMC observations as no response from VMC app WRONG_UPLINK -
+	// Packet is not routed to the expected Edge uplink by VMC unmanaged VDR FW_STATE
+	// - Packet is dropped by stateful firewall NO_MAC - Drop by vswitch as no
+	// destination MAC hit MAC Table. FILTERED_UPLINK - Filtering applied at the
+	// corresponding UPLINK having no aggregation.
+	Reason *TraceflowObservationDroppedReason `json:"reason,omitempty" yaml:"reason,omitempty" mapstructure:"reason,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+type TraceflowObservationDroppedArpFailReason string
+
+const TraceflowObservationDroppedArpFailReasonARPCPFAIL TraceflowObservationDroppedArpFailReason = "ARP_CPFAIL"
+const TraceflowObservationDroppedArpFailReasonARPFROMCP TraceflowObservationDroppedArpFailReason = "ARP_FROMCP"
+const TraceflowObservationDroppedArpFailReasonARPNETDESTROY TraceflowObservationDroppedArpFailReason = "ARP_NETDESTROY"
+const TraceflowObservationDroppedArpFailReasonARPPORTDESTROY TraceflowObservationDroppedArpFailReason = "ARP_PORTDESTROY"
+const TraceflowObservationDroppedArpFailReasonARPTABLEDESTROY TraceflowObservationDroppedArpFailReason = "ARP_TABLEDESTROY"
+const TraceflowObservationDroppedArpFailReasonARPTIMEOUT TraceflowObservationDroppedArpFailReason = "ARP_TIMEOUT"
+const TraceflowObservationDroppedArpFailReasonARPUNKNOWN TraceflowObservationDroppedArpFailReason = "ARP_UNKNOWN"
+
+var enumValues_TraceflowObservationDroppedArpFailReason = []interface{}{
+	"ARP_UNKNOWN",
+	"ARP_TIMEOUT",
+	"ARP_CPFAIL",
+	"ARP_FROMCP",
+	"ARP_PORTDESTROY",
+	"ARP_TABLEDESTROY",
+	"ARP_NETDESTROY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedArpFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDroppedArpFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDroppedArpFailReason, v)
+	}
+	*j = TraceflowObservationDroppedArpFailReason(v)
+	return nil
+}
+
+type TraceflowObservationDroppedIpsecFailReason string
+
+const TraceflowObservationDroppedIpsecFailReasonIPSECAUTHDGSTMISMATCH TraceflowObservationDroppedIpsecFailReason = "IPSEC_AUTH_DGST_MISMATCH"
+const TraceflowObservationDroppedIpsecFailReasonIPSECAUTHDGSTSIZEMISMATCH TraceflowObservationDroppedIpsecFailReason = "IPSEC_AUTH_DGST_SIZE_MISMATCH"
+const TraceflowObservationDroppedIpsecFailReasonIPSECAUTHUNSUPPORTEDALGO TraceflowObservationDroppedIpsecFailReason = "IPSEC_AUTH_UNSUPPORTED_ALGO"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOARGSINV TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_ARGS_INV"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOFAIL TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_FAIL"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTONOBUFSPACE TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_NO_BUF_SPACE"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOPROCERROR TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_PROC_ERROR"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOPROCINCOMPLETE TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_PROC_INCOMPLETE"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOSESSIONINV TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_SESSION_INV"
+const TraceflowObservationDroppedIpsecFailReasonIPSECCRYPTOUNSUPPORTEDCIPHER TraceflowObservationDroppedIpsecFailReason = "IPSEC_CRYPTO_UNSUPPORTED_CIPHER"
+const TraceflowObservationDroppedIpsecFailReasonIPSECENQUEUEFAIL TraceflowObservationDroppedIpsecFailReason = "IPSEC_ENQUEUE_FAIL"
+const TraceflowObservationDroppedIpsecFailReasonIPSECFRAGNEEDED TraceflowObservationDroppedIpsecFailReason = "IPSEC_FRAG_NEEDED"
+const TraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMED TraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED"
+const TraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMEDIP TraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED_IP"
+const TraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMEDTCP TraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED_TCP"
+const TraceflowObservationDroppedIpsecFailReasonIPSECINNERMALFORMEDUDP TraceflowObservationDroppedIpsecFailReason = "IPSEC_INNER_MALFORMED_UDP"
+const TraceflowObservationDroppedIpsecFailReasonIPSECMALFORMED TraceflowObservationDroppedIpsecFailReason = "IPSEC_MALFORMED"
+const TraceflowObservationDroppedIpsecFailReasonIPSECMALFORMEDINVPADDING TraceflowObservationDroppedIpsecFailReason = "IPSEC_MALFORMED_INV_PADDING"
+const TraceflowObservationDroppedIpsecFailReasonIPSECPADDINGREMOVALFAILED TraceflowObservationDroppedIpsecFailReason = "IPSEC_PADDING_REMOVAL_FAILED"
+const TraceflowObservationDroppedIpsecFailReasonIPSECPOLICYBLOCK TraceflowObservationDroppedIpsecFailReason = "IPSEC_POLICY_BLOCK"
+const TraceflowObservationDroppedIpsecFailReasonIPSECPOLICYERROR TraceflowObservationDroppedIpsecFailReason = "IPSEC_POLICY_ERROR"
+const TraceflowObservationDroppedIpsecFailReasonIPSECPOLICYNOMATCH TraceflowObservationDroppedIpsecFailReason = "IPSEC_POLICY_NOMATCH"
+const TraceflowObservationDroppedIpsecFailReasonIPSECREPLAYPROCDELAY TraceflowObservationDroppedIpsecFailReason = "IPSEC_REPLAY_PROC_DELAY"
+const TraceflowObservationDroppedIpsecFailReasonIPSECREPLAYRECVDELAY TraceflowObservationDroppedIpsecFailReason = "IPSEC_REPLAY_RECV_DELAY"
+const TraceflowObservationDroppedIpsecFailReasonIPSECREPLAYSEQNUMREPEAT TraceflowObservationDroppedIpsecFailReason = "IPSEC_REPLAY_SEQ_NUM_REPEAT"
+const TraceflowObservationDroppedIpsecFailReasonIPSECSANOTFOUND TraceflowObservationDroppedIpsecFailReason = "IPSEC_SA_NOT_FOUND"
+const TraceflowObservationDroppedIpsecFailReasonIPSECSEQROLLOVER TraceflowObservationDroppedIpsecFailReason = "IPSEC_SEQ_ROLLOVER"
+const TraceflowObservationDroppedIpsecFailReasonIPSECTUNIFACEDOWN TraceflowObservationDroppedIpsecFailReason = "IPSEC_TUN_IFACE_DOWN"
+const TraceflowObservationDroppedIpsecFailReasonIPSECUDPENCSTATEMISMATCH TraceflowObservationDroppedIpsecFailReason = "IPSEC_UDP_ENC_STATE_MISMATCH"
+const TraceflowObservationDroppedIpsecFailReasonIPSECUNKNOWN TraceflowObservationDroppedIpsecFailReason = "IPSEC_UNKNOWN"
+const TraceflowObservationDroppedIpsecFailReasonIPSECZEROSEQNUMRECVD TraceflowObservationDroppedIpsecFailReason = "IPSEC_ZERO_SEQ_NUM_RECVD"
+
+var enumValues_TraceflowObservationDroppedIpsecFailReason = []interface{}{
+	"IPSEC_SA_NOT_FOUND",
+	"IPSEC_UDP_ENC_STATE_MISMATCH",
+	"IPSEC_SEQ_ROLLOVER",
+	"IPSEC_FRAG_NEEDED",
+	"IPSEC_TUN_IFACE_DOWN",
+	"IPSEC_POLICY_NOMATCH",
+	"IPSEC_POLICY_BLOCK",
+	"IPSEC_POLICY_ERROR",
+	"IPSEC_REPLAY_SEQ_NUM_REPEAT",
+	"IPSEC_REPLAY_RECV_DELAY",
+	"IPSEC_REPLAY_PROC_DELAY",
+	"IPSEC_ZERO_SEQ_NUM_RECVD",
+	"IPSEC_ENQUEUE_FAIL",
+	"IPSEC_AUTH_DGST_MISMATCH",
+	"IPSEC_AUTH_DGST_SIZE_MISMATCH",
+	"IPSEC_AUTH_UNSUPPORTED_ALGO",
+	"IPSEC_CRYPTO_FAIL",
+	"IPSEC_CRYPTO_PROC_INCOMPLETE",
+	"IPSEC_CRYPTO_SESSION_INV",
+	"IPSEC_CRYPTO_ARGS_INV",
+	"IPSEC_CRYPTO_PROC_ERROR",
+	"IPSEC_CRYPTO_NO_BUF_SPACE",
+	"IPSEC_CRYPTO_UNSUPPORTED_CIPHER",
+	"IPSEC_MALFORMED",
+	"IPSEC_MALFORMED_INV_PADDING",
+	"IPSEC_PADDING_REMOVAL_FAILED",
+	"IPSEC_INNER_MALFORMED",
+	"IPSEC_INNER_MALFORMED_IP",
+	"IPSEC_INNER_MALFORMED_UDP",
+	"IPSEC_INNER_MALFORMED_TCP",
+	"IPSEC_UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedIpsecFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDroppedIpsecFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDroppedIpsecFailReason, v)
+	}
+	*j = TraceflowObservationDroppedIpsecFailReason(v)
+	return nil
+}
+
+type TraceflowObservationDroppedLogical struct {
+	// This field is specified when the traceflow packet matched a L3 firewall rule.
+	AclRuleId *int `json:"acl_rule_id,omitempty" yaml:"acl_rule_id,omitempty" mapstructure:"acl_rule_id,omitempty"`
+
+	// This field specifies the ARP fails reason ARP_TIMEOUT - ARP failure due to
+	// query control plane timeout ARP_CPFAIL - ARP failure due post ARP query message
+	// to control plane failure ARP_FROMCP - ARP failure due to deleting ARP entry
+	// from control plane ARP_PORTDESTROY - ARP failure due to port destruction
+	// ARP_TABLEDESTROY - ARP failure due to ARP table destruction ARP_NETDESTROY -
+	// ARP failure due to overlay network destruction
+	ArpFailReason *TraceflowObservationDroppedLogicalArpFailReason `json:"arp_fail_reason,omitempty" yaml:"arp_fail_reason,omitempty" mapstructure:"arp_fail_reason,omitempty"`
+
+	// ComponentId corresponds to the JSON schema field "component_id".
+	ComponentId *string `json:"component_id,omitempty" yaml:"component_id,omitempty" mapstructure:"component_id,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// This field specifies the IPSec VPN fails reason IPSEC_SA_NOT_FOUND   - IPSec SA
+	// required for processing the packet does not exist IPSEC_UDP_ENC_STATE_MISMATCH
+	// - ESP packet is UDP encapsulated but IPsec SA does not expect UDP encapsulation
+	// IPSEC_SEQ_ROLLOVER   - IPSec SA sequence number has exceeded the maximum value
+	// IPSEC_FRAG_NEEDED   - Received packet has DF bit set in IP header but requires
+	// fragmentation due to ESP encapsulation IPSEC_TUN_IFACE_DOWN   - IPSec tunnel
+	// interface is down IPSEC_POLICY_NOMATCH   - Received packet does not match IPSec
+	// policy IPSEC_POLICY_BLOCK   - IPSec packet processing failed IPSEC_POLICY_ERROR
+	// - IPSec packet processing failed IPSEC_REPLAY_SEQ_NUM_REPEAT   - IPSec packet
+	// is dropped due to replay IPSEC_REPLAY_RECV_DELAY   - IPSec packet is dropped
+	// due to replay IPSEC_REPLAY_PROC_DELAY   - IPSec packet is dropped due to replay
+	// IPSEC_ZERO_SEQ_NUM_RECVD   - ESP packet is received with sequence number as
+	// zero IPSEC_ENQUEUE_FAIL   - Packet processing failed during crypto operation
+	// IPSEC_AUTH_DGST_MISMATCH   - Packet integrity check failed due to digest
+	// mismatch IPSEC_AUTH_DGST_SIZE_MISMATCH   - Packet integrity check failed due to
+	// invalid digest length IPSEC_AUTH_UNSUPPORTED_ALGO   - Packet integrity check
+	// failed due to unsupported hash algorithm IPSEC_CRYPTO_FAIL   - Packet
+	// processing failed during crypto operation IPSEC_CRYPTO_PROC_INCOMPLETE   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_SESSION_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_ARGS_INV   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_PROC_ERROR   -
+	// Packet processing failed during crypto operation IPSEC_CRYPTO_NO_BUF_SPACE   -
+	// Packet processing failed during crypto operation
+	// IPSEC_CRYPTO_UNSUPPORTED_CIPHER   - Packet processing failed during crypto
+	// operation IPSEC_MALFORMED   - Received ESP packet is malformed
+	// IPSEC_MALFORMED_INV_PADDING   - Received ESP packet is malformed
+	// IPSEC_PADDING_REMOVAL_FAILED   - Received ESP packet is malformed
+	// IPSEC_INNER_MALFORMED   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_IP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_UDP   - IP packet after ESP decryption is malformed
+	// IPSEC_INNER_MALFORMED_TCP   - IP packet after ESP decryption is malformed
+	// IPSEC_UNKNOWN   - IPSec VPN failure reason is unknown
+	IpsecFailReason *TraceflowObservationDroppedLogicalIpsecFailReason `json:"ipsec_fail_reason,omitempty" yaml:"ipsec_fail_reason,omitempty" mapstructure:"ipsec_fail_reason,omitempty"`
+
+	// This field is specified when the traceflow packet matched a jump-to rule.
+	JumptoRuleId *int `json:"jumpto_rule_id,omitempty" yaml:"jumpto_rule_id,omitempty" mapstructure:"jumpto_rule_id,omitempty"`
+
+	// This field is specified when the traceflow packet matched a l2 rule.
+	L2RuleId *int `json:"l2_rule_id,omitempty" yaml:"l2_rule_id,omitempty" mapstructure:"l2_rule_id,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field is specified when the traceflow packet matched a NAT rule.
+	NatRuleId *int `json:"nat_rule_id,omitempty" yaml:"nat_rule_id,omitempty" mapstructure:"nat_rule_id,omitempty"`
+
+	// This field specifies the drop reason of traceflow packet. ARP_FAIL - ARP
+	// request fails for some reasons, please refer arp_fail_reason for detail BFD -
+	// BFD packet is dropped because traversed by non-operative interface or
+	// encountering internal error (e.g., memory insufficient) BROADCAST - Packet is
+	// dropped during traversing the interface (e.g., Edge uplink, Edge centralized
+	// service port) which disallow ethernet broadcast DHCP - DHCP packet is malformed
+	// DLB - The packet is disallowed by distributed load balancing FW_RULE - The
+	// packet matches a drop or reject rule of DFW or Edge firewall GENEVE - GENEVE
+	// packet is malformed GRE - GRE packet is malformed or traverses a non-operative
+	// interface IFACE - Packet traverses a non-operative interface IP - Packet is
+	// dropped because of IP related causes (e.g., ICMPv4/ICMPv6 packet is malformed,
+	// or DF flag is set but fragment must be performed for the packet) or
+	// corresponding interface is not found or inoperative IP_REASS - Packet is
+	// dropped during IP reassembly IPSEC - IPsec protocol related packet is dropped
+	// IPSEC_VTI - IPsec required SA is not found or traversing inoperative interface
+	// cause packet dropped L2VPN - VLAN id of GRE packet is invalid L4PORT - Layer 4
+	// packet (e.g., BFD, DHCP) is dropped LB - Packet is dropped by load balancing
+	// rule LROUTER - Packet is dropped by logical router LSERVICE - Packet is
+	// malformed or traverses inoperative logical service interface LSWITCH - Packet
+	// is dropped by logical switch MANAGEMENT - Packet is dropped by Edge datapath
+	// MANAGEMENT service port MD_PROXY - Packet is dropped by metadata proxy NAT -
+	// Packet is dropped by NAT rule RTEP_TUNNEL - Unused drop reason ND_NS_FAIL -
+	// Neighbor Discovery packet fails NEIGH - ARP or Neighbor Discovery packet fails
+	// NO_EIP_FOUND - Destination IP is not an elastic IP NO_EIP_ASSOCIATION - Elastic
+	// IP is not associated with active edge VDR ENI NO_ENI_FOR_IP - There is no ENI
+	// found for the destination IP NO_ENI_FOR_LIF - Cannot find an ENI associated
+	// with uplink LIF NO_ROUTE - Cannot find route for destination IP
+	// NO_ROUTE_TABLE_FOUND - Cannot find associated route table
+	// NO_UNDERLAY_ROUTE_FOUND - Cannot find AWS route to destination NOT_VDR_DOWNLINK
+	// - Packet is not forwarded to VMC unmanaged VDR downlink NO_VDR_FOUND - VMC
+	// unmanaged VDR associated with Edge uplink is not found NO_VDR_ON_HOST - Cannot
+	// find VMC unmanaged VDR list on this host NOT_VDR_UPLINK - Packet is not
+	// forwarded to VDR uplink SERVICE_INSERT - Packet from guest VM to service VM or
+	// from service VM to guest VM is dropped by firewall rule SPOOFGUARD - Packet is
+	// blocked by SpoofGuard policy TTL_ZERO - The IPv4 time to live field or the IPv6
+	// hop limit field of packet is zero TUNNEL - Overlay tunnel management packet
+	// (VNI value of GENEVE header is 0, e.g., BFD) is dropped VLAN - VLAN id of
+	// packet is disallowed by the given port VXLAN - VXLAN packet is malformed or
+	// cannot find tunnel port for it VXSTT - Unused drop reason VMC_NO_RESPONSE -
+	// Failed to query VMC observations as no response from VMC app WRONG_UPLINK -
+	// Packet is not routed to the expected Edge uplink by VMC unmanaged VDR FW_STATE
+	// - Packet is dropped by stateful firewall NO_MAC - Drop by vswitch as no
+	// destination MAC hit MAC Table. FILTERED_UPLINK - Filtering applied at the
+	// corresponding UPLINK having no aggregation.
+	Reason *TraceflowObservationDroppedLogicalReason `json:"reason,omitempty" yaml:"reason,omitempty" mapstructure:"reason,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// The index of service path that is a chain of services represents the point
+	// where the traceflow packet was dropped.
+	ServicePathIndex *int `json:"service_path_index,omitempty" yaml:"service_path_index,omitempty" mapstructure:"service_path_index,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+type TraceflowObservationDroppedLogicalArpFailReason string
+
+const TraceflowObservationDroppedLogicalArpFailReasonARPCPFAIL TraceflowObservationDroppedLogicalArpFailReason = "ARP_CPFAIL"
+const TraceflowObservationDroppedLogicalArpFailReasonARPFROMCP TraceflowObservationDroppedLogicalArpFailReason = "ARP_FROMCP"
+const TraceflowObservationDroppedLogicalArpFailReasonARPNETDESTROY TraceflowObservationDroppedLogicalArpFailReason = "ARP_NETDESTROY"
+const TraceflowObservationDroppedLogicalArpFailReasonARPPORTDESTROY TraceflowObservationDroppedLogicalArpFailReason = "ARP_PORTDESTROY"
+const TraceflowObservationDroppedLogicalArpFailReasonARPTABLEDESTROY TraceflowObservationDroppedLogicalArpFailReason = "ARP_TABLEDESTROY"
+const TraceflowObservationDroppedLogicalArpFailReasonARPTIMEOUT TraceflowObservationDroppedLogicalArpFailReason = "ARP_TIMEOUT"
+const TraceflowObservationDroppedLogicalArpFailReasonARPUNKNOWN TraceflowObservationDroppedLogicalArpFailReason = "ARP_UNKNOWN"
+
+var enumValues_TraceflowObservationDroppedLogicalArpFailReason = []interface{}{
+	"ARP_UNKNOWN",
+	"ARP_TIMEOUT",
+	"ARP_CPFAIL",
+	"ARP_FROMCP",
+	"ARP_PORTDESTROY",
+	"ARP_TABLEDESTROY",
+	"ARP_NETDESTROY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedLogicalArpFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDroppedLogicalArpFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDroppedLogicalArpFailReason, v)
+	}
+	*j = TraceflowObservationDroppedLogicalArpFailReason(v)
+	return nil
+}
+
+type TraceflowObservationDroppedLogicalIpsecFailReason string
+
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECAUTHDGSTMISMATCH TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_AUTH_DGST_MISMATCH"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECAUTHDGSTSIZEMISMATCH TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_AUTH_DGST_SIZE_MISMATCH"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECAUTHUNSUPPORTEDALGO TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_AUTH_UNSUPPORTED_ALGO"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOARGSINV TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_ARGS_INV"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOFAIL TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_FAIL"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTONOBUFSPACE TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_NO_BUF_SPACE"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOPROCERROR TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_PROC_ERROR"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOPROCINCOMPLETE TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_PROC_INCOMPLETE"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOSESSIONINV TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_SESSION_INV"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECCRYPTOUNSUPPORTEDCIPHER TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_CRYPTO_UNSUPPORTED_CIPHER"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECENQUEUEFAIL TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_ENQUEUE_FAIL"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECFRAGNEEDED TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_FRAG_NEEDED"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMED TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMEDIP TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED_IP"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMEDTCP TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED_TCP"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECINNERMALFORMEDUDP TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_INNER_MALFORMED_UDP"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECMALFORMED TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_MALFORMED"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECMALFORMEDINVPADDING TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_MALFORMED_INV_PADDING"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECPADDINGREMOVALFAILED TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_PADDING_REMOVAL_FAILED"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECPOLICYBLOCK TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_POLICY_BLOCK"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECPOLICYERROR TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_POLICY_ERROR"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECPOLICYNOMATCH TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_POLICY_NOMATCH"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECREPLAYPROCDELAY TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_REPLAY_PROC_DELAY"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECREPLAYRECVDELAY TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_REPLAY_RECV_DELAY"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECREPLAYSEQNUMREPEAT TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_REPLAY_SEQ_NUM_REPEAT"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECSANOTFOUND TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_SA_NOT_FOUND"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECSEQROLLOVER TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_SEQ_ROLLOVER"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECTUNIFACEDOWN TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_TUN_IFACE_DOWN"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECUDPENCSTATEMISMATCH TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_UDP_ENC_STATE_MISMATCH"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECUNKNOWN TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_UNKNOWN"
+const TraceflowObservationDroppedLogicalIpsecFailReasonIPSECZEROSEQNUMRECVD TraceflowObservationDroppedLogicalIpsecFailReason = "IPSEC_ZERO_SEQ_NUM_RECVD"
+
+var enumValues_TraceflowObservationDroppedLogicalIpsecFailReason = []interface{}{
+	"IPSEC_SA_NOT_FOUND",
+	"IPSEC_UDP_ENC_STATE_MISMATCH",
+	"IPSEC_SEQ_ROLLOVER",
+	"IPSEC_FRAG_NEEDED",
+	"IPSEC_TUN_IFACE_DOWN",
+	"IPSEC_POLICY_NOMATCH",
+	"IPSEC_POLICY_BLOCK",
+	"IPSEC_POLICY_ERROR",
+	"IPSEC_REPLAY_SEQ_NUM_REPEAT",
+	"IPSEC_REPLAY_RECV_DELAY",
+	"IPSEC_REPLAY_PROC_DELAY",
+	"IPSEC_ZERO_SEQ_NUM_RECVD",
+	"IPSEC_ENQUEUE_FAIL",
+	"IPSEC_AUTH_DGST_MISMATCH",
+	"IPSEC_AUTH_DGST_SIZE_MISMATCH",
+	"IPSEC_AUTH_UNSUPPORTED_ALGO",
+	"IPSEC_CRYPTO_FAIL",
+	"IPSEC_CRYPTO_PROC_INCOMPLETE",
+	"IPSEC_CRYPTO_SESSION_INV",
+	"IPSEC_CRYPTO_ARGS_INV",
+	"IPSEC_CRYPTO_PROC_ERROR",
+	"IPSEC_CRYPTO_NO_BUF_SPACE",
+	"IPSEC_CRYPTO_UNSUPPORTED_CIPHER",
+	"IPSEC_MALFORMED",
+	"IPSEC_MALFORMED_INV_PADDING",
+	"IPSEC_PADDING_REMOVAL_FAILED",
+	"IPSEC_INNER_MALFORMED",
+	"IPSEC_INNER_MALFORMED_IP",
+	"IPSEC_INNER_MALFORMED_UDP",
+	"IPSEC_INNER_MALFORMED_TCP",
+	"IPSEC_UNKNOWN",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedLogicalIpsecFailReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDroppedLogicalIpsecFailReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDroppedLogicalIpsecFailReason, v)
+	}
+	*j = TraceflowObservationDroppedLogicalIpsecFailReason(v)
+	return nil
+}
+
+type TraceflowObservationDroppedLogicalReason string
+
+const TraceflowObservationDroppedLogicalReasonARPFAIL TraceflowObservationDroppedLogicalReason = "ARP_FAIL"
+const TraceflowObservationDroppedLogicalReasonBFD TraceflowObservationDroppedLogicalReason = "BFD"
+const TraceflowObservationDroppedLogicalReasonBROADCAST TraceflowObservationDroppedLogicalReason = "BROADCAST"
+const TraceflowObservationDroppedLogicalReasonDHCP TraceflowObservationDroppedLogicalReason = "DHCP"
+const TraceflowObservationDroppedLogicalReasonDLB TraceflowObservationDroppedLogicalReason = "DLB"
+const TraceflowObservationDroppedLogicalReasonFILTEREDUPLINK TraceflowObservationDroppedLogicalReason = "FILTERED_UPLINK"
+const TraceflowObservationDroppedLogicalReasonFWRULE TraceflowObservationDroppedLogicalReason = "FW_RULE"
+const TraceflowObservationDroppedLogicalReasonFWSTATE TraceflowObservationDroppedLogicalReason = "FW_STATE"
+const TraceflowObservationDroppedLogicalReasonGENEVE TraceflowObservationDroppedLogicalReason = "GENEVE"
+const TraceflowObservationDroppedLogicalReasonGRE TraceflowObservationDroppedLogicalReason = "GRE"
+const TraceflowObservationDroppedLogicalReasonIFACE TraceflowObservationDroppedLogicalReason = "IFACE"
+const TraceflowObservationDroppedLogicalReasonIP TraceflowObservationDroppedLogicalReason = "IP"
+const TraceflowObservationDroppedLogicalReasonIPREASS TraceflowObservationDroppedLogicalReason = "IP_REASS"
+const TraceflowObservationDroppedLogicalReasonIPSEC TraceflowObservationDroppedLogicalReason = "IPSEC"
+const TraceflowObservationDroppedLogicalReasonIPSECVTI TraceflowObservationDroppedLogicalReason = "IPSEC_VTI"
+const TraceflowObservationDroppedLogicalReasonL2VPN TraceflowObservationDroppedLogicalReason = "L2VPN"
+const TraceflowObservationDroppedLogicalReasonL4PORT TraceflowObservationDroppedLogicalReason = "L4PORT"
+const TraceflowObservationDroppedLogicalReasonLB TraceflowObservationDroppedLogicalReason = "LB"
+const TraceflowObservationDroppedLogicalReasonLROUTER TraceflowObservationDroppedLogicalReason = "LROUTER"
+const TraceflowObservationDroppedLogicalReasonLSERVICE TraceflowObservationDroppedLogicalReason = "LSERVICE"
+const TraceflowObservationDroppedLogicalReasonLSWITCH TraceflowObservationDroppedLogicalReason = "LSWITCH"
+const TraceflowObservationDroppedLogicalReasonMANAGEMENT TraceflowObservationDroppedLogicalReason = "MANAGEMENT"
+const TraceflowObservationDroppedLogicalReasonMDPROXY TraceflowObservationDroppedLogicalReason = "MD_PROXY"
+const TraceflowObservationDroppedLogicalReasonNAT TraceflowObservationDroppedLogicalReason = "NAT"
+const TraceflowObservationDroppedLogicalReasonNDNSFAIL TraceflowObservationDroppedLogicalReason = "ND_NS_FAIL"
+const TraceflowObservationDroppedLogicalReasonNEIGH TraceflowObservationDroppedLogicalReason = "NEIGH"
+const TraceflowObservationDroppedLogicalReasonNOEIPASSOCIATION TraceflowObservationDroppedLogicalReason = "NO_EIP_ASSOCIATION"
+const TraceflowObservationDroppedLogicalReasonNOEIPFOUND TraceflowObservationDroppedLogicalReason = "NO_EIP_FOUND"
+const TraceflowObservationDroppedLogicalReasonNOENIFORIP TraceflowObservationDroppedLogicalReason = "NO_ENI_FOR_IP"
+const TraceflowObservationDroppedLogicalReasonNOENIFORLIF TraceflowObservationDroppedLogicalReason = "NO_ENI_FOR_LIF"
+const TraceflowObservationDroppedLogicalReasonNOMAC TraceflowObservationDroppedLogicalReason = "NO_MAC"
+const TraceflowObservationDroppedLogicalReasonNOROUTE TraceflowObservationDroppedLogicalReason = "NO_ROUTE"
+const TraceflowObservationDroppedLogicalReasonNOROUTETABLEFOUND TraceflowObservationDroppedLogicalReason = "NO_ROUTE_TABLE_FOUND"
+const TraceflowObservationDroppedLogicalReasonNOTVDRDOWNLINK TraceflowObservationDroppedLogicalReason = "NOT_VDR_DOWNLINK"
+const TraceflowObservationDroppedLogicalReasonNOTVDRUPLINK TraceflowObservationDroppedLogicalReason = "NOT_VDR_UPLINK"
+const TraceflowObservationDroppedLogicalReasonNOUNDERLAYROUTEFOUND TraceflowObservationDroppedLogicalReason = "NO_UNDERLAY_ROUTE_FOUND"
+const TraceflowObservationDroppedLogicalReasonNOVDRFOUND TraceflowObservationDroppedLogicalReason = "NO_VDR_FOUND"
+const TraceflowObservationDroppedLogicalReasonNOVDRONHOST TraceflowObservationDroppedLogicalReason = "NO_VDR_ON_HOST"
+const TraceflowObservationDroppedLogicalReasonRTEPTUNNEL TraceflowObservationDroppedLogicalReason = "RTEP_TUNNEL"
+const TraceflowObservationDroppedLogicalReasonSERVICEINSERT TraceflowObservationDroppedLogicalReason = "SERVICE_INSERT"
+const TraceflowObservationDroppedLogicalReasonSPOOFGUARD TraceflowObservationDroppedLogicalReason = "SPOOFGUARD"
+const TraceflowObservationDroppedLogicalReasonTTLZERO TraceflowObservationDroppedLogicalReason = "TTL_ZERO"
+const TraceflowObservationDroppedLogicalReasonTUNNEL TraceflowObservationDroppedLogicalReason = "TUNNEL"
+const TraceflowObservationDroppedLogicalReasonUNKNOWN TraceflowObservationDroppedLogicalReason = "UNKNOWN"
+const TraceflowObservationDroppedLogicalReasonVLAN TraceflowObservationDroppedLogicalReason = "VLAN"
+const TraceflowObservationDroppedLogicalReasonVMCNORESPONSE TraceflowObservationDroppedLogicalReason = "VMC_NO_RESPONSE"
+const TraceflowObservationDroppedLogicalReasonVXLAN TraceflowObservationDroppedLogicalReason = "VXLAN"
+const TraceflowObservationDroppedLogicalReasonVXSTT TraceflowObservationDroppedLogicalReason = "VXSTT"
+const TraceflowObservationDroppedLogicalReasonWRONGUPLINK TraceflowObservationDroppedLogicalReason = "WRONG_UPLINK"
+
+var enumValues_TraceflowObservationDroppedLogicalReason = []interface{}{
+	"ARP_FAIL",
+	"BFD",
+	"BROADCAST",
+	"DHCP",
+	"DLB",
+	"FW_RULE",
+	"GENEVE",
+	"GRE",
+	"IFACE",
+	"IP",
+	"IP_REASS",
+	"IPSEC",
+	"IPSEC_VTI",
+	"L2VPN",
+	"L4PORT",
+	"LB",
+	"LROUTER",
+	"LSERVICE",
+	"LSWITCH",
+	"MANAGEMENT",
+	"MD_PROXY",
+	"NAT",
+	"RTEP_TUNNEL",
+	"ND_NS_FAIL",
+	"NEIGH",
+	"NO_EIP_FOUND",
+	"NO_EIP_ASSOCIATION",
+	"NO_ENI_FOR_IP",
+	"NO_ENI_FOR_LIF",
+	"NO_ROUTE",
+	"NO_ROUTE_TABLE_FOUND",
+	"NO_UNDERLAY_ROUTE_FOUND",
+	"NOT_VDR_DOWNLINK",
+	"NO_VDR_FOUND",
+	"NO_VDR_ON_HOST",
+	"NOT_VDR_UPLINK",
+	"SERVICE_INSERT",
+	"SPOOFGUARD",
+	"TTL_ZERO",
+	"TUNNEL",
+	"VLAN",
+	"VXLAN",
+	"VXSTT",
+	"VMC_NO_RESPONSE",
+	"WRONG_UPLINK",
+	"FW_STATE",
+	"NO_MAC",
+	"UNKNOWN",
+	"FILTERED_UPLINK",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedLogicalReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDroppedLogicalReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDroppedLogicalReason, v)
+	}
+	*j = TraceflowObservationDroppedLogicalReason(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationDroppedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationDroppedLogical(plain)
+	return nil
+}
+
+type TraceflowObservationDroppedReason string
+
+const TraceflowObservationDroppedReasonARPFAIL TraceflowObservationDroppedReason = "ARP_FAIL"
+const TraceflowObservationDroppedReasonBFD TraceflowObservationDroppedReason = "BFD"
+const TraceflowObservationDroppedReasonBROADCAST TraceflowObservationDroppedReason = "BROADCAST"
+const TraceflowObservationDroppedReasonDHCP TraceflowObservationDroppedReason = "DHCP"
+const TraceflowObservationDroppedReasonDLB TraceflowObservationDroppedReason = "DLB"
+const TraceflowObservationDroppedReasonFILTEREDUPLINK TraceflowObservationDroppedReason = "FILTERED_UPLINK"
+const TraceflowObservationDroppedReasonFWRULE TraceflowObservationDroppedReason = "FW_RULE"
+const TraceflowObservationDroppedReasonFWSTATE TraceflowObservationDroppedReason = "FW_STATE"
+const TraceflowObservationDroppedReasonGENEVE TraceflowObservationDroppedReason = "GENEVE"
+const TraceflowObservationDroppedReasonGRE TraceflowObservationDroppedReason = "GRE"
+const TraceflowObservationDroppedReasonIFACE TraceflowObservationDroppedReason = "IFACE"
+const TraceflowObservationDroppedReasonIP TraceflowObservationDroppedReason = "IP"
+const TraceflowObservationDroppedReasonIPREASS TraceflowObservationDroppedReason = "IP_REASS"
+const TraceflowObservationDroppedReasonIPSEC TraceflowObservationDroppedReason = "IPSEC"
+const TraceflowObservationDroppedReasonIPSECVTI TraceflowObservationDroppedReason = "IPSEC_VTI"
+const TraceflowObservationDroppedReasonL2VPN TraceflowObservationDroppedReason = "L2VPN"
+const TraceflowObservationDroppedReasonL4PORT TraceflowObservationDroppedReason = "L4PORT"
+const TraceflowObservationDroppedReasonLB TraceflowObservationDroppedReason = "LB"
+const TraceflowObservationDroppedReasonLROUTER TraceflowObservationDroppedReason = "LROUTER"
+const TraceflowObservationDroppedReasonLSERVICE TraceflowObservationDroppedReason = "LSERVICE"
+const TraceflowObservationDroppedReasonLSWITCH TraceflowObservationDroppedReason = "LSWITCH"
+const TraceflowObservationDroppedReasonMANAGEMENT TraceflowObservationDroppedReason = "MANAGEMENT"
+const TraceflowObservationDroppedReasonMDPROXY TraceflowObservationDroppedReason = "MD_PROXY"
+const TraceflowObservationDroppedReasonNAT TraceflowObservationDroppedReason = "NAT"
+const TraceflowObservationDroppedReasonNDNSFAIL TraceflowObservationDroppedReason = "ND_NS_FAIL"
+const TraceflowObservationDroppedReasonNEIGH TraceflowObservationDroppedReason = "NEIGH"
+const TraceflowObservationDroppedReasonNOEIPASSOCIATION TraceflowObservationDroppedReason = "NO_EIP_ASSOCIATION"
+const TraceflowObservationDroppedReasonNOEIPFOUND TraceflowObservationDroppedReason = "NO_EIP_FOUND"
+const TraceflowObservationDroppedReasonNOENIFORIP TraceflowObservationDroppedReason = "NO_ENI_FOR_IP"
+const TraceflowObservationDroppedReasonNOENIFORLIF TraceflowObservationDroppedReason = "NO_ENI_FOR_LIF"
+const TraceflowObservationDroppedReasonNOMAC TraceflowObservationDroppedReason = "NO_MAC"
+const TraceflowObservationDroppedReasonNOROUTE TraceflowObservationDroppedReason = "NO_ROUTE"
+const TraceflowObservationDroppedReasonNOROUTETABLEFOUND TraceflowObservationDroppedReason = "NO_ROUTE_TABLE_FOUND"
+const TraceflowObservationDroppedReasonNOTVDRDOWNLINK TraceflowObservationDroppedReason = "NOT_VDR_DOWNLINK"
+const TraceflowObservationDroppedReasonNOTVDRUPLINK TraceflowObservationDroppedReason = "NOT_VDR_UPLINK"
+const TraceflowObservationDroppedReasonNOUNDERLAYROUTEFOUND TraceflowObservationDroppedReason = "NO_UNDERLAY_ROUTE_FOUND"
+const TraceflowObservationDroppedReasonNOVDRFOUND TraceflowObservationDroppedReason = "NO_VDR_FOUND"
+const TraceflowObservationDroppedReasonNOVDRONHOST TraceflowObservationDroppedReason = "NO_VDR_ON_HOST"
+const TraceflowObservationDroppedReasonRTEPTUNNEL TraceflowObservationDroppedReason = "RTEP_TUNNEL"
+const TraceflowObservationDroppedReasonSERVICEINSERT TraceflowObservationDroppedReason = "SERVICE_INSERT"
+const TraceflowObservationDroppedReasonSPOOFGUARD TraceflowObservationDroppedReason = "SPOOFGUARD"
+const TraceflowObservationDroppedReasonTTLZERO TraceflowObservationDroppedReason = "TTL_ZERO"
+const TraceflowObservationDroppedReasonTUNNEL TraceflowObservationDroppedReason = "TUNNEL"
+const TraceflowObservationDroppedReasonUNKNOWN TraceflowObservationDroppedReason = "UNKNOWN"
+const TraceflowObservationDroppedReasonVLAN TraceflowObservationDroppedReason = "VLAN"
+const TraceflowObservationDroppedReasonVMCNORESPONSE TraceflowObservationDroppedReason = "VMC_NO_RESPONSE"
+const TraceflowObservationDroppedReasonVXLAN TraceflowObservationDroppedReason = "VXLAN"
+const TraceflowObservationDroppedReasonVXSTT TraceflowObservationDroppedReason = "VXSTT"
+const TraceflowObservationDroppedReasonWRONGUPLINK TraceflowObservationDroppedReason = "WRONG_UPLINK"
+
+var enumValues_TraceflowObservationDroppedReason = []interface{}{
+	"ARP_FAIL",
+	"BFD",
+	"BROADCAST",
+	"DHCP",
+	"DLB",
+	"FW_RULE",
+	"GENEVE",
+	"GRE",
+	"IFACE",
+	"IP",
+	"IP_REASS",
+	"IPSEC",
+	"IPSEC_VTI",
+	"L2VPN",
+	"L4PORT",
+	"LB",
+	"LROUTER",
+	"LSERVICE",
+	"LSWITCH",
+	"MANAGEMENT",
+	"MD_PROXY",
+	"NAT",
+	"RTEP_TUNNEL",
+	"ND_NS_FAIL",
+	"NEIGH",
+	"NO_EIP_FOUND",
+	"NO_EIP_ASSOCIATION",
+	"NO_ENI_FOR_IP",
+	"NO_ENI_FOR_LIF",
+	"NO_ROUTE",
+	"NO_ROUTE_TABLE_FOUND",
+	"NO_UNDERLAY_ROUTE_FOUND",
+	"NOT_VDR_DOWNLINK",
+	"NO_VDR_FOUND",
+	"NO_VDR_ON_HOST",
+	"NOT_VDR_UPLINK",
+	"SERVICE_INSERT",
+	"SPOOFGUARD",
+	"TTL_ZERO",
+	"TUNNEL",
+	"VLAN",
+	"VXLAN",
+	"VXSTT",
+	"VMC_NO_RESPONSE",
+	"WRONG_UPLINK",
+	"FW_STATE",
+	"NO_MAC",
+	"UNKNOWN",
+	"FILTERED_UPLINK",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDroppedReason) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationDroppedReason {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationDroppedReason, v)
+	}
+	*j = TraceflowObservationDroppedReason(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationDropped) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationDropped
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationDropped(plain)
+	return nil
+}
+
+type TraceflowObservationForwarded struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// Context corresponds to the JSON schema field "context".
+	Context *int `json:"context,omitempty" yaml:"context,omitempty" mapstructure:"context,omitempty"`
+
+	// This field will not be always available. Use remote_ip_address when this field
+	// is not set.
+	DstTransportNodeId *string `json:"dst_transport_node_id,omitempty" yaml:"dst_transport_node_id,omitempty" mapstructure:"dst_transport_node_id,omitempty"`
+
+	// DstTransportNodeName corresponds to the JSON schema field
+	// "dst_transport_node_name".
+	DstTransportNodeName *string `json:"dst_transport_node_name,omitempty" yaml:"dst_transport_node_name,omitempty" mapstructure:"dst_transport_node_name,omitempty"`
+
+	// LocalIpAddress corresponds to the JSON schema field "local_ip_address".
+	LocalIpAddress *IPAddress `json:"local_ip_address,omitempty" yaml:"local_ip_address,omitempty" mapstructure:"local_ip_address,omitempty"`
+
+	// RemoteIpAddress corresponds to the JSON schema field "remote_ip_address".
+	RemoteIpAddress *IPAddress `json:"remote_ip_address,omitempty" yaml:"remote_ip_address,omitempty" mapstructure:"remote_ip_address,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// UplinkName corresponds to the JSON schema field "uplink_name".
+	UplinkName *string `json:"uplink_name,omitempty" yaml:"uplink_name,omitempty" mapstructure:"uplink_name,omitempty"`
+
+	// VtepLabel corresponds to the JSON schema field "vtep_label".
+	VtepLabel *int `json:"vtep_label,omitempty" yaml:"vtep_label,omitempty" mapstructure:"vtep_label,omitempty"`
+}
+
+type TraceflowObservationForwardedLogical struct {
+	// This field is specified when the traceflow packet matched a L3 firewall rule.
+	AclRuleId *int `json:"acl_rule_id,omitempty" yaml:"acl_rule_id,omitempty" mapstructure:"acl_rule_id,omitempty"`
+
+	// ComponentId corresponds to the JSON schema field "component_id".
+	ComponentId *string `json:"component_id,omitempty" yaml:"component_id,omitempty" mapstructure:"component_id,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// DstComponentId corresponds to the JSON schema field "dst_component_id".
+	DstComponentId *string `json:"dst_component_id,omitempty" yaml:"dst_component_id,omitempty" mapstructure:"dst_component_id,omitempty"`
+
+	// DstComponentName corresponds to the JSON schema field "dst_component_name".
+	DstComponentName *string `json:"dst_component_name,omitempty" yaml:"dst_component_name,omitempty" mapstructure:"dst_component_name,omitempty"`
+
+	// DstComponentType corresponds to the JSON schema field "dst_component_type".
+	DstComponentType *TraceflowComponentType `json:"dst_component_type,omitempty" yaml:"dst_component_type,omitempty" mapstructure:"dst_component_type,omitempty"`
+
+	// This field is specified when the traceflow packet was forwarded through IPSec
+	// VPN.
+	IpsecVpn *TraceflowObservationIpsecVpn `json:"ipsec_vpn,omitempty" yaml:"ipsec_vpn,omitempty" mapstructure:"ipsec_vpn,omitempty"`
+
+	// This field is specified when the traceflow packet matched a jump-to rule.
+	JumptoRuleId *int `json:"jumpto_rule_id,omitempty" yaml:"jumpto_rule_id,omitempty" mapstructure:"jumpto_rule_id,omitempty"`
+
+	// This field is specified when the traceflow packet matched a l2 rule.
+	L2RuleId *int `json:"l2_rule_id,omitempty" yaml:"l2_rule_id,omitempty" mapstructure:"l2_rule_id,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// This field is specified when the traceflow packet matched a NAT rule.
+	NatRuleId *int `json:"nat_rule_id,omitempty" yaml:"nat_rule_id,omitempty" mapstructure:"nat_rule_id,omitempty"`
+
+	// This field is specified when the traceflow packet was routed by logical router.
+	NextHop *IPAddress `json:"next_hop,omitempty" yaml:"next_hop,omitempty" mapstructure:"next_hop,omitempty"`
+
+	// ARP_UNKNOWN_FROM_CP - Unknown ARP query result emitted by control plane
+	// ND_NS_UNKNOWN_FROM_CP - Unknown neighbor solicitation query result emitted by
+	// control plane UNKNOWN - Unknown resend type
+	ResendType *TraceflowObservationForwardedLogicalResendType `json:"resend_type,omitempty" yaml:"resend_type,omitempty" mapstructure:"resend_type,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// This field is specified when the traceflow packet was routed by logical router.
+	RoutePrefix *IPCIDRBlock `json:"route_prefix,omitempty" yaml:"route_prefix,omitempty" mapstructure:"route_prefix,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// ServiceIndex corresponds to the JSON schema field "service_index".
+	ServiceIndex *int `json:"service_index,omitempty" yaml:"service_index,omitempty" mapstructure:"service_index,omitempty"`
+
+	// ServicePathIndex corresponds to the JSON schema field "service_path_index".
+	ServicePathIndex *int `json:"service_path_index,omitempty" yaml:"service_path_index,omitempty" mapstructure:"service_path_index,omitempty"`
+
+	// ServiceTtl corresponds to the JSON schema field "service_ttl".
+	ServiceTtl *int `json:"service_ttl,omitempty" yaml:"service_ttl,omitempty" mapstructure:"service_ttl,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// This field specified the prefix IP address a traceflow packet matched in the
+	// whitelist in spoofguard.
+	SpoofguardIp *IPCIDRBlock `json:"spoofguard_ip,omitempty" yaml:"spoofguard_ip,omitempty" mapstructure:"spoofguard_ip,omitempty"`
+
+	// The source MAC address of form: "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$".
+	// For example: 00:00:00:00:00:00.
+	SpoofguardMac *MACAddress `json:"spoofguard_mac,omitempty" yaml:"spoofguard_mac,omitempty" mapstructure:"spoofguard_mac,omitempty"`
+
+	// This field specified the VLAN id a traceflow packet matched in the whitelist in
+	// spoofguard.
+	SpoofguardVlanId *VlanID `json:"spoofguard_vlan_id,omitempty" yaml:"spoofguard_vlan_id,omitempty" mapstructure:"spoofguard_vlan_id,omitempty"`
+
+	// MAC address of nexthop for service insertion(SI) in service VM(SVM) where the
+	// traceflow packet was received.
+	SvcNhMac *string `json:"svc_nh_mac,omitempty" yaml:"svc_nh_mac,omitempty" mapstructure:"svc_nh_mac,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TranslatedDstIp corresponds to the JSON schema field "translated_dst_ip".
+	TranslatedDstIp *IPAddress `json:"translated_dst_ip,omitempty" yaml:"translated_dst_ip,omitempty" mapstructure:"translated_dst_ip,omitempty"`
+
+	// TranslatedSrcIp corresponds to the JSON schema field "translated_src_ip".
+	TranslatedSrcIp *IPAddress `json:"translated_src_ip,omitempty" yaml:"translated_src_ip,omitempty" mapstructure:"translated_src_ip,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// This field is specified when the traceflow packet was forwarded by a VLAN
+	// logical network.
+	Vlan *VlanID `json:"vlan,omitempty" yaml:"vlan,omitempty" mapstructure:"vlan,omitempty"`
+
+	// This field is specified when the traceflow packet was forwarded by an overlay
+	// logical network.
+	Vni *int `json:"vni,omitempty" yaml:"vni,omitempty" mapstructure:"vni,omitempty"`
+}
+
+type TraceflowObservationForwardedLogicalResendType string
+
+const TraceflowObservationForwardedLogicalResendTypeARPUNKNOWNFROMCP TraceflowObservationForwardedLogicalResendType = "ARP_UNKNOWN_FROM_CP"
+const TraceflowObservationForwardedLogicalResendTypeNDNSUNKNWONFROMCP TraceflowObservationForwardedLogicalResendType = "ND_NS_UNKNWON_FROM_CP"
+const TraceflowObservationForwardedLogicalResendTypeUNKNOWN TraceflowObservationForwardedLogicalResendType = "UNKNOWN"
+
+var enumValues_TraceflowObservationForwardedLogicalResendType = []interface{}{
+	"UNKNOWN",
+	"ARP_UNKNOWN_FROM_CP",
+	"ND_NS_UNKNWON_FROM_CP",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationForwardedLogicalResendType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationForwardedLogicalResendType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationForwardedLogicalResendType, v)
+	}
+	*j = TraceflowObservationForwardedLogicalResendType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationForwardedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationForwardedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationForwardedLogical(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationForwarded) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationForwarded
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationForwarded(plain)
+	return nil
+}
+
+// IPSec VPN traceflow observation.
+type TraceflowObservationIpsecVpn struct {
+	// Inner destination IP Address.
+	InnerDstIp *IPAddress `json:"inner_dst_ip,omitempty" yaml:"inner_dst_ip,omitempty" mapstructure:"inner_dst_ip,omitempty"`
+
+	// Inner source IP Address.
+	InnerSrcIp *IPAddress `json:"inner_src_ip,omitempty" yaml:"inner_src_ip,omitempty" mapstructure:"inner_src_ip,omitempty"`
+
+	// Local VPN endpoint IP Address.
+	LocalIp *IPAddress `json:"local_ip,omitempty" yaml:"local_ip,omitempty" mapstructure:"local_ip,omitempty"`
+
+	// IPSec tunnel interface universally unique identifier in case of Policy-based
+	// IPSec VPN.
+	PolicyId *string `json:"policy_id,omitempty" yaml:"policy_id,omitempty" mapstructure:"policy_id,omitempty"`
+
+	// Peer VPN endpoint IP Address.
+	RemoteIp *IPAddress `json:"remote_ip,omitempty" yaml:"remote_ip,omitempty" mapstructure:"remote_ip,omitempty"`
+
+	// IPSec VPN session universally unique identifier.
+	SessionId *string `json:"session_id,omitempty" yaml:"session_id,omitempty" mapstructure:"session_id,omitempty"`
+
+	// Security Parameter Index is used to uniquely identify a particular IPSec
+	// Security Association.
+	Spi *int `json:"spi,omitempty" yaml:"spi,omitempty" mapstructure:"spi,omitempty"`
+
+	// Virtual tunnel interface universally unique identifier in case of Route-based
+	// IPSec VPN.
+	VtiId *string `json:"vti_id,omitempty" yaml:"vti_id,omitempty" mapstructure:"vti_id,omitempty"`
+}
+
+type TraceflowObservationProtected struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// Holding the type of observation before converted to protected type.
+	OriginalType *TraceflowObservationType `json:"original_type,omitempty" yaml:"original_type,omitempty" mapstructure:"original_type,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationProtected) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationProtected
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationProtected(plain)
+	return nil
+}
+
+type TraceflowObservationReceived struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// LocalIpAddress corresponds to the JSON schema field "local_ip_address".
+	LocalIpAddress *IPAddress `json:"local_ip_address,omitempty" yaml:"local_ip_address,omitempty" mapstructure:"local_ip_address,omitempty"`
+
+	// RemoteIpAddress corresponds to the JSON schema field "remote_ip_address".
+	RemoteIpAddress *IPAddress `json:"remote_ip_address,omitempty" yaml:"remote_ip_address,omitempty" mapstructure:"remote_ip_address,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// UplinkName corresponds to the JSON schema field "uplink_name".
+	UplinkName *string `json:"uplink_name,omitempty" yaml:"uplink_name,omitempty" mapstructure:"uplink_name,omitempty"`
+
+	// VtepLabel corresponds to the JSON schema field "vtep_label".
+	VtepLabel *int `json:"vtep_label,omitempty" yaml:"vtep_label,omitempty" mapstructure:"vtep_label,omitempty"`
+}
+
+type TraceflowObservationReceivedLogical struct {
+	// ComponentId corresponds to the JSON schema field "component_id".
+	ComponentId *string `json:"component_id,omitempty" yaml:"component_id,omitempty" mapstructure:"component_id,omitempty"`
+
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// This field is specified when the traceflow packet was received on IPSec VPN.
+	IpsecVpn *TraceflowObservationIpsecVpn `json:"ipsec_vpn,omitempty" yaml:"ipsec_vpn,omitempty" mapstructure:"ipsec_vpn,omitempty"`
+
+	// LportId corresponds to the JSON schema field "lport_id".
+	LportId *string `json:"lport_id,omitempty" yaml:"lport_id,omitempty" mapstructure:"lport_id,omitempty"`
+
+	// LportName corresponds to the JSON schema field "lport_name".
+	LportName *string `json:"lport_name,omitempty" yaml:"lport_name,omitempty" mapstructure:"lport_name,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// SrcComponentId corresponds to the JSON schema field "src_component_id".
+	SrcComponentId *string `json:"src_component_id,omitempty" yaml:"src_component_id,omitempty" mapstructure:"src_component_id,omitempty"`
+
+	// SrcComponentName corresponds to the JSON schema field "src_component_name".
+	SrcComponentName *string `json:"src_component_name,omitempty" yaml:"src_component_name,omitempty" mapstructure:"src_component_name,omitempty"`
+
+	// SrcComponentType corresponds to the JSON schema field "src_component_type".
+	SrcComponentType *TraceflowComponentType `json:"src_component_type,omitempty" yaml:"src_component_type,omitempty" mapstructure:"src_component_type,omitempty"`
+
+	// MAC address of SAN volume controller for service insertion(SI) in service
+	// VM(SVM) where the traceflow packet was received.
+	SvcMac *string `json:"svc_mac,omitempty" yaml:"svc_mac,omitempty" mapstructure:"svc_mac,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// This field is specified when the traceflow packet was received by a VLAN
+	// logical network.
+	Vlan *VlanID `json:"vlan,omitempty" yaml:"vlan,omitempty" mapstructure:"vlan,omitempty"`
+
+	// This field is specified when the traceflow packet was received by an overlay
+	// logical network.
+	Vni *int `json:"vni,omitempty" yaml:"vni,omitempty" mapstructure:"vni,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationReceivedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationReceivedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationReceivedLogical(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationReceived) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationReceived
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationReceived(plain)
+	return nil
+}
+
+type TraceflowObservationRelayedLogical struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// This field specified the IP address of the destination which the packet will be
+	// relayed.
+	DstServerAddress *IPAddress `json:"dst_server_address,omitempty" yaml:"dst_server_address,omitempty" mapstructure:"dst_server_address,omitempty"`
+
+	// This field specified the logical component that relay service located.
+	LogicalCompUuid *string `json:"logical_comp_uuid,omitempty" yaml:"logical_comp_uuid,omitempty" mapstructure:"logical_comp_uuid,omitempty"`
+
+	// This field specified the message type of the relay service REQUEST - The relay
+	// service will relay a request message to the destination server REPLY - The
+	// relay service will relay a reply message to the client
+	MessageType TraceflowObservationRelayedLogicalMessageType `json:"message_type,omitempty" yaml:"message_type,omitempty" mapstructure:"message_type,omitempty"`
+
+	// This field specified the IP address of the relay service.
+	RelayServerAddress *IPAddress `json:"relay_server_address,omitempty" yaml:"relay_server_address,omitempty" mapstructure:"relay_server_address,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+}
+
+type TraceflowObservationRelayedLogicalMessageType string
+
+const TraceflowObservationRelayedLogicalMessageTypeREPLY TraceflowObservationRelayedLogicalMessageType = "REPLY"
+const TraceflowObservationRelayedLogicalMessageTypeREQUEST TraceflowObservationRelayedLogicalMessageType = "REQUEST"
+
+var enumValues_TraceflowObservationRelayedLogicalMessageType = []interface{}{
+	"REQUEST",
+	"REPLY",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationRelayedLogicalMessageType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationRelayedLogicalMessageType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationRelayedLogicalMessageType, v)
+	}
+	*j = TraceflowObservationRelayedLogicalMessageType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationRelayedLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationRelayedLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["message_type"]; !ok || v == nil {
+		plain.MessageType = "REQUEST"
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationRelayedLogical(plain)
+	return nil
+}
+
+type TraceflowObservationReplicationLogical struct {
+	// ComponentName corresponds to the JSON schema field "component_name".
+	ComponentName *string `json:"component_name,omitempty" yaml:"component_name,omitempty" mapstructure:"component_name,omitempty"`
+
+	// ComponentSubType corresponds to the JSON schema field "component_sub_type".
+	ComponentSubType *TraceflowComponentSubType `json:"component_sub_type,omitempty" yaml:"component_sub_type,omitempty" mapstructure:"component_sub_type,omitempty"`
+
+	// ComponentType corresponds to the JSON schema field "component_type".
+	ComponentType *TraceflowComponentType `json:"component_type,omitempty" yaml:"component_type,omitempty" mapstructure:"component_type,omitempty"`
+
+	// LocalIpAddress corresponds to the JSON schema field "local_ip_address".
+	LocalIpAddress *IPAddress `json:"local_ip_address,omitempty" yaml:"local_ip_address,omitempty" mapstructure:"local_ip_address,omitempty"`
+
+	// This field specifies the type of replication message TX_VTEP - Transmit
+	// replication to all VTEPs TX_MTEP - Transmit replication to all MTEPs RX -
+	// Receive replication
+	ReplicationType *TraceflowObservationReplicationLogicalReplicationType `json:"replication_type,omitempty" yaml:"replication_type,omitempty" mapstructure:"replication_type,omitempty"`
+
+	// ResourceType corresponds to the JSON schema field "resource_type".
+	ResourceType TraceflowObservationType `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// the hop count for observations on the transport node that a traceflow packet is
+	// injected in will be 0. The hop count is incremented each time a subsequent
+	// transport node receives the traceflow packet. The sequence number of 999
+	// indicates that the hop count could not be determined for the containing
+	// observation.
+	SequenceNo *int `json:"sequence_no,omitempty" yaml:"sequence_no,omitempty" mapstructure:"sequence_no,omitempty"`
+
+	// This field contains the site path where this observation was generated.
+	SitePath *string `json:"site_path,omitempty" yaml:"site_path,omitempty" mapstructure:"site_path,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (milliseconds
+	// epoch)
+	Timestamp *EpochMsTimestamp `json:"timestamp,omitempty" yaml:"timestamp,omitempty" mapstructure:"timestamp,omitempty"`
+
+	// Timestamp when the observation was created by the transport node (microseconds
+	// epoch)
+	TimestampMicro *int `json:"timestamp_micro,omitempty" yaml:"timestamp_micro,omitempty" mapstructure:"timestamp_micro,omitempty"`
+
+	// TransportNodeId corresponds to the JSON schema field "transport_node_id".
+	TransportNodeId *string `json:"transport_node_id,omitempty" yaml:"transport_node_id,omitempty" mapstructure:"transport_node_id,omitempty"`
+
+	// TransportNodeName corresponds to the JSON schema field "transport_node_name".
+	TransportNodeName *string `json:"transport_node_name,omitempty" yaml:"transport_node_name,omitempty" mapstructure:"transport_node_name,omitempty"`
+
+	// TransportNodeType corresponds to the JSON schema field "transport_node_type".
+	TransportNodeType *TransportNodeType `json:"transport_node_type,omitempty" yaml:"transport_node_type,omitempty" mapstructure:"transport_node_type,omitempty"`
+
+	// UplinkName corresponds to the JSON schema field "uplink_name".
+	UplinkName *string `json:"uplink_name,omitempty" yaml:"uplink_name,omitempty" mapstructure:"uplink_name,omitempty"`
+
+	// VtepLabel corresponds to the JSON schema field "vtep_label".
+	VtepLabel *int `json:"vtep_label,omitempty" yaml:"vtep_label,omitempty" mapstructure:"vtep_label,omitempty"`
+}
+
+type TraceflowObservationReplicationLogicalReplicationType string
+
+const TraceflowObservationReplicationLogicalReplicationTypeRX TraceflowObservationReplicationLogicalReplicationType = "RX"
+const TraceflowObservationReplicationLogicalReplicationTypeTXMTEP TraceflowObservationReplicationLogicalReplicationType = "TX_MTEP"
+const TraceflowObservationReplicationLogicalReplicationTypeTXVTEP TraceflowObservationReplicationLogicalReplicationType = "TX_VTEP"
+
+var enumValues_TraceflowObservationReplicationLogicalReplicationType = []interface{}{
+	"TX_VTEP",
+	"TX_MTEP",
+	"RX",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationReplicationLogicalReplicationType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationReplicationLogicalReplicationType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationReplicationLogicalReplicationType, v)
+	}
+	*j = TraceflowObservationReplicationLogicalReplicationType(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationReplicationLogical) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain TraceflowObservationReplicationLogical
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["resource_type"]; !ok || v == nil {
+		plain.ResourceType = "TraceflowObservationReceived"
+	}
+	*j = TraceflowObservationReplicationLogical(plain)
+	return nil
+}
+
+type TraceflowObservationType string
+
+const TraceflowObservationTypeTraceflowObservationDelivered TraceflowObservationType = "TraceflowObservationDelivered"
+const TraceflowObservationTypeTraceflowObservationDropped TraceflowObservationType = "TraceflowObservationDropped"
+const TraceflowObservationTypeTraceflowObservationDroppedLogical TraceflowObservationType = "TraceflowObservationDroppedLogical"
+const TraceflowObservationTypeTraceflowObservationForwarded TraceflowObservationType = "TraceflowObservationForwarded"
+const TraceflowObservationTypeTraceflowObservationForwardedLogical TraceflowObservationType = "TraceflowObservationForwardedLogical"
+const TraceflowObservationTypeTraceflowObservationProtected TraceflowObservationType = "TraceflowObservationProtected"
+const TraceflowObservationTypeTraceflowObservationReceived TraceflowObservationType = "TraceflowObservationReceived"
+const TraceflowObservationTypeTraceflowObservationReceivedLogical TraceflowObservationType = "TraceflowObservationReceivedLogical"
+const TraceflowObservationTypeTraceflowObservationRelayedLogical TraceflowObservationType = "TraceflowObservationRelayedLogical"
+const TraceflowObservationTypeTraceflowObservationReplicationLogical TraceflowObservationType = "TraceflowObservationReplicationLogical"
+
+var enumValues_TraceflowObservationType = []interface{}{
+	"TraceflowObservationForwarded",
+	"TraceflowObservationDropped",
+	"TraceflowObservationDelivered",
+	"TraceflowObservationReceived",
+	"TraceflowObservationForwardedLogical",
+	"TraceflowObservationDroppedLogical",
+	"TraceflowObservationReceivedLogical",
+	"TraceflowObservationReplicationLogical",
+	"TraceflowObservationRelayedLogical",
+	"TraceflowObservationProtected",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TraceflowObservationType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TraceflowObservationType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TraceflowObservationType, v)
+	}
+	*j = TraceflowObservationType(v)
+	return nil
+}
+
+type TransportNodeType string
+
+const TransportNodeTypeCENTOSCONTAINER TransportNodeType = "CENTOSCONTAINER"
+const TransportNodeTypeCENTOSKVM TransportNodeType = "CENTOSKVM"
+const TransportNodeTypeCENTOSSERVER TransportNodeType = "CENTOSSERVER"
+const TransportNodeTypeEDGE TransportNodeType = "EDGE"
+const TransportNodeTypeESX TransportNodeType = "ESX"
+const TransportNodeTypeHYPERV TransportNodeType = "HYPERV"
+const TransportNodeTypeOELSERVER TransportNodeType = "OELSERVER"
+const TransportNodeTypeOTHERS TransportNodeType = "OTHERS"
+const TransportNodeTypePUBLICCLOUDGATEWAYNODE TransportNodeType = "PUBLIC_CLOUD_GATEWAY_NODE"
+const TransportNodeTypeRHELCONTAINER TransportNodeType = "RHELCONTAINER"
+const TransportNodeTypeRHELKVM TransportNodeType = "RHELKVM"
+const TransportNodeTypeRHELSERVER TransportNodeType = "RHELSERVER"
+const TransportNodeTypeRHELSMARTNIC TransportNodeType = "RHELSMARTNIC"
+const TransportNodeTypeSLESKVM TransportNodeType = "SLESKVM"
+const TransportNodeTypeSLESSERVER TransportNodeType = "SLESSERVER"
+const TransportNodeTypeUBUNTUKVM TransportNodeType = "UBUNTUKVM"
+const TransportNodeTypeUBUNTUSERVER TransportNodeType = "UBUNTUSERVER"
+const TransportNodeTypeUBUNTUSMARTNIC TransportNodeType = "UBUNTUSMARTNIC"
+const TransportNodeTypeWINDOWSSERVER TransportNodeType = "WINDOWSSERVER"
+
+var enumValues_TransportNodeType = []interface{}{
+	"ESX",
+	"RHELKVM",
+	"UBUNTUKVM",
+	"CENTOSKVM",
+	"RHELCONTAINER",
+	"CENTOSCONTAINER",
+	"RHELSERVER",
+	"UBUNTUSERVER",
+	"CENTOSSERVER",
+	"SLESKVM",
+	"SLESSERVER",
+	"WINDOWSSERVER",
+	"RHELSMARTNIC",
+	"OELSERVER",
+	"UBUNTUSMARTNIC",
+	"EDGE",
+	"PUBLIC_CLOUD_GATEWAY_NODE",
+	"OTHERS",
+	"HYPERV",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *TransportNodeType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_TransportNodeType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_TransportNodeType, v)
+	}
+	*j = TransportNodeType(v)
+	return nil
+}
+
+type TransportProtocolHeader struct {
+	// DhcpHeader corresponds to the JSON schema field "dhcp_header".
+	DhcpHeader *DhcpHeader `json:"dhcp_header,omitempty" yaml:"dhcp_header,omitempty" mapstructure:"dhcp_header,omitempty"`
+
+	// Dhcpv6Header corresponds to the JSON schema field "dhcpv6_header".
+	Dhcpv6Header *Dhcpv6Header `json:"dhcpv6_header,omitempty" yaml:"dhcpv6_header,omitempty" mapstructure:"dhcpv6_header,omitempty"`
+
+	// DnsHeader corresponds to the JSON schema field "dns_header".
+	DnsHeader *DnsHeader `json:"dns_header,omitempty" yaml:"dns_header,omitempty" mapstructure:"dns_header,omitempty"`
+
+	// IcmpEchoRequestHeader corresponds to the JSON schema field
+	// "icmp_echo_request_header".
+	IcmpEchoRequestHeader *IcmpEchoRequestHeader `json:"icmp_echo_request_header,omitempty" yaml:"icmp_echo_request_header,omitempty" mapstructure:"icmp_echo_request_header,omitempty"`
+
+	// NdpHeader corresponds to the JSON schema field "ndp_header".
+	NdpHeader *NdpHeader `json:"ndp_header,omitempty" yaml:"ndp_header,omitempty" mapstructure:"ndp_header,omitempty"`
+
+	// TcpHeader corresponds to the JSON schema field "tcp_header".
+	TcpHeader *TcpHeader `json:"tcp_header,omitempty" yaml:"tcp_header,omitempty" mapstructure:"tcp_header,omitempty"`
+
+	// UdpHeader corresponds to the JSON schema field "udp_header".
+	UdpHeader *UdpHeader `json:"udp_header,omitempty" yaml:"udp_header,omitempty" mapstructure:"udp_header,omitempty"`
+}
+
+type UdpHeader struct {
+	// DstPort corresponds to the JSON schema field "dst_port".
+	DstPort int `json:"dst_port,omitempty" yaml:"dst_port,omitempty" mapstructure:"dst_port,omitempty"`
+
+	// SrcPort corresponds to the JSON schema field "src_port".
+	SrcPort int `json:"src_port,omitempty" yaml:"src_port,omitempty" mapstructure:"src_port,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *UdpHeader) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain UdpHeader
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if v, ok := raw["dst_port"]; !ok || v == nil {
+		plain.DstPort = 0.0
+	}
+	if v, ok := raw["src_port"]; !ok || v == nil {
+		plain.SrcPort = 0.0
+	}
+	*j = UdpHeader(plain)
 	return nil
 }
 
