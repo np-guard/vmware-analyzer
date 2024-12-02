@@ -142,7 +142,6 @@ var Example2 = Example{
 					services: []string{"ANY"},
 					action:   jumpToApp,
 				},
-				/*defaultDenyRule(denyRuleID),*/
 			},
 		},
 
