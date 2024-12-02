@@ -1,6 +1,7 @@
 package symbolicexpr
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -22,11 +23,32 @@ func (paths *SymbolicPaths) string() string {
 // ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
-// todo: describe alg and implement
-func ComputeAllowGivenDenies(allowPaths, denyPaths SymbolicPaths) *SymbolicPaths {
-	_, _ = allowPaths, denyPaths
-	computeAllowGivenDeny(SymbolicPath{}, SymbolicPath{})
-	return nil
+// computation for each allow symbolicPath:
+// computeAllowGivenDeny is called iteratively for each deny path, on applied on the previous result
+// the result is the union of the above computation for each allow path
+// if there are no allow paths then no paths are allowed - the empty set will be returned
+// if there are no deny paths then allowPaths are returned as is
+func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPaths {
+	if len(*denyPaths) == 0 {
+		return allowPaths
+	}
+	res := SymbolicPaths{}
+	for _, allowPath := range *allowPaths {
+		var computedAllowPaths, newComputedAllowPaths SymbolicPaths
+		newComputedAllowPaths = SymbolicPaths{allowPath}
+		for _, denyPath := range *denyPaths {
+			computedAllowPaths = newComputedAllowPaths
+			newComputedAllowPaths = SymbolicPaths{}
+			for _, computedAllow := range computedAllowPaths {
+				thisComputed := *computeAllowGivenDeny(*computedAllow, *denyPath)
+				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
+			}
+			computedAllowPaths = newComputedAllowPaths
+		}
+		res = append(res, computedAllowPaths...)
+		fmt.Println()
+	}
+	return &res
 }
 
 // algorithm description: https://ibm.ent.box.com/notes/1702367247616 // todo: move to some other place? perhaps git?
