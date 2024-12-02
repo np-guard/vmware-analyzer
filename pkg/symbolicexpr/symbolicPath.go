@@ -51,7 +51,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 	return &res
 }
 
-// algorithm description: https://ibm.ent.box.com/notes/1702367247616 // todo: move to some other place? perhaps git?
+// algorithm described in README of symbolicexpr
 func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
 	resAllowPaths := SymbolicPaths{}
 	// in case deny path is open from both ends - empty set of allow paths, as will be the result
