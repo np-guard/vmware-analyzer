@@ -27,6 +27,10 @@ var allTests = []analyzerTest{
 		name:   "Example2",
 		exData: data.Example2,
 	},
+	{
+		name:   "Example3",
+		exData: data.Example3,
+	},
 }
 
 func (a *analyzerTest) file() string {
@@ -34,17 +38,18 @@ func (a *analyzerTest) file() string {
 }
 
 func (a *analyzerTest) run(t *testing.T) {
-	var override bool
+	var overrideAll, overrideOnlyConnOutput bool
 	//nolint:gocritic // comment here should stay
-	//override = true // uncommnet to override expected output
+	// overrideAll = true            // uncommnet to override expected output and config as JSON
+	// overrideOnlyConnOutput = true // uncommnet to override expected output
 	rc := data.ExamplesGeneration(a.exData)
-	rcJSON, err := rc.ToJSONString()
-	require.Nil(t, err)
-	jsonPath := getJSONTestPath(a.name)
-	err = os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
-	require.Nil(t, err)
-
-	require.Nil(t, err)
+	if overrideAll {
+		rcJSON, err := rc.ToJSONString()
+		require.Nil(t, err)
+		jsonPath := getJSONTestPath(a.name)
+		err = os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
+		require.Nil(t, err)
+	}
 
 	params := OutputParameters{
 		Format: "txt",
@@ -54,7 +59,7 @@ func (a *analyzerTest) run(t *testing.T) {
 	fmt.Println(res)
 
 	expectedFile := getExpectedTestPath(a.file())
-	if override {
+	if overrideAll || overrideOnlyConnOutput {
 		err := os.WriteFile(expectedFile, []byte(res), 0o600)
 		require.Nil(t, err)
 	} else {
