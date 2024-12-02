@@ -24,7 +24,7 @@ func (paths *SymbolicPaths) string() string {
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
 // computation for each allow symbolicPath:
-// computeAllowGivenDeny is called iteratively for each deny path, on applied on the previous result
+// computeAllowGivenAllowHigherDeny is called iteratively for each deny path, on applied on the previous result
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
@@ -40,7 +40,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
-				thisComputed := *computeAllowGivenDeny(*computedAllow, *denyPath)
+				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
 			computedAllowPaths = newComputedAllowPaths
@@ -52,7 +52,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 }
 
 // algorithm description: https://ibm.ent.box.com/notes/1702367247616 // todo: move to some other place? perhaps git?
-func computeAllowGivenDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
+func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
 	resAllowPaths := SymbolicPaths{}
 	// in case deny path is open from both ends - empty set of allow paths, as will be the result
 	// assumption: if more than one term, then none is tautology
