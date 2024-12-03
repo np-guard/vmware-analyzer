@@ -224,3 +224,17 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		ComputeAllowGivenDenies(&allowPaths, &denyPaths).string(),
 		"ComputeAllowGivenDenies computation not as expected")
 }
+
+// testing of negateConjunctions
+func TestNegateConjunctions(t *testing.T) {
+	// simplest case - each conjunction has a single literal
+	singleLiteralConjs := []Conjunction{}
+	testTag := initTestTag("tag")
+	for i := 0; i < 5; i++ {
+		atomicLiteral := &atomicTerm{label: testTag, toVal: fmt.Sprintf("s%v", i)}
+		singleLiteralConjs = append(singleLiteralConjs, Conjunction{atomicLiteral})
+	}
+	fmt.Printf("singleLiteralConjs is %v\n", strConjunctions(singleLiteralConjs))
+	fmt.Printf("negateConjunctions(singleLiteralConjs) is %v\n",
+		strConjunctions(negateConjunctions(singleLiteralConjs)))
+}

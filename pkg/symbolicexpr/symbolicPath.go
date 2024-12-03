@@ -83,5 +83,13 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 // the resulting denys are proceeded with allows in lower priority categories
 // Note that here, unlike in the computation of allow given deny, we can't proceed each pass in isolation w.r.t. deny
 func computeAllowGivenAllowHigherPasses(denyPath SymbolicPath, passPaths SymbolicPaths) *SymbolicPaths {
+	// todo temp: in first stage handling only passPaths with a single literal in src and dst
+	return nil
+}
+
+// given a set of paths, computes the set of paths representing src not in any of the original sources
+// or destination not in any of the original destinations
+// used by computeAllowGivenAllowHigherPasses to compute the first component of the result, as described in README
+func computeNegateSrcDstPaths(paths SymbolicPaths) *SymbolicPaths {
 	return nil
 }

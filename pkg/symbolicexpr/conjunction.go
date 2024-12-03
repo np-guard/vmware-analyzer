@@ -1,6 +1,8 @@
 package symbolicexpr
 
-import "strings"
+import (
+	"strings"
+)
 
 const emptySet = "empty set "
 
@@ -31,4 +33,43 @@ func (c *Conjunction) isTautology() bool {
 		return true
 	}
 	return false
+}
+
+// given ORed Conjunctions, returns their negation, also as ORed Conjunctions
+// e.g.: for [a, b, c] returns [not a and not b and not c]
+// for [a1 and a2, b1 and b2, c1 and c2] returns
+// [not a1 and not b1 and not c1,
+//
+//	not a1 and not b1 and not c2,
+//	not a1 and not b2 and not c1,
+//	not a1 and not b2 and not c2,
+//	not a2 and not b1 and not c1,
+//	not a2 and not b1 and not c2,
+//	not a2 and not b2 and not c1,
+//	not a2 and not b2 and not c2]
+func negateConjunctions(conjunctions []Conjunction) []Conjunction {
+	var res, resWithoutCurrentCon []Conjunction
+	resWithoutCurrentCon = []Conjunction{}
+	for _, conj := range conjunctions {
+		for _, literal := range conj {
+			res = []Conjunction{}
+			if len(resWithoutCurrentCon) == 0 {
+				res = append(res, Conjunction{literal.negate()})
+			} else {
+				for _, withoutCurrentItem := range resWithoutCurrentCon {
+					res = append(res, append(*withoutCurrentItem.copy(), literal.negate()))
+				}
+			}
+		}
+		resWithoutCurrentCon = res
+	}
+	return res
+}
+
+func strConjunctions(conjunctions []Conjunction) string {
+	strArray := make([]string, len(conjunctions))
+	for i, conj := range conjunctions {
+		strArray[i] = conj.string()
+	}
+	return strings.Join(strArray, " or\n")
 }
