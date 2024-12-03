@@ -19,37 +19,6 @@ func (testT *testTag) Name() string {
 	return testT.name
 }
 
-func TestSimplePaths(t *testing.T) {
-	simplePaths := simplePaths{}
-	for i := 1; i <= 5; i++ {
-		testTag1 := initTestTag(fmt.Sprintf("src-%v", i))
-		atomicSrc := atomicTerm{label: testTag1, toVal: fmt.Sprintf("str1-%v", i), neg: i%2 == 0}
-		testTag2 := initTestTag(fmt.Sprintf("dst-%v", i))
-		atomicDst := atomicTerm{label: testTag2, toVal: fmt.Sprintf("str2-%v", i), neg: i%2 == 0}
-		simplePaths = append(simplePaths, &simplePath{atomicSrc, atomicDst})
-	}
-	fmt.Printf("\nsimple paths:\n%v\n", simplePaths.string())
-	require.Contains(t, simplePaths.string(), "src-1 = str1-1 to dst-1 = str2-1",
-		"simple path0 not as expected")
-	require.Contains(t, simplePaths.string(), "src-2 != str1-2 to dst-2 != str2-2",
-		"simple path1 not as expected")
-	require.Contains(t, simplePaths.string(), "src-4 != str1-4 to dst-4 != str2-4",
-		"simple path3 not as expected")
-	require.Contains(t, simplePaths.string(), "src-5 = str1-5 to dst-5 = str2-5",
-		"simple path4 not as expected")
-
-	testSrc := initTestTag("srcTag")
-	testDst := initTestTag("srcDst")
-	atomicSrc := atomicTerm{label: testSrc, toVal: "str1"}
-	atomicDst := atomicTerm{label: testDst, toVal: "dst1"}
-	taut := &tautology{}
-	allDsts := simplePath{atomicSrc, taut}
-	allSrcs := simplePath{taut, atomicDst}
-	fmt.Printf("allSrcs path: %v\nallDsts path: %v\n", allSrcs.string(), allDsts.string())
-	require.Equal(t, "* to srcDst = dst1", allSrcs.string(), "allSrcs not as expected")
-	require.Equal(t, "srcTag = str1 to *", allDsts.string(), "allDsts not as expected")
-}
-
 func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
@@ -67,6 +36,15 @@ func TestSymbolicPaths(t *testing.T) {
 	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
 }
 
+// Input:
+// allow symbolic path:
+// src: (s1 = str1) dst: (d1 = str1)
+// deny symbolic path:
+// src: (s2 = str2) dst: (d2 = str2)
+// Output allow paths:
+// src: (s1 = str1 and s2 != str2) dst (d1 = str1)
+// src: (s1 = str1) dst: (d1 = str1 and d2 != str2)
+// allow symbolic paths:
 func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
@@ -84,12 +62,24 @@ func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	allowPath := SymbolicPath{conjSrc1, conjDst1}
 	denyPath := SymbolicPath{conjSrc2, conjDst2}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
-	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
 	require.Equal(t, "(s1 = str1 and s2 != str2) to (d1 = str1)\n(s1 = str1) to (d1 = str1 and d2 != str2)",
 		allowGivenDeny.string(), "allowGivenDeny single term computation not as expected")
 }
 
+// Input:
+// allow symbolic path:
+// (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3)
+// deny symbolic path:
+// src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`)
+// Output allow paths:
+// src: (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
+// src: (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
+// src: (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
+// src: (s1 = str1 and s2 = str2 and s3 = str3) dst: (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)
+// src: (s1 = str1 and s2 = str2 and s3 = str3) dst: (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)
+// src: (s1 = str1 and s2 = str2 and s3 = str3) dst: (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)
 func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	conjAllow, conjDeny := Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
@@ -103,8 +93,8 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	allowPath := SymbolicPath{conjAllow, conjAllow}
 	denyPath := SymbolicPath{conjDeny, conjDeny}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
-	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
 	require.Equal(t,
 		"(s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
 			"(s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
@@ -115,6 +105,18 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 		allowGivenDeny.string(), "allowGivenDeny three terms computation not as expected")
 }
 
+// Input:
+// allow symbolic path:
+// src: src: (*) dst: (*)
+// deny symbolic path:
+// src: src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`)
+// Output allow paths:
+// src: (s1` != str1`) dst: (*)
+// src: (s2` != str2`) dst: (*)
+// src: (s3` != str3`) dst: (*)
+// src: (*) dst: (s1` != str1`)
+// src: (*) dst: (s2` != str2`)
+// src: (*) dst: (s3` != str3`)
 func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	conjDeny := Conjunction{}
 	for i := 1; i <= 3; i++ {
@@ -126,14 +128,20 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	allowPath := SymbolicPath{tautologyConj, tautologyConj}
 	denyPath := SymbolicPath{conjDeny, conjDeny}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
-	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
 	require.Equal(t,
 		"(s1` != str1`) to (*)\n(s2` != str2`) to (*)\n(s3` != str3`) to (*)\n(*) to (s1` != str1`)\n"+
 			"(*) to (s2` != str2`)\n(*) to (s3` != str3`)", allowGivenDeny.string(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
+// Input:
+// allow symbolic path:
+// src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`)
+// deny symbolic path:
+// src: * dst: *
+// Output allow paths: empty
 func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	conjAllow := Conjunction{}
 	for i := 1; i <= 3; i++ {
@@ -145,12 +153,37 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	allowPath := SymbolicPath{conjAllow, conjAllow}
 	denyPath := SymbolicPath{tautologyConj, tautologyConj}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
-	allowGivenDeny := *computeAllowGivenDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
 	require.Equal(t, emptySet, allowGivenDeny.string(),
 		"allowGivenDeny deny tautology computation not as expected")
 }
 
+// Input:
+// allow symbolic path:
+// src: (tag = t0) dst: (tag = t1)
+// src: (tag = t2) dst: (tag = t3)
+// deny symbolic path:
+// src: (segment = s0) dst: (segment = s1)
+// src: (segment = s2) dst: (segment = s3)
+// src: (segment = s4) dst: (segment = s5)
+// Output allow paths:
+// src: (tag = t0 and segment != s0 and segment != s2 and segment != s4) dst: (tag = t1)
+// src: (tag = t0 and segment != s0 and segment != s2) dst: (tag = t1 and segment != s5)
+// src: (tag = t0 and segment != s0 and segment != s4) dst: (tag = t1 and segment != s3)
+// src: (tag = t0 and segment != s0) dst: (tag = t1 and segment != s3 and segment != s5)
+// src: (tag = t0 and segment != s2 and segment != s4) dst: (tag = t1 and segment != s1)
+// src: (tag = t0 and segment != s2) dst: (tag = t1 and segment != s1 and segment != s5)
+// src: (tag = t0 and segment != s4) dst: (tag = t1 and segment != s1 and segment != s3)
+// src: (tag = t0) dst: (tag = t1 and segment != s1 and segment != s3 and segment != s5)
+// src: (tag = t2 and segment != s0 and segment != s2 and segment != s4) dst: (tag = t3)
+// src: (tag = t2 and segment != s0 and segment != s2) dst: (tag = t3 and segment != s5)
+// src: (tag = t2 and segment != s0 and segment != s4) dst: (tag = t3 and segment != s3)
+// src: (tag = t2 and segment != s0) dst: (tag = t3 and segment != s3 and segment != s5)
+// src: (tag = t2 and segment != s2 and segment != s4) dst: (tag = t3 and segment != s1)
+// src: (tag = t2 and segment != s2) dst: (tag = t3 and segment != s1 and segment != s5)
+// src: (tag = t2 and segment != s4) dst: (tag = t3 and segment != s1 and segment != s3)
+// src: (tag = t2) dst: (tag = t3 and segment != s1 and segment != s3 and segment != s5)
 func TestComputeAllowGivenDenies(t *testing.T) {
 	allowPaths, denyPaths := SymbolicPaths{}, SymbolicPaths{}
 	testTag := initTestTag("tag")
