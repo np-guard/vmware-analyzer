@@ -51,13 +51,15 @@ func negateConjunctions(conjunctions []Conjunction) []Conjunction {
 	var res, resWithoutCurrentCon []Conjunction
 	resWithoutCurrentCon = []Conjunction{}
 	for _, conj := range conjunctions {
+		res = []Conjunction{}
 		for _, literal := range conj {
-			res = []Conjunction{}
 			if len(resWithoutCurrentCon) == 0 {
 				res = append(res, Conjunction{literal.negate()})
 			} else {
+				newConj := Conjunction{}
 				for _, withoutCurrentItem := range resWithoutCurrentCon {
-					res = append(res, append(*withoutCurrentItem.copy(), literal.negate()))
+					newConj = append(append(*withoutCurrentItem.copy(), literal.negate()))
+					res = append(res, newConj)
 				}
 			}
 		}
