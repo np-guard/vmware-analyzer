@@ -1,5 +1,7 @@
 package endpoints
 
+import "slices"
+
 // VM intenal modeling for vmware endpoints
 type VM struct {
 	name string
@@ -19,6 +21,13 @@ func (v *VM) Name() string {
 
 func (v *VM) Kind() string {
 	return "vm"
+}
+
+func (v *VM) AddTag(t string) {
+	if slices.Contains(v.tags, t) {
+		return
+	}
+	v.tags = append(v.tags, t)
 }
 
 func NewVM(name, uid string) *VM {

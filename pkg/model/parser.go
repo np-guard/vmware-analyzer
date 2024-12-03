@@ -68,6 +68,13 @@ func (p *NSXConfigParser) getVMs() {
 			continue
 		}
 		vmObj := endpoints.NewVM(*vm.DisplayName, *vm.ExternalId)
+		for _, tag := range vm.Tags {
+			vmObj.AddTag(tag.Tag)
+			// currently ignoring tag scope
+			if tag.Scope != "" {
+				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
+			}
+		}
 		p.configRes.vms = append(p.configRes.vms, vmObj)
 		p.configRes.vmsMap[vmObj.ID()] = vmObj
 	}
