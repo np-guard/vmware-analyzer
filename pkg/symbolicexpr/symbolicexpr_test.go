@@ -228,13 +228,22 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 // testing of negateConjunctions
 func TestNegateConjunctions(t *testing.T) {
 	// simplest case - each conjunction has a single literal
-	singleLiteralConjs := []Conjunction{}
-	testTag := initTestTag("tag")
+	singleLiteralConjs, multipleLiteralConjs := []Conjunction{}, []Conjunction{}
+	testTag1 := initTestTag("tag1")
+	testTag2 := initTestTag("tag2")
 	for i := 0; i < 5; i++ {
-		atomicLiteral := &atomicTerm{label: testTag, toVal: fmt.Sprintf("s%v", i)}
-		singleLiteralConjs = append(singleLiteralConjs, Conjunction{atomicLiteral})
+		atomicLiteral1 := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("s%v", i)}
+		singleLiteralConjs = append(singleLiteralConjs, Conjunction{atomicLiteral1})
+		atomicLiteral2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("s%v", i)}
+		multipleLiteralConjs = append(singleLiteralConjs, Conjunction{atomicLiteral1, atomicLiteral2})
 	}
 	fmt.Printf("singleLiteralConjs is %v\n", strConjunctions(singleLiteralConjs))
+	negateSingleLiteralConjs := strConjunctions(negateConjunctions(singleLiteralConjs))
 	fmt.Printf("negateConjunctions(singleLiteralConjs) is %v\n",
 		strConjunctions(negateConjunctions(singleLiteralConjs)))
+	require.Equal(t, "(tag1 != s0 and tag1 != s1 and tag1 != s2 and tag1 != s3 and tag1 != s4)",
+		negateSingleLiteralConjs,
+		"negateConjunctions of single literals conjunctions not as expected")
+	fmt.Println()
+	fmt.Printf("multipleLiteralConjs is\n%v\n", strConjunctions(multipleLiteralConjs))
 }
