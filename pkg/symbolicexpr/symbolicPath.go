@@ -82,8 +82,18 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 // algorithm described in README of symbolicexpr
 // the resulting denys are proceeded with allows in lower priority categories
 // Note that here, unlike in the computation of allow given deny, we can't proceed each pass in isolation w.r.t. deny
-func computeAllowGivenAllowHigherPasses(denyPath SymbolicPath, passPaths SymbolicPaths) *SymbolicPaths {
-	// todo temp: in first stage handling only passPaths with a single literal in src and dst
+// ToDo: we assume that srcs (dsts) of passes in the same category are disjoint
+func computeDenyGivenDenyHigherPasses(denyPath SymbolicPath, passPaths SymbolicPaths) *SymbolicPaths {
+	resSymbolicPaths := SymbolicPaths{}
+	// 1. Path(s) in which the src is not in any of the original sources or dst is not in any of the original destinations
+	notInSrcOrNotInDstPaths := computeNegateSrcDstPaths(passPaths)
+	for _, notSrcOrNotDst := range *notInSrcOrNotInDstPaths {
+		denyNotPassSrc := add(&denyPath.Src, &notSrcOrNotDst.Src)
+		denyNotPassDst := add(&denyPath.Dst, &notSrcOrNotDst.Dst)
+		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{*denyNotPassSrc, Conjunction{tautology{}}})
+		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{tautology{}}, *denyNotPassDst})
+	}
+	// 2. Passes in which the src and the dst are in the original src and dsts, but not the "pass" couples
 	return nil
 }
 
@@ -91,5 +101,21 @@ func computeAllowGivenAllowHigherPasses(denyPath SymbolicPath, passPaths Symboli
 // or destination not in any of the original destinations
 // used by computeAllowGivenAllowHigherPasses to compute the first component of the result, as described in README
 func computeNegateSrcDstPaths(paths SymbolicPaths) *SymbolicPaths {
-	return nil
+	// 1. Computes Conjunctions of srcs and Conjunctions of destinations
+	srcConjunctions, dstConjunctions := make([]Conjunction, len(paths)), make([]Conjunction, len(paths))
+	for i, path := range paths {
+		srcConjunctions[i] = path.Src
+		dstConjunctions[i] = path.Dst
+	}
+	// 2. Negates src and dst
+	negateSrcConjunctions, negateDstConjunctions := negateConjunctions(srcConjunctions), negateConjunctions(dstConjunctions)
+	// 3. Computes all paths in which src is not in any of the original srcs or dst is not in any of the original dsts
+	resNegatePaths := SymbolicPaths{}
+	for _, src := range negateSrcConjunctions {
+		resNegatePaths = append(resNegatePaths, &SymbolicPath{src, Conjunction{tautology{}}})
+	}
+	for _, dst := range negateDstConjunctions {
+		resNegatePaths = append(resNegatePaths, &SymbolicPath{Conjunction{tautology{}}, dst})
+	}
+	return &resNegatePaths
 }

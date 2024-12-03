@@ -23,6 +23,11 @@ func (c *Conjunction) add(atomic *atomicTerm) *Conjunction {
 	return &res
 }
 
+func add(conj1, conj2 *Conjunction) *Conjunction {
+	res := append(*conj1, *conj2...)
+	return &res
+}
+
 func (c *Conjunction) copy() *Conjunction {
 	newC := Conjunction{}
 	newC = append(newC, *c...)
