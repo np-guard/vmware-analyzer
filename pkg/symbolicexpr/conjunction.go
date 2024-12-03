@@ -1,6 +1,7 @@
 package symbolicexpr
 
 import (
+	"sort"
 	"strings"
 )
 
@@ -73,5 +74,6 @@ func strConjunctions(conjunctions []Conjunction) string {
 	for i, conj := range conjunctions {
 		strArray[i] = conj.string()
 	}
+	sort.Strings(strArray)
 	return strings.Join(strArray, " or\n")
 }

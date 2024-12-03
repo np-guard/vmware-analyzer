@@ -234,16 +234,34 @@ func TestNegateConjunctions(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		atomicLiteral1 := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("s%v", i)}
 		singleLiteralConjs = append(singleLiteralConjs, Conjunction{atomicLiteral1})
-		atomicLiteral2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("s%v", i)}
-		multipleLiteralConjs = append(singleLiteralConjs, Conjunction{atomicLiteral1, atomicLiteral2})
 	}
 	fmt.Printf("singleLiteralConjs is %v\n", strConjunctions(singleLiteralConjs))
-	negateSingleLiteralConjs := strConjunctions(negateConjunctions(singleLiteralConjs))
+	negateConjSingleLiteral := negateConjunctions(singleLiteralConjs)
 	fmt.Printf("negateConjunctions(singleLiteralConjs) is %v\n",
-		strConjunctions(negateConjunctions(singleLiteralConjs)))
+		strConjunctions(negateConjSingleLiteral))
 	require.Equal(t, "(tag1 != s0 and tag1 != s1 and tag1 != s2 and tag1 != s3 and tag1 != s4)",
-		negateSingleLiteralConjs,
+		strConjunctions(negateConjSingleLiteral),
 		"negateConjunctions of single literals conjunctions not as expected")
 	fmt.Println()
+	for i := 0; i < 3; i++ {
+		atomicLiteral1 := &atomicTerm{label: testTag1, toVal: fmt.Sprintf("s%v", i)}
+		atomicLiteral2 := &atomicTerm{label: testTag2, toVal: fmt.Sprintf("s%v", i)}
+		multipleLiteralConjs = append(multipleLiteralConjs, Conjunction{atomicLiteral1, atomicLiteral2})
+	}
 	fmt.Printf("multipleLiteralConjs is\n%v\n", strConjunctions(multipleLiteralConjs))
+	negMultipleLiteralConjs := negateConjunctions(multipleLiteralConjs)
+	fmt.Printf("negateConjunctions(multipleLiteralConjs) is \n%v\n",
+		strConjunctions(negMultipleLiteralConjs))
+	require.Equal(t,
+		"(tag1 != s0 and tag1 != s1 and tag1 != s2) or\n"+
+			"(tag1 != s0 and tag1 != s1 and tag2 != s2) or\n"+
+			"(tag1 != s0 and tag2 != s1 and tag1 != s2) or\n"+
+			"(tag1 != s0 and tag2 != s1 and tag2 != s2) or\n"+
+			"(tag2 != s0 and tag1 != s1 and tag1 != s2) or\n"+
+			"(tag2 != s0 and tag1 != s1 and tag2 != s2) or\n"+
+			"(tag2 != s0 and tag2 != s1 and tag1 != s2) or\n"+
+			"(tag2 != s0 and tag2 != s1 and tag2 != s2)",
+		strConjunctions(negMultipleLiteralConjs),
+		"negateConjunctions(multipleLiteralConjs) not as expected")
+	fmt.Println()
 }
