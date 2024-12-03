@@ -78,3 +78,10 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 	}
 	return &resAllowPaths
 }
+
+// algorithm described in README of symbolicexpr
+// the resulting denys are proceeded with allows in lower priority categories
+// Note that here, unlike in the computation of allow given deny, we can't proceed each pass in isolation w.r.t. deny
+func computeAllowGivenAllowHigherPasses(denyPath SymbolicPath, passPaths SymbolicPaths) *SymbolicPaths {
+	return nil
+}
