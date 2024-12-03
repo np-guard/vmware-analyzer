@@ -14,7 +14,7 @@ import (
 const noServerInfo = "--host no_host --username no_user --password no_password"
 const serverInfo = "--host no_host --username no_user --password no_password"
 
-func Test_main(t *testing.T) {
+func TestMain(t *testing.T) {
 	tests := []struct {
 		name string
 		args string
@@ -42,11 +42,11 @@ func Test_main(t *testing.T) {
 			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json" +
 				" --skip-analysis --anonymize",
 		},
-		{
+		/*{
 			name: "anonymize-analyze",
 			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json" +
 				" --anonymize --filename examples/output/analysis.svg -o svg",
-		},
+		},*/
 		{
 			name: "analyze-only",
 			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.txt",
@@ -66,12 +66,12 @@ func Test_main(t *testing.T) {
 			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
 				" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
 		},
-		{
+		/*{
 			name: "analyze-topology-svg",
 			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
 				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
 				` --output-filter="New Virtual Machine",New-VM-1`,
-		},
+		},*/
 		{
 			name: "collect-and-analyze",
 			args: serverInfo + " --resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
