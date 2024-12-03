@@ -34,13 +34,6 @@ type atomic interface {
 // Conjunction a DNF Conjunction of Atomics
 type Conjunction []atomic
 
-type simplePath struct {
-	src atomic
-	dst atomic
-}
-
-type simplePaths []*simplePath
-
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
 	Src Conjunction
