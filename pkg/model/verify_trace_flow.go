@@ -7,15 +7,32 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-func verifyTraceflow(recourses *collector.ResourcesContainerModel, server collector.ServerData) (*collector.TraceFlows, error) {
-	config, err := configFromResourcesContainer(recourses)
+
+func CreateAllTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, ips []string, protocols []collector.TraceFlowProtocol) *collector.TraceFlows {
+	traceFlows := collector.NewTraceflows(resources, server)
+	for _, srcIP := range ips {
+		for _, dstIP := range ips {
+			for _, protocol := range protocols {
+				if srcIP == dstIP {
+					continue
+				}
+				traceFlows.AddTraceFlow(srcIP, dstIP, protocol)
+			}
+		}
+	}
+	return traceFlows
+}
+
+
+func verifyTraceflow(resources *collector.ResourcesContainerModel, server collector.ServerData) (*collector.TraceFlows, error) {
+	config, err := configFromResourcesContainer(resources)
 	if err != nil {
 		return nil, err
 	}
 	ips := []string{}
 	ipToVm := map[string]*endpoints.VM{}
 	for uid, vm := range config.vmsMap {
-		vmIps := recourses.GetVirtualMachineAddresses(uid)
+		vmIps := resources.GetVirtualMachineAddresses(uid)
 		// ips = append(ips, vmIps...) // todo
 		if len(vmIps) > 0 {
 			ips = append(ips, vmIps[0])
@@ -26,8 +43,13 @@ func verifyTraceflow(recourses *collector.ResourcesContainerModel, server collec
 		{Protocol: collector.ProtocolICMP},
 		{Protocol: collector.ProtocolTCP, SrcPort: 8080, DstPort: 9080},
 	}
-	tfs := collector.GetTraceFlows(recourses, server, ips, protocols)
-	for _, tf := range *tfs{
+	traceFlows := CreateAllTraceflows(resources, server, ips, protocols)
+
+	tfs := traceFlows.RunAndCollect()
+	for _, tf := range tfs.Tfs{
+		if tf.Name == ""{
+			continue
+		}
 		srcVm := ipToVm[tf.Src]
 		dstVm := ipToVm[tf.Dst]
 		conn := config.analyzedConnectivity[srcVm][dstVm]

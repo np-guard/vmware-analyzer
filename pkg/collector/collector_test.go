@@ -191,6 +191,21 @@ func testTopology(got *ResourcesContainerModel) {
 	}
 }
 
+func CreateAllTraceflows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []TraceFlowProtocol) *TraceFlows {
+	traceFlows := NewTraceflows(resources, server)
+	for _, srcIP := range ips {
+		for _, dstIP := range ips {
+			for _, protocol := range protocols {
+				if srcIP == dstIP {
+					continue
+				}
+				traceFlows.AddTraceFlow(srcIP, dstIP, protocol)
+			}
+		}
+	}
+	return traceFlows
+}
+
 func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 	ips := []string{
 		"192.168.0.1",
@@ -204,7 +219,8 @@ func testTraceflows(got *ResourcesContainerModel, server ServerData) error {
 		{Protocol: ProtocolICMP},
 		{Protocol: ProtocolTCP, SrcPort: 8080, DstPort: 9080},
 	}
-	tfs := GetTraceFlows(got, server, ips, protocols)
+	traceFlows := CreateAllTraceflows(got, server, ips, protocols)
+	tfs := traceFlows.RunAndCollect()
 	jOut, err := tfs.ToJSONString()
 	if err != nil {
 		return err

@@ -63,65 +63,62 @@ func (t *TraceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	return h
 }
 
-type TraceFlows []*traceFlow
+type TraceFlows struct {
+	Tfs       []*traceFlow
+	resources *ResourcesContainerModel
+	server    ServerData
+}
+
+func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *TraceFlows {
+	return &TraceFlows{resources: resources, server: server}
+}
+func (tfs *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol) {
+	tfs.Tfs = append(tfs.Tfs, &traceFlow{Src: src, Dst: dst, Protocol: protocol})
+}
 
 // ToJSONString converts a traceFlows into a json-formatted-string
 func (tfs *TraceFlows) ToJSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(tfs, "", "    ")
+	toPrint, err := json.MarshalIndent(tfs.Tfs, "", "    ")
 	return string(toPrint), err
 }
 
-func GetTraceFlows(resources *ResourcesContainerModel, server ServerData, ips []string, protocols []TraceFlowProtocol) *TraceFlows {
-	nPotentialTraceFlows := len(ips) * (len(ips) - 1) * len(protocols)
-	traceFlows := TraceFlows{}
-	for _, srcIP := range ips {
-		for _, dstIP := range ips {
-			for _, protocol := range protocols {
-				if srcIP == dstIP {
-					continue
-				}
-				if nPotentialTraceFlows > maxTraceFlows && math_rand.Intn(nPotentialTraceFlows) > maxTraceFlows {
-					continue
-				}
-				srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
-				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
-				traceFlow := &traceFlow{Src: srcIP, Dst: dstIP, Protocol: protocol}
-				if srcVni != nil {
-					traceFlow.SrcVM = *resources.GetVirtualMachine(*srcVni.OwnerVmId).DisplayName
-				}
-				if dstVni != nil {
-					traceFlow.DstVM = *resources.GetVirtualMachine(*dstVni.OwnerVmId).DisplayName
-				}
-
-				traceFlows = append(traceFlows, traceFlow)
-				if name, err := createTraceFlow(resources, server, srcIP, dstIP, protocol); err != nil {
-					logging.Debug(err.Error())
-					traceFlow.Errors = append(traceFlow.Errors, err.Error())
-				} else {
-					traceFlow.Name = name
-				}
-				time.Sleep(traceflowCreationTime)
-			}
-		}
-	}
-	time.Sleep(traceflowPoolingTime)
-	for _, traceFlow := range traceFlows {
-		if len(traceFlow.Errors) > 0 {
+func (traceFlows *TraceFlows) RunAndCollect() *TraceFlows {
+	traceFlows.runTracflows()
+	traceFlows.collectTracflowsData()
+	return traceFlows
+}
+func (traceFlows *TraceFlows) runTracflows() {
+	for _, traceFlow := range traceFlows.Tfs {
+		if len(traceFlows.Tfs) > maxTraceFlows && math_rand.Intn(len(traceFlows.Tfs)) > maxTraceFlows {
 			continue
 		}
-		if obs, err := poolTraceFlowObservation(server, traceFlow.Name); err != nil {
+		if name, err := traceFlow.run(traceFlows.resources, traceFlows.server); err != nil {
+			logging.Debug(err.Error())
+			traceFlow.Errors = append(traceFlow.Errors, err.Error())
+		} else {
+			traceFlow.Name = name
+		}
+		time.Sleep(traceflowCreationTime)
+	}
+}
+func (traceFlows *TraceFlows) collectTracflowsData() {
+	time.Sleep(traceflowPoolingTime)
+	for _, traceFlow := range traceFlows.Tfs {
+		if traceFlow.Name == "" || len(traceFlow.Errors) > 0 {
+			continue
+		}
+		if obs, err := poolTraceFlowObservation(traceFlows.server, traceFlow.Name); err != nil {
 			logging.Debug(err.Error())
 			traceFlow.Errors = append(traceFlow.Errors, err.Error())
 		} else {
 			traceFlow.Observations = obs
 		}
-		if err := deleteTraceFlow(server, traceFlow.Name); err != nil {
+		if err := deleteTraceFlow(traceFlows.server, traceFlow.Name); err != nil {
 			logging.Debug(err.Error())
 			traceFlow.Errors = append(traceFlow.Errors, err.Error())
 		}
 		traceFlow.Results = traceFlow.Observations.results()
 	}
-	return &traceFlows
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -134,39 +131,41 @@ func traceFlowRandomID() (string, error) {
 	return fmt.Sprintf("traceFlow%X", rnd), nil
 }
 
-func createTraceFlow(resources *ResourcesContainerModel, server ServerData,
-	srcIP, dstIP string, protocol TraceFlowProtocol) (string, error) {
+func (tf *traceFlow) run(resources *ResourcesContainerModel, server ServerData) (string, error) {
 	traceFlowName, err := traceFlowRandomID()
 	if err != nil {
 		return "", err
 	}
-	srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
-	dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
+	srcVni := resources.GetVirtualNetworkInterfaceByAddress(tf.Src)
+	dstVni := resources.GetVirtualNetworkInterfaceByAddress(tf.Dst)
 
 	if srcVni == nil {
-		return "", fmt.Errorf("for traceflow, src %s must be a valid vni", srcIP)
+		return "", fmt.Errorf("for traceflow, src %s must be a valid vni", tf.Src)
 	}
+	tf.SrcVM = *resources.GetVirtualMachine(*srcVni.OwnerVmId).DisplayName
+
 	srcMac := srcVni.MacAddress
 	dstMac := srcMac
 	if dstVni != nil {
 		dstMac = dstVni.MacAddress
+		tf.DstVM = *resources.GetVirtualMachine(*dstVni.OwnerVmId).DisplayName
 	}
 	if srcVni.LportAttachmentId == nil {
-		return "", fmt.Errorf("for traceflow, src %s must have port", srcIP)
+		return "", fmt.Errorf("for traceflow, src %s must have port", tf.Src)
 	}
 	port := resources.GetSegmentPort(*srcVni.LportAttachmentId)
 	if port == nil {
-		return "", fmt.Errorf("for traceflow, src %s must have port segment", srcIP)
+		return "", fmt.Errorf("for traceflow, src %s must have port segment", tf.Src)
 	}
 
 	traceReq := &TraceflowConfig{}
 	traceReq.SourceID = port.UniqueId
 	traceReq.Packet = &nsx.FieldsPacketData{}
 	traceReq.Packet.EthHeader = &nsx.EthernetHeader{SrcMac: srcMac, DstMac: dstMac}
-	srcIPv4 := nsx.IPAddress(srcIP)
-	dstIPv4 := nsx.IPAddress(dstIP)
+	srcIPv4 := nsx.IPAddress(tf.Src)
+	dstIPv4 := nsx.IPAddress(tf.Dst)
 	traceReq.Packet.IpHeader = &nsx.Ipv4Header{SrcIp: &srcIPv4, DstIp: &dstIPv4}
-	traceReq.Packet.TransportHeader = protocol.header()
+	traceReq.Packet.TransportHeader = tf.Protocol.header()
 	routed := bool(true)
 	traceReq.Packet.Routed = &routed
 
