@@ -1,66 +1,86 @@
 package model
 
 import (
-	"errors"
+	"fmt"
+	"strings"
 
+	"github.com/np-guard/models/pkg/netp"
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
+type vmFilter func(vm *endpoints.VM) bool
 
-func CreateAllTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, ips []string, protocols []collector.TraceFlowProtocol) *collector.TraceFlows {
+func createRelevantTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, config *config, vmFilter vmFilter) *collector.TraceFlows {
+
 	traceFlows := collector.NewTraceflows(resources, server)
-	for _, srcIP := range ips {
-		for _, dstIP := range ips {
-			for _, protocol := range protocols {
-				if srcIP == dstIP {
-					continue
-				}
-				traceFlows.AddTraceFlow(srcIP, dstIP, protocol)
+	// 	{Protocol: collector.ProtocolTCP, SrcPort: 8080, DstPort: 9080},
+
+	for srcUid, srcVm := range config.vmsMap {
+		if !vmFilter(srcVm) {
+			continue
+		}
+		vmIps := resources.GetVirtualMachineAddresses(srcUid)
+		if len(vmIps) == 0 {
+			continue
+		}
+		srcIP := vmIps[0]
+		for dstUid, dstVm := range config.vmsMap {
+			if srcUid == dstUid {
+				continue
+			}
+			if !vmFilter(dstVm) {
+				continue
+			}
+			vmIps := resources.GetVirtualMachineAddresses(dstUid)
+			if len(vmIps) == 0 {
+				continue
+			}
+			dstIP := vmIps[0]
+			conn := config.analyzedConnectivity[srcVm][dstVm]
+			fmt.Println(conn.String())
+			switch {
+			case conn.IsAll(), conn.IsEmpty():
+				// one check only using icmp
+				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll())
+			case conn.TCPUDPSet().IsAll() || conn.TCPUDPSet().IsEmpty():
+				// one check for icmp, one for tcp/udp
+				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.ICMPSet().IsAll())
+				aPort := (netp.MaxPort + netp.MinPort)/2
+				defaultProtocol := collector.TraceFlowProtocol{Protocol: collector.ProtocolTCP, SrcPort: aPort, DstPort: aPort}
+				traceFlows.AddTraceFlow(srcIP, dstIP, defaultProtocol, conn.TCPUDPSet().IsAll())
+			default:
+				// checking only tcp/udp, one allow, one denny
+				allowConn := conn.TCPUDPSet()
+				dennyConn := netset.AllTCPUDPSet().Subtract(allowConn)
+				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(allowConn), true)
+				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(dennyConn), false)
 			}
 		}
 	}
 	return traceFlows
 }
 
+func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
+	partition := set.Partitions()[0]
+	protocol := collector.ProtocolUDP
+	if partition.S1.Contains(netset.TCPCode) {
+		protocol = collector.ProtocolTCP
+	}
+	srcPort := partition.S2.Min()
+	dstPort := partition.S3.Min()
+	return collector.TraceFlowProtocol{Protocol: protocol, SrcPort: int(srcPort), DstPort: int(dstPort)}
+}
 
 func verifyTraceflow(resources *collector.ResourcesContainerModel, server collector.ServerData) (*collector.TraceFlows, error) {
 	config, err := configFromResourcesContainer(resources)
 	if err != nil {
 		return nil, err
 	}
-	ips := []string{}
-	ipToVm := map[string]*endpoints.VM{}
-	for uid, vm := range config.vmsMap {
-		vmIps := resources.GetVirtualMachineAddresses(uid)
-		// ips = append(ips, vmIps...) // todo
-		if len(vmIps) > 0 {
-			ips = append(ips, vmIps[0])
-			ipToVm[vmIps[0]] = vm
-		}
-	}
-	protocols := []collector.TraceFlowProtocol{
-		{Protocol: collector.ProtocolICMP},
-		{Protocol: collector.ProtocolTCP, SrcPort: 8080, DstPort: 9080},
-	}
-	traceFlows := CreateAllTraceflows(resources, server, ips, protocols)
+	traceFlows := createRelevantTraceflows(resources, server, config, func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "New") })
 
 	tfs := traceFlows.RunAndCollect()
-	for _, tf := range tfs.Tfs{
-		if tf.Name == ""{
-			continue
-		}
-		srcVm := ipToVm[tf.Src]
-		dstVm := ipToVm[tf.Dst]
-		conn := config.analyzedConnectivity[srcVm][dstVm]
-		switch tf.Protocol.Protocol{
-		case collector.ProtocolICMP:
-			if conn.ICMPSet().IsAll() != tf.Results.Delivered{
-				tf.Errors = append(tf.Errors, "trace flow result is different from analyze result")
-				err = errors.New("trace flow results is different from analyze results")
-			}
-		}
-	}
 
-	return tfs, err
+	return tfs, nil
 }

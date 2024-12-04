@@ -40,6 +40,7 @@ type traceFlow struct {
 	Name         string                `json:"name,omitempty"`
 	Errors       []string              `json:"errors,omitempty"`
 	Results      traceflowResult       `json:"results,omitempty"`
+	Allowed      bool                  `json:"allowed,omitempty"`
 	Observations TraceFlowObservations `json:"observation,omitempty"`
 }
 
@@ -72,8 +73,8 @@ type TraceFlows struct {
 func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *TraceFlows {
 	return &TraceFlows{resources: resources, server: server}
 }
-func (tfs *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol) {
-	tfs.Tfs = append(tfs.Tfs, &traceFlow{Src: src, Dst: dst, Protocol: protocol})
+func (tfs *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol, allowed bool) {
+	tfs.Tfs = append(tfs.Tfs, &traceFlow{Src: src, Dst: dst, Protocol: protocol, Allowed: allowed})
 }
 
 // ToJSONString converts a traceFlows into a json-formatted-string
@@ -118,6 +119,9 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 			traceFlow.Errors = append(traceFlow.Errors, err.Error())
 		}
 		traceFlow.Results = traceFlow.Observations.results()
+		if traceFlow.Allowed != traceFlow.Results.Delivered {
+			traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
+		}
 	}
 }
 
