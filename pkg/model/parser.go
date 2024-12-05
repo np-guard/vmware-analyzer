@@ -239,9 +239,9 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 		// array. Error will be thrown if ANY is used in conjunction with other values.
 		Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
 	*/
-		// in case both services and serviceEntries are empty, all connection is allowed
-		// otherwise, we union the connections of all the services and the service entries
-		if (len(rule.Services) == 0 || slices.Contains(rule.Services, anyStr)) && len(rule.ServiceEntries) == 0 {
+	// in case both services and serviceEntries are empty, all connection is allowed
+	// otherwise, we union the connections of all the services and the service entries
+	if (len(rule.Services) == 0 || slices.Contains(rule.Services, anyStr)) && len(rule.ServiceEntries) == 0 {
 		return netset.AllTransports()
 	}
 	res := netset.NoTransports()
