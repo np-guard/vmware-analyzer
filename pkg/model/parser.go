@@ -246,7 +246,7 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 	}
 	res := netset.NoTransports()
 	for _, s := range rule.Services {
-		if s == anyStr{
+		if s == anyStr {
 			continue
 		}
 		conn := p.connectionFromService(s, rule)
