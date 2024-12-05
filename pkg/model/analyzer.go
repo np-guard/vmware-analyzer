@@ -17,7 +17,7 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	logging.Debugf("the parsed config details: %s", config.getConfigInfoStr())
 
 	// compute connectivity map from the parsed config
-	config.ComputeConnectivity()
+	config.ComputeConnectivity(params.VMs)
 
 	return config.output(params)
 }

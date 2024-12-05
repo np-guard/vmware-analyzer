@@ -1,7 +1,9 @@
 package data
 
 const (
-	denyRuleID = 1003
+	denyRuleIDApp = 1003
+	denyRuleIDEnv = 10230
+	newRuleID     = 9198
 )
 
 //nolint:all
@@ -24,7 +26,7 @@ var Example1 = Example{
 					services: []string{"/infra/services/SMB"},
 					action:   allow,
 				},
-				defaultDenyRule(denyRuleID),
+				defaultDenyRule(denyRuleIDApp),
 			},
 		},
 	},
@@ -140,7 +142,6 @@ var Example2 = Example{
 					services: []string{"ANY"},
 					action:   jumpToApp,
 				},
-				defaultDenyRule(denyRuleID),
 			},
 		},
 
@@ -150,9 +151,9 @@ var Example2 = Example{
 			rules: []rule{
 				{
 					name:     "new-rule",
-					id:       9198,
+					id:       newRuleID,
 					source:   "Gryffindor-App",
-					dest:     "Gryffindor-App",
+					dest:     "Hufflepuff-App",
 					services: []string{"ANY"},
 					action:   allow,
 				},
@@ -249,8 +250,33 @@ var Example2 = Example{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
 			rules: []rule{
-				defaultDenyRule(denyRuleID),
+				defaultDenyRule(denyRuleIDApp),
 			},
 		},
 	},
+}
+
+var Example3 = example3FromExample2()
+
+func example3FromExample2() Example {
+	res := Example2
+	// add a default deny for env category
+	defaultDenyEnvCategory := category{
+		name:         "defaultDenyEnvCategory",
+		categoryType: "Environment",
+		rules: []rule{
+			defaultDenyRule(denyRuleIDEnv),
+		},
+	}
+	res.policies = append(res.policies, defaultDenyEnvCategory)
+
+	// change rule 9198, to have both src and dest as Gryffindor-App
+	for _, c := range res.policies {
+		for _, r := range c.rules {
+			if r.id == newRuleID {
+				r.dest = "Gryffindor-App"
+			}
+		}
+	}
+	return res
 }
