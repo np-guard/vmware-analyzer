@@ -260,23 +260,35 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 		// array. Error will be thrown if ANY is used in conjunction with other values.
 		Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
 	*/
-	if slices.Contains(rule.Services, anyStr) {
+	// in case rule services is empty(or has "ANY"), and rule serviceEntries is empty, all connections are allowed
+	// otherwise, we union the connections of all non "ANY" services and the service entries
+	if (len(rule.Services) == 0 || slices.Contains(rule.Services, anyStr)) && len(rule.ServiceEntries) == 0 {
 		return netset.AllTransports()
 	}
 	res := netset.NoTransports()
 	for _, s := range rule.Services {
+		// currenrly ignoring services "ANY", if ServiceEntries is not empty..
+		if s == anyStr {
+			logging.Debugf("warning: for rule %d, found rule.Services containing ANY, with non empty serviceEntries. ignoring ANY for this rule.",
+				*rule.RuleId)
+			continue
+		}
 		conn := p.connectionFromService(s, rule)
-		if conn != nil {
+		if conn != nil && !conn.IsEmpty() {
+			logging.Debugf("adding rule connection from Service: %s", conn.String())
 			res = res.Union(conn)
 		}
 	}
-
+	conn := p.connectionFromServiceEntries(rule.ServiceEntries, rule)
+	if conn != nil && !conn.IsEmpty() {
+		logging.Debugf("adding rule connection from ServiceEntries: %s", conn.String())
+		res = res.Union(conn)
+	}
 	return res
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
-	res := netset.NoTransports()
 	service, ok := p.servicePathsToObjects[servicePath]
 	if !ok {
 		service = p.rc.GetService(servicePath)
@@ -286,16 +298,26 @@ func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collec
 		logging.Debugf("GetService failed to find service %s\n", servicePath)
 		return nil
 	}
-	for _, serviceEntry := range service.ServiceEntries {
+	res := p.connectionFromServiceEntries(service.ServiceEntries, rule)
+	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
+	return res
+}
+
+// connectionFromServiceEntries returns the set of connections from a ServiceEntries config within the given rule
+func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.ServiceEntries, rule *collector.Rule) *netset.TransportSet {
+	res := netset.NoTransports()
+	for _, serviceEntry := range serviceEntries {
 		conn, err := serviceEntry.ToConnection()
-		if conn != nil && err == nil {
+		switch {
+		case conn != nil && err == nil:
 			res = res.Union(conn)
-		} else if err != nil {
+		case err != nil:
 			logging.Debugf("err: %s", err.Error())
-			logging.Debugf("ignoring this service within rule id %d\n", *rule.RuleId)
+			logging.Debugf("ignoring this service entry within rule id %d\n", *rule.RuleId)
+		case conn == nil:
+			logging.Debugf("warning: got nil connnection object for serviceEntry object")
 		}
 	}
-	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
 	return res
 }
 
