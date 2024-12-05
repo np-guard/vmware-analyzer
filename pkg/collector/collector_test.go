@@ -199,7 +199,7 @@ func createAllTraceflows(resources *ResourcesContainerModel, server ServerData, 
 				if srcIP == dstIP {
 					continue
 				}
-				traceFlows.AddTraceFlow(srcIP, dstIP, protocol, false)
+				traceFlows.AddTraceFlow(srcIP, dstIP, protocol, false, "")
 			}
 		}
 	}

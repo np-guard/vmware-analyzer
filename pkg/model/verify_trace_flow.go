@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netp"
@@ -15,8 +14,6 @@ type vmFilter func(vm *endpoints.VM) bool
 func createRelevantTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, config *config, vmFilter vmFilter) *collector.TraceFlows {
 
 	traceFlows := collector.NewTraceflows(resources, server)
-	// 	{Protocol: collector.ProtocolTCP, SrcPort: 8080, DstPort: 9080},
-
 	for srcUid, srcVm := range config.vmsMap {
 		if !vmFilter(srcVm) {
 			continue
@@ -39,23 +36,25 @@ func createRelevantTraceflows(resources *collector.ResourcesContainerModel, serv
 			}
 			dstIP := vmIps[0]
 			conn := config.analyzedConnectivity[srcVm][dstVm]
-			fmt.Println(conn.String())
+			connString := conn.String()
 			switch {
 			case conn.IsAll(), conn.IsEmpty():
 				// one check only using icmp
-				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll())
+				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), connString)
+
+
 			case conn.TCPUDPSet().IsAll() || conn.TCPUDPSet().IsEmpty():
 				// one check for icmp, one for tcp/udp
-				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.ICMPSet().IsAll())
-				aPort := (netp.MaxPort + netp.MinPort)/2
+				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.ICMPSet().IsAll(), connString)
+				aPort := (netp.MaxPort + netp.MinPort) / 2
 				defaultProtocol := collector.TraceFlowProtocol{Protocol: collector.ProtocolTCP, SrcPort: aPort, DstPort: aPort}
-				traceFlows.AddTraceFlow(srcIP, dstIP, defaultProtocol, conn.TCPUDPSet().IsAll())
+				traceFlows.AddTraceFlow(srcIP, dstIP, defaultProtocol, conn.TCPUDPSet().IsAll(), connString)
 			default:
-				// checking only tcp/udp, one allow, one denny
+				// checking only tcp/udp, one allow, one deny
 				allowConn := conn.TCPUDPSet()
-				dennyConn := netset.AllTCPUDPSet().Subtract(allowConn)
-				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(allowConn), true)
-				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(dennyConn), false)
+				denyConn := netset.AllTCPUDPSet().Subtract(allowConn)
+				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(allowConn), true, connString)
+				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(denyConn), false, connString)
 			}
 		}
 	}
