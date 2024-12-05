@@ -25,10 +25,19 @@ func (c connMap) add(src, dst *endpoints.VM, conn *netset.TransportSet) {
 }
 
 // initPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM) {
+func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []string) {
+	vmsToaAnalyze := map[string]bool{}
+	if len(vmsFilter) > 0 {
+		for _, vmName := range vmsFilter {
+			vmsToaAnalyze[vmName] = true
+		}
+	}
 	for _, src := range vms {
 		for _, dst := range vms {
 			if src == dst {
+				continue
+			}
+			if len(vmsFilter) > 0 && !(vmsToaAnalyze[src.Name()] && vmsToaAnalyze[dst.Name()]) {
 				continue
 			}
 			if initAllow {

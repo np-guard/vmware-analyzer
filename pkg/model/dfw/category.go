@@ -99,6 +99,7 @@ type categorySpec struct {
 	rules          []*FwRule // ordered list of rules
 	defaultAction  ruleAction
 	processedRules *effectiveRules // ordered list of effective rules
+	dfwRef         *DFW
 }
 
 // allowedConns are the set of connections between src to dst, for which this category allows the netset.
@@ -146,6 +147,14 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
+func (c *categorySpec) originalRulesStr() []string {
+	rulesStr := make([]string, len(c.rules))
+	for i := range c.rules {
+		rulesStr[i] = c.rules[i].originalRuleStr()
+	}
+	return rulesStr
+}
+
 func (c *categorySpec) string() string {
 	rulesStr := make([]string, len(c.rules)+1)
 	rulesStr[0] = "rules:"
@@ -173,19 +182,24 @@ func (c *categorySpec) outboundEffectiveRules() string {
 }
 
 func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
-	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string) {
+	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM,
+	secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
-		srcVMs:        src,
-		dstVMs:        dst,
-		conn:          conn,
-		action:        actionFromString(action),
-		direction:     direction,
-		ruleID:        ruleID,
-		origRuleObj:   origRule,
-		scope:         scope,
-		secPolicyName: secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		srcVMs:             src,
+		dstVMs:             dst,
+		conn:               conn,
+		action:             actionFromString(action),
+		direction:          direction,
+		ruleID:             ruleID,
+		origRuleObj:        origRule,
+		origDefaultRuleObj: origDefaultRule,
+		scope:              scope,
+		secPolicyName:      secPolicyName,
+		secPolicyCategory:  c.category.string(),
+		categoryRef:        c,
+		dfwRef:             c.dfwRef,
+		symbolicSrc:        []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:        []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 	c.rules = append(c.rules, newRule)
 
@@ -198,9 +212,10 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 	}
 }
 
-func newEmptyCategory(c DfwCategory) *categorySpec {
+func newEmptyCategory(c DfwCategory, d *DFW) *categorySpec {
 	return &categorySpec{
 		category:       c,
+		dfwRef:         d,
 		defaultAction:  actionNone,
 		processedRules: &effectiveRules{},
 	}
