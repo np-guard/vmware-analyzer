@@ -43,18 +43,35 @@ type NSXConfigParser struct {
 	rc           *collector.ResourcesContainerModel
 	configRes    *config
 	allGroupsVMs []*endpoints.VM
+	// store references to groups/services objects from paths used in fw rules
+	groupPathsToObjects   map[string]*collector.Group
+	servicePathsToObjects map[string]*collector.Service
 }
 
 func (p *NSXConfigParser) RunParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.configRes = &config{}
+	p.groupPathsToObjects = map[string]*collector.Group{}
+	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.getVMs() // get vms config
 	p.getDFW() // get distributed firewall config
+	p.AddPathsToDisplayNames()
 	return nil
 }
 
 func (p *NSXConfigParser) GetConfig() *config {
 	return p.configRes
+}
+
+func (p *NSXConfigParser) AddPathsToDisplayNames() {
+	res := map[string]string{}
+	for gPath, gObj := range p.groupPathsToObjects {
+		res[gPath] = *gObj.DisplayName
+	}
+	for sPath, sObj := range p.servicePathsToObjects {
+		res[sPath] = *sObj.DisplayName
+	}
+	p.configRes.fw.SetPathsToDisplayNames(res)
 }
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
@@ -130,7 +147,8 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName)
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID,
+		origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
 func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
@@ -159,18 +177,21 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res.conn = netset.AllTransports()
 	res.ruleID = *secPolicy.DefaultRuleId
 	res.direction = string(nsx.RuleDirectionINOUT)
+
+	res.defaultRuleObj = secPolicy.DefaultRule
 	return res
 }
 
 type parsedRule struct {
-	srcVMs        []*endpoints.VM
-	dstVMs        []*endpoints.VM
-	action        string
-	conn          *netset.TransportSet
-	direction     string
-	ruleID        int
-	scope         []*endpoints.VM
-	secPolicyName string
+	srcVMs         []*endpoints.VM
+	dstVMs         []*endpoints.VM
+	action         string
+	conn           *netset.TransportSet
+	direction      string
+	ruleID         int
+	scope          []*endpoints.VM
+	secPolicyName  string
+	defaultRuleObj *collector.FirewallRule
 }
 
 func (p *NSXConfigParser) allGroups() []*endpoints.VM {
@@ -268,7 +289,11 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
-	service := p.rc.GetService(servicePath)
+	service, ok := p.servicePathsToObjects[servicePath]
+	if !ok {
+		service = p.rc.GetService(servicePath)
+		p.servicePathsToObjects[servicePath] = service
+	}
 	if service == nil {
 		logging.Debugf("GetService failed to find service %s\n", servicePath)
 		return nil
@@ -307,9 +332,10 @@ func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMa
 		vmID := *vm.Id
 		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
 			res = append(res, vmObj)
+		} else {
+			// else: add warning that could not find that vm name in the config
+			logging.Debugf("warning: could not find VM id %s in the parsed config", vmID)
 		}
-		// else: add warning that could not find that vm name in the config
-		logging.Debugf("could not find VM id %s in the parsed config", vmID)
 	}
 	return res
 }
@@ -320,6 +346,9 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
 		for j := range domainRsc.GroupList {
 			g := &domainRsc.GroupList[j]
 			if g.Path != nil && groupPath == *g.Path {
+				if _, ok := p.groupPathsToObjects[groupPath]; !ok {
+					p.groupPathsToObjects[groupPath] = g
+				}
 				return p.membersToVMsList(g.Members)
 			}
 		}
