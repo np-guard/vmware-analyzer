@@ -239,7 +239,7 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 		// array. Error will be thrown if ANY is used in conjunction with other values.
 		Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
 	*/
-	if slices.Contains(rule.Services, anyStr) {
+	if (len(rule.Services) == 0 || slices.Contains(rule.Services, anyStr)) && len(rule.ServiceEntries) == 0 {
 		return netset.AllTransports()
 	}
 	res := netset.NoTransports()
@@ -249,28 +249,37 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 			res = res.Union(conn)
 		}
 	}
-
+	conn := p.connectionFromServiceEntries(rule.ServiceEntries, rule)
+	if conn != nil {
+		res = res.Union(conn)
+	}
 	return res
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
-	res := netset.NoTransports()
 	service := p.rc.GetService(servicePath)
 	if service == nil {
 		logging.Debugf("GetService failed to find service %s\n", servicePath)
 		return nil
 	}
-	for _, serviceEntry := range service.ServiceEntries {
+	res := p.connectionFromServiceEntries(service.ServiceEntries, rule)
+	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
+	return res
+}
+
+// connectionFromService returns the set of connections from a service config within the given rule
+func (p *NSXConfigParser) connectionFromServiceEntries(ServiceEntries collector.ServiceEntries, rule *collector.Rule) *netset.TransportSet {
+	res := netset.NoTransports()
+	for _, serviceEntry := range ServiceEntries {
 		conn, err := serviceEntry.ToConnection()
 		if conn != nil && err == nil {
 			res = res.Union(conn)
 		} else if err != nil {
 			logging.Debugf("err: %s", err.Error())
-			logging.Debugf("ignoring this service within rule id %d\n", *rule.RuleId)
+			logging.Debugf("ignoring this service entry within rule id %d\n", *rule.RuleId)
 		}
 	}
-	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
 	return res
 }
 
