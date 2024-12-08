@@ -3,9 +3,11 @@ package dfw
 import (
 	"fmt"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -13,6 +15,8 @@ import (
 type DFW struct {
 	categoriesSpecs []*categorySpec // ordered list of categories
 	defaultAction   ruleAction      // global default (?)
+
+	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
@@ -66,6 +70,23 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	return allAllowedConns
 }
 
+func (d *DFW) OriginalRulesStrFormatted() string {
+	var builder strings.Builder
+	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
+	fmt.Fprintln(writer, "original rules:")
+	fmt.Fprintln(writer, getRulesFormattedHeaderLine())
+	for _, c := range d.categoriesSpecs {
+		for _, ruleStr := range c.originalRulesStr() {
+			if ruleStr == "" {
+				continue
+			}
+			fmt.Fprintln(writer, ruleStr)
+		}
+	}
+	writer.Flush()
+	return builder.String()
+}
+
 // return a string rep that shows the fw-rules in all categories
 func (d *DFW) String() string {
 	categoriesStrings := make([]string, len(d.categoriesSpecs))
@@ -86,18 +107,18 @@ func (d *DFW) AllEffectiveRules() string {
 			outboundRes = append(outboundRes, d.categoriesSpecs[i].outboundEffectiveRules())
 		}
 	}
-	inbound := fmt.Sprintf("\nInbound effective rules only:\n%s", strings.Join(inboundRes, lineSeparatorStr))
-	outbound := fmt.Sprintf("\nOutbound effective rules only:\n%s", strings.Join(outboundRes, lineSeparatorStr))
+	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, strings.Join(inboundRes, lineSeparatorStr))
+	outbound := fmt.Sprintf("\nOutbound effective rules only:%s%s", common.ShortSep, strings.Join(outboundRes, lineSeparatorStr))
 	return inbound + outbound
 }
 
 // AddRule func for testing purposes
 
 func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string) {
+	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName)
+			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
 		}
 	}
 }
@@ -134,11 +155,15 @@ func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 		res.defaultAction = actionAllow
 	}
 	for _, c := range categoriesList {
-		res.categoriesSpecs = append(res.categoriesSpecs, newEmptyCategory(c))
+		res.categoriesSpecs = append(res.categoriesSpecs, newEmptyCategory(c, res))
 	}
 	return res
 }
 
 func (d *DFW) GlobalDefaultAllow() bool {
 	return d.defaultAction == actionAllow
+}
+
+func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
+	d.pathsToDisplayNames = m
 }

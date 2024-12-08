@@ -43,18 +43,35 @@ type NSXConfigParser struct {
 	rc           *collector.ResourcesContainerModel
 	configRes    *config
 	allGroupsVMs []*endpoints.VM
+	// store references to groups/services objects from paths used in fw rules
+	groupPathsToObjects   map[string]*collector.Group
+	servicePathsToObjects map[string]*collector.Service
 }
 
 func (p *NSXConfigParser) RunParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.configRes = &config{}
+	p.groupPathsToObjects = map[string]*collector.Group{}
+	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.getVMs() // get vms config
 	p.getDFW() // get distributed firewall config
+	p.AddPathsToDisplayNames()
 	return nil
 }
 
 func (p *NSXConfigParser) GetConfig() *config {
 	return p.configRes
+}
+
+func (p *NSXConfigParser) AddPathsToDisplayNames() {
+	res := map[string]string{}
+	for gPath, gObj := range p.groupPathsToObjects {
+		res[gPath] = *gObj.DisplayName
+	}
+	for sPath, sObj := range p.servicePathsToObjects {
+		res[sPath] = *sObj.DisplayName
+	}
+	p.configRes.fw.SetPathsToDisplayNames(res)
 }
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
@@ -130,7 +147,8 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName)
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID,
+		origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
 func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
@@ -159,18 +177,21 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res.conn = netset.AllTransports()
 	res.ruleID = *secPolicy.DefaultRuleId
 	res.direction = string(nsx.RuleDirectionINOUT)
+
+	res.defaultRuleObj = secPolicy.DefaultRule
 	return res
 }
 
 type parsedRule struct {
-	srcVMs        []*endpoints.VM
-	dstVMs        []*endpoints.VM
-	action        string
-	conn          *netset.TransportSet
-	direction     string
-	ruleID        int
-	scope         []*endpoints.VM
-	secPolicyName string
+	srcVMs         []*endpoints.VM
+	dstVMs         []*endpoints.VM
+	action         string
+	conn           *netset.TransportSet
+	direction      string
+	ruleID         int
+	scope          []*endpoints.VM
+	secPolicyName  string
+	defaultRuleObj *collector.FirewallRule
 }
 
 func (p *NSXConfigParser) allGroups() []*endpoints.VM {
@@ -239,38 +260,64 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 		// array. Error will be thrown if ANY is used in conjunction with other values.
 		Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
 	*/
-	if slices.Contains(rule.Services, anyStr) {
+	// in case rule services is empty(or has "ANY"), and rule serviceEntries is empty, all connections are allowed
+	// otherwise, we union the connections of all non "ANY" services and the service entries
+	if (len(rule.Services) == 0 || slices.Contains(rule.Services, anyStr)) && len(rule.ServiceEntries) == 0 {
 		return netset.AllTransports()
 	}
 	res := netset.NoTransports()
 	for _, s := range rule.Services {
+		// currenrly ignoring services "ANY", if ServiceEntries is not empty..
+		if s == anyStr {
+			logging.Debugf("warning: for rule %d, found rule.Services containing ANY, with non empty serviceEntries. ignoring ANY for this rule.",
+				*rule.RuleId)
+			continue
+		}
 		conn := p.connectionFromService(s, rule)
-		if conn != nil {
+		if conn != nil && !conn.IsEmpty() {
+			logging.Debugf("adding rule connection from Service: %s", conn.String())
 			res = res.Union(conn)
 		}
 	}
-
+	conn := p.connectionFromServiceEntries(rule.ServiceEntries, rule)
+	if conn != nil && !conn.IsEmpty() {
+		logging.Debugf("adding rule connection from ServiceEntries: %s", conn.String())
+		res = res.Union(conn)
+	}
 	return res
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
-	res := netset.NoTransports()
-	service := p.rc.GetService(servicePath)
+	service, ok := p.servicePathsToObjects[servicePath]
+	if !ok {
+		service = p.rc.GetService(servicePath)
+		p.servicePathsToObjects[servicePath] = service
+	}
 	if service == nil {
 		logging.Debugf("GetService failed to find service %s\n", servicePath)
 		return nil
 	}
-	for _, serviceEntry := range service.ServiceEntries {
+	res := p.connectionFromServiceEntries(service.ServiceEntries, rule)
+	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
+	return res
+}
+
+// connectionFromServiceEntries returns the set of connections from a ServiceEntries config within the given rule
+func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.ServiceEntries, rule *collector.Rule) *netset.TransportSet {
+	res := netset.NoTransports()
+	for _, serviceEntry := range serviceEntries {
 		conn, err := serviceEntry.ToConnection()
-		if conn != nil && err == nil {
+		switch {
+		case conn != nil && err == nil:
 			res = res.Union(conn)
-		} else if err != nil {
+		case err != nil:
 			logging.Debugf("err: %s", err.Error())
-			logging.Debugf("ignoring this service within rule id %d\n", *rule.RuleId)
+			logging.Debugf("ignoring this service entry within rule id %d\n", *rule.RuleId)
+		case conn == nil:
+			logging.Debugf("warning: got nil connnection object for serviceEntry object")
 		}
 	}
-	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
 	return res
 }
 
@@ -285,9 +332,10 @@ func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMa
 		vmID := *vm.Id
 		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
 			res = append(res, vmObj)
+		} else {
+			// else: add warning that could not find that vm name in the config
+			logging.Debugf("warning: could not find VM id %s in the parsed config", vmID)
 		}
-		// else: add warning that could not find that vm name in the config
-		logging.Debugf("could not find VM id %s in the parsed config", vmID)
 	}
 	return res
 }
@@ -298,6 +346,9 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
 		for j := range domainRsc.GroupList {
 			g := &domainRsc.GroupList[j]
 			if g.Path != nil && groupPath == *g.Path {
+				if _, ok := p.groupPathsToObjects[groupPath]; !ok {
+					p.groupPathsToObjects[groupPath] = g
+				}
 				return p.membersToVMsList(g.Members)
 			}
 		}
