@@ -231,6 +231,28 @@ type VirtualMachine struct {
 type VirtualNetworkInterface struct {
 	nsx.VirtualNetworkInterface
 }
+func (vif *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if v, ok :=raw["owner_vm_type"]; ok{
+		if strings.Contains(string(v),"VIRTUAL_MACHINE_TYPE"){
+			raw["owner_vm_type"] = json.RawMessage(strings.ReplaceAll(string(v),"VIRTUAL_MACHINE_TYPE_",""))
+		}
+	}
+	if v, ok :=raw["ip_address_info"]; ok{
+		if strings.Contains(string(v),"IP_ADDRESS_SOURCE_TYPE_"){
+			raw["ip_address_info"] = json.RawMessage(strings.ReplaceAll(string(v),"IP_ADDRESS_SOURCE_TYPE_",""))
+		}
+	}
+	fixedBytes, err := json.Marshal(raw)
+	if err != nil {
+		return err
+	}
+	return vif.VirtualNetworkInterface.UnmarshalJSON(fixedBytes)
+}
+
 type Segment struct {
 	nsx.Segment
 	SegmentPorts []SegmentPort `json:"segment_ports"`
@@ -333,8 +355,10 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 
 type Group struct {
 	nsx.Group
-	Members    []RealizedVirtualMachine `json:"members"`
-	Expression Expression               `json:"expression"`
+	Members        []RealizedVirtualMachine  `json:"members"`
+	VFIMembers     []VirtualNetworkInterface `json:"vfi_members"`
+	AddressMembers []nsx.IPElement           `json:"ips_members"`
+	Expression     Expression                `json:"expression"`
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
