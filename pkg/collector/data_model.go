@@ -19,6 +19,8 @@ import (
 const (
 	rulesJSONEntry          = "rules"
 	membersJSONEntry        = "members"
+	vifMembersJSONEntry        = "vfi_members"
+	addessMembersJSONEntry        = "ips_members"
 	expressionJSONEntry     = "expression"
 	resourcesJSONEntry      = "resources"
 	serviceEntriesJSONEntry = "service_entries"
@@ -231,19 +233,20 @@ type VirtualMachine struct {
 type VirtualNetworkInterface struct {
 	nsx.VirtualNetworkInterface
 }
+
 func (vif *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if v, ok :=raw["owner_vm_type"]; ok{
-		if strings.Contains(string(v),"VIRTUAL_MACHINE_TYPE"){
-			raw["owner_vm_type"] = json.RawMessage(strings.ReplaceAll(string(v),"VIRTUAL_MACHINE_TYPE_",""))
+	if v, ok := raw["owner_vm_type"]; ok {
+		if strings.Contains(string(v), "VIRTUAL_MACHINE_TYPE") {
+			raw["owner_vm_type"] = json.RawMessage(strings.ReplaceAll(string(v), "VIRTUAL_MACHINE_TYPE_", ""))
 		}
 	}
-	if v, ok :=raw["ip_address_info"]; ok{
-		if strings.Contains(string(v),"IP_ADDRESS_SOURCE_TYPE_"){
-			raw["ip_address_info"] = json.RawMessage(strings.ReplaceAll(string(v),"IP_ADDRESS_SOURCE_TYPE_",""))
+	if v, ok := raw["ip_address_info"]; ok {
+		if strings.Contains(string(v), "IP_ADDRESS_SOURCE_TYPE_") {
+			raw["ip_address_info"] = json.RawMessage(strings.ReplaceAll(string(v), "IP_ADDRESS_SOURCE_TYPE_", ""))
 		}
 	}
 	fixedBytes, err := json.Marshal(raw)
@@ -362,7 +365,12 @@ type Group struct {
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &group.Group, membersJSONEntry, &group.Members, expressionJSONEntry, &group.Expression)
+	return UnmarshalBaseStructAndFields4(b, &group.Group,
+		membersJSONEntry, &group.Members,
+		vifMembersJSONEntry, &group.VFIMembers,
+		addessMembersJSONEntry, &group.AddressMembers,
+		expressionJSONEntry, &group.Expression,
+	)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -389,7 +397,8 @@ func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *
 func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](
 	b []byte, base *baseType,
 	entry1 string, field1 *fieldType1,
-	entry2 string, field2 *fieldType2) error {
+	entry2 string, field2 *fieldType2,
+) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
@@ -406,6 +415,37 @@ func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](
 		if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func UnmarshalBaseStructAndFields4[baseType any, fieldType1 any, fieldType2 any, fieldType3 any, fieldType4 any](
+	b []byte, base *baseType,
+	entry1 string, field1 *fieldType1,
+	entry2 string, field2 *fieldType2,
+	entry3 string, field3 *fieldType3,
+	entry4 string, field4 *fieldType4,
+) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	if base != nil {
+		if err := json.Unmarshal(b, base); err != nil {
+			return err
+		}
+	}
+	if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
+		return err
+	}
+	if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
+		return err
+	}
+	if err := unmarshalFromRaw(raw, entry3, field3); err != nil {
+		return err
+	}
+	if err := unmarshalFromRaw(raw, entry4, field4); err != nil {
+		return err
 	}
 	return nil
 }
