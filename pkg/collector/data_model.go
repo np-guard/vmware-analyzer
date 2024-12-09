@@ -19,8 +19,8 @@ import (
 const (
 	rulesJSONEntry          = "rules"
 	membersJSONEntry        = "members"
-	vifMembersJSONEntry        = "vfi_members"
-	addessMembersJSONEntry        = "ips_members"
+	vifMembersJSONEntry     = "vfi_members"
+	addessMembersJSONEntry  = "ips_members"
 	expressionJSONEntry     = "expression"
 	resourcesJSONEntry      = "resources"
 	serviceEntriesJSONEntry = "service_entries"

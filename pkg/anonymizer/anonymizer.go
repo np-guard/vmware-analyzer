@@ -71,6 +71,7 @@ type idToKeep struct {
 type anonInstruction struct {
 	pkgsToSkip             []string
 	structsToSkip          []string
+	structsNotToSkip       []string
 	refStructs             map[string]string
 	structsToNotAnonFields []string
 	idFields               []string
@@ -131,7 +132,7 @@ type anonymizer struct {
 	statistics            statistics
 }
 
-func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
+func newAnonymizer() *anonymizer {
 	return &anonymizer{
 		instanceNumberCounter: firstAnonNumber,
 		instancesNumber:       map[pointer]int{},
@@ -139,9 +140,11 @@ func newAnonymizer(anonInstruction *anonInstruction) *anonymizer {
 		oldToAnonsInfo:        map[string]*anonInfo{},
 		newToAnonsInfo:        map[string]*anonInfo{},
 		anonymizedPaths:       map[string]string{},
-		anonInstruction:       anonInstruction,
 		statistics:            statistics{},
 	}
+}
+func (a *anonymizer) setAnonInstruction(anonInstruction *anonInstruction){
+	a.anonInstruction = anonInstruction
 }
 
 func (a *anonymizer) addAnon(oldVal, newVal string,
@@ -175,6 +178,9 @@ func (a *anonymizer) setInstanceNumber(structInstance structInstance, number int
 }
 
 func (a *anonymizer) toAnonymizeFilter(structInstance structInstance) bool {
+	if a.anonInstruction.structsNotToSkip != nil && slices.Contains(a.anonInstruction.structsNotToSkip, pkgName(structInstance)) {
+		return true
+	}
 	if slices.Contains(a.anonInstruction.pkgsToSkip, pkgName(structInstance)) {
 		return false
 	}
