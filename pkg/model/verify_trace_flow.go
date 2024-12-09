@@ -73,7 +73,7 @@ func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 }
 
 func verifyTraceflow(resources *collector.ResourcesContainerModel, server collector.ServerData) (*collector.TraceFlows, error) {
-	config, err := configFromResourcesContainer(resources)
+	config, err := configFromResourcesContainer(resources,nil)
 	if err != nil {
 		return nil, err
 	}
