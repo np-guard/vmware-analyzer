@@ -323,8 +323,8 @@ func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.
 
 func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM {
 	ids := map[string]bool{}
-	for i := range group.Members {
-		vm := &group.Members[i]
+	for i := range group.VMMembers {
+		vm := &group.VMMembers[i]
 		if vm.Id == nil { // use id instead of DisplayName, assuming matched to vm's external id
 			logging.Debugf("skipping member without id, at index %d", i)
 			continue
@@ -333,7 +333,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 	}
 	for i := range group.VIFMembers {
 		vif := &group.VIFMembers[i]
-		if vif.OwnerVmId == nil { 
+		if vif.OwnerVmId == nil {
 			logging.Debugf("skipping vif member without owner vm id, at index %d", i)
 			continue
 		}
@@ -342,13 +342,13 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 		}
 		ids[*vif.OwnerVmId] = true
 	}
-	for _,ip := range group.AddressMembers {
+	for _, ip := range group.AddressMembers {
 		vif := p.rc.GetVirtualNetworkInterfaceByAddress(string(ip))
-		if vif == nil { 
+		if vif == nil {
 			logging.Debugf("skipping ip member %s tht has no vif", ip)
 			continue
 		}
-		if vif.OwnerVmId == nil { 
+		if vif.OwnerVmId == nil {
 			logging.Debugf("skipping vif of address %s without owner vm id", ip)
 			continue
 		}

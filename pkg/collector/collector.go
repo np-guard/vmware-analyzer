@@ -94,7 +94,7 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 			}
 			err = collectResultList(server,
 				fmt.Sprintf(groupMembersVMQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].Members)
+				&domainResources.GroupList[i].VMMembers)
 			if err != nil {
 				return nil, err
 			}

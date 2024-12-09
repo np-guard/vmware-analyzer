@@ -18,9 +18,9 @@ import (
 
 const (
 	rulesJSONEntry          = "rules"
-	membersJSONEntry        = "members"
+	membersJSONEntry        = "vm_members"
 	vifMembersJSONEntry     = "vfi_members"
-	addessMembersJSONEntry  = "ips_members"
+	addressMembersJSONEntry = "address_members"
 	expressionJSONEntry     = "expression"
 	resourcesJSONEntry      = "resources"
 	serviceEntriesJSONEntry = "service_entries"
@@ -30,8 +30,6 @@ const (
 	segmentPortsJSONEntry   = "segment_ports"
 )
 
-var nilWithType *struct{}
-
 type Rule struct {
 	nsx.Rule
 	FirewallRule   FirewallRule   `json:"firewall_rule"`
@@ -40,7 +38,7 @@ type Rule struct {
 
 func (rule *Rule) UnmarshalJSON(b []byte) error {
 	rule.ServiceEntries = ServiceEntries{}
-	return UnmarshalBaseStructAndFields(b, &rule.Rule,
+	return UnmarshalBaseStructAnd2Fields(b, &rule.Rule,
 		serviceEntriesJSONEntry, &rule.ServiceEntries,
 		firewallRuleJSONEntry, &rule.FirewallRule)
 }
@@ -56,7 +54,7 @@ type SecurityPolicy struct {
 }
 
 func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &securityPolicy.SecurityPolicy,
+	return UnmarshalBaseStructAnd2Fields(b, &securityPolicy.SecurityPolicy,
 		rulesJSONEntry, &securityPolicy.Rules,
 		defaultRuleJSONEntry, &securityPolicy.DefaultRule)
 }
@@ -222,7 +220,7 @@ type Service struct {
 }
 
 func (service *Service) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &service.Service, serviceEntriesJSONEntry, &service.ServiceEntries, "", nilWithType)
+	return UnmarshalBaseStructAnd1Field(b, &service.Service, serviceEntriesJSONEntry, &service.ServiceEntries)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -245,7 +243,7 @@ func (vif *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
 		}
 	}
 	if v, ok := raw["ip_address_info"]; ok {
-		if strings.Contains(string(v), "IP_ADDRESS_SOURCE_TYPE_") {
+		if strings.Contains(string(v), "IP_ADDRESS_SOURCE_TYPE") {
 			raw["ip_address_info"] = json.RawMessage(strings.ReplaceAll(string(v), "IP_ADDRESS_SOURCE_TYPE_", ""))
 		}
 	}
@@ -262,7 +260,7 @@ type Segment struct {
 }
 
 func (segment *Segment) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &segment.Segment, segmentPortsJSONEntry, &segment.SegmentPorts, "", nilWithType)
+	return UnmarshalBaseStructAnd1Field(b, &segment.Segment, segmentPortsJSONEntry, &segment.SegmentPorts)
 }
 
 type SegmentPort struct {
@@ -358,17 +356,17 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 
 type Group struct {
 	nsx.Group
-	Members        []RealizedVirtualMachine  `json:"members"`
+	VMMembers      []RealizedVirtualMachine  `json:"vm_members"`
 	VIFMembers     []VirtualNetworkInterface `json:"vif_members"`
 	AddressMembers []nsx.IPElement           `json:"ips_members"`
 	Expression     Expression                `json:"expression"`
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields4(b, &group.Group,
-		membersJSONEntry, &group.Members,
+	return UnmarshalBaseStructAnd4Fields(b, &group.Group,
+		membersJSONEntry, &group.VMMembers,
 		vifMembersJSONEntry, &group.VIFMembers,
-		addessMembersJSONEntry, &group.AddressMembers,
+		addressMembersJSONEntry, &group.AddressMembers,
 		expressionJSONEntry, &group.Expression,
 	)
 }
@@ -381,7 +379,7 @@ type Domain struct {
 }
 
 func (domain *Domain) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &domain.Domain, resourcesJSONEntry, &domain.Resources, "", nilWithType)
+	return UnmarshalBaseStructAnd1Field(b, &domain.Domain, resourcesJSONEntry, &domain.Resources)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////
@@ -394,32 +392,30 @@ func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *
 	return nil
 }
 
-func UnmarshalBaseStructAndFields[baseType any, fieldType1 any, fieldType2 any](
+var nilWithType *struct{}
+func UnmarshalBaseStructAnd1Field[baseType any, fieldType1 any](
+	b []byte, base *baseType,
+	entry1 string, field1 *fieldType1,
+) error {
+	return UnmarshalBaseStructAnd4Fields(b, base, entry1, field1, "", nilWithType, "", nilWithType, "", nilWithType)
+}
+
+func Unmarshal2Fields[fieldType1 any, fieldType2 any](
+	b []byte,
+	entry1 string, field1 *fieldType1,
+	entry2 string, field2 *fieldType2,
+) error {
+	return UnmarshalBaseStructAnd4Fields(b, nilWithType, entry1, field1, entry2, field2, "", nilWithType, "", nilWithType)
+}
+func UnmarshalBaseStructAnd2Fields[baseType any, fieldType1 any, fieldType2 any](
 	b []byte, base *baseType,
 	entry1 string, field1 *fieldType1,
 	entry2 string, field2 *fieldType2,
 ) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(b, &raw); err != nil {
-		return err
-	}
-	if base != nil {
-		if err := json.Unmarshal(b, base); err != nil {
-			return err
-		}
-	}
-	if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
-		return err
-	}
-	if field2 != nil {
-		if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
-			return err
-		}
-	}
-	return nil
+	return UnmarshalBaseStructAnd4Fields(b, base, entry1, field1, entry2, field2, "", nilWithType, "", nilWithType)
 }
 
-func UnmarshalBaseStructAndFields4[baseType any, fieldType1 any, fieldType2 any, fieldType3 any, fieldType4 any](
+func UnmarshalBaseStructAnd4Fields[baseType any, fieldType1 any, fieldType2 any, fieldType3 any, fieldType4 any](
 	b []byte, base *baseType,
 	entry1 string, field1 *fieldType1,
 	entry2 string, field2 *fieldType2,
@@ -435,17 +431,25 @@ func UnmarshalBaseStructAndFields4[baseType any, fieldType1 any, fieldType2 any,
 			return err
 		}
 	}
-	if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
-		return err
+	if field1 != nil {
+		if err := unmarshalFromRaw(raw, entry1, field1); err != nil {
+			return err
+		}
 	}
-	if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
-		return err
+	if field2 != nil {
+		if err := unmarshalFromRaw(raw, entry2, field2); err != nil {
+			return err
+		}
 	}
-	if err := unmarshalFromRaw(raw, entry3, field3); err != nil {
-		return err
+	if field3 != nil {
+		if err := unmarshalFromRaw(raw, entry3, field3); err != nil {
+			return err
+		}
 	}
-	if err := unmarshalFromRaw(raw, entry4, field4); err != nil {
-		return err
+	if field4 != nil {
+		if err := unmarshalFromRaw(raw, entry4, field4); err != nil {
+			return err
+		}
 	}
 	return nil
 }
