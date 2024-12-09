@@ -232,26 +232,28 @@ type VirtualNetworkInterface struct {
 	nsx.VirtualNetworkInterface
 }
 
-func (vif *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
+func (vni *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
 	}
-	if v, ok := raw["owner_vm_type"]; ok {
-		if strings.Contains(string(v), "VIRTUAL_MACHINE_TYPE") {
-			raw["owner_vm_type"] = json.RawMessage(strings.ReplaceAll(string(v), "VIRTUAL_MACHINE_TYPE_", ""))
-		}
+	// for some reason, the values of the following entries has a prefix that should be removed:
+	entriesToFix := [][]string{
+		{"owner_vm_type", "VIRTUAL_MACHINE_TYPE_"},
+		{"ip_address_info", "IP_ADDRESS_SOURCE_TYPE_"},
 	}
-	if v, ok := raw["ip_address_info"]; ok {
-		if strings.Contains(string(v), "IP_ADDRESS_SOURCE_TYPE") {
-			raw["ip_address_info"] = json.RawMessage(strings.ReplaceAll(string(v), "IP_ADDRESS_SOURCE_TYPE_", ""))
+	for _, entryToFix := range entriesToFix {
+		if v, ok := raw[entryToFix[0]]; ok {
+			if strings.Contains(string(v), entryToFix[1]) {
+				raw[entryToFix[0]] = json.RawMessage(strings.ReplaceAll(string(v), entryToFix[1], ""))
+			}
 		}
 	}
 	fixedBytes, err := json.Marshal(raw)
 	if err != nil {
 		return err
 	}
-	return vif.VirtualNetworkInterface.UnmarshalJSON(fixedBytes)
+	return vni.VirtualNetworkInterface.UnmarshalJSON(fixedBytes)
 }
 
 type Segment struct {
