@@ -5,7 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func configFromResourcesContainer(recourses *collector.ResourcesContainerModel) (*config, error) {
+func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, vmsFilter []string) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
@@ -17,12 +17,12 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel) 
 	logging.Debugf("the parsed config details: %s", config.getConfigInfoStr())
 
 	// compute connectivity map from the parsed config
-	config.ComputeConnectivity()
+	config.ComputeConnectivity(vmsFilter)
 	return config, nil
 }
 
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
-	config, err := configFromResourcesContainer(recourses)
+	config, err := configFromResourcesContainer(recourses,params.VMs)
 	if err != nil {
 		return "", err
 	}

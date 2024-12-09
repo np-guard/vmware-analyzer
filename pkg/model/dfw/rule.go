@@ -7,8 +7,10 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -55,20 +57,30 @@ func actionFromString(s string) ruleAction {
 	}
 }
 
-type fwRule struct {
-	srcVMs        []*endpoints.VM
-	dstVMs        []*endpoints.VM
-	scope         []*endpoints.VM
-	conn          *netset.TransportSet
-	action        ruleAction
-	direction     string //	"IN","OUT",	"IN_OUT"
-	origRuleObj   *collector.Rule
-	ruleID        int
-	secPolicyName string
+type FwRule struct {
+	srcVMs             []*endpoints.VM
+	dstVMs             []*endpoints.VM
+	scope              []*endpoints.VM
+	conn               *netset.TransportSet
+	action             ruleAction
+	direction          string //	"IN","OUT",	"IN_OUT"
+	origRuleObj        *collector.Rule
+	origDefaultRuleObj *collector.FirewallRule
+	ruleID             int
+	secPolicyName      string
+	secPolicyCategory  string
+	categoryRef        *categorySpec
+	dfwRef             *DFW
+	// clause of symbolic src abd symbolic dst
+	// todo: in order to compute these will have to maintain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
+	//       keep it there?
+	symbolicSrc []*symbolicexpr.SymbolicPath
+	symbolicDst []*symbolicexpr.SymbolicPath
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
+
 }
 
-func (f *fwRule) effectiveRules() (inbound, outbound *fwRule) {
+func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 	if len(f.scope) == 0 {
 		logging.Debugf("rule %d has no effective inbound/outbound component, since its scope component is empty", f.ruleID)
 		return nil, nil
@@ -80,7 +92,7 @@ func (f *fwRule) effectiveRules() (inbound, outbound *fwRule) {
 	return f.getInboundRule(), f.getOutboundRule()
 }
 
-func (f *fwRule) getInboundRule() *fwRule {
+func (f *FwRule) getInboundRule() *FwRule {
 	// if action is OUT -> return nil
 	if f.direction == string(nsx.RuleDirectionOUT) {
 		logging.Debugf("rule %d has no effective inbound component, since its direction is OUT only", f.ruleID)
@@ -101,7 +113,7 @@ func (f *fwRule) getInboundRule() *fwRule {
 		logging.Debugf("rule %d has no effective inbound component, since its intersction for dest & scope is empty", f.ruleID)
 		return nil
 	}
-	return &fwRule{
+	return &FwRule{
 		srcVMs:        f.srcVMs,
 		dstVMs:        newDest,
 		conn:          f.conn,
@@ -110,10 +122,12 @@ func (f *fwRule) getInboundRule() *fwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
+		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 }
 
-func (f *fwRule) getOutboundRule() *fwRule {
+func (f *FwRule) getOutboundRule() *FwRule {
 	// if action is IN -> return nil
 	if f.direction == string(nsx.RuleDirectionIN) {
 		logging.Debugf("rule %d has no effective outbound component, since its direction is IN only", f.ruleID)
@@ -135,7 +149,7 @@ func (f *fwRule) getOutboundRule() *fwRule {
 		logging.Debugf("rule %d has no effective outbound component, since its intersction for src & scope is empty", f.ruleID)
 		return nil
 	}
-	return &fwRule{
+	return &FwRule{
 		srcVMs:        newSrc,
 		dstVMs:        f.dstVMs,
 		conn:          f.conn,
@@ -144,17 +158,19 @@ func (f *fwRule) getOutboundRule() *fwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
+		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 }
 
-func (f *fwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
+func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 	// in processed rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
 	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 }
 
 // return whether the rule captures the input src,dst VMs on the given direction
-/*func (f *fwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
+/*func (f *FwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
 	vmsCaptured := slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 	if !vmsCaptured {
 		return false
@@ -174,12 +190,123 @@ func vmsString(vms []*endpoints.VM) string {
 }
 
 // return a string representation of a single rule
-func (f *fwRule) string() string {
+// groups are interpreted to VM members in this representation
+func (f *FwRule) string() string {
+	_, _ = f.symbolicSrc, f.symbolicDst // todo tmp for line
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
-func (f *fwRule) effectiveRuleStr() string {
+func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, f.secPolicyName)
+}
+
+func getDefaultRuleScope(r *collector.FirewallRule) string {
+	res := []string{}
+	for _, s := range r.AppliedTos {
+		if s.TargetDisplayName != nil {
+			res = append(res, *s.TargetDisplayName)
+		}
+	}
+	return strings.Join(res, listSeparatorStr)
+}
+
+func (f *FwRule) getShortPathsString(paths []string) string {
+	const (
+		strLenLimit = 12
+		pathSep     = "/"
+		trimmedStr  = "..."
+	)
+
+	shortPaths := make([]string, len(paths))
+	for i := range paths {
+		// get display name from path when possible
+		if name, ok := f.dfwRef.pathsToDisplayNames[paths[i]]; ok {
+			shortPaths[i] = name
+		} else {
+			// shorten the path str in output
+			pathElems := strings.Split(paths[i], pathSep)
+			if len(pathElems) == 0 {
+				continue
+			}
+			shortPaths[i] = pathElems[len(pathElems)-1]
+		}
+		if len(shortPaths[i]) > strLenLimit {
+			// shorten long strings in output, to enable readable table of the input fw-rules
+			shortPaths[i] = shortPaths[i][0:strLenLimit] + trimmedStr
+		}
+	}
+	return strings.Join(shortPaths, listSeparatorStr)
+}
+
+func getRulesFormattedHeaderLine() string {
+	var rulePropertiesHeaderList = []string{
+		"ruleID",
+		"ruleName",
+		"src",
+		"dst",
+		"conn",
+		"action",
+		"direction",
+		"scope",
+		"sec-policy",
+		"category",
+	}
+	return fmt.Sprintf("%s%s%s",
+		common.Red,
+		strings.Join(rulePropertiesHeaderList, "\t"),
+		common.Reset)
+}
+
+// originalRuleStr returns a string representation of a single rule with original attribute values (including groups)
+func (f *FwRule) originalRuleStr() string {
+	const (
+		anyStr = "ANY"
+	)
+
+	if f.origRuleObj == nil && f.origDefaultRuleObj == nil {
+		logging.Debugf("warning: rule %d has no origRuleObj or origDefaultRuleObj", f.ruleID)
+		return ""
+	}
+
+	// if this is a "default rule" from category with ConnectivityPreference configured,
+	// the rule object is of different type
+	if f.origRuleObj == nil && f.origDefaultRuleObj != nil {
+		return fmt.Sprintf("%s%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
+			common.Yellow,
+			*f.origDefaultRuleObj.Id,
+			*f.origDefaultRuleObj.DisplayName,
+			// The default rule that gets created will be a any-any rule and applied
+			// to entities specified in the scope of the security policy.
+			anyStr,
+			anyStr,
+			anyStr,
+			*f.origDefaultRuleObj.Action,
+			f.origDefaultRuleObj.Direction,
+			getDefaultRuleScope(f.origDefaultRuleObj),
+			f.secPolicyName,
+			f.secPolicyCategory,
+			common.Reset,
+		)
+	}
+
+	name := ""
+	if f.origRuleObj.DisplayName != nil {
+		name = *f.origRuleObj.DisplayName
+	}
+	return fmt.Sprintf("%s%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
+		common.Yellow,
+		f.ruleID,
+		name,
+		f.getShortPathsString(f.origRuleObj.SourceGroups),
+		f.getShortPathsString(f.origRuleObj.DestinationGroups),
+		// todo: origRuleObj.Services is not always the services, can also be service_entries
+		f.getShortPathsString(f.origRuleObj.Services),
+		string(f.action), f.direction,
+		strings.Join(f.origRuleObj.Scope, listSeparatorStr),
+		f.secPolicyName,
+		f.secPolicyCategory,
+		common.Reset,
+	)
 }
