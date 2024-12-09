@@ -359,7 +359,7 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 type Group struct {
 	nsx.Group
 	Members        []RealizedVirtualMachine  `json:"members"`
-	VFIMembers     []VirtualNetworkInterface `json:"vfi_members"`
+	VIFMembers     []VirtualNetworkInterface `json:"vif_members"`
 	AddressMembers []nsx.IPElement           `json:"ips_members"`
 	Expression     Expression                `json:"expression"`
 }
@@ -367,7 +367,7 @@ type Group struct {
 func (group *Group) UnmarshalJSON(b []byte) error {
 	return UnmarshalBaseStructAndFields4(b, &group.Group,
 		membersJSONEntry, &group.Members,
-		vifMembersJSONEntry, &group.VFIMembers,
+		vifMembersJSONEntry, &group.VIFMembers,
 		addessMembersJSONEntry, &group.AddressMembers,
 		expressionJSONEntry, &group.Expression,
 	)
