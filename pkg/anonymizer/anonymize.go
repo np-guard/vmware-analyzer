@@ -13,31 +13,34 @@ import (
 // anonymize() is top function of the anonymization algorithm.
 // the anonymization is calling the iterate() function several time to do the anonymization.
 
-func anonymize(st structInstance, anonInstruction *anonInstruction) error {
-	anonymizer := newAnonymizer(anonInstruction)
-	if err := iterate(st, anonymizer, collectIDsToKeep, toAnonymizeFilter); err != nil {
-		return err
-	}
-	if err := iterate(st, anonymizer, anonymizeIDs, toAnonymizeFilter); err != nil {
-		return err
-	}
-	if err := iterate(st, anonymizer, anonymizeIDRefs, toAnonymizeFilter); err != nil {
-		return err
-	}
-	if err := iterate(st, anonymizer, collectPaths, toAnonymizeFilter); err != nil {
-		return err
-	}
-	if err := anonymizer.anonymizeAllPaths(); err != nil {
-		return err
-	}
-	if err := iterate(st, anonymizer, anonymizePaths, toAnonymizeFilter); err != nil {
-		return err
-	}
-	if err := iterate(st, anonymizer, anonymizeFields, toAnonymizeFilter); err != nil {
-		return err
-	}
-	if err := iterate(st, anonymizer, anonymizeFieldsByRef, toAnonymizeFilter); err != nil {
-		return err
+func anonymize(st structInstance, anonInstructions []*anonInstruction) error {
+	anonymizer := newAnonymizer()
+	for _, anonInstruction := range anonInstructions {
+		anonymizer.setAnonInstruction(anonInstruction)
+		if err := iterate(st, anonymizer, collectIDsToKeep, toAnonymizeFilter); err != nil {
+			return err
+		}
+		if err := iterate(st, anonymizer, anonymizeIDs, toAnonymizeFilter); err != nil {
+			return err
+		}
+		if err := iterate(st, anonymizer, anonymizeIDRefs, toAnonymizeFilter); err != nil {
+			return err
+		}
+		if err := iterate(st, anonymizer, collectPaths, toAnonymizeFilter); err != nil {
+			return err
+		}
+		if err := anonymizer.anonymizeAllPaths(); err != nil {
+			return err
+		}
+		if err := iterate(st, anonymizer, anonymizePaths, toAnonymizeFilter); err != nil {
+			return err
+		}
+		if err := iterate(st, anonymizer, anonymizeFields, toAnonymizeFilter); err != nil {
+			return err
+		}
+		if err := iterate(st, anonymizer, anonymizeFieldsByRef, toAnonymizeFilter); err != nil {
+			return err
+		}
 	}
 	logging.Debugf("anonymization statistics:\n%s\n", anonymizer.statistics.string())
 	return nil

@@ -13,7 +13,7 @@ import (
 const validIPPrefix = 192
 
 func AnonymizeNsx(st structInstance) error {
-	return anonymize(st, &inst)
+	return anonymize(st, []*anonInstruction{&inst, &instForAddressMembers})
 }
 
 func ipAddressFilter(ip string) bool {
@@ -140,5 +140,14 @@ var inst anonInstruction = anonInstruction{
 		"/infra",
 		"/infra/realized-state",
 		"ANY",
+	},
+}
+
+var instForAddressMembers anonInstruction = anonInstruction{
+	structsNotToSkip: []string{
+		"Group",
+	},
+	slicesByCondition: []conditionField{
+		{"AddressMembers", ipAddressFilter},
 	},
 }
