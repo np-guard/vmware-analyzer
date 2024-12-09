@@ -393,6 +393,7 @@ func unmarshalFromRaw[t any](raw map[string]json.RawMessage, entry string, res *
 }
 
 var nilWithType *struct{}
+
 func UnmarshalBaseStructAnd1Field[baseType any, fieldType1 any](
 	b []byte, base *baseType,
 	entry1 string, field1 *fieldType1,

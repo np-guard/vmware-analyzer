@@ -143,7 +143,7 @@ func newAnonymizer() *anonymizer {
 		statistics:            statistics{},
 	}
 }
-func (a *anonymizer) setAnonInstruction(anonInstruction *anonInstruction){
+func (a *anonymizer) setAnonInstruction(anonInstruction *anonInstruction) {
 	a.anonInstruction = anonInstruction
 }
 
