@@ -1,8 +1,6 @@
 package model
 
 import (
-	"strings"
-
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -11,7 +9,7 @@ import (
 
 type vmFilter func(vm *endpoints.VM) bool
 
-func createRelevantTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, config *config, vmFilter vmFilter) *collector.TraceFlows {
+func createTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, config *config, vmFilter vmFilter) *collector.TraceFlows {
 
 	traceFlows := collector.NewTraceflows(resources, server)
 	for srcUid, srcVm := range config.vmsMap {
@@ -41,8 +39,6 @@ func createRelevantTraceflows(resources *collector.ResourcesContainerModel, serv
 			case conn.IsAll(), conn.IsEmpty():
 				// one check only using icmp
 				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), connString)
-
-
 			case conn.TCPUDPSet().IsAll() || conn.TCPUDPSet().IsEmpty():
 				// one check for icmp, one for tcp/udp
 				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.ICMPSet().IsAll(), connString)
@@ -72,14 +68,13 @@ func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 	return collector.TraceFlowProtocol{Protocol: protocol, SrcPort: int(srcPort), DstPort: int(dstPort)}
 }
 
-func verifyTraceflow(resources *collector.ResourcesContainerModel, server collector.ServerData) (*collector.TraceFlows, error) {
-	config, err := configFromResourcesContainer(resources,nil)
+func compareConfigToTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, vmFilter vmFilter) (*collector.TraceFlows, error) {
+	config, err := configFromResourcesContainer(resources, nil)
 	if err != nil {
 		return nil, err
 	}
-	traceFlows := createRelevantTraceflows(resources, server, config, func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "New") })
-
-	tfs := traceFlows.RunAndCollect()
-
-	return tfs, nil
+	traceFlows := createTraceflows(resources, server, config, vmFilter)
+	traceFlows.Execute()
+	traceFlows.Summery()
+	return traceFlows, nil
 }

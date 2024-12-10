@@ -137,17 +137,17 @@ func (tfs TraceFlowObservations) isDelivered() bool {
 }
 
 type traceflowResult struct {
-	Delivered bool   `json:"delivered"`
-	SrcRuleID string `json:"src_rule_id,omitempty"`
-	NatRuleID string `json:"nat_rule_id,omitempty"`
-	DstRuleID string `json:"dst_rule_id,omitempty"`
-	Error     string `json:"error,omitempty"`
+	Delivered bool     `json:"delivered"`
+	SrcRuleID string   `json:"src_rule_id,omitempty"`
+	NatRuleID string   `json:"nat_rule_id,omitempty"`
+	DstRuleID string   `json:"dst_rule_id,omitempty"`
+	Errors    []string `json:"error,omitempty"`
 }
 
 func (tfs TraceFlowObservations) results() traceflowResult {
 	res := traceflowResult{}
 	if !tfs.completed() {
-		res.Error = "traceflow is not completed"
+		res.Errors = append(res.Errors, "traceflow is not completed")
 	} else {
 		res.Delivered = tfs.isDelivered()
 	}
@@ -156,11 +156,11 @@ func (tfs TraceFlowObservations) results() traceflowResult {
 		isNatRule := comType == "NAT"
 		switch {
 		case err != nil:
-			res.Error = err.Error()
+			res.Errors = append(res.Errors, err.Error())
 			return res
 		case ruleID == "":
 		case isNatRule && res.NatRuleID != "":
-			res.Error = "got two nat rules in one traceflow"
+			res.Errors = append(res.Errors, "got two nat rules in one traceflow")
 		case isNatRule:
 			res.NatRuleID = ruleID
 		case res.SrcRuleID == "":
@@ -168,12 +168,12 @@ func (tfs TraceFlowObservations) results() traceflowResult {
 		case res.DstRuleID == "":
 			res.DstRuleID = ruleID
 		default:
-			res.Error = "got three rules in one traceflow"
+			res.Errors = append(res.Errors, "got three rules in one traceflow")
 			return res
 		}
 	}
 	if res.DstRuleID == "" && res.Delivered {
-		res.Error = "traceflow was delivered without destination rule"
+		res.Errors = append(res.Errors, "traceflow was delivered without destination rule")
 	}
 	return res
 }

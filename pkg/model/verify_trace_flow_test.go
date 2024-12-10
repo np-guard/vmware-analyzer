@@ -3,10 +3,12 @@ package model
 import (
 	"fmt"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 const (
@@ -47,7 +49,9 @@ func Test_verifyTraceflow(t *testing.T) {
 				t.Errorf("didnt got resources")
 				return
 			}
-			tfs, err := verifyTraceflow(got, server)
+			// filter :=func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "New") }
+			filter :=func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "") }
+			tfs, err := compareConfigToTraceflows(got, server, filter)
 			if err != nil {
 				t.Errorf("verifyTraceflow() error = %v", err)
 			}
@@ -55,9 +59,11 @@ func Test_verifyTraceflow(t *testing.T) {
 			if err != nil {
 				t.Errorf("ToJSONString() error = %v", err)
 			}
-			if err := common.WriteToFile(path.Join(outDir, "traceflowsObservations.json"), jOut); err != nil {
+			tfPath := path.Join(outDir, "traceflowsObservations.json")
+			if err := common.WriteToFile(tfPath, jOut); err != nil {
 				t.Errorf("ToJSONString() error = %v", err)
 			}
+			fmt.Printf("traceflow results at %s\n",tfPath)
 		})
 	}
 }

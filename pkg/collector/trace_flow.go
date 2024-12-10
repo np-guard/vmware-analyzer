@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	math_rand "math/rand"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -31,20 +33,6 @@ const (
 	traceflowNumberOfPooling = 10
 )
 
-type traceFlow struct {
-	Src          string                `json:"src,omitempty"`
-	Dst          string                `json:"dst,omitempty"`
-	SrcVM        string                `json:"src_vm,omitempty"`
-	DstVM        string                `json:"dst_vm,omitempty"`
-	Protocol     TraceFlowProtocol     `json:"protocol,omitempty"`
-	Name         string                `json:"name,omitempty"`
-	Errors       []string              `json:"errors,omitempty"`
-	Results      traceflowResult       `json:"results,omitempty"`
-	Allowed      bool                  `json:"allowed"`
-	Connection   string                `json:"connection,omitempty"`
-	Observations TraceFlowObservations `json:"observation,omitempty"`
-}
-
 type TraceFlowProtocol struct {
 	SrcPort  int    `json:"src_port,omitempty"`
 	DstPort  int    `json:"dst_port,omitempty"`
@@ -65,78 +53,25 @@ func (t *TraceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	return h
 }
 
-type TraceFlows struct {
-	Tfs       []*traceFlow
-	resources *ResourcesContainerModel
-	server    ServerData
-}
-
-func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *TraceFlows {
-	return &TraceFlows{resources: resources, server: server}
-}
-func (tfs *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol, allowed bool, connection string) {
-	tfs.Tfs = append(tfs.Tfs, &traceFlow{Src: src, Dst: dst, Protocol: protocol, Allowed: allowed, Connection: connection})
-}
-
-// ToJSONString converts a traceFlows into a json-formatted-string
-func (tfs *TraceFlows) ToJSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(tfs.Tfs, "", "    ")
-	return string(toPrint), err
-}
-
-func (traceFlows *TraceFlows) RunAndCollect() *TraceFlows {
-	traceFlows.runTracflows()
-	traceFlows.collectTracflowsData()
-	return traceFlows
-}
-func (traceFlows *TraceFlows) runTracflows() {
-	for _, traceFlow := range traceFlows.Tfs {
-		if len(traceFlows.Tfs) > maxTraceFlows && math_rand.Intn(len(traceFlows.Tfs)) > maxTraceFlows {
-			continue
-		}
-		if name, err := traceFlow.run(traceFlows.resources, traceFlows.server); err != nil {
-			logging.Debug(err.Error())
-			traceFlow.Errors = append(traceFlow.Errors, err.Error())
-		} else {
-			traceFlow.Name = name
-		}
-		time.Sleep(traceflowCreationTime)
-	}
-}
-func (traceFlows *TraceFlows) collectTracflowsData() {
-	time.Sleep(traceflowPoolingTime)
-	for _, traceFlow := range traceFlows.Tfs {
-		if traceFlow.Name == "" || len(traceFlow.Errors) > 0 {
-			continue
-		}
-		if obs, err := poolTraceFlowObservation(traceFlows.server, traceFlow.Name); err != nil {
-			logging.Debug(err.Error())
-			traceFlow.Errors = append(traceFlow.Errors, err.Error())
-		} else {
-			traceFlow.Observations = obs
-		}
-		if err := deleteTraceFlow(traceFlows.server, traceFlow.Name); err != nil {
-			logging.Debug(err.Error())
-			traceFlow.Errors = append(traceFlow.Errors, err.Error())
-		}
-		traceFlow.Results = traceFlow.Observations.results()
-		if traceFlow.Allowed != traceFlow.Results.Delivered {
-			traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
-		}
-	}
-}
-
 /////////////////////////////////////////////////////////////////////////////////
 
-func traceFlowRandomID() (string, error) {
-	rnd := make([]byte, traceflowIDSize)
-	if _, err := crypto_rand.Read(rnd); err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("traceFlow%X", rnd), nil
+type traceFlow struct {
+	Src              string                `json:"src,omitempty"`
+	Dst              string                `json:"dst,omitempty"`
+	SrcVM            string                `json:"src_vm,omitempty"`
+	DstVM            string                `json:"dst_vm,omitempty"`
+	Protocol         TraceFlowProtocol     `json:"protocol,omitempty"`
+	NotSent          bool                  `json:"not_sent,omitempty"`
+	Name             string                `json:"name,omitempty"`
+	ApiErrors        []string              `json:"api_errors,omitempty"`
+	Errors           []string              `json:"errors,omitempty"`
+	Results          traceflowResult       `json:"results,omitempty"`
+	AllowedByAnalyze bool                  `json:"allowed_by_analyze"`
+	Connection       string                `json:"connection,omitempty"`
+	Observations     TraceFlowObservations `json:"observation,omitempty"`
 }
 
-func (tf *traceFlow) run(resources *ResourcesContainerModel, server ServerData) (string, error) {
+func (tf *traceFlow) send(resources *ResourcesContainerModel, server ServerData) (string, error) {
 	traceFlowName, err := traceFlowRandomID()
 	if err != nil {
 		return "", err
@@ -182,14 +117,125 @@ func (tf *traceFlow) run(resources *ResourcesContainerModel, server ServerData) 
 	if err != nil {
 		return "", err
 	}
-	err = PutResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName), traceReq)
+	err = putTraceFlow(server, traceFlowName, traceReq)
 	if err != nil {
 		return "", err
 	}
 	return traceFlowName, nil
 }
 
-/////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////////
+type TraceFlows struct {
+	Tfs       []*traceFlow
+	resources *ResourcesContainerModel
+	server    ServerData
+}
+
+func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *TraceFlows {
+	return &TraceFlows{resources: resources, server: server}
+}
+func (tfs *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol, allowedByAnalyze bool, connection string) {
+	tfs.Tfs = append(tfs.Tfs, &traceFlow{Src: src, Dst: dst, Protocol: protocol, AllowedByAnalyze: allowedByAnalyze, Connection: connection})
+}
+
+// ToJSONString converts a traceFlows into a json-formatted-string, it converts only the Tfs
+func (tfs *TraceFlows) ToJSONString() (string, error) {
+	toPrint, err := json.MarshalIndent(tfs.Tfs, "", "    ")
+	return string(toPrint), err
+}
+
+func (traceFlows *TraceFlows) Execute() {
+	traceFlows.sendTraceflows()
+	traceFlows.collectTracflowsData()
+}
+
+func (traceFlows *TraceFlows) sendTraceflows() {
+	for _, traceFlow := range traceFlows.Tfs {
+		if len(traceFlows.Tfs) > maxTraceFlows && math_rand.Intn(len(traceFlows.Tfs)) > maxTraceFlows {
+			traceFlow.NotSent = true
+			continue
+		}
+		if name, err := traceFlow.send(traceFlows.resources, traceFlows.server); err != nil {
+			logging.Debug(err.Error())
+			traceFlow.ApiErrors = append(traceFlow.ApiErrors, err.Error())
+		} else {
+			traceFlow.Name = name
+		}
+		time.Sleep(traceflowCreationTime)
+	}
+}
+
+func (traceFlows *TraceFlows) collectTracflowsData() {
+	time.Sleep(traceflowPoolingTime)
+	for _, traceFlow := range traceFlows.Tfs {
+		if traceFlow.Name == "" || len(traceFlow.ApiErrors) > 0 {
+			continue
+		}
+		if obs, err := poolTraceFlowObservation(traceFlows.server, traceFlow.Name); err != nil {
+			logging.Debug(err.Error())
+			traceFlow.ApiErrors = append(traceFlow.ApiErrors, err.Error())
+		} else {
+			traceFlow.Observations = obs
+		}
+		if err := deleteTraceFlow(traceFlows.server, traceFlow.Name); err != nil {
+			logging.Debug(err.Error())
+			traceFlow.ApiErrors = append(traceFlow.ApiErrors, err.Error())
+		}
+		traceFlow.Results = traceFlow.Observations.results()
+		if traceFlow.AllowedByAnalyze != traceFlow.Results.Delivered {
+			traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
+		}
+	}
+}
+
+func (traceFlows *TraceFlows) Summery() {
+	var notSent, apiErrors, resultErrors, tsWithError, falseAllow, falseDeny int
+	errors := []string{}
+	for _, traceFlow := range traceFlows.Tfs {
+		if traceFlow.NotSent {
+			notSent++
+		}
+		if len(traceFlow.Errors) > 0 {
+			tsWithError++
+			errors = append(errors, traceFlow.Errors...)
+		}
+		if len(traceFlow.ApiErrors) > 0 {
+			apiErrors++
+		}
+		if len(traceFlow.Results.Errors) > 0 {
+			resultErrors++
+		}
+		if traceFlow.Results.Delivered && !traceFlow.AllowedByAnalyze {
+			falseDeny++
+		}
+		if !traceFlow.Results.Delivered && traceFlow.AllowedByAnalyze {
+			falseAllow++
+		}
+	}
+	slices.Sort(errors)
+	errors = slices.Compact(errors)
+	fmt.Println("traceflow summery:")
+	fmt.Printf("N of traceflow sent: %d, out of %d\n", len(traceFlows.Tfs)-notSent, len(traceFlows.Tfs))
+	fmt.Printf("N of traceflow with errors: %d\n", tsWithError)
+	fmt.Printf("N of false allow: %d\n", falseAllow)
+	fmt.Printf("N of false deny:  %d\n", falseDeny)
+	fmt.Printf("N of traceflow with api errors: %d\n", apiErrors)
+	fmt.Printf("N of traceflow with result parsing errors: %d\n", resultErrors)
+	fmt.Printf("traceflow errors:\n %s\n\n", strings.Join(errors,"\n"))
+}
+
+// //////////////////////////////////////////////////////////////////////////////////////////////
+func traceFlowRandomID() (string, error) {
+	rnd := make([]byte, traceflowIDSize)
+	if _, err := crypto_rand.Read(rnd); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("traceFlow%X", rnd), nil
+}
+
+func putTraceFlow(server ServerData, traceFlowName string, traceReq *TraceflowConfig) error {
+	return PutResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName), traceReq)
+}
 
 func deleteTraceFlow(server ServerData, traceFlowName string) error {
 	return DeleteResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName))
