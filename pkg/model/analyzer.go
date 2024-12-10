@@ -28,4 +28,3 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, 
 	config.ComputeConnectivity(vmsFilter)
 	return config, nil
 }
-
