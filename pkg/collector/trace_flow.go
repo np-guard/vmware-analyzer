@@ -190,7 +190,7 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 
 func (traceFlows *TraceFlows) Summery() {
 	var notSent, withApiErrors, withResultErrors, withError, falseAllow, falseDeny int
-	var apiErrors, resultErrors, errors  []string
+	var apiErrors, resultErrors, errors []string
 	for _, traceFlow := range traceFlows.Tfs {
 		if traceFlow.NotSent {
 			notSent++
@@ -228,9 +228,9 @@ func (traceFlows *TraceFlows) Summery() {
 	fmt.Printf("N of false deny:  %d\n", falseDeny)
 	fmt.Printf("N of traceflow with api errors: %d\n", withApiErrors)
 	fmt.Printf("N of traceflow with result parsing errors: %d\n", withResultErrors)
-	fmt.Printf("traceflow errors:\n %s\n\n", strings.Join(errors,"\n"))
-	fmt.Printf("traceflow api errors:\n %s\n\n", strings.Join(apiErrors,"\n"))
-	fmt.Printf("traceflow result errors:\n %s\n\n", strings.Join(resultErrors,"\n"))
+	fmt.Printf("traceflow errors:\n %s\n\n", strings.Join(errors, "\n"))
+	fmt.Printf("traceflow api errors:\n %s\n\n", strings.Join(apiErrors, "\n"))
+	fmt.Printf("traceflow result errors:\n %s\n\n", strings.Join(resultErrors, "\n"))
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////

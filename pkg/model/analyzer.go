@@ -22,7 +22,7 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, 
 }
 
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
-	config, err := configFromResourcesContainer(recourses,params.VMs)
+	config, err := configFromResourcesContainer(recourses, params.VMs)
 	if err != nil {
 		return "", err
 	}

@@ -69,11 +69,11 @@ func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByPort(portI
 
 func (resources *ResourcesContainerModel) GetVirtualMachineAddresses(vmID string) []string {
 	ips := []string{}
-	for i,_ :=range resources.VirtualNetworkInterfaceList{
+	for i := range resources.VirtualNetworkInterfaceList {
 		vni := &resources.VirtualNetworkInterfaceList[i]
-		if *vni.OwnerVmId == vmID{
-			for _, info := range vni.IpAddressInfo{
-				for _, address := range info.IpAddresses{
+		if *vni.OwnerVmId == vmID {
+			for _, info := range vni.IpAddressInfo {
+				for _, address := range info.IpAddresses {
 					ips = append(ips, string(address))
 				}
 			}

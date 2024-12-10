@@ -50,7 +50,7 @@ func Test_verifyTraceflow(t *testing.T) {
 				return
 			}
 			// filter :=func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "New") }
-			filter :=func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "") }
+			filter := func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "") }
 			tfs, err := compareConfigToTraceflows(got, server, filter)
 			if err != nil {
 				t.Errorf("verifyTraceflow() error = %v", err)
@@ -63,7 +63,7 @@ func Test_verifyTraceflow(t *testing.T) {
 			if err := common.WriteToFile(tfPath, jOut); err != nil {
 				t.Errorf("ToJSONString() error = %v", err)
 			}
-			fmt.Printf("traceflow results at %s\n",tfPath)
+			fmt.Printf("traceflow results at %s\n", tfPath)
 		})
 	}
 }

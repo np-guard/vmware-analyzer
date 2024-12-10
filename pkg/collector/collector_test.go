@@ -151,5 +151,3 @@ func TestCollectResources(t *testing.T) {
 		})
 	}
 }
-
-
