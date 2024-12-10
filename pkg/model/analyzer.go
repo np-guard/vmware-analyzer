@@ -12,7 +12,6 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	}
 	return config.output(params)
 }
-
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, vmsFilter []string) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
