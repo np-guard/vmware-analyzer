@@ -9,6 +9,20 @@ import (
 
 type vmFilter func(vm *endpoints.VM) bool
 
+func compareConfigToTraceflows(
+	resources *collector.ResourcesContainerModel,
+	server collector.ServerData,
+	vmFilter vmFilter) (*collector.TraceFlows, error) {
+	config, err := configFromResourcesContainer(resources, nil)
+	if err != nil {
+		return nil, err
+	}
+	traceFlows := createTraceflows(resources, server, config, vmFilter)
+	traceFlows.Execute()
+	traceFlows.Summery()
+	return traceFlows, nil
+}
+
 func createTraceflows(resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
 	config *config, vmFilter vmFilter) *collector.TraceFlows {
@@ -86,18 +100,4 @@ func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 	srcPort := partition.S2.Min()
 	dstPort := partition.S3.Min()
 	return collector.TraceFlowProtocol{Protocol: protocol, SrcPort: int(srcPort), DstPort: int(dstPort)}
-}
-
-func compareConfigToTraceflows(
-	resources *collector.ResourcesContainerModel,
-	server collector.ServerData,
-	vmFilter vmFilter) (*collector.TraceFlows, error) {
-	config, err := configFromResourcesContainer(resources, nil)
-	if err != nil {
-		return nil, err
-	}
-	traceFlows := createTraceflows(resources, server, config, vmFilter)
-	traceFlows.Execute()
-	traceFlows.Summery()
-	return traceFlows, nil
 }
