@@ -21,6 +21,14 @@ func createTraceflows(resources *collector.ResourcesContainerModel, server colle
 			continue
 		}
 		srcIP := vmIps[0]
+		srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
+		if srcVni == nil {
+			continue
+		}
+		port := resources.GetSegmentPort(*srcVni.LportAttachmentId)
+		if port == nil {
+			continue
+		}
 		for dstUid, dstVm := range config.vmsMap {
 			if srcUid == dstUid {
 				continue
@@ -34,6 +42,13 @@ func createTraceflows(resources *collector.ResourcesContainerModel, server colle
 			}
 			dstIP := vmIps[0]
 			conn := config.analyzedConnectivity[srcVm][dstVm]
+			// temp fix till analyze will consider topology 
+			if !conn.IsEmpty() {
+				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
+				if dstVni == nil || !collector.IsConnected(resources, srcVni, dstVni) {
+					conn = netset.NoTransports()
+				}
+			}
 			connString := conn.String()
 			switch {
 			case conn.IsAll(), conn.IsEmpty():

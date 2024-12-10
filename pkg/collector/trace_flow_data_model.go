@@ -138,6 +138,7 @@ func (tfs TraceFlowObservations) isDelivered() bool {
 
 type traceflowResult struct {
 	Delivered bool     `json:"delivered"`
+	Completed bool     `json:"completed"`
 	SrcRuleID string   `json:"src_rule_id,omitempty"`
 	NatRuleID string   `json:"nat_rule_id,omitempty"`
 	DstRuleID string   `json:"dst_rule_id,omitempty"`
@@ -149,6 +150,7 @@ func (tfs TraceFlowObservations) results() traceflowResult {
 	if !tfs.completed() {
 		res.Errors = append(res.Errors, "traceflow is not completed")
 	} else {
+		res.Completed = true
 		res.Delivered = tfs.isDelivered()
 	}
 	for _, tf := range tfs {

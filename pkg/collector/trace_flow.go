@@ -182,46 +182,55 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 			traceFlow.ApiErrors = append(traceFlow.ApiErrors, err.Error())
 		}
 		traceFlow.Results = traceFlow.Observations.results()
-		if traceFlow.AllowedByAnalyze != traceFlow.Results.Delivered {
+		if traceFlow.Results.Completed && traceFlow.AllowedByAnalyze != traceFlow.Results.Delivered {
 			traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
 		}
 	}
 }
 
 func (traceFlows *TraceFlows) Summery() {
-	var notSent, apiErrors, resultErrors, tsWithError, falseAllow, falseDeny int
-	errors := []string{}
+	var notSent, withApiErrors, withResultErrors, withError, falseAllow, falseDeny int
+	var apiErrors, resultErrors, errors  []string
 	for _, traceFlow := range traceFlows.Tfs {
 		if traceFlow.NotSent {
 			notSent++
 		}
 		if len(traceFlow.Errors) > 0 {
-			tsWithError++
+			withError++
 			errors = append(errors, traceFlow.Errors...)
 		}
 		if len(traceFlow.ApiErrors) > 0 {
-			apiErrors++
+			withApiErrors++
+			apiErrors = append(apiErrors, traceFlow.ApiErrors...)
 		}
 		if len(traceFlow.Results.Errors) > 0 {
-			resultErrors++
+			withResultErrors++
+			resultErrors = append(resultErrors, traceFlow.Results.Errors...)
+
 		}
-		if traceFlow.Results.Delivered && !traceFlow.AllowedByAnalyze {
+		if traceFlow.Results.Completed && traceFlow.Results.Delivered && !traceFlow.AllowedByAnalyze {
 			falseDeny++
 		}
-		if !traceFlow.Results.Delivered && traceFlow.AllowedByAnalyze {
+		if traceFlow.Results.Completed && !traceFlow.Results.Delivered && traceFlow.AllowedByAnalyze {
 			falseAllow++
 		}
 	}
 	slices.Sort(errors)
+	slices.Sort(apiErrors)
+	slices.Sort(resultErrors)
 	errors = slices.Compact(errors)
+	apiErrors = slices.Compact(apiErrors)
+	resultErrors = slices.Compact(resultErrors)
 	fmt.Println("traceflow summery:")
 	fmt.Printf("N of traceflow sent: %d, out of %d\n", len(traceFlows.Tfs)-notSent, len(traceFlows.Tfs))
-	fmt.Printf("N of traceflow with errors: %d\n", tsWithError)
+	fmt.Printf("N of traceflow with errors: %d\n", withError)
 	fmt.Printf("N of false allow: %d\n", falseAllow)
 	fmt.Printf("N of false deny:  %d\n", falseDeny)
-	fmt.Printf("N of traceflow with api errors: %d\n", apiErrors)
-	fmt.Printf("N of traceflow with result parsing errors: %d\n", resultErrors)
+	fmt.Printf("N of traceflow with api errors: %d\n", withApiErrors)
+	fmt.Printf("N of traceflow with result parsing errors: %d\n", withResultErrors)
 	fmt.Printf("traceflow errors:\n %s\n\n", strings.Join(errors,"\n"))
+	fmt.Printf("traceflow api errors:\n %s\n\n", strings.Join(apiErrors,"\n"))
+	fmt.Printf("traceflow result errors:\n %s\n\n", strings.Join(resultErrors,"\n"))
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////
