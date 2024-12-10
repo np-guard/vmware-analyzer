@@ -49,7 +49,6 @@ func Test_verifyTraceflow(t *testing.T) {
 				t.Errorf("didnt got resources")
 				return
 			}
-			// filter :=func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "New") }
 			filter := func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "") }
 			tfs, err := compareConfigToTraceflows(got, server, filter)
 			if err != nil {

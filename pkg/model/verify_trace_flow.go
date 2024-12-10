@@ -9,18 +9,19 @@ import (
 
 type vmFilter func(vm *endpoints.VM) bool
 
-func createTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, config *config, vmFilter vmFilter) *collector.TraceFlows {
-
+func createTraceflows(resources *collector.ResourcesContainerModel,
+	server collector.ServerData,
+	config *config, vmFilter vmFilter) *collector.TraceFlows {
 	traceFlows := collector.NewTraceflows(resources, server)
-	for srcUid, srcVm := range config.vmsMap {
-		if !vmFilter(srcVm) {
+	for srcUID, srcVM := range config.vmsMap {
+		if !vmFilter(srcVM) {
 			continue
 		}
-		vmIps := resources.GetVirtualMachineAddresses(srcUid)
-		if len(vmIps) == 0 {
+		vmIPs := resources.GetVirtualMachineAddresses(srcUID)
+		if len(vmIPs) == 0 {
 			continue
 		}
-		srcIP := vmIps[0]
+		srcIP := vmIPs[0]
 		srcVni := resources.GetVirtualNetworkInterfaceByAddress(srcIP)
 		if srcVni == nil {
 			continue
@@ -29,47 +30,51 @@ func createTraceflows(resources *collector.ResourcesContainerModel, server colle
 		if port == nil {
 			continue
 		}
-		for dstUid, dstVm := range config.vmsMap {
-			if srcUid == dstUid {
+		for dstUID, dstVM := range config.vmsMap {
+			if srcUID == dstUID {
 				continue
 			}
-			if !vmFilter(dstVm) {
+			if !vmFilter(dstVM) {
 				continue
 			}
-			vmIps := resources.GetVirtualMachineAddresses(dstUid)
-			if len(vmIps) == 0 {
+			vmIPs := resources.GetVirtualMachineAddresses(dstUID)
+			if len(vmIPs) == 0 {
 				continue
 			}
-			dstIP := vmIps[0]
-			conn := config.analyzedConnectivity[srcVm][dstVm]
-			// temp fix till analyze will consider topology
+			dstIP := vmIPs[0]
+			conn := config.analyzedConnectivity[srcVM][dstVM]
+			// temp fix till analyze will consider topology:
 			if !conn.IsEmpty() {
 				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
 				if dstVni == nil || !collector.IsConnected(resources, srcVni, dstVni) {
 					conn = netset.NoTransports()
 				}
 			}
-			connString := conn.String()
-			switch {
-			case conn.IsAll(), conn.IsEmpty():
-				// one check only using icmp
-				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), connString)
-			case conn.TCPUDPSet().IsAll() || conn.TCPUDPSet().IsEmpty():
-				// one check for icmp, one for tcp/udp
-				traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.ICMPSet().IsAll(), connString)
-				aPort := (netp.MaxPort + netp.MinPort) / 2
-				defaultProtocol := collector.TraceFlowProtocol{Protocol: collector.ProtocolTCP, SrcPort: aPort, DstPort: aPort}
-				traceFlows.AddTraceFlow(srcIP, dstIP, defaultProtocol, conn.TCPUDPSet().IsAll(), connString)
-			default:
-				// checking only tcp/udp, one allow, one deny
-				allowConn := conn.TCPUDPSet()
-				denyConn := netset.AllTCPUDPSet().Subtract(allowConn)
-				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(allowConn), true, connString)
-				traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(denyConn), false, connString)
-			}
+			createTraceFlowsForConn(traceFlows, srcIP, dstIP, conn)
 		}
 	}
 	return traceFlows
+}
+
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, conn *netset.TransportSet) {
+	connString := conn.String()
+	switch {
+	case conn.IsAll(), conn.IsEmpty():
+		// one check only using icmp
+		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), connString)
+	case conn.TCPUDPSet().IsAll() || conn.TCPUDPSet().IsEmpty():
+		// one check for icmp, one for tcp/udp
+		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.ICMPSet().IsAll(), connString)
+		aPort := (netp.MaxPort + netp.MinPort) / 2
+		defaultProtocol := collector.TraceFlowProtocol{Protocol: collector.ProtocolTCP, SrcPort: aPort, DstPort: aPort}
+		traceFlows.AddTraceFlow(srcIP, dstIP, defaultProtocol, conn.TCPUDPSet().IsAll(), connString)
+	default:
+		// checking only tcp/udp, one allow, one deny
+		allowConn := conn.TCPUDPSet()
+		denyConn := netset.AllTCPUDPSet().Subtract(allowConn)
+		traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(allowConn), true, connString)
+		traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(denyConn), false, connString)
+	}
 }
 
 func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
@@ -83,7 +88,10 @@ func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 	return collector.TraceFlowProtocol{Protocol: protocol, SrcPort: int(srcPort), DstPort: int(dstPort)}
 }
 
-func compareConfigToTraceflows(resources *collector.ResourcesContainerModel, server collector.ServerData, vmFilter vmFilter) (*collector.TraceFlows, error) {
+func compareConfigToTraceflows(
+	resources *collector.ResourcesContainerModel,
+	server collector.ServerData,
+	vmFilter vmFilter) (*collector.TraceFlows, error) {
 	config, err := configFromResourcesContainer(resources, nil)
 	if err != nil {
 		return nil, err
