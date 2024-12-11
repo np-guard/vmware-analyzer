@@ -145,18 +145,18 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 		if err != nil {
 			return nil, err
 		}
-		for si := range domainResources.GatewayPolicyList {
+		for gi := range domainResources.GatewayPolicyList {
 			err = collectResource(server,
-				fmt.Sprintf(gatewayPolicyRulesQuery, domainID, *domainResources.GatewayPolicyList[si].Id),
-				&domainResources.GatewayPolicyList[si])
+				fmt.Sprintf(gatewayPolicyRulesQuery, domainID, *domainResources.GatewayPolicyList[gi].Id),
+				&domainResources.GatewayPolicyList[gi])
 			if err != nil {
 				return nil, err
 			}
-			for ri := range domainResources.GatewayPolicyList[si].Rules {
+			for ri := range domainResources.GatewayPolicyList[gi].Rules {
 				err = collectResource(server,
 					fmt.Sprintf(gatewayPolicyRuleQuery, domainID,
-						*domainResources.GatewayPolicyList[si].Id, *domainResources.GatewayPolicyList[si].Rules[ri].Id),
-					&domainResources.GatewayPolicyList[si].Rules[ri])
+						*domainResources.GatewayPolicyList[gi].Id, *domainResources.GatewayPolicyList[gi].Rules[ri].Id),
+					&domainResources.GatewayPolicyList[gi].Rules[ri])
 				if err != nil {
 					return nil, err
 				}
