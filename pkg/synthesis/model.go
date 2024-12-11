@@ -28,8 +28,15 @@ type RuleForSynthesis struct { // original rule
 	origRule dfw.FwRule // original rule
 	// category; needed for interpreting path
 	// a pass rule is interpreted as deny for the current category
-	category         dfw.DfwCategory
-	flatSymbolicRule symbolicexpr.SymbolicPaths // symbolic paths enabled by this rule
+	category dfw.DfwCategory
+	// The following refers to conversion of original allow rule to symbolic paths, as follows:
+	//
+	// Assuming there are only allow (non-prioritized, of course) rules.
+	// This is relevant only for allow rules (nil otherwise)
+	allowOnlyRulePaths symbolicexpr.SymbolicPaths
+	// Assuming there are prioritized allow and deny rules (but no categories and pass)
+	// This is relevant for allow and deny rules (pass nil), priorities are the same as of the original rules
+	allowAndDenyRulesPaths symbolicexpr.SymbolicPaths
 }
 
 //nolint:all // todo: tmp for defs without implementation
