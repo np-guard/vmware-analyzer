@@ -27,9 +27,9 @@ const (
 	securityPoliciesQuery    = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
-	gatewayPoliciesQuery    = "policy/api/v1/infra/domains/%s/gateway-policies"
-	gatewayPolicyRulesQuery = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
-	gatewayPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
+	gatewayPoliciesQuery     = "policy/api/v1/infra/domains/%s/gateway-policies"
+	gatewayPolicyRulesQuery  = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
+	gatewayPolicyRuleQuery   = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
 	firewallRuleQuery        = "api/v1/firewall/rules/%d"
 
 	defaultForwardingUpTimer = 5
