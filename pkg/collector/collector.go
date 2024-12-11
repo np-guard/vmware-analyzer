@@ -19,6 +19,8 @@ const (
 	segmentPortsQuery        = "policy/api/v1/infra/segments/%s/ports"
 	tier0Query               = "policy/api/v1/infra/tier-0s"
 	tier1Query               = "policy/api/v1/infra/tier-1s"
+	tierNatQuery             = "%s/%s/nat"
+	tierNatRuleQuery         = "%s/%s/nat/%s/nat-rules"
 	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
 	virtualInterfaceQuery    = "api/v1/fabric/vifs"
 	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
@@ -27,9 +29,9 @@ const (
 	securityPoliciesQuery    = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
-	gatewayPoliciesQuery    = "policy/api/v1/infra/domains/%s/gateway-policies"
-	gatewayPolicyRulesQuery = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
-	gatewayPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
+	gatewayPoliciesQuery     = "policy/api/v1/infra/domains/%s/gateway-policies"
+	gatewayPolicyRulesQuery  = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
+	gatewayPolicyRuleQuery   = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
 	firewallRuleQuery        = "api/v1/firewall/rules/%d"
 
 	defaultForwardingUpTimer = 5
@@ -77,9 +79,37 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 	if err != nil {
 		return nil, err
 	}
+	collcetPolicyNats := func(tierQuery, tID string, policyNats *[]PolicyNat) error {
+		err = collectResultList(server, fmt.Sprintf(tierNatQuery, tierQuery, tID), policyNats)
+		if err != nil {
+			return err
+		}
+		for ni := range *policyNats {
+			nID := *(*policyNats)[ni].Id
+			err = collectResultList(server, fmt.Sprintf(tierNatRuleQuery, tierQuery, tID, nID), &(*policyNats)[ni].Rules)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	for ti := range res.Tier0List {
+		tID := *res.Tier0List[ti].Id
+		err = collcetPolicyNats(tier0Query, tID, &res.Tier0List[ti].PolicyNats)
+		if err != nil {
+			return nil, err
+		}
+	}
 	err = collectResultList(server, tier1Query, &res.Tier1List)
 	if err != nil {
 		return nil, err
+	}
+	for ti := range res.Tier1List {
+		tID := *res.Tier1List[ti].Id
+		err = collcetPolicyNats(tier1Query, tID, &res.Tier1List[ti].PolicyNats)
+		if err != nil {
+			return nil, err
+		}
 	}
 	for di := range res.DomainList {
 		domainID := *res.DomainList[di].Id
@@ -130,10 +160,11 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 				if err != nil {
 					return nil, err
 				}
+				domainResources.SecurityPolicyList[si].Rules[ri].FirewallRule = &FirewallRule{}
 				err = collectResource(server,
 					fmt.Sprintf(firewallRuleQuery,
 						*domainResources.SecurityPolicyList[si].Rules[ri].RuleId),
-					&domainResources.SecurityPolicyList[si].Rules[ri].FirewallRule)
+					domainResources.SecurityPolicyList[si].Rules[ri].FirewallRule)
 				if err != nil {
 					return nil, err
 				}

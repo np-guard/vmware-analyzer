@@ -4212,6 +4212,13 @@ type IPCIDRBlock string
 // "fe80::250:56ff:fe83:318c/64"
 type IPElement string
 
+// IPElement can be a single IP address, IP address range or a Subnet. Its type can
+// be of IPv4 or IPv6. Supported list of formats are "192.168.1.1",
+// "192.168.1.1-192.168.1.100", "192.168.0.0/24", "fe80::250:56ff:fe83:318c",
+// "fe80::250:56ff:fe83:3181-fe80::250:56ff:fe83:318c",
+// "fe80::250:56ff:fe83:318c/64"
+type IPElementList string
+
 type IPProtocolServiceEntry struct {
 	// Timestamp of resource creation
 	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
@@ -6284,6 +6291,546 @@ type PolicyApiError struct {
 
 type PolicyApiErrorErrorData map[string]interface{}
 
+// Represents NAT section. This object is created by default when corresponding
+// tier-0/tier-1 is created. Under tier-0/tier-1 there will be 4 different
+// NATs(sections). (INTERNAL, USER, DEFAULT and NAT64).
+type PolicyNat struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// Represents a NAT section under tier-0/tier-1.
+	NatType *PolicyNatNatType `json:"nat_type,omitempty" yaml:"nat_type,omitempty" mapstructure:"nat_type,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type PolicyNatNatType string
+
+const PolicyNatNatTypeDEFAULT PolicyNatNatType = "DEFAULT"
+const PolicyNatNatTypeINTERNAL PolicyNatNatType = "INTERNAL"
+const PolicyNatNatTypeNAT64 PolicyNatNatType = "NAT64"
+const PolicyNatNatTypeUSER PolicyNatNatType = "USER"
+
+var enumValues_PolicyNatNatType = []interface{}{
+	"INTERNAL",
+	"USER",
+	"DEFAULT",
+	"NAT64",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyNatNatType) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyNatNatType {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyNatNatType, v)
+	}
+	*j = PolicyNatNatType(v)
+	return nil
+}
+
+// Represents a NAT rule between source and destination at T0/T1 router.
+type PolicyNatRule struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// Source NAT(SNAT) - translates a source IP address in an outbound packet so that
+	// the packet appears to originate from a different network. SNAT is only
+	// supported when the logical router is running in active-standby mode.
+	// Destination NAT(DNAT) - translates the destination IP address of inbound
+	// packets so that packets are delivered to a target address into another network.
+	// DNAT is only supported when the logical router is running in active-standby
+	// mode. Reflexive NAT(REFLEXIVE) - IP-Range and CIDR are supported to define the
+	// "n". The number of original networks should be exactly the same as that of
+	// translated networks. The address translation is deterministic. Reflexive is
+	// supported on both Active/Standby and Active/Active LR. NO_SNAT and NO_DNAT -
+	// These do not have support for translated_fields, only source_network and
+	// destination_network fields are supported. NAT64 - translates an external IPv6
+	// address to a internal IPv4 address.
+	Action *PolicyNatRuleAction `json:"action,omitempty" yaml:"action,omitempty" mapstructure:"action,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// This supports single IP address or comma separated list of single IP addresses
+	// or CIDR. This does not support IP range or IP sets. For DNAT and NO_DNAT rules,
+	// this is a mandatory field, and represents the destination network for the
+	// incoming packets. For other type of rules, optionally it can contain
+	// destination network of outgoing packets. NULL value for this field represents
+	// ANY network. For VPC DNAT NATRule, destination network address should be IPv4
+	// address allocated from External Block associated with VPC.
+	DestinationNetwork *IPElementList `json:"destination_network,omitempty" yaml:"destination_network,omitempty" mapstructure:"destination_network,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// The flag, which suggests whether the NAT rule is enabled or disabled. The
+	// default is True.
+	Enabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty" mapstructure:"enabled,omitempty"`
+
+	// It indicates how the firewall matches the address after NATing if firewall
+	// stage is not skipped.  MATCH_EXTERNAL_ADDRESS indicates the firewall will be
+	// applied to external address of a NAT rule. For SNAT, the external address is
+	// the translated source address after NAT is done. For DNAT, the external address
+	// is the original destination address before NAT is done. For REFLEXIVE, to
+	// egress traffic, the firewall will be applied to the translated source address
+	// after NAT is done; To ingress traffic, the firewall will be applied to the
+	// original destination address before NAT is done.  MATCH_INTERNAL_ADDRESS
+	// indicates the firewall will be applied to internal address of a NAT rule. For
+	// SNAT, the internal address is the original source address before NAT is done.
+	// For DNAT, the internal address is the translated destination address after NAT
+	// is done. For REFLEXIVE, to egress traffic, the firewall will be applied to the
+	// original source address before NAT is done; To ingress traffic, the firewall
+	// will be applied to the translated destination address after NAT is done.
+	// BYPASS indicates the firewall stage will be skipped.  For NO_SNAT or NO_DNAT,
+	// it must be BYPASS or leave it unassigned
+	FirewallMatch PolicyNatRuleFirewallMatch `json:"firewall_match,omitempty" yaml:"firewall_match,omitempty" mapstructure:"firewall_match,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// The flag, which suggests whether the logging of NAT rule is enabled or
+	// disabled. The default is False.
+	Logging bool `json:"logging,omitempty" yaml:"logging,omitempty" mapstructure:"logging,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// It indicates how the NSX edge applies Nat Policy for VPN traffic. It is
+	// supported only for Nat Rule action type DNAT and NO_DNAT. For all other NAT
+	// action, leave it unassigned. BYPASS - Default vpn mode. It indicates that Nat
+	// policy will be applied to the inbound traffic          on Routed Based VPN
+	// tunnel, if the policy based VTI is in the "scope" for this rule.
+	// Default value will be set to BYPASS if MATCH - It indicates that this NAT rule
+	// will only match the Policy Based VPN traffic.
+	PolicyBasedVpnMode *PolicyNatRulePolicyBasedVpnMode `json:"policy_based_vpn_mode,omitempty" yaml:"policy_based_vpn_mode,omitempty" mapstructure:"policy_based_vpn_mode,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// Represents the array of policy paths of ProviderInterface or NetworkInterface
+	// or labels of type ProviderInterface or NetworkInterface or IPSecVpnSession on
+	// which the NAT rule should get enforced. The interfaces must belong to the same
+	// router for which the NAT Rule is created.
+	Scope []string `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
+
+	// The sequence_number decides the rule_priority of a NAT rule. Sequence_number
+	// and rule_priority have 1:1 mapping.For each NAT section, there will be reserved
+	// rule_priority numbers.The valid range of rule_priority number is from 0 to
+	// 2147483647(MAX_INT). 1. INTERNAL section     rule_priority reserved from 0 -
+	// 1023 (1024 rules)     valid sequence_number range  0 - 1023 2. USER section
+	// rule_priority reserved from 1024 - 2147482623 (2147481600 rules)    valid
+	// sequence_number range  0 - 2147481599 3. DEFAULT section    rule_priority
+	// reserved from 2147482624 - 2147483647 (1024 rules)    valid sequence_number
+	// range  0 - 1023
+	SequenceNumber int `json:"sequence_number,omitempty" yaml:"sequence_number,omitempty" mapstructure:"sequence_number,omitempty"`
+
+	// It represents the path of Service on which the NAT rule will be applied. If not
+	// provided or if it is blank then Policy manager will consider it as ANY. Please
+	// note, if this is a DNAT, the destination_port of the service will be realized
+	// on NSX Manager as the translated_port. And if this is a SNAT, the
+	// destination_port will be ignored.
+	Service *string `json:"service,omitempty" yaml:"service,omitempty" mapstructure:"service,omitempty"`
+
+	// This supports single IP address or comma separated list of single IP addresses
+	// or CIDR. This does not support IP range or IP sets. For SNAT, NO_SNAT, NAT64
+	// and REFLEXIVE rules, this is a mandatory field and represents the source
+	// network of the packets leaving the network. For DNAT and NO_DNAT rules,
+	// optionally it can contain source network of incoming packets. NULL value for
+	// this field represents ANY network.
+	SourceNetwork *IPElementList `json:"source_network,omitempty" yaml:"source_network,omitempty" mapstructure:"source_network,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This supports single IP address or comma separated list of single IP addresses
+	// or CIDR. If user specify the CIDR, this value is actually used as an IP pool
+	// that includes both the subnet and broadcast addresses as valid for NAT
+	// translations. This does not support IP range or IP sets. Comma separated list
+	// of single IP addresses is not suported for DNAT and REFLEXIVE rules. For SNAT,
+	// DNAT, NAT64 and REFLEXIVE rules, this ia a mandatory field, which represents
+	// the translated network address. For NO_SNAT and NO_DNAT this should be empty.
+	// For VPC SNAT and Refelexive NATRule, translated network address should be IPv4
+	// address allocated from External Block associated with VPC.
+	TranslatedNetwork *IPElementList `json:"translated_network,omitempty" yaml:"translated_network,omitempty" mapstructure:"translated_network,omitempty"`
+
+	// Please note, if there is service configured in this NAT rule, the
+	// translated_port will be realized on NSX Manager as the destination_port. If
+	// there is no sevice configured, the port will be ignored.
+	TranslatedPorts *PortElement `json:"translated_ports,omitempty" yaml:"translated_ports,omitempty" mapstructure:"translated_ports,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type PolicyNatRuleAction string
+
+const PolicyNatRuleActionDNAT PolicyNatRuleAction = "DNAT"
+const PolicyNatRuleActionNAT64 PolicyNatRuleAction = "NAT64"
+const PolicyNatRuleActionNODNAT PolicyNatRuleAction = "NO_DNAT"
+const PolicyNatRuleActionNOSNAT PolicyNatRuleAction = "NO_SNAT"
+const PolicyNatRuleActionREFLEXIVE PolicyNatRuleAction = "REFLEXIVE"
+const PolicyNatRuleActionSNAT PolicyNatRuleAction = "SNAT"
+
+var enumValues_PolicyNatRuleAction = []interface{}{
+	"SNAT",
+	"DNAT",
+	"REFLEXIVE",
+	"NO_SNAT",
+	"NO_DNAT",
+	"NAT64",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyNatRuleAction) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyNatRuleAction {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyNatRuleAction, v)
+	}
+	*j = PolicyNatRuleAction(v)
+	return nil
+}
+
+type PolicyNatRuleFirewallMatch string
+
+const PolicyNatRuleFirewallMatchBYPASS PolicyNatRuleFirewallMatch = "BYPASS"
+const PolicyNatRuleFirewallMatchMATCHEXTERNALADDRESS PolicyNatRuleFirewallMatch = "MATCH_EXTERNAL_ADDRESS"
+const PolicyNatRuleFirewallMatchMATCHINTERNALADDRESS PolicyNatRuleFirewallMatch = "MATCH_INTERNAL_ADDRESS"
+
+var enumValues_PolicyNatRuleFirewallMatch = []interface{}{
+	"MATCH_EXTERNAL_ADDRESS",
+	"MATCH_INTERNAL_ADDRESS",
+	"BYPASS",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyNatRuleFirewallMatch) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyNatRuleFirewallMatch {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyNatRuleFirewallMatch, v)
+	}
+	*j = PolicyNatRuleFirewallMatch(v)
+	return nil
+}
+
+type PolicyNatRulePolicyBasedVpnMode string
+
+const PolicyNatRulePolicyBasedVpnModeBYPASS PolicyNatRulePolicyBasedVpnMode = "BYPASS"
+const PolicyNatRulePolicyBasedVpnModeMATCH PolicyNatRulePolicyBasedVpnMode = "MATCH"
+
+var enumValues_PolicyNatRulePolicyBasedVpnMode = []interface{}{
+	"BYPASS",
+	"MATCH",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyNatRulePolicyBasedVpnMode) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_PolicyNatRulePolicyBasedVpnMode {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_PolicyNatRulePolicyBasedVpnMode, v)
+	}
+	*j = PolicyNatRulePolicyBasedVpnMode(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyNatRule) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyNatRule
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["enabled"]; !ok || v == nil {
+		plain.Enabled = true
+	}
+	if v, ok := raw["firewall_match"]; !ok || v == nil {
+		plain.FirewallMatch = "MATCH_INTERNAL_ADDRESS"
+	}
+	if v, ok := raw["logging"]; !ok || v == nil {
+		plain.Logging = false
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if v, ok := raw["sequence_number"]; !ok || v == nil {
+		plain.SequenceNumber = 0.0
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = PolicyNatRule(plain)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *PolicyNat) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain PolicyNat
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = PolicyNat(plain)
+	return nil
+}
+
 type PolicyRelatedApiError struct {
 	// Details corresponds to the JSON schema field "details".
 	Details *string `json:"details,omitempty" yaml:"details,omitempty" mapstructure:"details,omitempty"`
@@ -8235,6 +8782,627 @@ func (j *RealizedVirtualMachine) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
 	}
 	*j = RealizedVirtualMachine(plain)
+	return nil
+}
+
+// Ordered list of rules long with the path of PolicyServiceInstance to which the
+// traffic needs to be redirected. | Please note that the scope property must be
+// provided for NS redirection | policy if redirect to is a service chain. For NS,
+// when redirect to is not | to the service chain, and scope is specified on
+// RedirectionPolicy, it | will be ignored. The scope will be determined from
+// redirect to path | instead. For EW policy, scope must not be  supplied in the
+// request. | Path to either Tier0 or Tier1 is allowed as the scope. Only 1 path |
+// can be specified as a scope. | Also, note that, if stateful flag is not sent, it
+// will be treated as true. If statelessness is intended, false must be sent
+// explicitly as the value | for stateful field.
+type RedirectionPolicy struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// - Distributed Firewall - Policy framework provides five pre-defined categories
+	// for classifying a security policy. They are "Ethernet","Emergency",
+	// "Infrastructure" "Environment" and "Application". There is a pre-determined
+	// order in which the policy framework manages the priority of these security
+	// policies. Ethernet category is for supporting layer 2 firewall rules. The other
+	// four categories are applicable for layer 3 rules. Amongst them, the Emergency
+	// category has the highest priority followed by Infrastructure, Environment and
+	// then Application rules. Administrator can choose to categorize a security
+	// policy into the above categories or can choose to leave it empty. If empty it
+	// will have the least precedence w.r.t the above four categories. - Edge Firewall
+	// - Policy Framework for Edge Firewall provides six pre-defined categories
+	// "Emergency", "SystemRules", "SharedPreRules", "LocalGatewayRules",
+	// "AutoServiceRules" and "Default", in order of priority of rules. All categories
+	// are allowed for Gatetway Policies that belong to 'default' Domain. However, for
+	// user created domains, category is restricted to "SharedPreRules" or
+	// "LocalGatewayRules" only. Also, the users can add/modify/delete rules from only
+	// the "SharedPreRules" and "LocalGatewayRules" categories. If user doesn't
+	// specify the category then defaulted to "Rules". System generated category is
+	// used by NSX created rules, for example BFD rules. Autoplumbed category used by
+	// NSX verticals to autoplumb data path rules. Finally, "Default" category is the
+	// placeholder default rules with lowest in the order of priority.
+	Category *string `json:"category,omitempty" yaml:"category,omitempty" mapstructure:"category,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Comments for security policy lock/unlock.
+	Comments *string `json:"comments,omitempty" yaml:"comments,omitempty" mapstructure:"comments,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// This field is to indicate the internal sequence number of a policy with respect
+	// to the policies across categories.
+	InternalSequenceNumber *int `json:"internal_sequence_number,omitempty" yaml:"internal_sequence_number,omitempty" mapstructure:"internal_sequence_number,omitempty"`
+
+	// A flag to indicate whether policy is a default policy.
+	IsDefault *bool `json:"is_default,omitempty" yaml:"is_default,omitempty" mapstructure:"is_default,omitempty"`
+
+	// ID of the user who last modified the lock for the secruity policy.
+	LockModifiedBy *string `json:"lock_modified_by,omitempty" yaml:"lock_modified_by,omitempty" mapstructure:"lock_modified_by,omitempty"`
+
+	// SecurityPolicy locked/unlocked time in epoch milliseconds.
+	LockModifiedTime *EpochMsTimestamp `json:"lock_modified_time,omitempty" yaml:"lock_modified_time,omitempty" mapstructure:"lock_modified_time,omitempty"`
+
+	// Indicates whether a security policy should be locked. If the security policy is
+	// locked by a user, then no other user would be able to modify this security
+	// policy. Once the user releases the lock, other users can update this security
+	// policy.
+	Locked bool `json:"locked,omitempty" yaml:"locked,omitempty" mapstructure:"locked,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is the read only flag which will state the direction of this | redirection
+	// policy. True denotes that it is NORTH-SOUTH and false | value means it is an
+	// EAST-WEST redirection policy.
+	NorthSouth *bool `json:"north_south,omitempty" yaml:"north_south,omitempty" mapstructure:"north_south,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Paths to which traffic will be redirected to. As of now, only 1 is | supported.
+	// Paths allowed are | 1. Policy Service Instance | 2. Service Instance Endpoint |
+	// 3. Virtual Endpoint | 4. Policy Service Chain
+	RedirectTo []string `json:"redirect_to,omitempty" yaml:"redirect_to,omitempty" mapstructure:"redirect_to,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// The count of rules in the policy.
+	RuleCount *int `json:"rule_count,omitempty" yaml:"rule_count,omitempty" mapstructure:"rule_count,omitempty"`
+
+	// Redirection rules that are a part of this RedirectionPolicy. At max, there can
+	// be 1000 rules in a given RedirectPolicy.
+	Rules []RedirectionRule `json:"rules,omitempty" yaml:"rules,omitempty" mapstructure:"rules,omitempty"`
+
+	// Provides a mechanism to apply the rules in this policy for a specified time
+	// duration.
+	SchedulerPath *string `json:"scheduler_path,omitempty" yaml:"scheduler_path,omitempty" mapstructure:"scheduler_path,omitempty"`
+
+	// The list of group paths where the rules in this policy will get applied. This
+	// scope will take precedence over rule level scope. Supported only for security
+	// and redirection policies. In case of RedirectionPolicy, it is expected only
+	// when the policy is NS and redirecting to service chain.
+	Scope []string `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
+
+	// This field is used to resolve conflicts between security policies across
+	// domains. In order to change the sequence number of a policy one can fire a POST
+	// request on the policy entity with a query parameter action=revise The sequence
+	// number field will reflect the value of the computed sequence number upon
+	// execution of the above mentioned POST request. For scenarios where the
+	// administrator is using a template to update several security policies, the only
+	// way to set the sequence number is to explicitly specify the sequence number for
+	// each security policy. If no sequence number is specified in the payload, a
+	// value of 0 is assigned by default. If there are multiple policies with the same
+	// sequence number then their order is not deterministic. If a specific order of
+	// policies is desired, then one has to specify unique sequence numbers or use the
+	// POST request on the policy entity with a query parameter action=revise to let
+	// the framework assign a sequence number. The value of sequence number must be
+	// between 0 and 999,999.
+	SequenceNumber *int `json:"sequence_number,omitempty" yaml:"sequence_number,omitempty" mapstructure:"sequence_number,omitempty"`
+
+	// Stateful or Stateless nature of security policy is enforced on all rules in
+	// this security policy. When it is stateful, the state of the network connects
+	// are tracked and a stateful packet inspection is performed. Layer3 security
+	// policies can be stateful or stateless. By default, they are stateful. Layer2
+	// security policies can only be stateless.
+	Stateful *bool `json:"stateful,omitempty" yaml:"stateful,omitempty" mapstructure:"stateful,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Ensures that a 3 way TCP handshake is done before the data packets are sent.
+	// tcp_strict=true is supported only for stateful security policies. If the
+	// tcp_strict flag is not specified and the security policy is stateful, then
+	// tcp_strict will be set to true.
+	TcpStrict *bool `json:"tcp_strict,omitempty" yaml:"tcp_strict,omitempty" mapstructure:"tcp_strict,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RedirectionPolicy) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain RedirectionPolicy
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["locked"]; !ok || v == nil {
+		plain.Locked = false
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.RedirectTo) > 1 {
+		return fmt.Errorf("field %s length: must be <= %d", "redirect_to", 1)
+	}
+	if len(plain.Rules) > 1000 {
+		return fmt.Errorf("field %s length: must be <= %d", "rules", 1000)
+	}
+	if len(plain.Scope) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "scope", 128)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = RedirectionPolicy(plain)
+	return nil
+}
+
+type RedirectionRule struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// The action to be applied to all the services
+	Action *RedirectionRuleAction `json:"action,omitempty" yaml:"action,omitempty" mapstructure:"action,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// We need paths as duplicate names may exist for groups under different domains.
+	// Along with paths we support IP Address of type IPv4 and IPv6. IP Address can be
+	// in one of the format(CIDR, IP Address, Range of IP Address). In order to
+	// specify all groups, use the constant "ANY". This is case insensitive. If "ANY"
+	// is used, it should be the ONLY element in the group array. Error will be thrown
+	// if ANY is used in conjunction with other values.
+	DestinationGroups []string `json:"destination_groups,omitempty" yaml:"destination_groups,omitempty" mapstructure:"destination_groups,omitempty"`
+
+	// If set to true, the rule gets applied on all the groups that are NOT part of
+	// the destination groups. If false, the rule applies to the destination groups
+	DestinationsExcluded bool `json:"destinations_excluded,omitempty" yaml:"destinations_excluded,omitempty" mapstructure:"destinations_excluded,omitempty"`
+
+	// Define direction of traffic.
+	Direction RedirectionRuleDirection `json:"direction,omitempty" yaml:"direction,omitempty" mapstructure:"direction,omitempty"`
+
+	// Flag to deactivate the rule. Default is activated.
+	Disabled bool `json:"disabled,omitempty" yaml:"disabled,omitempty" mapstructure:"disabled,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Type of IP packet that should be matched while enforcing the rule. The value is
+	// set to IPV4_IPV6 for Layer3 rule if not specified. For Layer2/Ether rule the
+	// value must be null.
+	IpProtocol *RedirectionRuleIpProtocol `json:"ip_protocol,omitempty" yaml:"ip_protocol,omitempty" mapstructure:"ip_protocol,omitempty"`
+
+	// A flag to indicate whether rule is a default rule.
+	IsDefault *bool `json:"is_default,omitempty" yaml:"is_default,omitempty" mapstructure:"is_default,omitempty"`
+
+	// Flag to enable packet logging. Default is deactivated.
+	Logged bool `json:"logged,omitempty" yaml:"logged,omitempty" mapstructure:"logged,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// Text for additional notes on changes.
+	Notes *string `json:"notes,omitempty" yaml:"notes,omitempty" mapstructure:"notes,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// Holds the list of layer 7 service profile paths. These profiles accept
+	// attributes and sub-attributes of various network services (e.g. L4 AppId,
+	// encryption algorithm, domain name, etc) as key value pairs. Instead of Layer 7
+	// service profiles you can use a L7 access profile. One of either Layer 7 service
+	// profiles or L7 Access Profile can be used in firewall rule. In case of L7
+	// access profile only one is allowed.
+	Profiles []string `json:"profiles,omitempty" yaml:"profiles,omitempty" mapstructure:"profiles,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// This is a unique 4 byte positive number that is assigned by the system.  This
+	// rule id is passed all the way down to the data path. The first 1GB (1000 to
+	// 2^30) will be shared by GM and LM with zebra style striped number space. For
+	// E.g 1000 to (1Million -1) by LM, (1M - 2M-1) by GM and so on.
+	RuleId *int `json:"rule_id,omitempty" yaml:"rule_id,omitempty" mapstructure:"rule_id,omitempty"`
+
+	// The list of policy paths where the rule is applied LR/Edge/T0/T1/LRP etc. Note
+	// that a given rule can be applied on multiple LRs/LRPs.
+	Scope []string `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
+
+	// This field is used to resolve conflicts between multiple Rules under Security
+	// or Gateway Policy for a Domain If no sequence number is specified in the
+	// payload, a value of 0 is assigned by default. If there are multiple rules with
+	// the same sequence number then their order is not deterministic. If a specific
+	// order of rules is desired, then one has to specify unique sequence numbers or
+	// use the POST request on the rule entity with a query parameter action=revise to
+	// let the framework assign a sequence number
+	SequenceNumber *int `json:"sequence_number,omitempty" yaml:"sequence_number,omitempty" mapstructure:"sequence_number,omitempty"`
+
+	// In order to specify raw services this can be used, along with services which
+	// contains path to services. This can be empty or null.
+	ServiceEntries []ServiceEntry `json:"service_entries,omitempty" yaml:"service_entries,omitempty" mapstructure:"service_entries,omitempty"`
+
+	// In order to specify all services, use the constant "ANY". This is case
+	// insensitive. If "ANY" is used, it should be the ONLY element in the services
+	// array. Error will be thrown if ANY is used in conjunction with other values.
+	Services []string `json:"services,omitempty" yaml:"services,omitempty" mapstructure:"services,omitempty"`
+
+	// We need paths as duplicate names may exist for groups under different domains.
+	// Along with paths we support IP Address of type IPv4 and IPv6. IP Address can be
+	// in one of the format(CIDR, IP Address, Range of IP Address). In order to
+	// specify all groups, use the constant "ANY". This is case insensitive. If "ANY"
+	// is used, it should be the ONLY element in the group array. Error will be thrown
+	// if ANY is used in conjunction with other values.
+	SourceGroups []string `json:"source_groups,omitempty" yaml:"source_groups,omitempty" mapstructure:"source_groups,omitempty"`
+
+	// If set to true, the rule gets applied on all the groups that are NOT part of
+	// the source groups. If false, the rule applies to the source groups
+	SourcesExcluded bool `json:"sources_excluded,omitempty" yaml:"sources_excluded,omitempty" mapstructure:"sources_excluded,omitempty"`
+
+	// User level field which will be printed in CLI and packet logs. Even though
+	// there is no limitation on length of a tag, internally tag will get truncated
+	// after 32 characters.
+	Tag *string `json:"tag,omitempty" yaml:"tag,omitempty" mapstructure:"tag,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+type RedirectionRuleAction string
+
+const RedirectionRuleActionDONOTREDIRECT RedirectionRuleAction = "DO_NOT_REDIRECT"
+const RedirectionRuleActionREDIRECT RedirectionRuleAction = "REDIRECT"
+
+var enumValues_RedirectionRuleAction = []interface{}{
+	"REDIRECT",
+	"DO_NOT_REDIRECT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RedirectionRuleAction) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RedirectionRuleAction {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RedirectionRuleAction, v)
+	}
+	*j = RedirectionRuleAction(v)
+	return nil
+}
+
+type RedirectionRuleDirection string
+
+const RedirectionRuleDirectionIN RedirectionRuleDirection = "IN"
+const RedirectionRuleDirectionINOUT RedirectionRuleDirection = "IN_OUT"
+const RedirectionRuleDirectionOUT RedirectionRuleDirection = "OUT"
+
+var enumValues_RedirectionRuleDirection = []interface{}{
+	"IN",
+	"OUT",
+	"IN_OUT",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RedirectionRuleDirection) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RedirectionRuleDirection {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RedirectionRuleDirection, v)
+	}
+	*j = RedirectionRuleDirection(v)
+	return nil
+}
+
+type RedirectionRuleIpProtocol string
+
+const RedirectionRuleIpProtocolIPV4 RedirectionRuleIpProtocol = "IPV4"
+const RedirectionRuleIpProtocolIPV4IPV6 RedirectionRuleIpProtocol = "IPV4_IPV6"
+const RedirectionRuleIpProtocolIPV6 RedirectionRuleIpProtocol = "IPV6"
+
+var enumValues_RedirectionRuleIpProtocol = []interface{}{
+	"IPV4",
+	"IPV6",
+	"IPV4_IPV6",
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RedirectionRuleIpProtocol) UnmarshalJSON(b []byte) error {
+	var v string
+	if err := json.Unmarshal(b, &v); err != nil {
+		return err
+	}
+	var ok bool
+	for _, expected := range enumValues_RedirectionRuleIpProtocol {
+		if reflect.DeepEqual(v, expected) {
+			ok = true
+			break
+		}
+	}
+	if !ok {
+		return fmt.Errorf("invalid value (expected one of %#v): %#v", enumValues_RedirectionRuleIpProtocol, v)
+	}
+	*j = RedirectionRuleIpProtocol(v)
+	return nil
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *RedirectionRule) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain RedirectionRule
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if len(plain.DestinationGroups) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "destination_groups", 128)
+	}
+	if v, ok := raw["destinations_excluded"]; !ok || v == nil {
+		plain.DestinationsExcluded = false
+	}
+	if v, ok := raw["direction"]; !ok || v == nil {
+		plain.Direction = "IN_OUT"
+	}
+	if v, ok := raw["disabled"]; !ok || v == nil {
+		plain.Disabled = false
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["logged"]; !ok || v == nil {
+		plain.Logged = false
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if plain.Notes != nil && len(*plain.Notes) > 2048 {
+		return fmt.Errorf("field %s length: must be <= %d", "notes", 2048)
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Profiles) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "profiles", 128)
+	}
+	if len(plain.Scope) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "scope", 128)
+	}
+	if len(plain.ServiceEntries) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "service_entries", 128)
+	}
+	if len(plain.Services) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "services", 128)
+	}
+	if len(plain.SourceGroups) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "source_groups", 128)
+	}
+	if v, ok := raw["sources_excluded"]; !ok || v == nil {
+		plain.SourcesExcluded = false
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = RedirectionRule(plain)
 	return nil
 }
 

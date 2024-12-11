@@ -26,13 +26,14 @@ const (
 	defaultRuleJSONEntry    = "default_rule"
 	firewallRuleJSONEntry   = "firewall_rule"
 	segmentPortsJSONEntry   = "segment_ports"
+	policyNatsJSONEntry     = "policy_nats"
 )
 
 var nilWithType *struct{}
 
 type Rule struct {
 	nsx.Rule
-	FirewallRule   FirewallRule   `json:"firewall_rule"`
+	FirewallRule   *FirewallRule  `json:"firewall_rule,omitempty"`
 	ServiceEntries ServiceEntries `json:"service_entries"`
 }
 
@@ -257,9 +258,30 @@ type SegmentPort struct {
 
 type Tier0 struct {
 	nsx.Tier0
+	PolicyNats []PolicyNat `json:"policy_nats"`
 }
+func (t0 *Tier0) UnmarshalJSON(b []byte) error {
+	return UnmarshalBaseStructAndFields(b, &t0.Tier0, policyNatsJSONEntry, &t0.PolicyNats, "", nilWithType)
+}
+
 type Tier1 struct {
 	nsx.Tier1
+	PolicyNats []PolicyNat `json:"policy_nats"`
+}
+func (t1 *Tier1) UnmarshalJSON(b []byte) error {
+	return UnmarshalBaseStructAndFields(b, &t1.Tier1, policyNatsJSONEntry, &t1.PolicyNats, "", nilWithType)
+}
+
+type PolicyNat struct {
+	nsx.PolicyNat
+	Rules []PolicyNatRule `json:"rules"`
+}
+func (policyNat *PolicyNat) UnmarshalJSON(b []byte) error {
+	return UnmarshalBaseStructAndFields(b, &policyNat.PolicyNat, rulesJSONEntry, &policyNat.Rules, "", nilWithType)
+}
+
+type PolicyNatRule struct {
+	nsx.PolicyNatRule 
 }
 
 type RealizedVirtualMachine struct {
