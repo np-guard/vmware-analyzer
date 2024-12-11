@@ -60,6 +60,17 @@ func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////
+type GatewayPolicy struct {
+	nsx.GatewayPolicy
+	Rules []Rule `json:"rules"`
+}
+
+func (gatewayPolicy *GatewayPolicy) UnmarshalJSON(b []byte) error {
+	return UnmarshalBaseStructAndFields(b, &gatewayPolicy.GatewayPolicy,
+		rulesJSONEntry, &gatewayPolicy.Rules, "", nilWithType)
+}
+
+// /////////////////////////////////////////////////////////////////////////////////////
 type IPProtocolServiceEntry struct {
 	nsx.IPProtocolServiceEntry
 }
