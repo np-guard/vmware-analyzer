@@ -338,7 +338,9 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 			continue
 		}
 		if !ids[*vif.OwnerVmId] {
-			logging.Debugf("warning - adding an owner vm of an vif member, while the vm is not at the member list, at index %d", i)
+			logging.Debugf(
+				"warning - adding to group %s an owner vm of an vif member, while the vm is not at the member list of the group, at index %d",
+				*group.DisplayName, i)
 		}
 		ids[*vif.OwnerVmId] = true
 	}
@@ -353,7 +355,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 			continue
 		}
 		if !ids[*vif.OwnerVmId] {
-			logging.Debugf("adding a vm of address %s, while the vm is not at the member list", ip)
+			logging.Debugf("adding to group %s a vm of address %s, while the vm is not at the member list of the group", *group.DisplayName, ip)
 		}
 		ids[*vif.OwnerVmId] = true
 	}
