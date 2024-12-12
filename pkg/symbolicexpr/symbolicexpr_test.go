@@ -149,6 +149,7 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 		atomicAllow := &atomicTerm{label: testAllow, toVal: fmt.Sprintf("str%v`", i)}
 		conjAllow = *conjAllow.add(atomicAllow)
 	}
+	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet())
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{conjAllow, conjAllow}
 	denyPath := SymbolicPath{tautologyConj, tautologyConj}
@@ -247,4 +248,7 @@ func TestAllowDenyOptimizeEmptyResult(t *testing.T) {
 	negateAtomic1 := atomic1.negate().(atomicTerm)
 	fmt.Println("isNegate?", atomic1.isNegateOf(negateAtomic1))
 	require.Equal(t, true, atomic1.isNegateOf(negateAtomic1), "isNegateOf does not work")
+	for _, thisPath := range *res {
+		fmt.Printf("res.Src is %v isEmptySet? %v\n", thisPath.Src.string(), thisPath.Src.isEmptySet())
+	}
 }
