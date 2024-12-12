@@ -228,11 +228,11 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 
 // Input:
 // allow symbolic path:
-// src: s1 = str1 dst: *
+// s1 = str1 to *
 // deny symbolic path:
-// src: * dst: *
-// Output allow paths: empty
-func TestAllowDenyOptimizeEmptyPath1(t *testing.T) {
+// (s1 = str1) to (d1 = str1)
+// Output allow paths: (s1 = str1) to (d1 != str1)
+func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
 	atomic1 := &atomicTerm{label: testSrc1, toVal: "str1"}
