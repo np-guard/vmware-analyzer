@@ -242,13 +242,15 @@ func TestAllowDenyOptimizeEmptyResult(t *testing.T) {
 	conjDst1 = *conjDst1.add(atomicDst1)
 	allowPath := SymbolicPath{conjSrc1, Conjunction{tautology{}}}
 	denyPath := SymbolicPath{conjSrc1, conjDst1}
-	fmt.Printf("allowPath: %v\ndenyPath: %v\n", allowPath.string(), denyPath.string())
 	res := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
-	fmt.Println(res.string())
+	fmt.Printf("allow path: %v with higher priority deny path:%v\n%v\n",
+		allowPath.string(), denyPath.string(), res.string())
 	negateAtomic1 := atomic1.negate().(atomicTerm)
-	fmt.Println("isNegate?", atomic1.isNegateOf(negateAtomic1))
 	require.Equal(t, true, atomic1.isNegateOf(negateAtomic1), "isNegateOf does not work")
 	for _, thisPath := range *res {
 		fmt.Printf("res.Src is %v isEmptySet? %v\n", thisPath.Src.string(), thisPath.Src.isEmptySet())
+		fmt.Printf("path %v is Empty? %v\n", thisPath.string(), thisPath.isEmpty())
 	}
+	require.Equal(t, true, (*res)[0].Src.isEmptySet(), "isEmptySet() does not work properly")
+	require.Equal(t, false, (*res)[1].Src.isEmptySet(), "isEmptySet() does not work properly")
 }

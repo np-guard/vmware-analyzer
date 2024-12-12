@@ -9,6 +9,10 @@ func (path *SymbolicPath) string() string {
 	return path.Src.string() + " to " + path.Dst.string()
 }
 
+func (path *SymbolicPath) isEmpty() bool {
+	return path.Src.isEmptySet() || path.Dst.isEmptySet()
+}
+
 func (paths *SymbolicPaths) string() string {
 	if len(*paths) == 0 {
 		return emptySet
