@@ -42,3 +42,9 @@ func (tautology) negate() atomic {
 func (tautology) isTautology() bool {
 	return true
 }
+
+// returns true iff otherAt is negation of
+// once we cache the atomic terms, we can just compare pointers
+func (at atomicTerm) isNegateOf(otherAt atomicTerm) bool {
+	return at.string() == otherAt.negate().string()
+}
