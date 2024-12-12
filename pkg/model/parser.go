@@ -202,7 +202,7 @@ func (p *NSXConfigParser) allGroups() []*endpoints.VM {
 	for i := range p.rc.DomainList {
 		domainRsc := &p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
-			res = append(res, p.membersToVMsList(domainRsc.GroupList[j].Members)...)
+			res = append(res, p.groupToVMsList(&domainRsc.GroupList[j])...)
 		}
 	}
 	p.allGroupsVMs = res
@@ -321,15 +321,46 @@ func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.
 	return res
 }
 
-func (p *NSXConfigParser) membersToVMsList(members []collector.RealizedVirtualMachine) []*endpoints.VM {
-	res := []*endpoints.VM{}
-	for i := range members {
-		vm := &members[i]
+func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM {
+	ids := map[string]bool{}
+	for i := range group.VMMembers {
+		vm := &group.VMMembers[i]
 		if vm.Id == nil { // use id instead of DisplayName, assuming matched to vm's external id
 			logging.Debugf("skipping member without id, at index %d", i)
 			continue
 		}
-		vmID := *vm.Id
+		ids[*vm.Id] = true
+	}
+	for i := range group.VIFMembers {
+		vif := &group.VIFMembers[i]
+		if vif.OwnerVmId == nil {
+			logging.Debugf("skipping vif member without owner vm id, at index %d", i)
+			continue
+		}
+		if !ids[*vif.OwnerVmId] {
+			logging.Debugf(
+				"warning - adding to group %s an owner vm of an vif member, while the vm is not at the member list of the group, at index %d",
+				*group.DisplayName, i)
+		}
+		ids[*vif.OwnerVmId] = true
+	}
+	for _, ip := range group.AddressMembers {
+		vif := p.rc.GetVirtualNetworkInterfaceByAddress(string(ip))
+		if vif == nil {
+			logging.Debugf("skipping ip member %s tht has no vif", ip)
+			continue
+		}
+		if vif.OwnerVmId == nil {
+			logging.Debugf("skipping vif of address %s without owner vm id", ip)
+			continue
+		}
+		if !ids[*vif.OwnerVmId] {
+			logging.Debugf("adding to group %s a vm of address %s, while the vm is not at the member list of the group", *group.DisplayName, ip)
+		}
+		ids[*vif.OwnerVmId] = true
+	}
+	res := []*endpoints.VM{}
+	for vmID := range ids {
 		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
 			res = append(res, vmObj)
 		} else {
@@ -349,7 +380,7 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
 				if _, ok := p.groupPathsToObjects[groupPath]; !ok {
 					p.groupPathsToObjects[groupPath] = g
 				}
-				return p.membersToVMsList(g.Members)
+				return p.groupToVMsList(g)
 			}
 		}
 	}
