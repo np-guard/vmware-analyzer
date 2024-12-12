@@ -6,10 +6,17 @@ import (
 )
 
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
+	config, err := configFromResourcesContainer(recourses, params.VMs)
+	if err != nil {
+		return "", err
+	}
+	return config.output(params)
+}
+func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, vmsFilter []string) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	config := parser.GetConfig()
 
@@ -17,7 +24,6 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	logging.Debugf("the parsed config details: %s", config.getConfigInfoStr())
 
 	// compute connectivity map from the parsed config
-	config.ComputeConnectivity(params.VMs)
-
-	return config.output(params)
+	config.ComputeConnectivity(vmsFilter)
+	return config, nil
 }
