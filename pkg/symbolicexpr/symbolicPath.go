@@ -9,6 +9,7 @@ func (path *SymbolicPath) string() string {
 	return path.Src.string() + " to " + path.Dst.string()
 }
 
+// if the source or destination is empty then so is the entire path
 func (path *SymbolicPath) isEmpty() bool {
 	return path.Src.isEmptySet() || path.Dst.isEmptySet()
 }
@@ -22,6 +23,16 @@ func (paths *SymbolicPaths) string() string {
 		res[i] = path.string()
 	}
 	return strings.Join(res, "\n")
+}
+
+func (paths *SymbolicPaths) removeEmpty() *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		if !path.isEmpty() {
+			newPaths = append(newPaths, path)
+		}
+	}
+	return &newPaths
 }
 
 // ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)

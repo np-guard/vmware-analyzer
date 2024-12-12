@@ -232,7 +232,7 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 // deny symbolic path:
 // src: * dst: *
 // Output allow paths: empty
-func TestAllowDenyOptimizeEmptyResult(t *testing.T) {
+func TestAllowDenyOptimizeEmptyPath1(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
 	atomic1 := &atomicTerm{label: testSrc1, toVal: "str1"}
@@ -242,15 +242,17 @@ func TestAllowDenyOptimizeEmptyResult(t *testing.T) {
 	conjDst1 = *conjDst1.add(atomicDst1)
 	allowPath := SymbolicPath{conjSrc1, Conjunction{tautology{}}}
 	denyPath := SymbolicPath{conjSrc1, conjDst1}
-	res := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
-	fmt.Printf("allow path: %v with higher priority deny path:%v\n%v\n",
-		allowPath.string(), denyPath.string(), res.string())
+	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
+	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
+		allowPath.string(), denyPath.string(), allowWithDeny.string())
 	negateAtomic1 := atomic1.negate().(atomicTerm)
 	require.Equal(t, true, atomic1.isNegateOf(negateAtomic1), "isNegateOf does not work")
-	for _, thisPath := range *res {
-		fmt.Printf("res.Src is %v isEmptySet? %v\n", thisPath.Src.string(), thisPath.Src.isEmptySet())
+	for _, thisPath := range *allowWithDeny {
+		fmt.Printf("allowWithDeny.Src is %v isEmptySet? %v\n", thisPath.Src.string(), thisPath.Src.isEmptySet())
 		fmt.Printf("path %v is Empty? %v\n", thisPath.string(), thisPath.isEmpty())
 	}
-	require.Equal(t, true, (*res)[0].Src.isEmptySet(), "isEmptySet() does not work properly")
-	require.Equal(t, false, (*res)[1].Src.isEmptySet(), "isEmptySet() does not work properly")
+	require.Equal(t, true, (*allowWithDeny)[0].Src.isEmptySet(), "isEmptySet() does not work properly")
+	require.Equal(t, false, (*allowWithDeny)[1].Src.isEmptySet(), "isEmptySet() does not work properly")
+	newPath := allowWithDeny.removeEmpty()
+	fmt.Printf("newPath %v\n", newPath.string())
 }
