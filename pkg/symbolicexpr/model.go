@@ -29,6 +29,7 @@ type atomic interface {
 	string() string
 	negate() atomic
 	isTautology() bool
+	isNegateOf(atomic) bool
 }
 
 // Conjunction a DNF Conjunction of Atomics

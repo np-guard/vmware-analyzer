@@ -5,13 +5,13 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-func (atomic atomicTerm) string() string {
+func (term atomicTerm) string() string {
 	equalSign := " = "
-	if atomic.neg {
+	if term.neg {
 		equalSign = " != "
 	}
 	labelType := ""
-	switch atomic.label.(type) {
+	switch term.label.(type) {
 	case *collector.Segment:
 		labelType = "segment "
 	case *endpoints.VM:
@@ -19,16 +19,22 @@ func (atomic atomicTerm) string() string {
 	case *collector.Tag:
 		labelType = "tag "
 	}
-	return labelType + atomic.label.Name() + equalSign + atomic.toVal
+	return labelType + term.label.Name() + equalSign + term.toVal
 }
 
 // negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
-func (atomic atomicTerm) negate() atomic {
-	return atomicTerm{label: atomic.label, toVal: atomic.toVal, neg: !atomic.neg}
+func (term atomicTerm) negate() atomic {
+	return atomicTerm{label: term.label, toVal: term.toVal, neg: !term.neg}
 }
 
 func (atomicTerm) isTautology() bool {
 	return false
+}
+
+// returns true iff otherAt is negation of
+// once we cache the atomic terms, we can just compare pointers
+func (term atomicTerm) isNegateOf(otherAt atomic) bool {
+	return term.string() == otherAt.negate().string()
 }
 
 func (tautology) string() string {
@@ -45,6 +51,6 @@ func (tautology) isTautology() bool {
 
 // returns true iff otherAt is negation of
 // once we cache the atomic terms, we can just compare pointers
-func (at atomicTerm) isNegateOf(otherAt atomicTerm) bool {
-	return at.string() == otherAt.negate().string()
+func (tautology) isNegateOf(atomic) bool {
+	return false
 }
