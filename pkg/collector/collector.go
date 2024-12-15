@@ -230,6 +230,29 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 				}
 			}
 		}
+		err = collectResultList(server,
+			fmt.Sprintf(gatewayPoliciesQuery, domainID),
+			&domainResources.GatewayPolicyList)
+		if err != nil {
+			return nil, err
+		}
+		for gi := range domainResources.GatewayPolicyList {
+			err = collectResource(server,
+				fmt.Sprintf(gatewayPolicyRulesQuery, domainID, *domainResources.GatewayPolicyList[gi].Id),
+				&domainResources.GatewayPolicyList[gi])
+			if err != nil {
+				return nil, err
+			}
+			for ri := range domainResources.GatewayPolicyList[gi].Rules {
+				err = collectResource(server,
+					fmt.Sprintf(gatewayPolicyRuleQuery, domainID,
+						*domainResources.GatewayPolicyList[gi].Id, *domainResources.GatewayPolicyList[gi].Rules[ri].Id),
+					&domainResources.GatewayPolicyList[gi].Rules[ri])
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 	FixResourcesForJSON(res)
 	return res, nil
