@@ -15,7 +15,7 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-type ruleAction string
+type RuleAction string
 
 const (
 	listSeparatorStr = ","
@@ -26,13 +26,13 @@ const (
 var ingressDirections = []string{"IN", "IN_OUT"}*/
 
 const (
-	actionAllow     ruleAction = "allow"
-	actionDeny      ruleAction = "deny" // currently not differentiating between "reject" and "drop"
-	actionJumpToApp ruleAction = "jump_to_application"
-	actionNone      ruleAction = "none" // to mark that a default rule is not configured
+	actionAllow     RuleAction = "allow"
+	actionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
+	actionJumpToApp RuleAction = "jump_to_application"
+	actionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
-/*func actionFromString(input string) ruleAction {
+/*func actionFromString(input string) RuleAction {
 	switch input {
 	case string(actionAllow):
 		return actionAllow
@@ -44,7 +44,7 @@ const (
 	return actionDeny
 }*/
 
-func actionFromString(s string) ruleAction {
+func actionFromString(s string) RuleAction {
 	switch strings.ToLower(s) {
 	case string(actionAllow):
 		return actionAllow
@@ -62,20 +62,20 @@ type FwRule struct {
 	dstVMs             []*endpoints.VM
 	scope              []*endpoints.VM
 	conn               *netset.TransportSet
-	action             ruleAction
+	Action             RuleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
-	origRuleObj        *collector.Rule
-	origDefaultRuleObj *collector.FirewallRule
+	OrigRuleObj        *collector.Rule
+	OrigDefaultRuleObj *collector.FirewallRule
 	ruleID             int
 	secPolicyName      string
 	secPolicyCategory  string
-	categoryRef        *categorySpec
+	categoryRef        *CategorySpec
 	dfwRef             *DFW
 	// clause of symbolic src abd symbolic dst
 	// todo: in order to compute these will have to maintain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
 	//       keep it there?
-	symbolicSrc []*symbolicexpr.SymbolicPath
-	symbolicDst []*symbolicexpr.SymbolicPath
+	SymbolicSrc []*symbolicexpr.SymbolicPath
+	SymbolicDst []*symbolicexpr.SymbolicPath
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 
 }
@@ -117,13 +117,13 @@ func (f *FwRule) getInboundRule() *FwRule {
 		srcVMs:        f.srcVMs,
 		dstVMs:        newDest,
 		conn:          f.conn,
-		action:        f.action,
+		Action:        f.Action,
 		direction:     string(nsx.RuleDirectionIN),
-		origRuleObj:   f.origRuleObj,
+		OrigRuleObj:   f.OrigRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		SymbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		SymbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 }
 
@@ -153,13 +153,13 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		srcVMs:        newSrc,
 		dstVMs:        f.dstVMs,
 		conn:          f.conn,
-		action:        f.action,
+		Action:        f.Action,
 		direction:     string(nsx.RuleDirectionOUT),
-		origRuleObj:   f.origRuleObj,
+		OrigRuleObj:   f.OrigRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		SymbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		SymbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 }
 
@@ -192,14 +192,14 @@ func vmsString(vms []*endpoints.VM) string {
 // return a string representation of a single rule
 // groups are interpreted to VM members in this representation
 func (f *FwRule) string() string {
-	_, _ = f.symbolicSrc, f.symbolicDst // todo tmp for line
+	_, _ = f.SymbolicSrc, f.SymbolicDst // todo tmp for line
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, vmsString(f.scope), f.secPolicyName)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
 func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, f.secPolicyName)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.Action), f.direction, f.secPolicyName)
 }
 
 func getDefaultRuleScope(r *collector.FirewallRule) string {
@@ -247,11 +247,11 @@ func getRulesFormattedHeaderLine() string {
 		"src",
 		"dst",
 		"conn",
-		"action",
+		"Action",
 		"direction",
 		"scope",
 		"sec-policy",
-		"category",
+		"Category",
 	}
 	return fmt.Sprintf("%s%s%s",
 		common.Red,
@@ -265,26 +265,26 @@ func (f *FwRule) originalRuleStr() string {
 		anyStr = "ANY"
 	)
 
-	if f.origRuleObj == nil && f.origDefaultRuleObj == nil {
+	if f.OrigRuleObj == nil && f.OrigDefaultRuleObj == nil {
 		logging.Debugf("warning: rule %d has no origRuleObj or origDefaultRuleObj", f.ruleID)
 		return ""
 	}
 
 	// if this is a "default rule" from category with ConnectivityPreference configured,
 	// the rule object is of different type
-	if f.origRuleObj == nil && f.origDefaultRuleObj != nil {
+	if f.OrigRuleObj == nil && f.OrigDefaultRuleObj != nil {
 		return fmt.Sprintf("%s%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
 			common.Yellow,
-			*f.origDefaultRuleObj.Id,
-			*f.origDefaultRuleObj.DisplayName,
+			*f.OrigDefaultRuleObj.Id,
+			*f.OrigDefaultRuleObj.DisplayName,
 			// The default rule that gets created will be a any-any rule and applied
 			// to entities specified in the scope of the security policy.
 			anyStr,
 			anyStr,
 			anyStr,
-			*f.origDefaultRuleObj.Action,
-			f.origDefaultRuleObj.Direction,
-			getDefaultRuleScope(f.origDefaultRuleObj),
+			*f.OrigDefaultRuleObj.Action,
+			f.OrigDefaultRuleObj.Direction,
+			getDefaultRuleScope(f.OrigDefaultRuleObj),
 			f.secPolicyName,
 			f.secPolicyCategory,
 			common.Reset,
@@ -292,19 +292,19 @@ func (f *FwRule) originalRuleStr() string {
 	}
 
 	name := ""
-	if f.origRuleObj.DisplayName != nil {
-		name = *f.origRuleObj.DisplayName
+	if f.OrigRuleObj.DisplayName != nil {
+		name = *f.OrigRuleObj.DisplayName
 	}
 	return fmt.Sprintf("%s%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
 		common.Yellow,
 		f.ruleID,
 		name,
-		f.getShortPathsString(f.origRuleObj.SourceGroups),
-		f.getShortPathsString(f.origRuleObj.DestinationGroups),
-		// todo: origRuleObj.Services is not always the services, can also be service_entries
-		f.getShortPathsString(f.origRuleObj.Services),
-		string(f.action), f.direction,
-		strings.Join(f.origRuleObj.Scope, listSeparatorStr),
+		f.getShortPathsString(f.OrigRuleObj.SourceGroups),
+		f.getShortPathsString(f.OrigRuleObj.DestinationGroups),
+		// todo: OrigRuleObj.Services is not always the services, can also be service_entries
+		f.getShortPathsString(f.OrigRuleObj.Services),
+		string(f.Action), f.direction,
+		strings.Join(f.OrigRuleObj.Scope, listSeparatorStr),
 		f.secPolicyName,
 		f.secPolicyCategory,
 		common.Reset,
