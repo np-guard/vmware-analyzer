@@ -29,6 +29,9 @@ const (
 	securityPoliciesQuery      = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery   = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery    = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
+	gatewayPoliciesQuery       = "policy/api/v1/infra/domains/%s/gateway-policies"
+	gatewayPolicyRulesQuery    = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
+	gatewayPolicyRuleQuery     = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
 	firewallRuleQuery          = "api/v1/firewall/rules/%d"
 
 	defaultForwardingUpTimer = 5
@@ -145,6 +148,29 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 					fmt.Sprintf(firewallRuleQuery,
 						*domainResources.SecurityPolicyList[si].Rules[ri].RuleId),
 					&domainResources.SecurityPolicyList[si].Rules[ri].FirewallRule)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		err = collectResultList(server,
+			fmt.Sprintf(gatewayPoliciesQuery, domainID),
+			&domainResources.GatewayPolicyList)
+		if err != nil {
+			return nil, err
+		}
+		for gi := range domainResources.GatewayPolicyList {
+			err = collectResource(server,
+				fmt.Sprintf(gatewayPolicyRulesQuery, domainID, *domainResources.GatewayPolicyList[gi].Id),
+				&domainResources.GatewayPolicyList[gi])
+			if err != nil {
+				return nil, err
+			}
+			for ri := range domainResources.GatewayPolicyList[gi].Rules {
+				err = collectResource(server,
+					fmt.Sprintf(gatewayPolicyRuleQuery, domainID,
+						*domainResources.GatewayPolicyList[gi].Id, *domainResources.GatewayPolicyList[gi].Rules[ri].Id),
+					&domainResources.GatewayPolicyList[gi].Rules[ri])
 				if err != nil {
 					return nil, err
 				}
