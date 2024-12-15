@@ -26,7 +26,7 @@ func (a *synthesisTest) run(t *testing.T) {
 		Format: "txt",
 	}
 	rc := data.ExamplesGeneration(a.exData)
-	res, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+	res, err := NSXSynthesis(rc, params)
 	require.Nil(t, err)
 	fmt.Println(res)
 }

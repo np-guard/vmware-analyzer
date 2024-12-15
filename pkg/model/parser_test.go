@@ -18,7 +18,7 @@ func TestParser(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	config := parser.GetConfig()
-	fmt.Println(config.getConfigInfoStr())
+	fmt.Println(config.GetConfigInfoStr())
 
 	config.ComputeConnectivity()
 	fmt.Println("analyzed Connectivity")

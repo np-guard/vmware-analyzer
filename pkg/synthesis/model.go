@@ -52,13 +52,3 @@ type Segments map[string]*collector.Segment
 
 // VMs map from VM name to the VM
 type VMs map[string]*endpoints.VM
-
-// ComputeSymbolicRules computes abstract rules in model for synthesis
-// todo: will have to combine different categories into a single list of inbound, outbound
-//
-//nolint:all // todo: tmp for defs without implementation
-func computeSymbolicRules(fireWall dfw.DFW) symbolicRules {
-	_ = fireWall
-	symbolicexpr.ComputeAllowGivenDenies(&symbolicexpr.SymbolicPaths{}, &symbolicexpr.SymbolicPaths{})
-	return symbolicRules{nil, nil}
-}
