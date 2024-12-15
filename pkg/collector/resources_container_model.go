@@ -26,7 +26,7 @@ type ResourcesContainerModel struct {
 }
 type DomainResources struct {
 	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
-	GatewayPolicyList []GatewayPolicy `json:"gateway_policies"`
+	GatewayPolicyList  []GatewayPolicy  `json:"gateway_policies"`
 	GroupList          []Group          `json:"groups"`
 }
 

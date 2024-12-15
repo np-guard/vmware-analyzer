@@ -149,6 +149,7 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 		atomicAllow := &atomicTerm{label: testAllow, toVal: fmt.Sprintf("str%v`", i)}
 		conjAllow = *conjAllow.add(atomicAllow)
 	}
+	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet())
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{conjAllow, conjAllow}
 	denyPath := SymbolicPath{tautologyConj, tautologyConj}
@@ -203,8 +204,8 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		denyPaths = append(denyPaths, &SymbolicPath{conjDenySrc, conjDenyDst})
 	}
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.string(), denyPaths.string())
-	ComputeAllowGivenDenies(&allowPaths, &denyPaths)
-	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", ComputeAllowGivenDenies(&allowPaths, &denyPaths).string())
+	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths)
+	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.string())
 	require.Equal(t, "(tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1)\n"+
 		"(tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5)\n"+
 		"(tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3)\n"+
@@ -223,4 +224,35 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		"(tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
 		ComputeAllowGivenDenies(&allowPaths, &denyPaths).string(),
 		"ComputeAllowGivenDenies computation not as expected")
+}
+
+// Input:
+// allow symbolic path:
+// s1 = str1 to *
+// deny symbolic path:
+// (s1 = str1) to (d1 = str1)
+// Output allow paths: (s1 = str1) to (d1 != str1)
+func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
+	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
+	testSrc1 := initTestTag("s1")
+	atomic1 := &atomicTerm{label: testSrc1, toVal: "str1"}
+	conjSrc1 = *conjSrc1.add(atomic1)
+	testDst1 := initTestTag("d1")
+	atomicDst1 := &atomicTerm{label: testDst1, toVal: "str1"}
+	conjDst1 = *conjDst1.add(atomicDst1)
+	allowPath := SymbolicPath{conjSrc1, Conjunction{tautology{}}}
+	denyPath := SymbolicPath{conjSrc1, conjDst1}
+	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
+	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
+		allowPath.string(), denyPath.string(), allowWithDeny.string())
+	negateAtomic1 := atomic1.negate().(atomicTerm)
+	require.Equal(t, true, atomic1.isNegateOf(negateAtomic1), "isNegateOf does not work")
+	for _, thisPath := range *allowWithDeny {
+		fmt.Printf("allowWithDeny.Src is %v isEmptySet? %v\n", thisPath.Src.string(), thisPath.Src.isEmptySet())
+		fmt.Printf("path %v is Empty? %v\n", thisPath.string(), thisPath.isEmpty())
+	}
+	require.Equal(t, true, (*allowWithDeny)[0].Src.isEmptySet(), "isEmptySet() does not work properly")
+	require.Equal(t, false, (*allowWithDeny)[1].Src.isEmptySet(), "isEmptySet() does not work properly")
+	newPath := allowWithDeny.removeEmpty()
+	fmt.Printf("newPath %v\n", newPath.string())
 }
