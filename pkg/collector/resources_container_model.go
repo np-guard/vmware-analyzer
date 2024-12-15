@@ -26,6 +26,7 @@ type ResourcesContainerModel struct {
 }
 type DomainResources struct {
 	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
+	GatewayPolicyList  []GatewayPolicy  `json:"gateway_policies"`
 	GroupList          []Group          `json:"groups"`
 }
 
@@ -65,6 +66,21 @@ func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByPort(portI
 		return vni.LportAttachmentId != nil && portID == *vni.LportAttachmentId
 	})
 	return &resources.VirtualNetworkInterfaceList[i]
+}
+
+func (resources *ResourcesContainerModel) GetVirtualMachineAddresses(vmID string) []string {
+	ips := []string{}
+	for i := range resources.VirtualNetworkInterfaceList {
+		vni := &resources.VirtualNetworkInterfaceList[i]
+		if *vni.OwnerVmId == vmID {
+			for _, info := range vni.IpAddressInfo {
+				for _, address := range info.IpAddresses {
+					ips = append(ips, string(address))
+				}
+			}
+		}
+	}
+	return ips
 }
 
 func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByAddress(address string) *VirtualNetworkInterface {

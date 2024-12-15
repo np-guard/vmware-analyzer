@@ -3092,6 +3092,242 @@ func (j *FirewallService) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+type GatewayPolicy struct {
+	// Timestamp of resource creation
+	CreateTime *EpochMsTimestamp `json:"_create_time,omitempty" yaml:"_create_time,omitempty" mapstructure:"_create_time,omitempty"`
+
+	// ID of the user who created this resource
+	CreateUser *string `json:"_create_user,omitempty" yaml:"_create_user,omitempty" mapstructure:"_create_user,omitempty"`
+
+	// Timestamp of last modification
+	LastModifiedTime *EpochMsTimestamp `json:"_last_modified_time,omitempty" yaml:"_last_modified_time,omitempty" mapstructure:"_last_modified_time,omitempty"`
+
+	// ID of the user who last modified this resource
+	LastModifiedUser *string `json:"_last_modified_user,omitempty" yaml:"_last_modified_user,omitempty" mapstructure:"_last_modified_user,omitempty"`
+
+	// The server will populate this field when returing the resource. Ignored on PUT
+	// and POST.
+	Links []ResourceLink `json:"_links,omitempty" yaml:"_links,omitempty" mapstructure:"_links,omitempty"`
+
+	// Protection status is one of the following: PROTECTED - the client who retrieved
+	// the entity is not allowed             to modify it. NOT_PROTECTED - the client
+	// who retrieved the entity is allowed                 to modify it
+	// REQUIRE_OVERRIDE - the client who retrieved the entity is a super
+	// user and can modify it, but only when providing                    the request
+	// header X-Allow-Overwrite=true. UNKNOWN - the _protection field could not be
+	// determined for this           entity.
+	Protection *string `json:"_protection,omitempty" yaml:"_protection,omitempty" mapstructure:"_protection,omitempty"`
+
+	// The _revision property describes the current revision of the resource. To
+	// prevent clients from overwriting each other's changes, PUT operations must
+	// include the current _revision of the resource, which clients should obtain by
+	// issuing a GET operation. If the _revision provided in a PUT request is missing
+	// or stale, the operation will be rejected.
+	Revision *int `json:"_revision,omitempty" yaml:"_revision,omitempty" mapstructure:"_revision,omitempty"`
+
+	// Schema corresponds to the JSON schema field "_schema".
+	Schema *string `json:"_schema,omitempty" yaml:"_schema,omitempty" mapstructure:"_schema,omitempty"`
+
+	// Self corresponds to the JSON schema field "_self".
+	Self *SelfResourceLink `json:"_self,omitempty" yaml:"_self,omitempty" mapstructure:"_self,omitempty"`
+
+	// Indicates system owned resource
+	SystemOwned *bool `json:"_system_owned,omitempty" yaml:"_system_owned,omitempty" mapstructure:"_system_owned,omitempty"`
+
+	// - Distributed Firewall - Policy framework provides five pre-defined categories
+	// for classifying a security policy. They are "Ethernet","Emergency",
+	// "Infrastructure" "Environment" and "Application". There is a pre-determined
+	// order in which the policy framework manages the priority of these security
+	// policies. Ethernet category is for supporting layer 2 firewall rules. The other
+	// four categories are applicable for layer 3 rules. Amongst them, the Emergency
+	// category has the highest priority followed by Infrastructure, Environment and
+	// then Application rules. Administrator can choose to categorize a security
+	// policy into the above categories or can choose to leave it empty. If empty it
+	// will have the least precedence w.r.t the above four categories. - Edge Firewall
+	// - Policy Framework for Edge Firewall provides six pre-defined categories
+	// "Emergency", "SystemRules", "SharedPreRules", "LocalGatewayRules",
+	// "AutoServiceRules" and "Default", in order of priority of rules. All categories
+	// are allowed for Gatetway Policies that belong to 'default' Domain. However, for
+	// user created domains, category is restricted to "SharedPreRules" or
+	// "LocalGatewayRules" only. Also, the users can add/modify/delete rules from only
+	// the "SharedPreRules" and "LocalGatewayRules" categories. If user doesn't
+	// specify the category then defaulted to "Rules". System generated category is
+	// used by NSX created rules, for example BFD rules. Autoplumbed category used by
+	// NSX verticals to autoplumb data path rules. Finally, "Default" category is the
+	// placeholder default rules with lowest in the order of priority.
+	Category *string `json:"category,omitempty" yaml:"category,omitempty" mapstructure:"category,omitempty"`
+
+	// Subtree for this type within policy tree containing nested elements. Note that
+	// this type is applicable to be used in Hierarchical API only.
+	Children []ChildPolicyConfigResource `json:"children,omitempty" yaml:"children,omitempty" mapstructure:"children,omitempty"`
+
+	// Comments for security policy lock/unlock.
+	Comments *string `json:"comments,omitempty" yaml:"comments,omitempty" mapstructure:"comments,omitempty"`
+
+	// Description corresponds to the JSON schema field "description".
+	Description *string `json:"description,omitempty" yaml:"description,omitempty" mapstructure:"description,omitempty"`
+
+	// Defaults to ID if not set
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// This field is to indicate the internal sequence number of a policy with respect
+	// to the policies across categories.
+	InternalSequenceNumber *int `json:"internal_sequence_number,omitempty" yaml:"internal_sequence_number,omitempty" mapstructure:"internal_sequence_number,omitempty"`
+
+	// A flag to indicate whether policy is a default policy.
+	IsDefault *bool `json:"is_default,omitempty" yaml:"is_default,omitempty" mapstructure:"is_default,omitempty"`
+
+	// ID of the user who last modified the lock for the secruity policy.
+	LockModifiedBy *string `json:"lock_modified_by,omitempty" yaml:"lock_modified_by,omitempty" mapstructure:"lock_modified_by,omitempty"`
+
+	// SecurityPolicy locked/unlocked time in epoch milliseconds.
+	LockModifiedTime *EpochMsTimestamp `json:"lock_modified_time,omitempty" yaml:"lock_modified_time,omitempty" mapstructure:"lock_modified_time,omitempty"`
+
+	// Indicates whether a security policy should be locked. If the security policy is
+	// locked by a user, then no other user would be able to modify this security
+	// policy. Once the user releases the lock, other users can update this security
+	// policy.
+	Locked bool `json:"locked,omitempty" yaml:"locked,omitempty" mapstructure:"locked,omitempty"`
+
+	// Intent objects are not directly deleted from the system when a delete is
+	// invoked on them. They are marked for deletion and only when all the realized
+	// entities for that intent object gets deleted, the intent object is deleted.
+	// Objects that are marked for deletion are not returned in GET call. One can use
+	// the search API to get these objects.
+	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
+
+	// This is a UUID generated by the system for knowing which site owns an object.
+	// This is used in NSX+.
+	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
+
+	// Global intent objects cannot be modified by the user. However, certain global
+	// intent objects can be overridden locally by use of this property. In such
+	// cases, the overridden local values take precedence over the globally defined
+	// values for the properties.
+	Overridden bool `json:"overridden,omitempty" yaml:"overridden,omitempty" mapstructure:"overridden,omitempty"`
+
+	// This is a UUID generated by the system for knowing who owns this object. This
+	// is used in NSX+.
+	OwnerId *string `json:"owner_id,omitempty" yaml:"owner_id,omitempty" mapstructure:"owner_id,omitempty"`
+
+	// Path of its parent
+	ParentPath *string `json:"parent_path,omitempty" yaml:"parent_path,omitempty" mapstructure:"parent_path,omitempty"`
+
+	// Absolute path of this object
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+
+	// This is a UUID generated by the system for realizing the entity object. In most
+	// cases this should be same as 'unique_id' of the entity. However, in some cases
+	// this can be different because of entities have migrated their unique identifier
+	// to NSX Policy intent objects later in the timeline and did not use unique_id
+	// for realization. Realization id is helpful for users to debug data path to
+	// correlate the configuration with corresponding intent.
+	RealizationId *string `json:"realization_id,omitempty" yaml:"realization_id,omitempty" mapstructure:"realization_id,omitempty"`
+
+	// Path relative from its parent
+	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
+
+	// This is the path of the object on the local managers when queried on the NSX+
+	// service, and path of the object on NSX+ service when queried from the local
+	// managers.
+	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
+
+	// The type of this resource.
+	ResourceType *string `json:"resource_type,omitempty" yaml:"resource_type,omitempty" mapstructure:"resource_type,omitempty"`
+
+	// The count of rules in the policy.
+	RuleCount *int `json:"rule_count,omitempty" yaml:"rule_count,omitempty" mapstructure:"rule_count,omitempty"`
+
+	// Rules corresponds to the JSON schema field "rules".
+	Rules []Rule `json:"rules,omitempty" yaml:"rules,omitempty" mapstructure:"rules,omitempty"`
+
+	// Provides a mechanism to apply the rules in this policy for a specified time
+	// duration.
+	SchedulerPath *string `json:"scheduler_path,omitempty" yaml:"scheduler_path,omitempty" mapstructure:"scheduler_path,omitempty"`
+
+	// The list of group paths where the rules in this policy will get applied. This
+	// scope will take precedence over rule level scope. Supported only for security
+	// and redirection policies. In case of RedirectionPolicy, it is expected only
+	// when the policy is NS and redirecting to service chain.
+	Scope []string `json:"scope,omitempty" yaml:"scope,omitempty" mapstructure:"scope,omitempty"`
+
+	// This field is used to resolve conflicts between security policies across
+	// domains. In order to change the sequence number of a policy one can fire a POST
+	// request on the policy entity with a query parameter action=revise The sequence
+	// number field will reflect the value of the computed sequence number upon
+	// execution of the above mentioned POST request. For scenarios where the
+	// administrator is using a template to update several security policies, the only
+	// way to set the sequence number is to explicitly specify the sequence number for
+	// each security policy. If no sequence number is specified in the payload, a
+	// value of 0 is assigned by default. If there are multiple policies with the same
+	// sequence number then their order is not deterministic. If a specific order of
+	// policies is desired, then one has to specify unique sequence numbers or use the
+	// POST request on the policy entity with a query parameter action=revise to let
+	// the framework assign a sequence number. The value of sequence number must be
+	// between 0 and 999,999.
+	SequenceNumber *int `json:"sequence_number,omitempty" yaml:"sequence_number,omitempty" mapstructure:"sequence_number,omitempty"`
+
+	// Stateful or Stateless nature of security policy is enforced on all rules in
+	// this security policy. When it is stateful, the state of the network connects
+	// are tracked and a stateful packet inspection is performed. Layer3 security
+	// policies can be stateful or stateless. By default, they are stateful. Layer2
+	// security policies can only be stateless.
+	Stateful *bool `json:"stateful,omitempty" yaml:"stateful,omitempty" mapstructure:"stateful,omitempty"`
+
+	// Tags corresponds to the JSON schema field "tags".
+	Tags []Tag `json:"tags,omitempty" yaml:"tags,omitempty" mapstructure:"tags,omitempty"`
+
+	// Ensures that a 3 way TCP handshake is done before the data packets are sent.
+	// tcp_strict=true is supported only for stateful security policies. If the
+	// tcp_strict flag is not specified and the security policy is stateful, then
+	// tcp_strict will be set to true.
+	TcpStrict *bool `json:"tcp_strict,omitempty" yaml:"tcp_strict,omitempty" mapstructure:"tcp_strict,omitempty"`
+
+	// This is a UUID generated by the GM/LM to uniquely identify entities in a
+	// federated environment. For entities that are stretched across multiple sites,
+	// the same ID will be used on all the stretched sites.
+	UniqueId *string `json:"unique_id,omitempty" yaml:"unique_id,omitempty" mapstructure:"unique_id,omitempty"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *GatewayPolicy) UnmarshalJSON(b []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(b, &raw); err != nil {
+		return err
+	}
+	type Plain GatewayPolicy
+	var plain Plain
+	if err := json.Unmarshal(b, &plain); err != nil {
+		return err
+	}
+	if plain.Description != nil && len(*plain.Description) > 1024 {
+		return fmt.Errorf("field %s length: must be <= %d", "description", 1024)
+	}
+	if plain.DisplayName != nil && len(*plain.DisplayName) > 255 {
+		return fmt.Errorf("field %s length: must be <= %d", "display_name", 255)
+	}
+	if v, ok := raw["locked"]; !ok || v == nil {
+		plain.Locked = false
+	}
+	if v, ok := raw["marked_for_delete"]; !ok || v == nil {
+		plain.MarkedForDelete = false
+	}
+	if v, ok := raw["overridden"]; !ok || v == nil {
+		plain.Overridden = false
+	}
+	if len(plain.Scope) > 128 {
+		return fmt.Errorf("field %s length: must be <= %d", "scope", 128)
+	}
+	if len(plain.Tags) > 30 {
+		return fmt.Errorf("field %s length: must be <= %d", "tags", 30)
+	}
+	*j = GatewayPolicy(plain)
+	return nil
+}
+
 type GatewayQosProfileConfig struct {
 	// Policy path to gateway QoS profile in egress direction.
 	EgressQosProfilePath *string `json:"egress_qos_profile_path,omitempty" yaml:"egress_qos_profile_path,omitempty" mapstructure:"egress_qos_profile_path,omitempty"`

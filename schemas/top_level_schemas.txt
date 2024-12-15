@@ -1,4 +1,5 @@
 SecurityPolicy
+GatewayPolicy
 Group
 VirtualMachine
 Service
