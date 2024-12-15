@@ -13,28 +13,31 @@ import (
 )
 
 const (
-	domainsQuery               = "policy/api/v1/infra/domains"
-	servicesQuery              = "policy/api/v1/infra/services"
-	segmentsQuery              = "policy/api/v1/infra/segments"
-	segmentPortsQuery          = "policy/api/v1/infra/segments/%s/ports"
-	tier0Query                 = "policy/api/v1/infra/tier-0s"
-	tier1Query                 = "policy/api/v1/infra/tier-1s"
-	tierNatQuery               = "%s/%s/nat"
-	tierNatRuleQuery           = "%s/%s/nat/%s/nat-rules"
-	virtualMachineQuery        = "api/v1/fabric/virtual-machines"
-	virtualInterfaceQuery      = "api/v1/fabric/vifs"
-	groupsQuery                = "policy/api/v1/infra/domains/%s/groups"
-	groupQuery                 = "policy/api/v1/infra/domains/%s/groups/%s"
-	groupMembersVMQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
-	groupMembersVIFQuery       = "policy/api/v1/infra/domains/%s/groups/%s/members/vifs"
-	groupMembersIPAddressQuery = "policy/api/v1/infra/domains/%s/groups/%s/members/ip-addresses"
-	securityPoliciesQuery      = "policy/api/v1/infra/domains/%s/security-policies"
-	securityPolicyRulesQuery   = "policy/api/v1/infra/domains/%s/security-policies/%s"
-	securityPolicyRuleQuery    = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
-	gatewayPoliciesQuery       = "policy/api/v1/infra/domains/%s/gateway-policies"
-	gatewayPolicyRulesQuery    = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
-	gatewayPolicyRuleQuery     = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
-	firewallRuleQuery          = "api/v1/firewall/rules/%d"
+	domainsQuery                = "policy/api/v1/infra/domains"
+	servicesQuery               = "policy/api/v1/infra/services"
+	segmentsQuery               = "policy/api/v1/infra/segments"
+	segmentPortsQuery           = "policy/api/v1/infra/segments/%s/ports"
+	tier0Query                  = "policy/api/v1/infra/tier-0s"
+	tier1Query                  = "policy/api/v1/infra/tier-1s"
+	tierNatQuery                = "%s/%s/nat"
+	tierNatRuleQuery            = "%s/%s/nat/%s/nat-rules"
+	virtualMachineQuery         = "api/v1/fabric/virtual-machines"
+	virtualInterfaceQuery       = "api/v1/fabric/vifs"
+	groupsQuery                 = "policy/api/v1/infra/domains/%s/groups"
+	groupQuery                  = "policy/api/v1/infra/domains/%s/groups/%s"
+	groupMembersVMQuery         = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
+	groupMembersVIFQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/vifs"
+	groupMembersIPAddressQuery  = "policy/api/v1/infra/domains/%s/groups/%s/members/ip-addresses"
+	securityPoliciesQuery       = "policy/api/v1/infra/domains/%s/security-policies"
+	securityPolicyRulesQuery    = "policy/api/v1/infra/domains/%s/security-policies/%s"
+	securityPolicyRuleQuery     = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
+	gatewayPoliciesQuery        = "policy/api/v1/infra/domains/%s/gateway-policies"
+	gatewayPolicyRulesQuery     = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
+	gatewayPolicyRuleQuery      = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
+	redirectionPoliciesQuery    = "policy/api/v1/infra/domains/%s/redirection-policies"
+	redirectionPolicyRulesQuery = "policy/api/v1/infra/domains/%s/redirection-policies/%s"
+	redirectionPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/redirection-policies/%s/rules/%s"
+	firewallRuleQuery           = "api/v1/firewall/rules/%d"
 
 	defaultForwardingUpTimer = 5
 )
@@ -198,6 +201,30 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 					fmt.Sprintf(gatewayPolicyRuleQuery, domainID,
 						*domainResources.GatewayPolicyList[gi].Id, *domainResources.GatewayPolicyList[gi].Rules[ri].Id),
 					&domainResources.GatewayPolicyList[gi].Rules[ri])
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		// redirection policies:
+		err = collectResultList(server,
+			fmt.Sprintf(redirectionPoliciesQuery, domainID),
+			&domainResources.RedirectionPolicyList)
+		if err != nil {
+			return nil, err
+		}
+		for gi := range domainResources.RedirectionPolicyList {
+			err = collectResource(server,
+				fmt.Sprintf(redirectionPolicyRulesQuery, domainID, *domainResources.RedirectionPolicyList[gi].Id),
+				&domainResources.RedirectionPolicyList[gi])
+			if err != nil {
+				return nil, err
+			}
+			for ri := range domainResources.RedirectionPolicyList[gi].RedirectionRules {
+				err = collectResource(server,
+					fmt.Sprintf(redirectionPolicyRuleQuery, domainID,
+						*domainResources.RedirectionPolicyList[gi].Id, *domainResources.RedirectionPolicyList[gi].RedirectionRules[ri].Id),
+					&domainResources.RedirectionPolicyList[gi].RedirectionRules[ri])
 				if err != nil {
 					return nil, err
 				}

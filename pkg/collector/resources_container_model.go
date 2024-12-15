@@ -25,9 +25,10 @@ type ResourcesContainerModel struct {
 	DomainList                  []Domain                  `json:"domains"`
 }
 type DomainResources struct {
-	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
-	GatewayPolicyList  []GatewayPolicy  `json:"gateway_policies"`
-	GroupList          []Group          `json:"groups"`
+	SecurityPolicyList    []SecurityPolicy    `json:"security_policies"`
+	GatewayPolicyList     []GatewayPolicy     `json:"gateway_policies"`
+	RedirectionPolicyList []RedirectionPolicy `json:"redirection_policies"`
+	GroupList             []Group             `json:"groups"`
 }
 
 // NewResourcesContainerModel creates an empty resources container

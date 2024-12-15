@@ -72,6 +72,28 @@ func (gatewayPolicy *GatewayPolicy) UnmarshalJSON(b []byte) error {
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////
+type RedirectionPolicy struct {
+	nsx.RedirectionPolicy
+	RedirectionRules []RedirectionRule `json:"rules"`
+}
+
+func (redirectionPolicy *RedirectionPolicy) UnmarshalJSON(b []byte) error {
+	return UnmarshalBaseStructAnd1Field(b, &redirectionPolicy.RedirectionPolicy,
+		rulesJSONEntry, &redirectionPolicy.RedirectionRules)
+}
+
+type RedirectionRule struct {
+	nsx.RedirectionRule
+	ServiceEntries ServiceEntries `json:"service_entries"`
+}
+
+func (rule *RedirectionRule) UnmarshalJSON(b []byte) error {
+	rule.ServiceEntries = ServiceEntries{}
+	return UnmarshalBaseStructAnd1Field(b, &rule.RedirectionRule,
+		serviceEntriesJSONEntry, &rule.ServiceEntries)
+}
+
+// /////////////////////////////////////////////////////////////////////////////////////
 type IPProtocolServiceEntry struct {
 	nsx.IPProtocolServiceEntry
 }
@@ -285,6 +307,7 @@ type Tier0 struct {
 	nsx.Tier0
 	PolicyNats []PolicyNat `json:"policy_nats"`
 }
+
 func (t0 *Tier0) UnmarshalJSON(b []byte) error {
 	return UnmarshalBaseStructAnd1Field(b, &t0.Tier0, policyNatsJSONEntry, &t0.PolicyNats)
 }
@@ -293,6 +316,7 @@ type Tier1 struct {
 	nsx.Tier1
 	PolicyNats []PolicyNat `json:"policy_nats"`
 }
+
 func (t1 *Tier1) UnmarshalJSON(b []byte) error {
 	return UnmarshalBaseStructAnd1Field(b, &t1.Tier1, policyNatsJSONEntry, &t1.PolicyNats)
 }
@@ -301,12 +325,13 @@ type PolicyNat struct {
 	nsx.PolicyNat
 	Rules []PolicyNatRule `json:"rules"`
 }
+
 func (policyNat *PolicyNat) UnmarshalJSON(b []byte) error {
 	return UnmarshalBaseStructAnd1Field(b, &policyNat.PolicyNat, rulesJSONEntry, &policyNat.Rules)
 }
 
 type PolicyNatRule struct {
-	nsx.PolicyNatRule 
+	nsx.PolicyNatRule
 }
 
 type RealizedVirtualMachine struct {
