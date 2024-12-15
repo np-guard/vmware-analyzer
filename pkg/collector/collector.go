@@ -50,22 +50,22 @@ func NewServerData(host, user, password string) ServerData {
 //nolint:funlen,gocyclo // just a long function
 func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 	res := NewResourcesContainerModel()
+	// vms:
 	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return nil, err
 	}
+	// vnis:
 	err = collectResultList(server, virtualInterfaceQuery, &res.VirtualNetworkInterfaceList)
 	if err != nil {
 		return nil, err
 	}
+	// services:
 	err = collectResultList(server, servicesQuery, &res.ServiceList)
 	if err != nil {
 		return nil, err
 	}
-	err = collectResultList(server, domainsQuery, &res.DomainList)
-	if err != nil {
-		return nil, err
-	}
+	//segments:
 	err = collectResultList(server, segmentsQuery, &res.SegmentList)
 	if err != nil {
 		return nil, err
@@ -77,45 +77,39 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 			return nil, err
 		}
 	}
+	// tier0:
 	err = collectResultList(server, tier0Query, &res.Tier0List)
 	if err != nil {
 		return nil, err
 	}
-	collcetPolicyNats := func(tierQuery, tID string, policyNats *[]PolicyNat) error {
-		err = collectResultList(server, fmt.Sprintf(tierNatQuery, tierQuery, tID), policyNats)
-		if err != nil {
-			return err
-		}
-		for ni := range *policyNats {
-			nID := *(*policyNats)[ni].Id
-			err = collectResultList(server, fmt.Sprintf(tierNatRuleQuery, tierQuery, tID, nID), &(*policyNats)[ni].Rules)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
 	for ti := range res.Tier0List {
 		tID := *res.Tier0List[ti].Id
-		err = collcetPolicyNats(tier0Query, tID, &res.Tier0List[ti].PolicyNats)
+		err = collcetPolicyNats(server, tier0Query, tID, &res.Tier0List[ti].PolicyNats)
 		if err != nil {
 			return nil, err
 		}
 	}
+	// tier1:
 	err = collectResultList(server, tier1Query, &res.Tier1List)
 	if err != nil {
 		return nil, err
 	}
 	for ti := range res.Tier1List {
 		tID := *res.Tier1List[ti].Id
-		err = collcetPolicyNats(tier1Query, tID, &res.Tier1List[ti].PolicyNats)
+		err = collcetPolicyNats(server, tier1Query, tID, &res.Tier1List[ti].PolicyNats)
 		if err != nil {
 			return nil, err
 		}
 	}
+	//domains:
+	err = collectResultList(server, domainsQuery, &res.DomainList)
+	if err != nil {
+		return nil, err
+	}
 	for di := range res.DomainList {
 		domainID := *res.DomainList[di].Id
 		domainResources := &res.DomainList[di].Resources
+		// groups:
 		err = collectResultList(server, fmt.Sprintf(groupsQuery, domainID), &domainResources.GroupList)
 		if err != nil {
 			return nil, err
@@ -144,6 +138,7 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 				return nil, err
 			}
 		}
+		// security policies:
 		err = collectResultList(server,
 			fmt.Sprintf(securityPoliciesQuery, domainID),
 			&domainResources.SecurityPolicyList)
@@ -184,6 +179,7 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 				}
 			}
 		}
+		// gateway policies:
 		err = collectResultList(server,
 			fmt.Sprintf(gatewayPoliciesQuery, domainID),
 			&domainResources.GatewayPolicyList)
@@ -210,6 +206,21 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 	}
 	FixResourcesForJSON(res)
 	return res, nil
+}
+
+func collcetPolicyNats(server ServerData, tierQuery, tID string, policyNats *[]PolicyNat) error {
+	err := collectResultList(server, fmt.Sprintf(tierNatQuery, tierQuery, tID), policyNats)
+	if err != nil {
+		return err
+	}
+	for ni := range *policyNats {
+		nID := *(*policyNats)[ni].Id
+		err = collectResultList(server, fmt.Sprintf(tierNatRuleQuery, tierQuery, tID, nID), &(*policyNats)[ni].Rules)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func FixResourcesForJSON(res *ResourcesContainerModel) {
