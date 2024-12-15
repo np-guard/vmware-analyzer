@@ -17,7 +17,7 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 	config := parser.GetConfig()
 
 	// in debug/verbose mode -- print the parsed config
-	//logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr())
+	// logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr())
 
 	// the following code is temp; just access relevant data
 	fmt.Println("list of VMs\n===========")
@@ -42,13 +42,15 @@ func tmpPrintRules(rules []*dfw.FwRule) {
 	for _, rule := range rules {
 		origRule := rule.OrigRuleObj
 		fmt.Printf("\nruleId %v action %v\n~~~~~~~~~~~~~~~~~~~~~~\nsourceGroups: \n", *origRule.RuleId, rule.Action)
-		for _, sourceGroup := range origRule.SourceGroups {
-			fmt.Printf("\t\t%v ", sourceGroup)
-		}
+		tmpPrintGroup(origRule.SourceGroups)
 		fmt.Println("\nDestinationGroups:")
-		for _, destinationGroup := range origRule.DestinationGroups {
-			fmt.Printf("\t\t%v ", destinationGroup)
-		}
+		tmpPrintGroup(origRule.DestinationGroups)
 		fmt.Println()
+	}
+}
+
+func tmpPrintGroup(group []string) {
+	for _, destinationGroup := range group {
+		fmt.Printf("\t\t%v ", destinationGroup)
 	}
 }
