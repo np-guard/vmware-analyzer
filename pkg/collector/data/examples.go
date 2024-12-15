@@ -280,3 +280,58 @@ func example3FromExample2() Example {
 	}
 	return res
 }
+
+// ExampleDumb
+// Dumbledore1 can communicate to all
+// Dumbledore2 can communicate to all but slytherin
+var ExampleDumb = Example{
+	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	groups: map[string][]string{
+		"Slytherin":       {"Slytherin"},
+		"Hufflepuff":      {"Hufflepuff"},
+		"Gryffindor":      {"Gryffindor"},
+		"Dumbledore":      {"Dumbledore1", "Dumbledore2"},
+		"DumbledoreAll":   {"Dumbledore1"},
+		"DumbledoreNoSly": {"Dumbledore2"},
+	},
+	policies: []category{
+		{
+			name:         "From-Dumbledore-connection",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "Dumb1-To-All",
+					id:       newRuleID,
+					source:   "DumbledoreAll",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+				{
+					name:     "Dumb2-Not-Sly",
+					id:       9195,
+					source:   "DumbledoreNoSly",
+					dest:     "Slytherin",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "Dumb2-To-All",
+					id:       9196,
+					source:   "DumbledoreNoSly",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+			},
+		},
+
+		{
+			name:         "Default-L3-Section",
+			categoryType: "Application",
+			rules: []rule{
+				defaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}

@@ -38,7 +38,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 			vmMember := collector.RealizedVirtualMachine{}
 			vmMember.RealizedVirtualMachine.DisplayName = &member
 			vmMember.RealizedVirtualMachine.Id = &member
-			newGroup.Members = append(newGroup.Members, vmMember)
+			newGroup.VMMembers = append(newGroup.VMMembers, vmMember)
 		}
 		groupList = append(groupList, newGroup)
 	}

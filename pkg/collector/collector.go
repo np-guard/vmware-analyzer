@@ -13,24 +13,26 @@ import (
 )
 
 const (
-	domainsQuery             = "policy/api/v1/infra/domains"
-	servicesQuery            = "policy/api/v1/infra/services"
-	segmentsQuery            = "policy/api/v1/infra/segments"
-	segmentPortsQuery        = "policy/api/v1/infra/segments/%s/ports"
-	tier0Query               = "policy/api/v1/infra/tier-0s"
-	tier1Query               = "policy/api/v1/infra/tier-1s"
-	virtualMachineQuery      = "api/v1/fabric/virtual-machines"
-	virtualInterfaceQuery    = "api/v1/fabric/vifs"
-	groupsQuery              = "policy/api/v1/infra/domains/%s/groups"
-	groupQuery               = "policy/api/v1/infra/domains/%s/groups/%s"
-	groupMembersQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
-	securityPoliciesQuery    = "policy/api/v1/infra/domains/%s/security-policies"
-	securityPolicyRulesQuery = "policy/api/v1/infra/domains/%s/security-policies/%s"
-	securityPolicyRuleQuery  = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
+	domainsQuery               = "policy/api/v1/infra/domains"
+	servicesQuery              = "policy/api/v1/infra/services"
+	segmentsQuery              = "policy/api/v1/infra/segments"
+	segmentPortsQuery          = "policy/api/v1/infra/segments/%s/ports"
+	tier0Query                 = "policy/api/v1/infra/tier-0s"
+	tier1Query                 = "policy/api/v1/infra/tier-1s"
+	virtualMachineQuery        = "api/v1/fabric/virtual-machines"
+	virtualInterfaceQuery      = "api/v1/fabric/vifs"
+	groupsQuery                = "policy/api/v1/infra/domains/%s/groups"
+	groupQuery                 = "policy/api/v1/infra/domains/%s/groups/%s"
+	groupMembersVMQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
+	groupMembersVIFQuery       = "policy/api/v1/infra/domains/%s/groups/%s/members/vifs"
+	groupMembersIPAddressQuery = "policy/api/v1/infra/domains/%s/groups/%s/members/ip-addresses"
+	securityPoliciesQuery      = "policy/api/v1/infra/domains/%s/security-policies"
+	securityPolicyRulesQuery   = "policy/api/v1/infra/domains/%s/security-policies/%s"
+	securityPolicyRuleQuery    = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
 	gatewayPoliciesQuery     = "policy/api/v1/infra/domains/%s/gateway-policies"
 	gatewayPolicyRulesQuery  = "policy/api/v1/infra/domains/%s/gateway-policies/%s"
 	gatewayPolicyRuleQuery   = "policy/api/v1/infra/domains/%s/gateway-policies/%s/rules/%s"
-	firewallRuleQuery        = "api/v1/firewall/rules/%d"
+	firewallRuleQuery          = "api/v1/firewall/rules/%d"
 
 	defaultForwardingUpTimer = 5
 )
@@ -94,8 +96,20 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 				return nil, err
 			}
 			err = collectResultList(server,
-				fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].Members)
+				fmt.Sprintf(groupMembersVMQuery, domainID, *domainResources.GroupList[i].Id),
+				&domainResources.GroupList[i].VMMembers)
+			if err != nil {
+				return nil, err
+			}
+			err = collectResultList(server,
+				fmt.Sprintf(groupMembersVIFQuery, domainID, *domainResources.GroupList[i].Id),
+				&domainResources.GroupList[i].VIFMembers)
+			if err != nil {
+				return nil, err
+			}
+			err = collectResultList(server,
+				fmt.Sprintf(groupMembersIPAddressQuery, domainID, *domainResources.GroupList[i].Id),
+				&domainResources.GroupList[i].AddressMembers)
 			if err != nil {
 				return nil, err
 			}
