@@ -12,7 +12,7 @@ import (
 // config captures nsx config
 type config struct {
 	Vms                  []*endpoints.VM          // list of all Vms
-	VmsMap               map[string]*endpoints.VM // map from uid to vm objects
+	vmsMap               map[string]*endpoints.VM // map from uid to vm objects
 	Fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
 	analyzedConnectivity connMap                  // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool

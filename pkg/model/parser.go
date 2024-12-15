@@ -76,7 +76,7 @@ func (p *NSXConfigParser) AddPathsToDisplayNames() {
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *NSXConfigParser) getVMs() {
-	p.configRes.VmsMap = map[string]*endpoints.VM{}
+	p.configRes.vmsMap = map[string]*endpoints.VM{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -93,7 +93,7 @@ func (p *NSXConfigParser) getVMs() {
 			}
 		}
 		p.configRes.Vms = append(p.configRes.Vms, vmObj)
-		p.configRes.VmsMap[vmObj.ID()] = vmObj
+		p.configRes.vmsMap[vmObj.ID()] = vmObj
 	}
 }
 
@@ -361,7 +361,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 	}
 	res := []*endpoints.VM{}
 	for vmID := range ids {
-		if vmObj, ok := p.configRes.VmsMap[vmID]; ok {
+		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config
