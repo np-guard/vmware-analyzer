@@ -2,11 +2,12 @@ package synthesis
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type synthesisTest struct {
