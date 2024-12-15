@@ -19,8 +19,8 @@ import (
 const (
 	rulesJSONEntry          = "rules"
 	membersJSONEntry        = "vm_members"
-	vifMembersJSONEntry     = "vfi_members"
-	addressMembersJSONEntry = "address_members"
+	vifMembersJSONEntry     = "vif_members"
+	addressMembersJSONEntry = "ips_members"
 	expressionJSONEntry     = "expression"
 	resourcesJSONEntry      = "resources"
 	serviceEntriesJSONEntry = "service_entries"
@@ -34,7 +34,7 @@ const (
 type Rule struct {
 	nsx.Rule
 	FirewallRule   *FirewallRule  `json:"firewall_rule,omitempty"`
-	ServiceEntries ServiceEntries `json:"service_entries"`
+	ServiceEntries ServiceEntries `json:"service_entries,omitempty"`
 }
 
 func (rule *Rule) UnmarshalJSON(b []byte) error {
@@ -50,8 +50,8 @@ type FirewallRule struct {
 
 type SecurityPolicy struct {
 	nsx.SecurityPolicy
-	Rules       []Rule        `json:"rules"`
-	DefaultRule *FirewallRule `json:"default_rule"`
+	Rules       []Rule        `json:"rules,omitempty"`
+	DefaultRule *FirewallRule `json:"default_rule,omitempty"`
 }
 
 func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
@@ -63,7 +63,7 @@ func (securityPolicy *SecurityPolicy) UnmarshalJSON(b []byte) error {
 // /////////////////////////////////////////////////////////////////////////////////////
 type GatewayPolicy struct {
 	nsx.GatewayPolicy
-	Rules []Rule `json:"rules"`
+	Rules []Rule `json:"rules,omitempty"`
 }
 
 func (gatewayPolicy *GatewayPolicy) UnmarshalJSON(b []byte) error {
@@ -74,7 +74,7 @@ func (gatewayPolicy *GatewayPolicy) UnmarshalJSON(b []byte) error {
 // /////////////////////////////////////////////////////////////////////////////////////
 type RedirectionPolicy struct {
 	nsx.RedirectionPolicy
-	RedirectionRules []RedirectionRule `json:"rules"`
+	RedirectionRules []RedirectionRule `json:"rules,omitempty"`
 }
 
 func (redirectionPolicy *RedirectionPolicy) UnmarshalJSON(b []byte) error {
@@ -84,7 +84,7 @@ func (redirectionPolicy *RedirectionPolicy) UnmarshalJSON(b []byte) error {
 
 type RedirectionRule struct {
 	nsx.RedirectionRule
-	ServiceEntries ServiceEntries `json:"service_entries"`
+	ServiceEntries ServiceEntries `json:"service_entries,omitempty"`
 }
 
 func (rule *RedirectionRule) UnmarshalJSON(b []byte) error {
@@ -250,7 +250,7 @@ func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 
 type Service struct {
 	nsx.Service
-	ServiceEntries ServiceEntries `json:"service_entries"`
+	ServiceEntries ServiceEntries `json:"service_entries,omitempty"`
 }
 
 func (service *Service) UnmarshalJSON(b []byte) error {
@@ -292,7 +292,7 @@ func (vni *VirtualNetworkInterface) UnmarshalJSON(b []byte) error {
 
 type Segment struct {
 	nsx.Segment
-	SegmentPorts []SegmentPort `json:"segment_ports"`
+	SegmentPorts []SegmentPort `json:"segment_ports,omitempty"`
 }
 
 func (segment *Segment) UnmarshalJSON(b []byte) error {
@@ -305,7 +305,7 @@ type SegmentPort struct {
 
 type Tier0 struct {
 	nsx.Tier0
-	PolicyNats []PolicyNat `json:"policy_nats"`
+	PolicyNats []PolicyNat `json:"policy_nats,omitempty"`
 }
 
 func (t0 *Tier0) UnmarshalJSON(b []byte) error {
@@ -314,7 +314,7 @@ func (t0 *Tier0) UnmarshalJSON(b []byte) error {
 
 type Tier1 struct {
 	nsx.Tier1
-	PolicyNats []PolicyNat `json:"policy_nats"`
+	PolicyNats []PolicyNat `json:"policy_nats,omitempty"`
 }
 
 func (t1 *Tier1) UnmarshalJSON(b []byte) error {
@@ -323,7 +323,7 @@ func (t1 *Tier1) UnmarshalJSON(b []byte) error {
 
 type PolicyNat struct {
 	nsx.PolicyNat
-	Rules []PolicyNatRule `json:"rules"`
+	Rules []PolicyNatRule `json:"rules,omitempty"`
 }
 
 func (policyNat *PolicyNat) UnmarshalJSON(b []byte) error {
@@ -416,10 +416,10 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 
 type Group struct {
 	nsx.Group
-	VMMembers      []RealizedVirtualMachine  `json:"vm_members"`
-	VIFMembers     []VirtualNetworkInterface `json:"vif_members"`
-	AddressMembers []nsx.IPElement           `json:"ips_members"`
-	Expression     Expression                `json:"expression"`
+	VMMembers      []RealizedVirtualMachine  `json:"vm_members,omitempty"`
+	VIFMembers     []VirtualNetworkInterface `json:"vif_members,omitempty"`
+	AddressMembers []nsx.IPElement           `json:"ips_members,omitempty"`
+	Expression     Expression                `json:"expression,omitempty"`
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
