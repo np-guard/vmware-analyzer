@@ -25,7 +25,7 @@ type TraceflowConfig struct {
 }
 
 func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, nilWithType, "packet", &config.Packet, "source_id", &config.SourceID)
+	return Unmarshal2Fields(b, "packet", &config.Packet, "source_id", &config.SourceID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
