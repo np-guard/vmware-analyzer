@@ -66,8 +66,8 @@ type GatewayPolicy struct {
 }
 
 func (gatewayPolicy *GatewayPolicy) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAndFields(b, &gatewayPolicy.GatewayPolicy,
-		rulesJSONEntry, &gatewayPolicy.Rules, "", nilWithType)
+	return UnmarshalBaseStructAnd1Field(b, &gatewayPolicy.GatewayPolicy,
+		rulesJSONEntry, &gatewayPolicy.Rules)
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////
