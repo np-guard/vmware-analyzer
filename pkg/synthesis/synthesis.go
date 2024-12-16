@@ -32,13 +32,13 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 			continue
 		}
 		fmt.Printf("\ncategory: %v\n===============\n", category.Category)
-		tmpPrintRules(category.ProcessedRules.Outbound)
-		tmpPrintRules(category.ProcessedRules.Inbound)
+		tmpAddSymbolicSrcDstRules(category.ProcessedRules.Outbound)
+		tmpAddSymbolicSrcDstRules(category.ProcessedRules.Inbound)
 	}
 	return "", nil
 }
 
-func tmpPrintRules(rules []*dfw.FwRule) {
+func tmpAddSymbolicSrcDstRules(rules []*dfw.FwRule) {
 	for _, rule := range rules {
 		origRule := rule.OrigRuleObj
 		fmt.Printf("\nruleId %v action %v\n~~~~~~~~~~~~~~~~~~~~~~\nsourceGroups: \n", *origRule.RuleId, rule.Action)

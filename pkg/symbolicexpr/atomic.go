@@ -23,7 +23,7 @@ func (term atomicTerm) string() string {
 }
 
 // negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
-func (term atomicTerm) negate() atomic {
+func (term atomicTerm) negate() Atomic {
 	return atomicTerm{label: term.label, toVal: term.toVal, neg: !term.neg}
 }
 
@@ -32,8 +32,8 @@ func (atomicTerm) isTautology() bool {
 }
 
 // returns true iff otherAt is negation of
-// once we cache the atomic terms, we can just compare pointers
-func (term atomicTerm) isNegateOf(otherAt atomic) bool {
+// once we cache the Atomic terms, we can just compare pointers
+func (term atomicTerm) isNegateOf(otherAt Atomic) bool {
 	return term.string() == otherAt.negate().string()
 }
 
@@ -41,7 +41,7 @@ func (tautology) string() string {
 	return "*"
 }
 
-func (tautology) negate() atomic {
+func (tautology) negate() Atomic {
 	return tautology{}
 }
 
@@ -50,7 +50,7 @@ func (tautology) isTautology() bool {
 }
 
 // returns true iff otherAt is negation of
-// once we cache the atomic terms, we can just compare pointers
-func (tautology) isNegateOf(atomic) bool {
+// once we cache the Atomic terms, we can just compare pointers
+func (tautology) isNegateOf(Atomic) bool {
 	return false
 }

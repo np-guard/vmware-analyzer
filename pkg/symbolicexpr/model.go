@@ -2,7 +2,7 @@ package symbolicexpr
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
-// Virtual machines' labels used in atomic group expr, e.g. tag = "backend"
+// Virtual machines' labels used in Atomic group expr, e.g. tag = "backend"
 // Used by NSX: Tag, Segment, (VM) Name, OS_Name, Computer_Name
 // vmLabel implemented by collector.Segment, endpoints.vm, synthesis.Tag
 // todo: Support OSName and ComputerName at POC?
@@ -24,16 +24,16 @@ type atomicTerm struct {
 type tautology struct {
 }
 
-// atomic interface for atomic expression - implemented by atomicTerm and tautology
-type atomic interface {
+// Atomic interface for Atomic expression - implemented by atomicTerm and tautology
+type Atomic interface {
 	string() string
-	negate() atomic
+	negate() Atomic
 	isTautology() bool
-	isNegateOf(atomic) bool
+	isNegateOf(Atomic) bool
 }
 
 // Conjunction a DNF Conjunction of Atomics
-type Conjunction []atomic
+type Conjunction []Atomic
 
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
@@ -44,4 +44,4 @@ type SymbolicPath struct {
 type SymbolicPaths []*SymbolicPath
 
 // Atomics map from Atomics string to *atomicTerm
-type Atomics map[string]atomic
+type Atomics map[string]Atomic
