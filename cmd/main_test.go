@@ -86,8 +86,8 @@ func TestMain(t *testing.T) {
 					fmt.Println("didn't got any server")
 					return
 				}
-				serverInfo = fmt.Sprintf("--host %s --username %s --password %s ", os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
-
+				serverInfo =
+					fmt.Sprintf("--host %s --username %s --password %s ", os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
 			}
 			if err := _main(splitArgs(serverInfo + tt.args)); err != nil {
 				t.Errorf("_main() error = %v,", err)
