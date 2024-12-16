@@ -42,6 +42,7 @@ type NSXConfigParser struct {
 	file         string
 	rc           *collector.ResourcesContainerModel
 	configRes    *config
+	groups       []*collector.Group
 	allGroupsVMs []*endpoints.VM
 	// store references to groups/services objects from paths used in fw rules
 	groupPathsToObjects   map[string]*collector.Group
@@ -110,7 +111,7 @@ func (p *NSXConfigParser) getDFW() {
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
 			// This scope will take precedence over rule level scope.
-			scope := p.getEndpointsFromGroupsPaths(secPolicy.Scope)
+			scope, _ := p.getEndpointsFromGroupsPaths(secPolicy.Scope)
 			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
 
 			rules := secPolicy.Rules
@@ -120,7 +121,7 @@ func (p *NSXConfigParser) getDFW() {
 				r.scope = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
-					r.scope = p.getEndpointsFromGroupsPaths(rule.Scope)
+					r.scope, _ = p.getEndpointsFromGroupsPaths(rule.Scope)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
@@ -158,10 +159,12 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res := &parsedRule{}
 	// scope - the list of group paths where the rules in this policy will get applied.
 	scope := secPolicy.Scope
-	vms := p.getEndpointsFromGroupsPaths(scope)
+	vms, groups := p.getEndpointsFromGroupsPaths(scope)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
 	res.srcVMs = vms
 	res.dstVMs = vms
+	res.SrcGroups = groups
+	res.DstGroup = groups
 
 	switch string(*secPolicy.ConnectivityPreference) {
 	case string(nsx.SecurityPolicyConnectivityPreferenceALLOWLIST),
@@ -183,8 +186,12 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	srcVMs         []*endpoints.VM
-	dstVMs         []*endpoints.VM
+	srcVMs []*endpoints.VM
+	dstVMs []*endpoints.VM
+	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
+	//       defined by groups, thus the following SrcGroups and DstGroup
+	SrcGroups      []*collector.Group
+	DstGroup       []*collector.Group
 	action         string
 	conn           *netset.TransportSet
 	direction      string
@@ -194,32 +201,38 @@ type parsedRule struct {
 	defaultRuleObj *collector.FirewallRule
 }
 
-func (p *NSXConfigParser) allGroups() []*endpoints.VM {
+func (p *NSXConfigParser) allGroups() ([]*endpoints.VM, []*collector.Group) {
+	// p.allGroupsVMs and p.groups are written together
 	if len(p.allGroupsVMs) > 0 {
-		return p.allGroupsVMs
+		return p.allGroupsVMs, p.groups
 	}
-	res := []*endpoints.VM{}
+	vms := []*endpoints.VM{}
+	groups := []*collector.Group{}
 	for i := range p.rc.DomainList {
 		domainRsc := &p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
-			res = append(res, p.groupToVMsList(&domainRsc.GroupList[j])...)
+			vms = append(vms, p.groupToVMsList(&domainRsc.GroupList[j])...)
+			groups = append(groups, &domainRsc.GroupList[j])
 		}
 	}
-	p.allGroupsVMs = res
-	return res
+	p.allGroupsVMs = vms
+	return vms, groups
 }
 
-func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string) []*endpoints.VM {
+func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string) ([]*endpoints.VM, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		return p.allGroups() // all groups
 	}
-	res := []*endpoints.VM{}
+	vms := []*endpoints.VM{}
+	groups := []*collector.Group{}
 	// TODO: support IP Addresses in groupsPaths
 	for _, groupPath := range groupsPaths {
-		res = append(res, p.getGroupVMs(groupPath)...)
+		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
+		vms = append(vms, thisGroupVMs...)
+		groups = append(groups, thisGroup)
 	}
-	return res
+	return vms, groups
 }
 
 // type *collector.FirewallRule is deprecated but used to collect default rule per securityPolicy
@@ -238,9 +251,9 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	// the source groups. If false, the rule applies to the source groups
 	// TODO: handle excluded fields
 	// srcExclude := rule.SourcesExcluded
-	res.srcVMs = p.getEndpointsFromGroupsPaths(srcGroups)
+	res.srcVMs, res.SrcGroups = p.getEndpointsFromGroupsPaths(srcGroups)
 	dstGroups := rule.DestinationGroups
-	res.dstVMs = p.getEndpointsFromGroupsPaths(dstGroups)
+	res.dstVMs, res.DstGroup = p.getEndpointsFromGroupsPaths(dstGroups)
 
 	res.action = string(*rule.Action)
 	res.conn = p.getRuleConnections(rule)
@@ -371,7 +384,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 	return res
 }
 
-func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
+func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]*endpoints.VM, *collector.Group) {
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
@@ -380,11 +393,11 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) []*endpoints.VM {
 				if _, ok := p.groupPathsToObjects[groupPath]; !ok {
 					p.groupPathsToObjects[groupPath] = g
 				}
-				return p.groupToVMsList(g)
+				return p.groupToVMsList(g), g
 			}
 		}
 	}
-	return nil // could not find given groupPath (add warning)
+	return nil, nil // could not find given groupPath (add warning)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
