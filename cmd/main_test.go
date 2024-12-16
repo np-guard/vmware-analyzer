@@ -81,12 +81,12 @@ func TestMain(t *testing.T) {
 			serverInfo := ""
 			if !strings.Contains(tt.args, resourceInputFileFlag) {
 				// you  can set your server info here:
-				// serverInfo = "--host host --username user --password password " 
+				// serverInfo = "--host host --username user --password password "
 				if serverInfo == "" && os.Getenv("NSX_HOST") == "" {
 					fmt.Println("didn't got any server")
 					return
 				}
-				serverInfo = fmt.Sprintf("--host %s --username %s --password %s ",os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
+				serverInfo = fmt.Sprintf("--host %s --username %s --password %s ", os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
 
 			}
 			if err := _main(splitArgs(serverInfo + tt.args)); err != nil {
