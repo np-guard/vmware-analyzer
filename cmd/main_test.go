@@ -7,12 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"fmt"
+	"os"
 	"strings"
 	"testing"
 )
-
-const noServerInfo = "--host no_host --username no_user --password no_password"
-const serverInfo = "--host no_host --username no_user --password no_password"
 
 func TestMain(t *testing.T) {
 	tests := []struct {
@@ -31,11 +30,11 @@ func TestMain(t *testing.T) {
 		},
 		{
 			name: "collect-only",
-			args: serverInfo + " --resource-dump-file examples/output/resources.json --skip-analysis",
+			args: "--resource-dump-file examples/output/resources.json --skip-analysis",
 		},
 		{
 			name: "collect-anonymize",
-			args: serverInfo + " --resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
+			args: "--resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
 		},
 		{
 			name: "anonymize-only",
@@ -74,15 +73,24 @@ func TestMain(t *testing.T) {
 		},*/
 		{
 			name: "collect-and-analyze",
-			args: serverInfo + " --resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
+			args: "--resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if strings.Contains(tt.args, resourceInputFileFlag) || !strings.Contains(tt.args, noServerInfo) {
-				if err := _main(splitArgs(tt.args)); err != nil {
-					t.Errorf("_main() error = %v,", err)
+			serverInfo := ""
+			if !strings.Contains(tt.args, resourceInputFileFlag) {
+				// you  can set your server info here:
+				// serverInfo = "--host host --username user --password password " 
+				if serverInfo == "" && os.Getenv("NSX_HOST") == "" {
+					fmt.Println("didn't got any server")
+					return
 				}
+				serverInfo = fmt.Sprintf("--host %s --username %s --password %s ",os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
+
+			}
+			if err := _main(splitArgs(serverInfo + tt.args)); err != nil {
+				t.Errorf("_main() error = %v,", err)
 			}
 		})
 	}
