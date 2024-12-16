@@ -56,3 +56,10 @@ func (tautology) isTautology() bool {
 func (tautology) isNegateOf(Atomic) bool {
 	return false
 }
+
+// AddAtomic given Atomic name, finds in/adds to Atomics map
+// todo: currently handing only non-negate Atomic.
+func (atomics Atomics) AddAtomic(name string) Atomic {
+	//for _, atom
+	return nil
+}

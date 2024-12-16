@@ -2,7 +2,6 @@ package synthesis
 
 import (
 	"fmt"
-
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -20,6 +19,9 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 	// logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr())
 
 	fmt.Println("list of groups")
+	for _, group := range (*recourses).DomainList[0].Resources.GroupList {
+		fmt.Printf("group is %v\n", group.Name())
+	}
 
 	// the following code is temp; just access relevant data
 	fmt.Println("list of VMs\n===========")

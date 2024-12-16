@@ -71,9 +71,14 @@ type FwRule struct {
 	secPolicyCategory  string
 	categoryRef        *CategorySpec
 	dfwRef             *DFW
-	// clause of symbolic src abd symbolic dst
-	// todo: in order to compute these will have to maintain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
-	//       keep it there?
+	// the following concerns symbolic representation of src and dst needed for the synthesis
+	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
+	//       defined by groups, thus the following SrcGroups and DstGroup; SymbolicSrc and SymbolicDst in this stage
+	//       will be computed in synthesis.
+	//       In this stage we will only handle src and dst defined by groups; to that end we SrcGroups and DstGroup
+	SrcGroups []collector.Group
+	DstGroup  []collector.Group
+	// clause of symbolic src and symbolic dst
 	SymbolicSrc []*symbolicexpr.SymbolicPath
 	SymbolicDst []*symbolicexpr.SymbolicPath
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
