@@ -46,3 +46,7 @@ TraceflowObservationReceived
 TraceflowObservationReceivedLogical
 TraceflowObservationRelayedLogical
 TraceflowObservationReplicationLogical
+PolicyNat
+PolicyNatRule
+RedirectionPolicy
+RedirectionRule

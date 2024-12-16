@@ -25,9 +25,10 @@ type ResourcesContainerModel struct {
 	DomainList                  []Domain                  `json:"domains"`
 }
 type DomainResources struct {
-	SecurityPolicyList []SecurityPolicy `json:"security_policies"`
-	GatewayPolicyList  []GatewayPolicy  `json:"gateway_policies"`
-	GroupList          []Group          `json:"groups"`
+	SecurityPolicyList    []SecurityPolicy    `json:"security_policies"`
+	GatewayPolicyList     []GatewayPolicy     `json:"gateway_policies"`
+	RedirectionPolicyList []RedirectionPolicy `json:"redirection_policies"`
+	GroupList             []Group             `json:"groups"`
 }
 
 // NewResourcesContainerModel creates an empty resources container
@@ -140,7 +141,7 @@ func (resources *ResourcesContainerModel) GetRule(id string) *FirewallRule {
 			}
 			for r := range resources.DomainList[d].Resources.SecurityPolicyList[s].Rules {
 				if *resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule.Id == id {
-					return &resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule
+					return resources.DomainList[d].Resources.SecurityPolicyList[s].Rules[r].FirewallRule
 				}
 			}
 		}
