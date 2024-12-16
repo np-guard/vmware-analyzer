@@ -238,6 +238,7 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	// the source groups. If false, the rule applies to the source groups
 	// TODO: handle excluded fields
 	// srcExclude := rule.SourcesExcluded
+	// todo: here!!!!!!!
 	res.srcVMs = p.getEndpointsFromGroupsPaths(srcGroups)
 	dstGroups := rule.DestinationGroups
 	res.dstVMs = p.getEndpointsFromGroupsPaths(dstGroups)

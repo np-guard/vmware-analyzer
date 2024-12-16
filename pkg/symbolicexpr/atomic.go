@@ -18,6 +18,8 @@ func (term atomicTerm) string() string {
 		labelType = "virtual machine "
 	case *collector.Tag:
 		labelType = "tag "
+	case *collector.Group:
+		labelType = "group "
 	}
 	return labelType + term.label.Name() + equalSign + term.toVal
 }

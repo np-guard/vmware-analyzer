@@ -19,6 +19,8 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 	// in debug/verbose mode -- print the parsed config
 	// logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr())
 
+	fmt.Println("list of groups")
+
 	// the following code is temp; just access relevant data
 	fmt.Println("list of VMs\n===========")
 	for i, vm := range config.Vms {
