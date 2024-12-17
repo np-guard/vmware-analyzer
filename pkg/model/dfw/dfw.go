@@ -26,7 +26,7 @@ func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *common.DetailedConnect
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	logging.Debugf("egress allowed connections from %s to %s: %s", src.Name(), dst.Name(), egress.String())
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
-	return &common.DetailedConnection {Conn:ingress.Intersect(egress)}
+	return common.NewDetailedConnection(ingress.Intersect(egress))
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
@@ -35,7 +35,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	allAllowedConns := netset.NoTransports()
 	allDeniedConns := netset.NoTransports()
 	allNotDeterminedConns := netset.NoTransports()
-
+	relevantRules := []*FwRule{}
 	for _, dfwCategory := range d.categoriesSpecs {
 		if dfwCategory.category == ethernetCategory {
 			continue // cuurently skip L2 rules
@@ -60,6 +60,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		allNotDeterminedConns = allNotDeterminedConns.Union(
 			categoryNotDeterminedConns).Union(categoryJumptToAppConns).Subtract(
 			allAllowedConns).Subtract(allDeniedConns)
+		relevantRules = append(relevantRules, dfwCategory.relevantRules(src,dst,isIngress)...)
 	}
 
 	if d.defaultAction == actionAllow {

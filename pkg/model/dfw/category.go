@@ -147,6 +147,23 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
+func (c *categorySpec) relevantRules(src, dst *endpoints.VM, isIngress bool)  []*FwRule {
+		relevantRules := []*FwRule{}
+		rules := c.processedRules.inbound // inbound effective rules
+		if !isIngress {
+			rules = c.processedRules.outbound // outbound effective rules
+		}
+		for _, rule := range rules {
+			if rule.processedRuleCapturesPair(src, dst) /*rule.capturesPair(src, dst, isIngress)*/ {
+				switch rule.action {
+				case actionAllow,actionDeny:
+					relevantRules = append(relevantRules, rule)
+				}
+			}
+		}
+		return rules
+	}
+	
 func (c *categorySpec) originalRulesStr() []string {
 	rulesStr := make([]string, len(c.rules))
 	for i := range c.rules {

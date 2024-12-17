@@ -5,7 +5,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -42,9 +41,9 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 				continue
 			}
 			if initAllow {
-				c.add(src, dst, &common.DetailedConnection{Conn: netset.AllTransports()})
+				c.add(src, dst, common.NewAllDetailedConnection())
 			} else {
-				c.add(src, dst, &common.DetailedConnection{Conn: netset.NoTransports()})
+				c.add(src, dst, common.NewEmptyDetailedConnection())
 			}
 		}
 	}

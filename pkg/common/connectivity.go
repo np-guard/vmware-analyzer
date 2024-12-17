@@ -7,7 +7,24 @@ SPDX-License-Identifier: Apache-2.0
 package common
 
 import "github.com/np-guard/models/pkg/netset"
+
+type RuleConnectivity struct {
+	Conn       *netset.TransportSet
+	RuleNumber int
+	Ingress    bool
+}
 type DetailedConnection struct {
-	Conn    *netset.TransportSet
-	Explain []int
+	Conn      *netset.TransportSet
+	ConnAllow []RuleConnectivity
+	ConnDeny  []RuleConnectivity
+}
+
+func NewDetailedConnection(conn *netset.TransportSet) *DetailedConnection {
+	return &DetailedConnection{Conn: conn}
+}
+func NewEmptyDetailedConnection() *DetailedConnection {
+	return &DetailedConnection{Conn: netset.NoTransports()}
+}
+func NewAllDetailedConnection() *DetailedConnection {
+	return &DetailedConnection{Conn: netset.AllTransports()}
 }
