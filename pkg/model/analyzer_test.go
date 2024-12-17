@@ -31,6 +31,10 @@ var allTests = []analyzerTest{
 		name:   "Example3",
 		exData: data.Example3,
 	},
+	{
+		name:   "ExampleDumbeldore",
+		exData: data.ExampleDumbeldore,
+	},
 }
 
 func (a *analyzerTest) file() string {
@@ -40,7 +44,7 @@ func (a *analyzerTest) file() string {
 func (a *analyzerTest) run(t *testing.T) {
 	var overrideAll, overrideOnlyConnOutput bool
 	//nolint:gocritic // comment here should stay
-	// overrideAll = true            // uncommnet to override expected output and config as JSON
+	// overrideAll = true // uncommnet to override expected output and config as JSON
 	// overrideOnlyConnOutput = true // uncommnet to override expected output
 	rc := data.ExamplesGeneration(a.exData)
 	if overrideAll {
