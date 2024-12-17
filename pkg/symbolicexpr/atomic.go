@@ -24,6 +24,10 @@ func (term atomicTerm) string() string {
 	return labelType + term.label.Name() + equalSign + term.toVal
 }
 
+func NewAtomicTerm(label vmLabel, toVal string, neg bool) *atomicTerm {
+	return &atomicTerm{label: label, toVal: toVal, neg: neg}
+}
+
 // negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
 func (term atomicTerm) negate() atomic {
 	return atomicTerm{label: term.label, toVal: term.toVal, neg: !term.neg}
