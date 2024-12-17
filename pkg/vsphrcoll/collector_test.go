@@ -8,6 +8,7 @@ package vsphrcoll
 
 import (
 	"fmt"
+	"os"
 	"path"
 	"testing"
 
@@ -39,8 +40,11 @@ func TestCollectResources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.server == "no_server" {
-				fmt.Println("didn't got any server")
-				return
+				if os.Getenv("NSX_HOST") == "" {
+					fmt.Println("didn't got any server")
+					return
+				}
+				tt.args = args{os.Getenv("VSPHERE_HOST"), os.Getenv("VSPHERE_USER"), os.Getenv("VSPHERE_PASSWORD")}
 			}
 			got, err := CollectResources(tt.args.server, tt.args.userName, tt.args.password)
 			if err != nil {

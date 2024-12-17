@@ -33,6 +33,7 @@ func TestCollectResources(t *testing.T) {
 		{
 			"simple",
 			args{
+				// you can set your server info here:
 				"no_server",
 				"no_user",
 				"no_password",
@@ -42,8 +43,11 @@ func TestCollectResources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.nsxServer == "no_server" {
-				fmt.Println("didn't got any server")
-				return
+				if os.Getenv("NSX_HOST") == "" {
+					fmt.Println("didn't got any server")
+					return
+				}
+				tt.args = args{os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD")}
 			}
 			server := NewServerData(tt.args.nsxServer, tt.args.userName, tt.args.password)
 			got, err := CollectResources(server)
