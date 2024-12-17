@@ -281,10 +281,10 @@ func example3FromExample2() Example {
 	return res
 }
 
-// ExampleDumb
+// ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
-var ExampleDumb = Example{
+var ExampleDumbeldore = Example{
 	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
 	groups: map[string][]string{
 		"Slytherin":       {"Slytherin"},
