@@ -23,7 +23,7 @@ func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
 		testTag := initTestTag(fmt.Sprintf("t%v", i))
-		atomic := &atomicTerm{label: testTag, toVal: fmt.Sprintf("str%v", i)}
+		atomic := &atomicTerm{property: testTag, toVal: fmt.Sprintf("str%v", i)}
 		conjSrc = *conjSrc.add(atomic)
 		negateAtomic := atomic.negate().(atomicTerm)
 		conjDst = *conjDst.add(&negateAtomic)
@@ -48,16 +48,16 @@ func TestSymbolicPaths(t *testing.T) {
 func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
-	atomic1 := &atomicTerm{label: testSrc1, toVal: "str1"}
+	atomic1 := &atomicTerm{property: testSrc1, toVal: "str1"}
 	conjSrc1 = *conjSrc1.add(atomic1)
 	testDst1 := initTestTag("d1")
-	atomicDst1 := &atomicTerm{label: testDst1, toVal: "str1"}
+	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
 	conjDst1 = *conjDst1.add(atomicDst1)
 	testSrc2 := initTestTag("s2")
-	atomic2 := &atomicTerm{label: testSrc2, toVal: "str2"}
+	atomic2 := &atomicTerm{property: testSrc2, toVal: "str2"}
 	conjSrc2 = *conjSrc2.add(atomic2)
 	testDst2 := initTestTag("d2")
-	atomicDst2 := &atomicTerm{label: testDst2, toVal: "str2"}
+	atomicDst2 := &atomicTerm{property: testDst2, toVal: "str2"}
 	conjDst2 = *conjDst2.add(atomicDst2)
 	allowPath := SymbolicPath{conjSrc1, conjDst1}
 	denyPath := SymbolicPath{conjSrc2, conjDst2}
@@ -84,10 +84,10 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	conjAllow, conjDeny := Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
 		testAllow := initTestTag(fmt.Sprintf("s%v", i))
-		atomicAllow := &atomicTerm{label: testAllow, toVal: fmt.Sprintf("str%v", i)}
+		atomicAllow := &atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v", i)}
 		conjAllow = *conjAllow.add(atomicAllow)
 		testDeny := initTestTag(fmt.Sprintf("s%v`", i))
-		atomicDeny := &atomicTerm{label: testDeny, toVal: fmt.Sprintf("str%v`", i)}
+		atomicDeny := &atomicTerm{property: testDeny, toVal: fmt.Sprintf("str%v`", i)}
 		conjDeny = *conjDeny.add(atomicDeny)
 	}
 	allowPath := SymbolicPath{conjAllow, conjAllow}
@@ -121,7 +121,7 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	conjDeny := Conjunction{}
 	for i := 1; i <= 3; i++ {
 		testDeny := initTestTag(fmt.Sprintf("s%v`", i))
-		atomicDeny := &atomicTerm{label: testDeny, toVal: fmt.Sprintf("str%v`", i)}
+		atomicDeny := &atomicTerm{property: testDeny, toVal: fmt.Sprintf("str%v`", i)}
 		conjDeny = *conjDeny.add(atomicDeny)
 	}
 	tautologyConj := Conjunction{tautology{}}
@@ -146,7 +146,7 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	conjAllow := Conjunction{}
 	for i := 1; i <= 3; i++ {
 		testAllow := initTestTag(fmt.Sprintf("s%v`", i))
-		atomicAllow := &atomicTerm{label: testAllow, toVal: fmt.Sprintf("str%v`", i)}
+		atomicAllow := &atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v`", i)}
 		conjAllow = *conjAllow.add(atomicAllow)
 	}
 	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet())
@@ -191,14 +191,14 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	testSegment := initTestTag("segment")
 	for i := 0; i < 3; i++ {
 		if i < 2 {
-			atomicAllowSrc := &atomicTerm{label: testTag, toVal: fmt.Sprintf("t%v", 2*i)}
-			atomicAllowDst := &atomicTerm{label: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
+			atomicAllowSrc := &atomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i)}
+			atomicAllowDst := &atomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
 			conjAllowSrc := Conjunction{atomicAllowSrc}
 			conjAllowDst := Conjunction{atomicAllowDst}
 			allowPaths = append(allowPaths, &SymbolicPath{conjAllowSrc, conjAllowDst})
 		}
-		atomicDenySrc := &atomicTerm{label: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
-		atomicDenyDst := &atomicTerm{label: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
+		atomicDenySrc := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
+		atomicDenyDst := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
 		conjDenySrc := Conjunction{atomicDenySrc}
 		conjDenyDst := Conjunction{atomicDenyDst}
 		denyPaths = append(denyPaths, &SymbolicPath{conjDenySrc, conjDenyDst})
@@ -235,10 +235,10 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
-	atomic1 := &atomicTerm{label: testSrc1, toVal: "str1"}
+	atomic1 := &atomicTerm{property: testSrc1, toVal: "str1"}
 	conjSrc1 = *conjSrc1.add(atomic1)
 	testDst1 := initTestTag("d1")
-	atomicDst1 := &atomicTerm{label: testDst1, toVal: "str1"}
+	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
 	conjDst1 = *conjDst1.add(atomicDst1)
 	allowPath := SymbolicPath{conjSrc1, Conjunction{tautology{}}}
 	denyPath := SymbolicPath{conjSrc1, conjDst1}

@@ -11,7 +11,7 @@ func (term atomicTerm) string() string {
 		equalSign = " != "
 	}
 	labelType := ""
-	switch term.label.(type) {
+	switch term.property.(type) {
 	case *collector.Segment:
 		labelType = "segment "
 	case *endpoints.VM:
@@ -21,16 +21,16 @@ func (term atomicTerm) string() string {
 	case *collector.Group:
 		labelType = "group "
 	}
-	return labelType + term.label.Name() + equalSign + term.toVal
+	return labelType + term.property.Name() + equalSign + term.toVal
 }
 
-func NewAtomicTerm(label vmLabel, toVal string, neg bool) *atomicTerm {
-	return &atomicTerm{label: label, toVal: toVal, neg: neg}
+func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
+	return &atomicTerm{property: label, toVal: toVal, neg: neg}
 }
 
 // negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
 func (term atomicTerm) negate() atomic {
-	return atomicTerm{label: term.label, toVal: term.toVal, neg: !term.neg}
+	return atomicTerm{property: term.property, toVal: term.toVal, neg: !term.neg}
 }
 
 func (atomicTerm) isTautology() bool {
