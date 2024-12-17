@@ -20,13 +20,13 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *netset.TransportSet {
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *common.DetailedConnection {
 	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	logging.Debugf("ingress allowed connections from %s to %s: %s", src.Name(), dst.Name(), ingress.String())
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	logging.Debugf("egress allowed connections from %s to %s: %s", src.Name(), dst.Name(), egress.String())
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
-	return ingress.Intersect(egress)
+	return &common.DetailedConnection {Conn:ingress.Intersect(egress)}
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections

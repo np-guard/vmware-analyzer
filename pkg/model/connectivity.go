@@ -6,20 +6,21 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 // connMap captures permitted connections between endpoints in the input config
-type connMap map[*endpoints.VM]map[*endpoints.VM]*netset.TransportSet
+type connMap map[*endpoints.VM]map[*endpoints.VM]*common.DetailedConnection
 type connMapEntry struct {
 	src, dst *endpoints.VM
-	conn     *netset.TransportSet
+	conn     *common.DetailedConnection
 }
 
 // add func adds a given pair with specified permitted connection
-func (c connMap) add(src, dst *endpoints.VM, conn *netset.TransportSet) {
+func (c connMap) add(src, dst *endpoints.VM, conn *common.DetailedConnection) {
 	if _, ok := c[src]; !ok {
-		c[src] = map[*endpoints.VM]*netset.TransportSet{}
+		c[src] = map[*endpoints.VM]*common.DetailedConnection{}
 	}
 	c[src][dst] = conn
 }
@@ -41,9 +42,9 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 				continue
 			}
 			if initAllow {
-				c.add(src, dst, netset.AllTransports())
+				c.add(src, dst, &common.DetailedConnection{Conn: netset.AllTransports()})
 			} else {
-				c.add(src, dst, netset.NoTransports())
+				c.add(src, dst, &common.DetailedConnection{Conn: netset.NoTransports()})
 			}
 		}
 	}
@@ -56,7 +57,7 @@ func (c connMap) String() string {
 	asSlice := c.toSlice()
 	lines := make([]string, len(asSlice))
 	for i, e := range asSlice {
-		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.src.Name(), e.dst.Name(), e.conn.String())
+		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.src.Name(), e.dst.Name(), e.conn.Conn.String())
 	}
 	slices.Sort(lines)
 	return strings.Join(lines, "\n")

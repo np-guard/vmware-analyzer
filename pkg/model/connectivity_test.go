@@ -45,8 +45,8 @@ func sumPairs(c connMap) int {
 func sumNoConns(c connMap) int {
 	res := 0
 	for _, srcMap := range c {
-		for _, conn := range srcMap {
-			if conn.IsEmpty() {
+		for _, dDonn := range srcMap {
+			if dDonn.Conn.IsEmpty() {
 				res++
 			}
 		}
