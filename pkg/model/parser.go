@@ -216,6 +216,7 @@ func (p *NSXConfigParser) allGroups() ([]*endpoints.VM, []*collector.Group) {
 		}
 	}
 	p.allGroupsVMs = vms
+	p.groups = groups
 	return vms, groups
 }
 
