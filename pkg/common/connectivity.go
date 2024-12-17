@@ -6,7 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 
 package common
 
-import "github.com/np-guard/models/pkg/netset"
+import (
+	"fmt"
+
+	"github.com/np-guard/models/pkg/netset"
+)
 
 type RuleConnectivity struct {
 	Conn        *netset.TransportSet
@@ -27,4 +31,15 @@ func NewEmptyDetailedConnection() *DetailedConnection {
 }
 func NewAllDetailedConnection() *DetailedConnection {
 	return &DetailedConnection{Conn: netset.AllTransports()}
+}
+
+func (d *DetailedConnection)String() string{
+	res := fmt.Sprintf("allow: %s\ndeny: %s\n", d.Conn.String(), netset.AllTransports().Subtract( d.Conn).String())
+	for _, c := range d.ConnAllow{
+		res += fmt.Sprintf("    allow: %s %d,%d\n", c.Conn.String(), c.EgressRule,c.IngressRule)
+	}
+	for _, c := range d.ConnDeny{
+		res += fmt.Sprintf("    deny: %s %d,%d\n", c.Conn.String(), c.EgressRule,c.IngressRule)
+	}
+	return res
 }

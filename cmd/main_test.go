@@ -48,8 +48,7 @@ func TestMain(t *testing.T) {
 		},*/
 		{
 			name: "analyze-only",
-			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.txt" +
-			` --output-filter="New Virtual Machine",New-VM-1`,
+			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.txt",
 		},
 		{
 			name: "analyze-topology-dot",
