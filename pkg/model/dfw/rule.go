@@ -61,6 +61,8 @@ type FwRule struct {
 	srcVMs             []*endpoints.VM
 	dstVMs             []*endpoints.VM
 	scope              []*endpoints.VM
+	srcGroups          []*collector.Group
+	dstGroups          []*collector.Group
 	conn               *netset.TransportSet
 	action             ruleAction
 	direction          string //	"IN","OUT",	"IN_OUT"

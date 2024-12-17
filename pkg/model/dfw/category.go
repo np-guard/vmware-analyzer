@@ -181,12 +181,14 @@ func (c *categorySpec) outboundEffectiveRules() string {
 	return strings.Join(rulesStr, lineSeparatorStr)
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups []*collector.Group, conn *netset.TransportSet,
 	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM,
 	secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
+		srcGroups:          srcGroups,
+		dstGroups:          dstGroups,
 		conn:               conn,
 		action:             actionFromString(action),
 		direction:          direction,
@@ -198,8 +200,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportS
 		secPolicyCategory:  c.category.string(),
 		categoryRef:        c,
 		dfwRef:             c.dfwRef,
-		symbolicSrc:        []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:        []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicSrc:        []*symbolicexpr.SymbolicPath{},
+		symbolicDst:        []*symbolicexpr.SymbolicPath{},
 	}
 	c.rules = append(c.rules, newRule)
 

@@ -114,11 +114,13 @@ func (d *DFW) AllEffectiveRules() string {
 
 // AddRule func for testing purposes
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
+func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups []*collector.Group, conn *netset.TransportSet,
+	categoryStr, actionStr, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM,
+	secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.categoriesSpecs {
 		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
+			fwCategory.addRule(src, dst, srcGroups, dstGroups, conn, actionStr, direction, ruleID, origRule, scope,
+				secPolicyName, origDefaultRule)
 		}
 	}
 }

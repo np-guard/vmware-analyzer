@@ -148,7 +148,7 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.conn, category, r.action, r.direction, r.ruleID,
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.SrcGroups, r.DstGroup, r.conn, category, r.action, r.direction, r.ruleID,
 		origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
