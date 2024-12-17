@@ -2,6 +2,7 @@ package dfw
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"text/tabwriter"
 
@@ -21,16 +22,55 @@ type DFW struct {
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *common.DetailedConnection {
-	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
+	ingress, ingressRules := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	logging.Debugf("ingress allowed connections from %s to %s: %s", src.Name(), dst.Name(), ingress.String())
-	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
+	egress, egressRules := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	logging.Debugf("egress allowed connections from %s to %s: %s", src.Name(), dst.Name(), egress.String())
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
-	return common.NewDetailedConnection(ingress.Intersect(egress))
+	return explain(egress, ingress, egressRules, ingressRules)
+}
+
+type ruleAndConn struct {
+	conn *netset.TransportSet
+	rule int
+}
+
+func splitByRules(conn *netset.TransportSet, rules []*FwRule) []ruleAndConn {
+	res := []ruleAndConn{}
+	for _, rule := range rules {
+		relevantConn := rule.conn.Intersect(conn)
+		if !relevantConn.IsEmpty() {
+			res = append(res, ruleAndConn{relevantConn, rule.ruleID})
+			conn = conn.Subtract(relevantConn)
+		}
+	}
+	return res
+}
+
+func explain(egress, ingress *netset.TransportSet, egressRules, ingressRules []*FwRule) *common.DetailedConnection {
+	res := common.NewDetailedConnection(ingress.Intersect(egress))
+	denyEgress := netset.AllTransports().Subtract(egress)
+	deniedConnsByEgress := splitByRules(denyEgress, slices.DeleteFunc(slices.Clone(egressRules), func(r *FwRule) bool { return r.action != actionDeny }))
+	for _, denyRuleAndConn := range deniedConnsByEgress {
+		res.ConnDeny = append(res.ConnDeny, common.RuleConnectivity{Conn: denyRuleAndConn.conn, EgressRule: denyRuleAndConn.rule})
+	}
+	allowConnsByEgress := splitByRules(egress, slices.DeleteFunc(slices.Clone(egressRules), func(r *FwRule) bool { return r.action != actionAllow }))
+	for _, egressAllowRuleAndConn := range allowConnsByEgress {
+		denyIngress := egressAllowRuleAndConn.conn.Subtract(ingress)
+		deniedConnsByIngress := splitByRules(denyIngress, slices.DeleteFunc(slices.Clone(ingressRules), func(r *FwRule) bool { return r.action != actionDeny }))
+		for _, ingressDenyRuleAndConn := range deniedConnsByIngress {
+			res.ConnDeny = append(res.ConnDeny, common.RuleConnectivity{Conn: ingressDenyRuleAndConn.conn, EgressRule: egressAllowRuleAndConn.rule, IngressRule: ingressDenyRuleAndConn.rule})
+		}
+		allowConnsByIngress := splitByRules(egressAllowRuleAndConn.conn, slices.DeleteFunc(slices.Clone(ingressRules), func(r *FwRule) bool { return r.action != actionAllow }))
+		for _, ingressAllowRuleAndConn := range allowConnsByIngress {
+			res.ConnAllow = append(res.ConnAllow, common.RuleConnectivity{Conn: ingressAllowRuleAndConn.conn, EgressRule: egressAllowRuleAndConn.rule, IngressRule: ingressAllowRuleAndConn.rule})
+		}
+	}
+	return res
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) *netset.TransportSet {
+func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) (*netset.TransportSet, []*FwRule) {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns := netset.NoTransports()
 	allDeniedConns := netset.NoTransports()
@@ -60,7 +100,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		allNotDeterminedConns = allNotDeterminedConns.Union(
 			categoryNotDeterminedConns).Union(categoryJumptToAppConns).Subtract(
 			allAllowedConns).Subtract(allDeniedConns)
-		relevantRules = append(relevantRules, dfwCategory.relevantRules(src,dst,isIngress)...)
+		relevantRules = append(relevantRules, dfwCategory.relevantRules(src, dst, isIngress)...)
 	}
 
 	if d.defaultAction == actionAllow {
@@ -68,7 +108,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		allAllowedConns = allAllowedConns.Union(allNotDeterminedConns)
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
-	return allAllowedConns
+	return allAllowedConns, relevantRules
 }
 
 func (d *DFW) OriginalRulesStrFormatted() string {

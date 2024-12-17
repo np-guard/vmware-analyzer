@@ -161,7 +161,7 @@ func (c *categorySpec) relevantRules(src, dst *endpoints.VM, isIngress bool)  []
 				}
 			}
 		}
-		return rules
+		return relevantRules
 	}
 	
 func (c *categorySpec) originalRulesStr() []string {

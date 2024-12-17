@@ -9,9 +9,9 @@ package common
 import "github.com/np-guard/models/pkg/netset"
 
 type RuleConnectivity struct {
-	Conn       *netset.TransportSet
-	RuleNumber int
-	Ingress    bool
+	Conn        *netset.TransportSet
+	EgressRule  int
+	IngressRule int
 }
 type DetailedConnection struct {
 	Conn      *netset.TransportSet
