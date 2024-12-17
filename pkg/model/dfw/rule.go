@@ -74,10 +74,7 @@ type FwRule struct {
 	categoryRef        *categorySpec
 	dfwRef             *DFW
 	// clause of symbolic src abd symbolic dst
-	// todo: in order to compute these will have to maintain and use the (not yet exported) synthesis.AbstractModelSyn.atomics
-	//       keep it there?
-	symbolicSrc []*symbolicexpr.SymbolicPath
-	symbolicDst []*symbolicexpr.SymbolicPath
+	symbolicPaths []*symbolicexpr.SymbolicPath
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 
 }
@@ -124,8 +121,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicPaths: []*symbolicexpr.SymbolicPath{},
 	}
 }
 
@@ -160,8 +156,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicSrc:   []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:   []*symbolicexpr.SymbolicPath{}, // todo tmp
+		symbolicPaths: []*symbolicexpr.SymbolicPath{},
 	}
 }
 
@@ -194,7 +189,7 @@ func vmsString(vms []*endpoints.VM) string {
 // return a string representation of a single rule
 // groups are interpreted to VM members in this representation
 func (f *FwRule) string() string {
-	_, _ = f.symbolicSrc, f.symbolicDst // todo tmp for line
+	_ = f.symbolicPaths
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
@@ -311,4 +306,9 @@ func (f *FwRule) originalRuleStr() string {
 		f.secPolicyCategory,
 		common.Reset,
 	)
+}
+
+// ComputeSymbolic computes symbolicSrc and symbolicDst
+func (f *FwRule) ComputeSymbolic() {
+
 }
