@@ -61,10 +61,11 @@ type FwRule struct {
 	scope  []*endpoints.VM
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
-	SrcGroups          []*collector.Group
-	IsAllSrcGroups     bool
-	DstGroups          []*collector.Group
-	IsAllDstGroups     bool
+	SrcGroups      []*collector.Group
+	IsAllSrcGroups bool
+	DstGroups      []*collector.Group
+	IsAllDstGroups bool
+	// Scope implies additional condition on any Src and any Dst; will be added in one of the last stages
 	ScopeGroups        []*collector.Group
 	conn               *netset.TransportSet
 	action             ruleAction
@@ -114,14 +115,19 @@ func (f *FwRule) getInboundRule() *FwRule {
 		return nil
 	}
 	return &FwRule{
-		srcVMs:        f.srcVMs,
-		dstVMs:        newDest,
-		conn:          f.conn,
-		action:        f.action,
-		direction:     string(nsx.RuleDirectionIN),
-		origRuleObj:   f.origRuleObj,
-		ruleID:        f.ruleID,
-		secPolicyName: f.secPolicyName,
+		srcVMs:         f.srcVMs,
+		dstVMs:         newDest,
+		SrcGroups:      f.SrcGroups,
+		DstGroups:      f.DstGroups,
+		IsAllSrcGroups: f.IsAllSrcGroups,
+		IsAllDstGroups: f.IsAllDstGroups,
+		ScopeGroups:    f.ScopeGroups,
+		conn:           f.conn,
+		action:         f.action,
+		direction:      string(nsx.RuleDirectionIN),
+		origRuleObj:    f.origRuleObj,
+		ruleID:         f.ruleID,
+		secPolicyName:  f.secPolicyName,
 	}
 }
 
@@ -148,14 +154,19 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		return nil
 	}
 	return &FwRule{
-		srcVMs:        newSrc,
-		dstVMs:        f.dstVMs,
-		conn:          f.conn,
-		action:        f.action,
-		direction:     string(nsx.RuleDirectionOUT),
-		origRuleObj:   f.origRuleObj,
-		ruleID:        f.ruleID,
-		secPolicyName: f.secPolicyName,
+		srcVMs:         newSrc,
+		dstVMs:         f.dstVMs,
+		SrcGroups:      f.SrcGroups,
+		DstGroups:      f.DstGroups,
+		IsAllSrcGroups: f.IsAllSrcGroups,
+		IsAllDstGroups: f.IsAllDstGroups,
+		ScopeGroups:    f.ScopeGroups,
+		conn:           f.conn,
+		action:         f.action,
+		direction:      string(nsx.RuleDirectionOUT),
+		origRuleObj:    f.origRuleObj,
+		ruleID:         f.ruleID,
+		secPolicyName:  f.secPolicyName,
 	}
 }
 
