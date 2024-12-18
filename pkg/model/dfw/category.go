@@ -180,14 +180,16 @@ func (c *categorySpec) outboundEffectiveRules() string {
 	return strings.Join(rulesStr, lineSeparatorStr)
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups []*collector.Group, conn *netset.TransportSet,
-	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM,
-	secPolicyName string, origDefaultRule *collector.FirewallRule) {
+func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
+	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
+	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
 		SrcGroups:          srcGroups,
+		IsAllSrcGroups:     isAllSrcGroup,
 		DstGroups:          dstGroups,
+		IsAllDstGroups:     isAllDstGroup,
 		conn:               conn,
 		action:             actionFromString(action),
 		direction:          direction,
@@ -195,6 +197,7 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups []
 		origRuleObj:        origRule,
 		origDefaultRuleObj: origDefaultRule,
 		scope:              scope,
+		ScopeGroups:        scopeGroups,
 		secPolicyName:      secPolicyName,
 		secPolicyCategory:  c.category.string(),
 		categoryRef:        c,

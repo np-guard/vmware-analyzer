@@ -56,13 +56,16 @@ func actionFromString(s string) ruleAction {
 }
 
 type FwRule struct {
-	srcVMs             []*endpoints.VM
-	dstVMs             []*endpoints.VM
-	scope              []*endpoints.VM
+	srcVMs []*endpoints.VM
+	dstVMs []*endpoints.VM
+	scope  []*endpoints.VM
+	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
+	//       entire expr properly
 	SrcGroups          []*collector.Group
 	IsAllSrcGroups     bool
 	DstGroups          []*collector.Group
 	IsAllDstGroups     bool
+	ScopeGroups        []*collector.Group
 	conn               *netset.TransportSet
 	action             ruleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
