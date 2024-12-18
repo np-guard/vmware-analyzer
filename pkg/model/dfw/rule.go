@@ -10,8 +10,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
-
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -61,8 +59,10 @@ type FwRule struct {
 	srcVMs             []*endpoints.VM
 	dstVMs             []*endpoints.VM
 	scope              []*endpoints.VM
-	srcGroups          []*collector.Group
-	dstGroups          []*collector.Group
+	SrcGroups          []*collector.Group
+	IsAllSrcGroups     bool
+	DstGroups          []*collector.Group
+	IsAllDstGroups     bool
 	conn               *netset.TransportSet
 	action             ruleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
@@ -73,8 +73,6 @@ type FwRule struct {
 	secPolicyCategory  string
 	categoryRef        *categorySpec
 	dfwRef             *DFW
-	// clause of symbolic src abd symbolic dst
-	symbolicPaths []*symbolicexpr.SymbolicPath
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 
 }
@@ -121,7 +119,6 @@ func (f *FwRule) getInboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicPaths: []*symbolicexpr.SymbolicPath{},
 	}
 }
 
@@ -156,7 +153,6 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		origRuleObj:   f.origRuleObj,
 		ruleID:        f.ruleID,
 		secPolicyName: f.secPolicyName,
-		symbolicPaths: []*symbolicexpr.SymbolicPath{},
 	}
 }
 
@@ -189,7 +185,6 @@ func vmsString(vms []*endpoints.VM) string {
 // return a string representation of a single rule
 // groups are interpreted to VM members in this representation
 func (f *FwRule) string() string {
-	_ = f.symbolicPaths
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, vmsString(f.scope), f.secPolicyName)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
@@ -187,8 +186,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups []
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
-		srcGroups:          srcGroups,
-		dstGroups:          dstGroups,
+		SrcGroups:          srcGroups,
+		DstGroups:          dstGroups,
 		conn:               conn,
 		action:             actionFromString(action),
 		direction:          direction,
@@ -200,8 +199,6 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups []
 		secPolicyCategory:  c.category.string(),
 		categoryRef:        c,
 		dfwRef:             c.dfwRef,
-		symbolicSrc:        []*symbolicexpr.SymbolicPath{},
-		symbolicDst:        []*symbolicexpr.SymbolicPath{},
 	}
 	c.rules = append(c.rules, newRule)
 
