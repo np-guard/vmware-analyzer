@@ -148,7 +148,7 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.SrcGroups, r.DstGroup, r.conn, category, r.action, r.direction, r.ruleID,
+	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.SrcGroups, r.DstGroups, r.conn, category, r.action, r.direction, r.ruleID,
 		origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
@@ -164,7 +164,7 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res.srcVMs = vms
 	res.dstVMs = vms
 	res.SrcGroups = groups
-	res.DstGroup = groups
+	res.DstGroups = groups
 
 	switch string(*secPolicy.ConnectivityPreference) {
 	case string(nsx.SecurityPolicyConnectivityPreferenceALLOWLIST),
@@ -189,9 +189,9 @@ type parsedRule struct {
 	srcVMs []*endpoints.VM
 	dstVMs []*endpoints.VM
 	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
-	//       defined by groups, thus the following SrcGroups and DstGroup
+	//       defined by groups, thus the following SrcGroups and DstGroups
 	SrcGroups      []*collector.Group
-	DstGroup       []*collector.Group
+	DstGroups      []*collector.Group
 	action         string
 	conn           *netset.TransportSet
 	direction      string
@@ -254,7 +254,7 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	// srcExclude := rule.SourcesExcluded
 	res.srcVMs, res.SrcGroups = p.getEndpointsFromGroupsPaths(srcGroups)
 	dstGroups := rule.DestinationGroups
-	res.dstVMs, res.DstGroup = p.getEndpointsFromGroupsPaths(dstGroups)
+	res.dstVMs, res.DstGroups = p.getEndpointsFromGroupsPaths(dstGroups)
 
 	res.action = string(*rule.Action)
 	res.conn = p.getRuleConnections(rule)
