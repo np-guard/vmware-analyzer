@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/big"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -53,22 +54,27 @@ func (t *TraceFlowProtocol) header() *nsx.TransportProtocolHeader {
 	return h
 }
 
-/////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////
+type analyzeResults struct {
+	Allow     bool `json:"allowed"`
+	SrcRuleID int  `json:"src_rule_id,omitempty"`
+	DstRuleID int  `json:"dst_rule_id,omitempty"`
+}
 
 type traceFlow struct {
-	Src              string                `json:"src,omitempty"`
-	Dst              string                `json:"dst,omitempty"`
-	SrcVM            string                `json:"src_vm,omitempty"`
-	DstVM            string                `json:"dst_vm,omitempty"`
-	Protocol         TraceFlowProtocol     `json:"protocol,omitempty"`
-	NotSent          bool                  `json:"not_sent,omitempty"`
-	Name             string                `json:"name,omitempty"`
-	APIErrors        []string              `json:"api_errors,omitempty"`
-	Errors           []string              `json:"errors,omitempty"`
-	Results          traceflowResult       `json:"results,omitempty"`
-	AllowedByAnalyze bool                  `json:"allowed_by_analyze"`
-	Connection       string                `json:"connection,omitempty"`
-	Observations     TraceFlowObservations `json:"observation,omitempty"`
+	Src            string                `json:"src,omitempty"`
+	Dst            string                `json:"dst,omitempty"`
+	SrcVM          string                `json:"src_vm,omitempty"`
+	DstVM          string                `json:"dst_vm,omitempty"`
+	Protocol       TraceFlowProtocol     `json:"protocol,omitempty"`
+	NotSent        bool                  `json:"not_sent,omitempty"`
+	Name           string                `json:"name,omitempty"`
+	APIErrors      []string              `json:"api_errors,omitempty"`
+	Errors         []string              `json:"errors,omitempty"`
+	Results        traceflowResult       `json:"results,omitempty"`
+	AnalyzeResults analyzeResults        `json:"analyze_results"`
+	Connection     string                `json:"connection,omitempty"`
+	Observations   TraceFlowObservations `json:"observation,omitempty"`
 }
 
 func (tf *traceFlow) send(resources *ResourcesContainerModel, server ServerData) (string, error) {
@@ -134,9 +140,10 @@ type TraceFlows struct {
 func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *TraceFlows {
 	return &TraceFlows{resources: resources, server: server}
 }
-func (traceFlows *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol, allowedByAnalyze bool, connection string) {
+func (traceFlows *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol,
+	 analyzeAllowed bool, srcRuleID, dstRuleID int, connection string) {
 	traceFlows.Tfs = append(traceFlows.Tfs,
-		&traceFlow{Src: src, Dst: dst, Protocol: protocol, AllowedByAnalyze: allowedByAnalyze, Connection: connection})
+		&traceFlow{Src: src, Dst: dst, Protocol: protocol, AnalyzeResults:analyzeResults{analyzeAllowed,srcRuleID, dstRuleID}, Connection: connection})
 }
 
 // ToJSONString converts a traceFlows into a json-formatted-string, it converts only the Tfs
@@ -189,8 +196,15 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 			traceFlow.APIErrors = append(traceFlow.APIErrors, err.Error())
 		}
 		traceFlow.Results = traceFlow.Observations.results()
-		if traceFlow.Results.Completed && traceFlow.AllowedByAnalyze != traceFlow.Results.Delivered {
+		if traceFlow.Results.Completed{
+
+		if traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered {
 			traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
+			}else if strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID) != traceFlow.Results.SrcRuleID{
+				traceFlow.Errors = append(traceFlow.Errors, "trace flow egress rule is different from analyze egress rule")
+			}else if traceFlow.Results.DstRuleID != "" && strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID) != traceFlow.Results.DstRuleID{
+				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is different from analyze ingress rule")
+			}
 		}
 	}
 }
@@ -214,10 +228,10 @@ func (traceFlows *TraceFlows) Summery() {
 			withResultErrors++
 			resultErrors = append(resultErrors, traceFlow.Results.Errors...)
 		}
-		if traceFlow.Results.Completed && traceFlow.Results.Delivered && !traceFlow.AllowedByAnalyze {
+		if traceFlow.Results.Completed && traceFlow.Results.Delivered && !traceFlow.AnalyzeResults.Allow {
 			falseDeny++
 		}
-		if traceFlow.Results.Completed && !traceFlow.Results.Delivered && traceFlow.AllowedByAnalyze {
+		if traceFlow.Results.Completed && !traceFlow.Results.Delivered && traceFlow.AnalyzeResults.Allow {
 			falseAllow++
 		}
 	}
