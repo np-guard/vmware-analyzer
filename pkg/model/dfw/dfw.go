@@ -52,18 +52,18 @@ func explain(egress, ingress *netset.TransportSet, egressRules, ingressRules []*
 	denyEgress := netset.AllTransports().Subtract(egress)
 	deniedConnsByEgress := splitByRules(denyEgress, slices.DeleteFunc(slices.Clone(egressRules), func(r *FwRule) bool { return r.action != actionDeny }))
 	for _, denyRuleAndConn := range deniedConnsByEgress {
-		res.ConnDeny = append(res.ConnDeny, common.RuleConnectivity{Conn: denyRuleAndConn.conn, EgressRule: denyRuleAndConn.rule})
+		res.AddRuleConn(denyRuleAndConn.conn, denyRuleAndConn.rule, 0, false)
 	}
 	allowConnsByEgress := splitByRules(egress, slices.DeleteFunc(slices.Clone(egressRules), func(r *FwRule) bool { return r.action != actionAllow }))
 	for _, egressAllowRuleAndConn := range allowConnsByEgress {
 		denyIngress := egressAllowRuleAndConn.conn.Subtract(ingress)
 		deniedConnsByIngress := splitByRules(denyIngress, slices.DeleteFunc(slices.Clone(ingressRules), func(r *FwRule) bool { return r.action != actionDeny }))
 		for _, ingressDenyRuleAndConn := range deniedConnsByIngress {
-			res.ConnDeny = append(res.ConnDeny, common.RuleConnectivity{Conn: ingressDenyRuleAndConn.conn, EgressRule: egressAllowRuleAndConn.rule, IngressRule: ingressDenyRuleAndConn.rule})
+			res.AddRuleConn(ingressDenyRuleAndConn.conn, egressAllowRuleAndConn.rule, ingressDenyRuleAndConn.rule, false)
 		}
 		allowConnsByIngress := splitByRules(egressAllowRuleAndConn.conn, slices.DeleteFunc(slices.Clone(ingressRules), func(r *FwRule) bool { return r.action != actionAllow }))
 		for _, ingressAllowRuleAndConn := range allowConnsByIngress {
-			res.ConnAllow = append(res.ConnAllow, common.RuleConnectivity{Conn: ingressAllowRuleAndConn.conn, EgressRule: egressAllowRuleAndConn.rule, IngressRule: ingressAllowRuleAndConn.rule})
+			res.AddRuleConn(ingressAllowRuleAndConn.conn, egressAllowRuleAndConn.rule, ingressAllowRuleAndConn.rule, true)
 		}
 	}
 	return res

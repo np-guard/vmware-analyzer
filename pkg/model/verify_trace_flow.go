@@ -72,27 +72,18 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *common.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
-	if len(dConn.ConnAllow) == 0 && len(dConn.ConnDeny) == 0 {
+	if len(dConn.RuleConns) == 0 {
 		// one check only using icmp
 		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), 0, 0, connString)
 		return
 	}
-	for _, ruleConn := range dConn.ConnAllow {
+	for _, ruleConn := range dConn.RuleConns {
 		rulesConnString := fmt.Sprintf("%s %d,%d", connString, ruleConn.EgressRule, ruleConn.IngressRule)
 		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), true, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
+			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), ruleConn.Allow, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
 		}
 		if !ruleConn.Conn.ICMPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, true, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
-		}
-	}
-	for _, ruleConn := range dConn.ConnDeny {
-		rulesConnString := fmt.Sprintf("%s %d,%d", connString, ruleConn.EgressRule, ruleConn.IngressRule)
-		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), false, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
-		}
-		if !ruleConn.Conn.ICMPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, false, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
+			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, ruleConn.Allow, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
 		}
 	}
 }

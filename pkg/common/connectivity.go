@@ -16,11 +16,11 @@ type RuleConnectivity struct {
 	Conn        *netset.TransportSet
 	EgressRule  int
 	IngressRule int
+	Allow       bool
 }
 type DetailedConnection struct {
 	Conn      *netset.TransportSet
-	ConnAllow []RuleConnectivity
-	ConnDeny  []RuleConnectivity
+	RuleConns []RuleConnectivity
 }
 
 func NewDetailedConnection(conn *netset.TransportSet) *DetailedConnection {
@@ -32,14 +32,18 @@ func NewEmptyDetailedConnection() *DetailedConnection {
 func NewAllDetailedConnection() *DetailedConnection {
 	return &DetailedConnection{Conn: netset.AllTransports()}
 }
+func (d *DetailedConnection) AddRuleConn(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
+	d.RuleConns = append(d.RuleConns, RuleConnectivity{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
+}
 
-func (d *DetailedConnection)String() string{
-	res := fmt.Sprintf("allow: %s\ndeny: %s\n", d.Conn.String(), netset.AllTransports().Subtract( d.Conn).String())
-	for _, c := range d.ConnAllow{
-		res += fmt.Sprintf("    allow: %s %d,%d\n", c.Conn.String(), c.EgressRule,c.IngressRule)
-	}
-	for _, c := range d.ConnDeny{
-		res += fmt.Sprintf("    deny: %s %d,%d\n", c.Conn.String(), c.EgressRule,c.IngressRule)
+func (d *DetailedConnection) String() string {
+	res := fmt.Sprintf("allow: %s\ndeny: %s\n", d.Conn.String(), netset.AllTransports().Subtract(d.Conn).String())
+	for _, c := range d.RuleConns {
+		isAllowStr := "allow"
+		if !c.Allow {
+			isAllowStr = "deny"
+		}
+		res += fmt.Sprintf("    %s: %s %d,%d\n", isAllowStr, c.Conn.String(), c.EgressRule, c.IngressRule)
 	}
 	return res
 }

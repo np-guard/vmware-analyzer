@@ -197,13 +197,16 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 		}
 		traceFlow.Results = traceFlow.Observations.results()
 		if traceFlow.Results.Completed {
-
+			analyzeSrcRuleID := strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID)
+			analyzeDstRuleID := strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID)
 			if traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered {
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
-			} else if strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID) != traceFlow.Results.SrcRuleID {
-				traceFlow.Errors = append(traceFlow.Errors, "trace flow egress rule is different from analyze egress rule")
-			} else if traceFlow.Results.DstRuleID != "" && strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID) != traceFlow.Results.DstRuleID {
-				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is different from analyze ingress rule")
+			} else if analyzeSrcRuleID != traceFlow.Results.SrcRuleID {
+				traceFlow.Errors = append(traceFlow.Errors, "analyze egress rule is different from trace flow egress rule")
+			} else if traceFlow.Results.DstRuleID != "" && analyzeDstRuleID != traceFlow.Results.DstRuleID {
+				traceFlow.Errors = append(traceFlow.Errors, "analyze ingress rule is different from trace flow ingress rule")
+			} else if traceFlow.Results.DstRuleID == "" && analyzeDstRuleID != "0" && analyzeDstRuleID != traceFlow.Results.SrcRuleID {
+				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is missing, and analyze ingress rule rule different from trace flow egress")
 			}
 		}
 	}
