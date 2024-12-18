@@ -1,9 +1,12 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -56,12 +59,12 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 				continue
 			}
 			dstIP := vmIPs[0]
-			conn := config.analyzedConnectivity[srcVM][dstVM].Conn
+			conn := config.analyzedConnectivity[srcVM][dstVM]
 			// temp fix till analyze will consider topology:
-			if !conn.IsEmpty() {
+			if !conn.Conn.IsEmpty() {
 				dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
 				if dstVni == nil || !collector.IsConnected(resources, srcVni, dstVni) {
-					conn = netset.NoTransports()
+					conn = common.NewEmptyDetailedConnection()
 				}
 			}
 			createTraceFlowsForConn(traceFlows, srcIP, dstIP, conn)
@@ -70,7 +73,31 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 	return traceFlows
 }
 
-func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, conn *netset.TransportSet) {
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *common.DetailedConnection) {
+	conn := dConn.Conn
+	connString := conn.String()
+	for _, ruleConn := range dConn.ConnAllow {
+		rulesConnString := fmt.Sprintf("%s %d,%d",connString, ruleConn.EgressRule, ruleConn.IngressRule)
+		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
+			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), true, rulesConnString)
+		}
+		if !ruleConn.Conn.ICMPSet().IsEmpty() {
+			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, true, rulesConnString)
+		}
+	}
+	for _, ruleConn := range dConn.ConnDeny {
+		rulesConnString := fmt.Sprintf("%s %d,%d",connString, ruleConn.EgressRule, ruleConn.IngressRule)
+		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
+			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), false, rulesConnString)
+		}
+		if !ruleConn.Conn.ICMPSet().IsEmpty() {
+			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, false, rulesConnString)
+		}
+	}
+}
+
+func createTraceFlowsForConn2(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *common.DetailedConnection) {
+	conn := dConn.Conn
 	connString := conn.String()
 	switch {
 	case conn.IsAll(), conn.IsEmpty():
@@ -86,12 +113,12 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 		// checking only tcp/udp, one allow, one deny
 		allowConn := conn.TCPUDPSet()
 		denyConn := netset.AllTCPUDPSet().Subtract(allowConn)
-		traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(allowConn), true, connString)
-		traceFlows.AddTraceFlow(srcIP, dstIP, toTraceFlowProtocol(denyConn), false, connString)
+		traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(allowConn), true, connString)
+		traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(denyConn), false, connString)
 	}
 }
 
-func toTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
+func toTcpTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 	partition := set.Partitions()[0]
 	protocol := collector.ProtocolUDP
 	if partition.S1.Contains(netset.TCPCode) {
