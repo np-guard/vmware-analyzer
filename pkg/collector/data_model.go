@@ -117,7 +117,7 @@ type ICMPTypeServiceEntry struct {
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
-	if e.Protocol == nil || *e.Protocol == nsx.ICMPTypeServiceEntryProtocolICMPv6 {
+	if e.Protocol != nil && *e.Protocol == nsx.ICMPTypeServiceEntryProtocolICMPv6 {
 		return nil, fmt.Errorf("protocol %s of ICMPTypeServiceEntry  \"%s\" is not supported", *e.Protocol, *e.DisplayName)
 	}
 	var tMin, tMax int64 = 0, int64(netp.MaxICMPType)
@@ -146,6 +146,9 @@ type L4PortSetServiceEntry struct {
 }
 
 func (e *L4PortSetServiceEntry) ToConnection() (*netset.TransportSet, error) {
+	if e.L4Protocol == nil {
+		return nil, fmt.Errorf("L4PortSetServiceEntry object has nil L4Protocol")
+	}
 	res := netset.NoTransports()
 	protocol := netp.ProtocolString(*e.L4Protocol)
 	srcPorts, err := parsePorts(e.SourcePorts)
