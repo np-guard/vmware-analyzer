@@ -45,4 +45,5 @@ type SymbolicPath struct {
 type SymbolicPaths []*SymbolicPath
 
 // Atomics map from Atomics string to *atomicTerm
+// todo: to use for cashing
 type Atomics map[string]atomic
