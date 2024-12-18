@@ -141,9 +141,9 @@ func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *Trace
 	return &TraceFlows{resources: resources, server: server}
 }
 func (traceFlows *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol,
-	 analyzeAllowed bool, srcRuleID, dstRuleID int, connection string) {
+	analyzeAllowed bool, srcRuleID, dstRuleID int, connection string) {
 	traceFlows.Tfs = append(traceFlows.Tfs,
-		&traceFlow{Src: src, Dst: dst, Protocol: protocol, AnalyzeResults:analyzeResults{analyzeAllowed,srcRuleID, dstRuleID}, Connection: connection})
+		&traceFlow{Src: src, Dst: dst, Protocol: protocol, AnalyzeResults: analyzeResults{analyzeAllowed, srcRuleID, dstRuleID}, Connection: connection})
 }
 
 // ToJSONString converts a traceFlows into a json-formatted-string, it converts only the Tfs
@@ -196,13 +196,13 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 			traceFlow.APIErrors = append(traceFlow.APIErrors, err.Error())
 		}
 		traceFlow.Results = traceFlow.Observations.results()
-		if traceFlow.Results.Completed{
+		if traceFlow.Results.Completed {
 
-		if traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered {
-			traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
-			}else if strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID) != traceFlow.Results.SrcRuleID{
+			if traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered {
+				traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
+			} else if strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID) != traceFlow.Results.SrcRuleID {
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow egress rule is different from analyze egress rule")
-			}else if traceFlow.Results.DstRuleID != "" && strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID) != traceFlow.Results.DstRuleID{
+			} else if traceFlow.Results.DstRuleID != "" && strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID) != traceFlow.Results.DstRuleID {
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is different from analyze ingress rule")
 			}
 		}

@@ -60,8 +60,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 			dstIP := vmIPs[0]
 			conn := config.analyzedConnectivity[srcVM][dstVM]
 			// temp fix till analyze will consider topology:
-			dstVni := resources.GetVirtualNetworkInterfaceByAddress(dstIP)
-			if dstVni == nil || !collector.IsConnected(resources, srcVni, dstVni) {
+			if !collector.IsVMConnected(resources, srcUID, dstUID) {
 				continue
 			}
 			createTraceFlowsForConn(traceFlows, srcIP, dstIP, conn)

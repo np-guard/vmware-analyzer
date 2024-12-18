@@ -70,3 +70,17 @@ func branch(resources *ResourcesContainerModel, n treeNode) treeNodeBranch {
 func IsConnected(got *ResourcesContainerModel, t1, t2 treeNode) bool {
 	return branch(got, t1)[0] == branch(got, t2)[0]
 }
+func IsVMConnected(got *ResourcesContainerModel, uid1, uid2 string) bool{
+	vm1 := got.GetVirtualMachine(uid1)
+	vm2 := got.GetVirtualMachine(uid2)
+	for _, vni1 := range got.VirtualNetworkInterfaceList{
+		for _, vni2 := range got.VirtualNetworkInterfaceList{			
+			if *vni1.OwnerVmId == *vm1.ExternalId && *vni2.OwnerVmId == *vm2.ExternalId{
+				if IsConnected(got,&vni1,&vni2){
+					return true
+				}
+			}
+		}
+	} 	
+	return false
+}
