@@ -17,7 +17,7 @@ func (path *SymbolicPath) isEmpty() bool {
 	return path.Src.isEmptySet() || path.Dst.isEmptySet()
 }
 
-func (paths *SymbolicPaths) string() string {
+func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet
 	}
@@ -97,7 +97,8 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 	return &resAllowPaths
 }
 
-func convertFWRuleToSymbolicPaths(rule *dfw.FwRule) SymbolicPaths {
+// ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and conn to SymbolicPaths
+func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	any := Conjunction{tautology{}}
 	srcTerms := getAtomicTermsForGroups(rule.SrcGroups)
@@ -120,7 +121,7 @@ func convertFWRuleToSymbolicPaths(rule *dfw.FwRule) SymbolicPaths {
 			}
 		}
 	}
-	return resSymbolicPaths
+	return &resSymbolicPaths
 }
 
 // todo: handling only "in group" in this stage

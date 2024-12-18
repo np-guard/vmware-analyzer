@@ -75,7 +75,7 @@ type FwRule struct {
 	ruleID             int
 	secPolicyName      string
 	secPolicyCategory  string
-	categoryRef        *categorySpec
+	categoryRef        *CategorySpec
 	dfwRef             *DFW
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 

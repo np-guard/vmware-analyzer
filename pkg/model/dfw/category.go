@@ -93,7 +93,7 @@ func (e *EffectiveRules) addOutboundRule(r *FwRule) {
 	}
 }
 
-type categorySpec struct {
+type CategorySpec struct {
 	Category       DfwCategory
 	rules          []*FwRule // ordered list of rules
 	defaultAction  RuleAction
@@ -109,7 +109,7 @@ type categorySpec struct {
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 //
 //nolint:gocritic // for now keep commentedOutCode
-func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
+func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 ) (allowedConns, jumpToAppConns, deniedConns, nonDet *netset.TransportSet) {
 	allowedConns, jumpToAppConns, deniedConns = netset.NoTransports(), netset.NoTransports(), netset.NoTransports()
 	rules := c.ProcessedRules.Inbound // inbound effective rules
@@ -146,7 +146,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
-func (c *categorySpec) originalRulesStr() []string {
+func (c *CategorySpec) originalRulesStr() []string {
 	rulesStr := make([]string, len(c.rules))
 	for i := range c.rules {
 		rulesStr[i] = c.rules[i].originalRuleStr()
@@ -154,7 +154,7 @@ func (c *categorySpec) originalRulesStr() []string {
 	return rulesStr
 }
 
-func (c *categorySpec) string() string {
+func (c *CategorySpec) string() string {
 	rulesStr := make([]string, len(c.rules)+1)
 	rulesStr[0] = "rules:"
 	for i := range c.rules {
@@ -164,7 +164,7 @@ func (c *categorySpec) string() string {
 		strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) inboundEffectiveRules() string {
+func (c *CategorySpec) inboundEffectiveRules() string {
 	rulesStr := make([]string, len(c.ProcessedRules.Inbound))
 	for i := range c.ProcessedRules.Inbound {
 		rulesStr[i] = c.ProcessedRules.Inbound[i].effectiveRuleStr()
@@ -172,7 +172,7 @@ func (c *categorySpec) inboundEffectiveRules() string {
 	return strings.Join(rulesStr, lineSeparatorStr)
 }
 
-func (c *categorySpec) outboundEffectiveRules() string {
+func (c *CategorySpec) outboundEffectiveRules() string {
 	rulesStr := make([]string, len(c.ProcessedRules.Outbound))
 	for i := range c.ProcessedRules.Outbound {
 		rulesStr[i] = c.ProcessedRules.Outbound[i].effectiveRuleStr()
@@ -180,7 +180,7 @@ func (c *categorySpec) outboundEffectiveRules() string {
 	return strings.Join(rulesStr, lineSeparatorStr)
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
+func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
 	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
@@ -214,8 +214,8 @@ func (c *categorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	}
 }
 
-func newEmptyCategory(c DfwCategory, d *DFW) *categorySpec {
-	return &categorySpec{
+func newEmptyCategory(c DfwCategory, d *DFW) *CategorySpec {
+	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
 		defaultAction:  actionNone,

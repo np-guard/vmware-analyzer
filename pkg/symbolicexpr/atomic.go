@@ -17,11 +17,11 @@ func (term atomicTerm) string() string {
 	case *endpoints.VM:
 		labelType = "virtual machine "
 	case *collector.Tag:
-		labelType = "tag "
+		labelType = "tag " + term.property.Name()
 	case *collector.Group:
 		labelType = "group "
 	}
-	return labelType + term.property.Name() + equalSign + term.toVal
+	return labelType + equalSign + term.toVal
 }
 
 func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {

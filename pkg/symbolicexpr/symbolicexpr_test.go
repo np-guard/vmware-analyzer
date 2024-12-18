@@ -63,9 +63,9 @@ func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	denyPath := SymbolicPath{conjSrc2, conjDst2}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t, "(s1 = str1 and s2 != str2) to (d1 = str1)\n(s1 = str1) to (d1 = str1 and d2 != str2)",
-		allowGivenDeny.string(), "allowGivenDeny single term computation not as expected")
+		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
 // Input:
@@ -94,7 +94,7 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	denyPath := SymbolicPath{conjDeny, conjDeny}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
 		"(s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
 			"(s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
@@ -102,7 +102,7 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)\n"+
 			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)\n"+
 			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)",
-		allowGivenDeny.string(), "allowGivenDeny three terms computation not as expected")
+		allowGivenDeny.String(), "allowGivenDeny three terms computation not as expected")
 }
 
 // Input:
@@ -129,10 +129,10 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	denyPath := SymbolicPath{conjDeny, conjDeny}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
 		"(s1` != str1`) to (*)\n(s2` != str2`) to (*)\n(s3` != str3`) to (*)\n(*) to (s1` != str1`)\n"+
-			"(*) to (s2` != str2`)\n(*) to (s3` != str3`)", allowGivenDeny.string(),
+			"(*) to (s2` != str2`)\n(*) to (s3` != str3`)", allowGivenDeny.String(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
@@ -155,8 +155,8 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	denyPath := SymbolicPath{tautologyConj, tautologyConj}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.string())
-	require.Equal(t, emptySet, allowGivenDeny.string(),
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
+	require.Equal(t, emptySet, allowGivenDeny.String(),
 		"allowGivenDeny deny tautology computation not as expected")
 }
 
@@ -203,9 +203,9 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		conjDenyDst := Conjunction{atomicDenyDst}
 		denyPaths = append(denyPaths, &SymbolicPath{conjDenySrc, conjDenyDst})
 	}
-	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.string(), denyPaths.string())
+	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.String(), denyPaths.String())
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths)
-	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.string())
+	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
 	require.Equal(t, "(tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1)\n"+
 		"(tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5)\n"+
 		"(tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3)\n"+
@@ -222,7 +222,7 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		"(tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5)\n"+
 		"(tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3)\n"+
 		"(tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
-		ComputeAllowGivenDenies(&allowPaths, &denyPaths).string(),
+		ComputeAllowGivenDenies(&allowPaths, &denyPaths).String(),
 		"ComputeAllowGivenDenies computation not as expected")
 }
 
@@ -244,7 +244,7 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	denyPath := SymbolicPath{conjSrc1, conjDst1}
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
-		allowPath.string(), denyPath.string(), allowWithDeny.string())
+		allowPath.string(), denyPath.string(), allowWithDeny.String())
 	negateAtomic1 := atomic1.negate().(atomicTerm)
 	require.Equal(t, true, atomic1.isNegateOf(negateAtomic1), "isNegateOf does not work")
 	for _, thisPath := range *allowWithDeny {
@@ -254,5 +254,5 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	require.Equal(t, true, (*allowWithDeny)[0].Src.isEmptySet(), "isEmptySet() does not work properly")
 	require.Equal(t, false, (*allowWithDeny)[1].Src.isEmptySet(), "isEmptySet() does not work properly")
 	newPath := allowWithDeny.removeEmpty()
-	fmt.Printf("newPath %v\n", newPath.string())
+	fmt.Printf("newPath %v\n", newPath.String())
 }

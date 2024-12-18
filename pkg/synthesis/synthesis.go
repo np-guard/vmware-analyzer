@@ -5,6 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"strings"
 )
 
@@ -15,24 +16,32 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 		return "", err
 	}
 	config := parser.GetConfig()
-	for _, category := range config.Fw.CategoriesSpecs {
+	preProcessing(config.Fw.CategoriesSpecs)
+	return "", nil
+}
+
+// preProcessing: convert rules from spec to symbolicRules struct
+func preProcessing(categoriesSpecs []*dfw.CategorySpec) []*symbolicRules {
+	for _, category := range categoriesSpecs {
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
 			fmt.Printf("no rules in category %v\n", category.Category)
 			continue
 		}
 		fmt.Printf("\ncategory: %v\n===============\n", category.Category)
 		fmt.Println("Outbound rules:")
-		printRules(category.ProcessedRules.Outbound)
+		convertRulesToSymbolicPaths(category.ProcessedRules.Outbound)
 		fmt.Println("Inbound rules:")
-		printRules(category.ProcessedRules.Inbound)
+		convertRulesToSymbolicPaths(category.ProcessedRules.Inbound)
 	}
-	return "", nil
+	return nil
 }
 
-func printRules(rules []*dfw.FwRule) {
+func convertRulesToSymbolicPaths(rules []*dfw.FwRule) {
 	for _, rule := range rules {
 		fmt.Printf("\taction %v SourceGroups: %v DestinationGroups: %v\n", rule.Action,
 			getGroupsStr(rule.SrcGroups, rule.IsAllSrcGroups), getGroupsStr(rule.DstGroups, rule.IsAllDstGroups))
+		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(rule)
+		fmt.Printf("converted path: %v\n", ruleSymbolicPaths.String())
 	}
 }
 

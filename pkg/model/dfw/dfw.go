@@ -13,7 +13,7 @@ import (
 )
 
 type DFW struct {
-	CategoriesSpecs []*categorySpec // ordered list of categories
+	CategoriesSpecs []*CategorySpec // ordered list of categories
 	defaultAction   RuleAction      // global default (?)
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
@@ -126,14 +126,14 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 }
 
 /*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr string, actionStr string) {
-	var categoryObj *categorySpec
+	var categoryObj *CategorySpec
 	for _, c := range d.CategoriesSpecs {
 		if c.Category.string() == categoryStr {
 			categoryObj = c
 		}
 	}
 	if categoryObj == nil { // create new Category if missing
-		categoryObj = &categorySpec{
+		categoryObj = &CategorySpec{
 			Category: dfwCategoryFromString(categoryStr),
 		}
 		d.CategoriesSpecs = append(d.CategoriesSpecs, categoryObj)
