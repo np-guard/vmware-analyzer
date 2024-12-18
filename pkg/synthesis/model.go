@@ -1,6 +1,9 @@
 package synthesis
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
@@ -21,14 +24,15 @@ type AbstractModelSyn struct {
 // Tags map from tag's name to the tag
 type Tags map[string]*collector.Tag
 
-// RuleForSynthesis input to synthesis. Synthesis very likely to non-prioritized only allow rules
+// SymbolicRule input to synthesis. Synthesis very likely to non-prioritized only allow rules
 //
-//nolint:all // todo: tmp for defs without implementation
-type RuleForSynthesis struct { // original rule
+//nolint:all
+type SymbolicRule struct { // original rule
 	origRule *dfw.FwRule // original rule
 	// category; for reference, e.g. in the labels or documentation of the synthesized objects
 	// a pass rule is interpreted as deny for the current category
-	origRuleCategory dfw.DfwCategory
+	origRuleCategory  dfw.DfwCategory
+	origSymbolicPaths *symbolicexpr.SymbolicPaths // symbolic presentation paths defined by the original rule
 	// The following refers to conversion of original allow rule to symbolic paths, as follows:
 	// Assuming there are only allow (non-prioritized, of course) rules.
 	// This is relevant only for allow rules (nil otherwise)
@@ -42,8 +46,8 @@ type RuleForSynthesis struct { // original rule
 
 //nolint:all // todo: tmp for defs without implementation
 type symbolicRules struct {
-	inbound  []*RuleForSynthesis // ordered list inbound RuleForSynthesis
-	outbound []*RuleForSynthesis // ordered list outbound RuleForSynthesis
+	inbound  []*SymbolicRule // ordered list inbound SymbolicRule
+	outbound []*SymbolicRule // ordered list outbound SymbolicRule
 }
 
 // maps used by AbstractModelSyn
@@ -54,12 +58,16 @@ type Segments map[string]*collector.Segment
 // VMs map from VM name to the VM
 type VMs map[string]*endpoints.VM
 
-// ComputeSymbolicRules computes abstract rules in model for synthesis
-// todo: will have to combine different categories into a single list of inbound, outbound
-//
-//nolint:all // todo: tmp for defs without implementation
-func computeSymbolicRules(fireWall dfw.DFW) symbolicRules {
-	_ = fireWall
-	symbolicexpr.ComputeAllowGivenDenies(&symbolicexpr.SymbolicPaths{}, &symbolicexpr.SymbolicPaths{})
-	return symbolicRules{nil, nil}
+func (allRules symbolicRules) string() string {
+	return "\nsymbolicInbound Rules:\n~~~~~~~~~~~~~~~~~~~~~~~\n" + strSymbolicRules(allRules.inbound) +
+		"\nsymbolicOutbound Rules:\n~~~~~~~~~~~~~~~~~~~~~~~~~\n" + strSymbolicRules(allRules.outbound)
+}
+
+func strSymbolicRules(rules []*SymbolicRule) string {
+	resStr := make([]string, len(rules))
+	for i, rule := range rules {
+		resStr[i] = fmt.Sprintf("\tcategory: %v action: %v paths: %v", rule.origRuleCategory, rule.origRule.Action,
+			rule.origSymbolicPaths)
+	}
+	return strings.Join(resStr, "\n")
 }

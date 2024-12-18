@@ -6,7 +6,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
-	"strings"
 )
 
 func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.OutputParameters) (string, error) {
@@ -16,42 +15,29 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 		return "", err
 	}
 	config := parser.GetConfig()
-	preProcessing(config.Fw.CategoriesSpecs)
+	symbolicRules := symbolicRules{}
+	symbolicRules.inbound, symbolicRules.outbound = preProcessing(config.Fw.CategoriesSpecs)
+	fmt.Println(symbolicRules.string())
 	return "", nil
 }
 
 // preProcessing: convert rules from spec to symbolicRules struct
-func preProcessing(categoriesSpecs []*dfw.CategorySpec) []*symbolicRules {
+func preProcessing(categoriesSpecs []*dfw.CategorySpec) (inbound, outbound []*SymbolicRule) {
 	for _, category := range categoriesSpecs {
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
-			fmt.Printf("no rules in category %v\n", category.Category)
 			continue
 		}
-		fmt.Printf("\ncategory: %v\n===============\n", category.Category)
-		fmt.Println("Outbound rules:")
-		convertRulesToSymbolicPaths(category.ProcessedRules.Outbound)
-		fmt.Println("Inbound rules:")
-		convertRulesToSymbolicPaths(category.ProcessedRules.Inbound)
+		inbound = append(inbound, convertRulesToSymbolicPaths(category.ProcessedRules.Inbound, category.Category)...)
+		outbound = append(outbound, convertRulesToSymbolicPaths(category.ProcessedRules.Outbound, category.Category)...)
 	}
-	return nil
+	return inbound, outbound
 }
 
-func convertRulesToSymbolicPaths(rules []*dfw.FwRule) {
-	for _, rule := range rules {
-		fmt.Printf("\taction %v SourceGroups: %v DestinationGroups: %v\n", rule.Action,
-			getGroupsStr(rule.SrcGroups, rule.IsAllSrcGroups), getGroupsStr(rule.DstGroups, rule.IsAllDstGroups))
+func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category dfw.DfwCategory) []*SymbolicRule {
+	res := make([]*SymbolicRule, len(rules))
+	for i, rule := range rules {
 		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(rule)
-		fmt.Printf("converted path: %v\n", ruleSymbolicPaths.String())
+		res[i] = &SymbolicRule{origRule: rule, origRuleCategory: category, origSymbolicPaths: ruleSymbolicPaths}
 	}
-}
-
-func getGroupsStr(groups []*collector.Group, isAll bool) string {
-	if isAll {
-		return "Any"
-	}
-	groupsStr := make([]string, len(groups))
-	for i, group := range groups {
-		groupsStr[i] = *group.DisplayName
-	}
-	return strings.Join(groupsStr, ", ")
+	return res
 }
