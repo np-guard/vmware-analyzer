@@ -39,6 +39,7 @@ type Conjunction []atomic
 type SymbolicPath struct {
 	Src Conjunction
 	Dst Conjunction
+	// ToDo: add Conn
 }
 
 type SymbolicPaths []*SymbolicPath

@@ -25,18 +25,19 @@ type Tags map[string]*collector.Tag
 //
 //nolint:all // todo: tmp for defs without implementation
 type RuleForSynthesis struct { // original rule
-	origRule dfw.FwRule // original rule
-	// category; needed for interpreting path
+	origRule *dfw.FwRule // original rule
+	// category; for reference, e.g. in the labels or documentation of the synthesized objects
 	// a pass rule is interpreted as deny for the current category
-	category dfw.DfwCategory
+	origRuleCategory dfw.DfwCategory
 	// The following refers to conversion of original allow rule to symbolic paths, as follows:
-	//
 	// Assuming there are only allow (non-prioritized, of course) rules.
 	// This is relevant only for allow rules (nil otherwise)
-	allowOnlyRulePaths symbolicexpr.SymbolicPaths
+	allowOnlyRulePaths      symbolicexpr.SymbolicPaths
+	allowOnlyEffectingRules []*dfw.FwRule // rules effecting allowOnlyRulePaths (potentially higher priority pass and deny)
 	// Assuming there are prioritized allow and deny rules (but no categories and pass)
 	// This is relevant for allow and deny rules (pass nil), priorities are the same as of the original rules
-	allowAndDenyRulesPaths symbolicexpr.SymbolicPaths
+	allowAndDenyRulesPaths     symbolicexpr.SymbolicPaths
+	allowAndDenyEffectingRules []*dfw.FwRule // rules effecting allowAndDenyRulesPaths (potentially higher priority pass)
 }
 
 //nolint:all // todo: tmp for defs without implementation
