@@ -44,7 +44,7 @@ type NSXConfigParser struct {
 	configRes    *config
 	groups       []*collector.Group
 	allGroupsVMs []*endpoints.VM
-	// store references to groups/services objects from paths used in fw rules
+	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 }
@@ -72,7 +72,7 @@ func (p *NSXConfigParser) AddPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	p.configRes.fw.SetPathsToDisplayNames(res)
+	p.configRes.Fw.SetPathsToDisplayNames(res)
 }
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
@@ -99,7 +99,7 @@ func (p *NSXConfigParser) getVMs() {
 }
 
 func (p *NSXConfigParser) getDFW() {
-	p.configRes.fw = dfw.NewEmptyDFW(false) // TODO: what is global default?
+	p.configRes.Fw = dfw.NewEmptyDFW(false) // TODO: what is global default?
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.SecurityPolicyList {
@@ -148,7 +148,7 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.fw.AddRule(r.srcVMs, r.dstVMs, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
+	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 

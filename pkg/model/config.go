@@ -13,7 +13,7 @@ import (
 type config struct {
 	vms                  []*endpoints.VM          // list of all vms
 	vmsMap               map[string]*endpoints.VM // map from uid to vm objects
-	fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
+	Fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
 	analyzedConnectivity connMap                  // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
@@ -29,14 +29,14 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.initPairs(c.fw.GlobalDefaultAllow(), c.vms, vmsFilter)
+	res.initPairs(c.Fw.GlobalDefaultAllow(), c.vms, vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
 			if src == dst {
 				continue
 			}
-			conn := c.fw.AllowedConnections(src, dst)
+			conn := c.Fw.AllowedConnections(src, dst)
 			res.add(src, dst, conn)
 		}
 	}
@@ -55,11 +55,11 @@ func (c *config) getConfigInfoStr() string {
 	sb.WriteString(common.OutputSectionSep)
 
 	sb.WriteString("DFW:\n")
-	sb.WriteString(c.fw.OriginalRulesStrFormatted())
+	sb.WriteString(c.Fw.OriginalRulesStrFormatted())
 	sb.WriteString(common.ShortSep)
-	sb.WriteString(c.fw.String())
+	sb.WriteString(c.Fw.String())
 	sb.WriteString(common.ShortSep)
-	sb.WriteString(c.fw.AllEffectiveRules())
+	sb.WriteString(c.Fw.AllEffectiveRules())
 	sb.WriteString(common.OutputSectionSep)
 
 	return sb.String()

@@ -26,12 +26,12 @@ var dfwAllowAllByDefault = dfw.NewEmptyDFW(true)      // no rules and global def
 // basic test
 var config1 = &config{
 	vms: allVms,
-	fw:  dfwAllowNothingByDefault,
+	Fw:  dfwAllowNothingByDefault,
 }
 
 var config2 = &config{
 	vms: allVms,
-	fw:  dfwAllowAllByDefault,
+	Fw:  dfwAllowAllByDefault,
 }
 
 func sumPairs(c connMap) int {

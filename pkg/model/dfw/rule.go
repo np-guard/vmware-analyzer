@@ -13,7 +13,7 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-type ruleAction string
+type RuleAction string
 
 const (
 	listSeparatorStr = ","
@@ -24,13 +24,13 @@ const (
 var ingressDirections = []string{"IN", "IN_OUT"}*/
 
 const (
-	actionAllow     ruleAction = "allow"
-	actionDeny      ruleAction = "deny" // currently not differentiating between "reject" and "drop"
-	actionJumpToApp ruleAction = "jump_to_application"
-	actionNone      ruleAction = "none" // to mark that a default rule is not configured
+	actionAllow     RuleAction = "allow"
+	actionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
+	actionJumpToApp RuleAction = "jump_to_application"
+	actionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
-/*func actionFromString(input string) ruleAction {
+/*func actionFromString(input string) RuleAction {
 	switch input {
 	case string(actionAllow):
 		return actionAllow
@@ -42,7 +42,7 @@ const (
 	return actionDeny
 }*/
 
-func actionFromString(s string) ruleAction {
+func actionFromString(s string) RuleAction {
 	switch strings.ToLower(s) {
 	case string(actionAllow):
 		return actionAllow
@@ -68,7 +68,7 @@ type FwRule struct {
 	// Scope implies additional condition on any Src and any Dst; will be added in one of the last stages
 	ScopeGroups        []*collector.Group
 	conn               *netset.TransportSet
-	action             ruleAction
+	Action             RuleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
 	origRuleObj        *collector.Rule
 	origDefaultRuleObj *collector.FirewallRule
@@ -123,7 +123,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		IsAllDstGroups: f.IsAllDstGroups,
 		ScopeGroups:    f.ScopeGroups,
 		conn:           f.conn,
-		action:         f.action,
+		Action:         f.Action,
 		direction:      string(nsx.RuleDirectionIN),
 		origRuleObj:    f.origRuleObj,
 		ruleID:         f.ruleID,
@@ -162,7 +162,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		IsAllDstGroups: f.IsAllDstGroups,
 		ScopeGroups:    f.ScopeGroups,
 		conn:           f.conn,
-		action:         f.action,
+		Action:         f.Action,
 		direction:      string(nsx.RuleDirectionOUT),
 		origRuleObj:    f.origRuleObj,
 		ruleID:         f.ruleID,
@@ -200,12 +200,12 @@ func vmsString(vms []*endpoints.VM) string {
 // groups are interpreted to VM members in this representation
 func (f *FwRule) string() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, vmsString(f.scope), f.secPolicyName)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
 func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.action), f.direction, f.secPolicyName)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.Action), f.direction, f.secPolicyName)
 }
 
 func getDefaultRuleScope(r *collector.FirewallRule) string {
@@ -253,11 +253,11 @@ func getRulesFormattedHeaderLine() string {
 		"src",
 		"dst",
 		"conn",
-		"action",
+		"Action",
 		"direction",
 		"scope",
 		"sec-policy",
-		"category",
+		"Category",
 	}
 	return fmt.Sprintf("%s%s%s",
 		common.Red,
@@ -309,7 +309,7 @@ func (f *FwRule) originalRuleStr() string {
 		f.getShortPathsString(f.origRuleObj.DestinationGroups),
 		// todo: origRuleObj.Services is not always the services, can also be service_entries
 		f.getShortPathsString(f.origRuleObj.Services),
-		string(f.action), f.direction,
+		string(f.Action), f.direction,
 		strings.Join(f.origRuleObj.Scope, listSeparatorStr),
 		f.secPolicyName,
 		f.secPolicyCategory,
