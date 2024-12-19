@@ -72,18 +72,18 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conn.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
-	if dConn.Explanations().Empty() {
+	if len(dConn.Explanation().Explanations()) ==0 {
 		// one check only using icmp
 		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), 0, 0, connString)
 		return
 	}
-	for _, ruleConn := range *dConn.Explanations() {
-		rulesConnString := fmt.Sprintf("%s %d,%d", connString, ruleConn.EgressRule, ruleConn.IngressRule)
-		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), ruleConn.Allow, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
+	for _, explanation := range dConn.Explanation().Explanations() {
+		rulesConnString := fmt.Sprintf("%s %d,%d", connString, explanation.EgressRule, explanation.IngressRule)
+		if !explanation.Conn.TCPUDPSet().IsEmpty() {
+			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(explanation.Conn.TCPUDPSet()), explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
-		if !ruleConn.Conn.ICMPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, ruleConn.Allow, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
+		if !explanation.Conn.ICMPSet().IsEmpty() {
+			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
 	}
 }

@@ -13,31 +13,36 @@ import (
 //////////////////////////////////////////////////////////////////////
 
 type DetailedConnection struct {
-	Conn         *netset.TransportSet
-	explanations explanations
+	Conn        *netset.TransportSet
+	explanation *Explanation
 }
 
-func NewDetailedConnection(conn *netset.TransportSet) *DetailedConnection {
-	return &DetailedConnection{Conn: conn}
+func NewDetailedConnection(conn *netset.TransportSet, explanations *Explanation) *DetailedConnection {
+	return &DetailedConnection{Conn: conn, explanation: explanations}
 }
 func NewEmptyDetailedConnection() *DetailedConnection {
-	return &DetailedConnection{Conn: netset.NoTransports()}
+	return &DetailedConnection{Conn: netset.NoTransports(), explanation: &Explanation{}}
 }
 func NewAllDetailedConnection() *DetailedConnection {
-	return &DetailedConnection{Conn: netset.AllTransports()}
+	return &DetailedConnection{Conn: netset.AllTransports(), explanation: &Explanation{}}
 }
-func (d *DetailedConnection) AddExplanation(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
-	d.explanations = append(d.explanations, connectivityExplanation{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
-}
-func (d *DetailedConnection) Explanations() *explanations {
-	return &d.explanations
+func (d *DetailedConnection) Explanation() *Explanation {
+	return d.explanation
 }
 func (d *DetailedConnection) String() string { return d.Conn.String() }
 
 // ConnectivityExplanation has the explanation of specific connectivity:
 // whether the connectivity allowed, and what are the rules that allow/deny it
-type explanations []connectivityExplanation
-func (es *explanations) Empty() bool {return len(*es) == 0}
+type Explanation struct {
+	explanations []connectivityExplanation
+}
+
+func (es *Explanation) Empty() bool                             { return len(es.explanations) == 0 }
+func (es *Explanation) Explanations() []connectivityExplanation { return es.explanations }
+func (es *Explanation) AddExplanation(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
+	es.explanations = append(es.explanations, connectivityExplanation{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
+}
+
 type connectivityExplanation struct {
 	Conn        *netset.TransportSet
 	EgressRule  int

@@ -27,64 +27,9 @@ func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *conn.DetailedConnectio
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	logging.Debugf("egress allowed connections from %s to %s: %s", src.Name(), dst.Name(), egress.String())
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
-	relevantRules := &relevantRules{}
-	d.collectRelevantRules(src, dst, relevantRules)
-	return explain(egress, ingress, relevantRules)
-}
-
-type relevantRules struct {
-	egressAllow  []*FwRule
-	egressDeny   []*FwRule
-	ingressAllow []*FwRule
-	ingressDeny  []*FwRule
-}
-
-type ruleAndConn struct {
-	conn *netset.TransportSet
-	rule int
-}
-
-func splitByRules(conn *netset.TransportSet, rules []*FwRule) []ruleAndConn {
-	res := []ruleAndConn{}
-	for _, rule := range rules {
-		relevantConn := rule.conn.Intersect(conn)
-		if !relevantConn.IsEmpty() {
-			res = append(res, ruleAndConn{relevantConn, rule.ruleID})
-			conn = conn.Subtract(relevantConn)
-		}
-	}
-	return res
-}
-
-func explain(egress, ingress *netset.TransportSet, relevantRules *relevantRules) *conn.DetailedConnection {
-	res := conn.NewDetailedConnection(ingress.Intersect(egress))
-	denyEgress := netset.AllTransports().Subtract(egress)
-	deniedConnsByEgress := splitByRules(denyEgress, relevantRules.egressDeny)
-	for _, denyRuleAndConn := range deniedConnsByEgress {
-		res.AddExplanation(denyRuleAndConn.conn, denyRuleAndConn.rule, 0, false)
-	}
-	allowConnsByEgress := splitByRules(egress, relevantRules.egressAllow)
-	for _, egressAllowRuleAndConn := range allowConnsByEgress {
-		denyIngress := egressAllowRuleAndConn.conn.Subtract(ingress)
-		deniedConnsByIngress := splitByRules(denyIngress, relevantRules.ingressDeny)
-		for _, ingressDenyRuleAndConn := range deniedConnsByIngress {
-			res.AddExplanation(ingressDenyRuleAndConn.conn, egressAllowRuleAndConn.rule, ingressDenyRuleAndConn.rule, false)
-		}
-		allowConnsByIngress := splitByRules(egressAllowRuleAndConn.conn, relevantRules.ingressAllow)
-		for _, ingressAllowRuleAndConn := range allowConnsByIngress {
-			res.AddExplanation(ingressAllowRuleAndConn.conn, egressAllowRuleAndConn.rule, ingressAllowRuleAndConn.rule, true)
-		}
-	}
-	return res
-}
-
-func (d *DFW) collectRelevantRules(src, dst *endpoints.VM, relevantRules *relevantRules) {
-	for _, dfwCategory := range d.categoriesSpecs {
-		if dfwCategory.category == ethernetCategory {
-			continue // cuurently skip L2 rules
-		}
-		dfwCategory.collectRelevantRules(src, dst, relevantRules)
-	}
+	return conn.NewDetailedConnection(ingress.Intersect(egress),
+		calcExplanation(egress, ingress,
+			d.collectRelevantRules(src, dst)))
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
@@ -225,3 +170,15 @@ func (d *DFW) GlobalDefaultAllow() bool {
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 	d.pathsToDisplayNames = m
 }
+
+func (d *DFW) collectRelevantRules(src, dst *endpoints.VM) *relevantRules {
+	relevantRules := &relevantRules{}
+	for _, dfwCategory := range d.categoriesSpecs {
+		if dfwCategory.category == ethernetCategory {
+			continue // cuurently skip L2 rules
+		}
+		dfwCategory.collectRelevantRules(src, dst, relevantRules)
+	}
+	return relevantRules
+}
+

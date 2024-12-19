@@ -84,5 +84,3 @@ func (c ConnMap) ToSlice() (res []connMapEntry) {
 	}
 	return res
 }
-
-
