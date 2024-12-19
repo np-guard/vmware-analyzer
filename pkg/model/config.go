@@ -15,7 +15,7 @@ type config struct {
 	vms                  []*endpoints.VM          // list of all vms
 	vmsMap               map[string]*endpoints.VM // map from uid to vm objects
 	fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
-	analyzedConnectivity conns.ConnMap             // the resulting connectivity map from analyzing this configuration
+	analyzedConnectivity conns.ConnMap            // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
 
