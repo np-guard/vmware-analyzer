@@ -18,6 +18,7 @@ func (term atomicTerm) string() string {
 		labelType = "virtual machine "
 	case *collector.Tag:
 		labelType = "tag " + term.property.Name()
+	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
 	case *collector.Group:
 		labelType = "group "
 	default: // for structs used for testing
