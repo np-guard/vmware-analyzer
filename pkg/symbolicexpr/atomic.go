@@ -20,6 +20,8 @@ func (term atomicTerm) string() string {
 		labelType = "tag " + term.property.Name()
 	case *collector.Group:
 		labelType = "group "
+	default: // for structs used for testing
+		labelType = term.property.Name()
 	}
 	return labelType + equalSign + term.toVal
 }
