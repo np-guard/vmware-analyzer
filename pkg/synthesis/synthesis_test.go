@@ -19,7 +19,7 @@ type synthesisTest struct {
 var allTests = []synthesisTest{
 	{
 		name:   "ExampleDumb",
-		exData: data.ExampleDumb,
+		exData: data.ExampleDumbeldore,
 	},
 }
 
