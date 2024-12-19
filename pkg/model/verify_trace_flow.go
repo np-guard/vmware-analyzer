@@ -72,12 +72,12 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *common.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
-	if len(dConn.RuleConns) == 0 {
+	if len(dConn.Explanations()) == 0 {
 		// one check only using icmp
 		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), 0, 0, connString)
 		return
 	}
-	for _, ruleConn := range dConn.RuleConns {
+	for _, ruleConn := range dConn.Explanations() {
 		rulesConnString := fmt.Sprintf("%s %d,%d", connString, ruleConn.EgressRule, ruleConn.IngressRule)
 		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
 			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), ruleConn.Allow, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
