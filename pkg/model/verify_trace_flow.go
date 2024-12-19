@@ -80,10 +80,14 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 	for _, explanation := range dConn.Explanation().Explanations() {
 		rulesConnString := fmt.Sprintf("%s %d,%d", connString, explanation.EgressRule, explanation.IngressRule)
 		if !explanation.Conn.TCPUDPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(explanation.Conn.TCPUDPSet()), explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
+			traceFlows.AddTraceFlow(srcIP, dstIP,
+				toTcpTraceFlowProtocol(explanation.Conn.TCPUDPSet()),
+				explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
 		if !explanation.Conn.ICMPSet().IsEmpty() {
-			traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
+			traceFlows.AddTraceFlow(srcIP, dstIP,
+				collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP},
+				explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
 	}
 }

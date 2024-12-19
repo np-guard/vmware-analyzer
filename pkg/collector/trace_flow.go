@@ -143,7 +143,9 @@ func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *Trace
 func (traceFlows *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol,
 	analyzeAllowed bool, srcRuleID, dstRuleID int, connection string) {
 	traceFlows.Tfs = append(traceFlows.Tfs,
-		&traceFlow{Src: src, Dst: dst, Protocol: protocol, AnalyzeResults: analyzeResults{analyzeAllowed, srcRuleID, dstRuleID}, Connection: connection})
+		&traceFlow{Src: src, Dst: dst, Protocol: protocol,
+			AnalyzeResults: analyzeResults{analyzeAllowed, srcRuleID, dstRuleID},
+			Connection:     connection})
 }
 
 // ToJSONString converts a traceFlows into a json-formatted-string, it converts only the Tfs
@@ -199,14 +201,16 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 		if traceFlow.Results.Completed {
 			analyzeSrcRuleID := strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID)
 			analyzeDstRuleID := strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID)
-			if traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered {
+			switch {
+			case traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered:
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
-			} else if analyzeSrcRuleID != traceFlow.Results.SrcRuleID {
+			case analyzeSrcRuleID != traceFlow.Results.SrcRuleID:
 				traceFlow.Errors = append(traceFlow.Errors, "analyze egress rule is different from trace flow egress rule")
-			} else if traceFlow.Results.DstRuleID != "" && analyzeDstRuleID != traceFlow.Results.DstRuleID {
+			case traceFlow.Results.DstRuleID != "" && analyzeDstRuleID != traceFlow.Results.DstRuleID:
 				traceFlow.Errors = append(traceFlow.Errors, "analyze ingress rule is different from trace flow ingress rule")
-			} else if traceFlow.Results.DstRuleID == "" && analyzeDstRuleID != "0" && analyzeDstRuleID != traceFlow.Results.SrcRuleID {
-				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is missing, and analyze ingress rule rule different from trace flow egress")
+			case traceFlow.Results.DstRuleID == "" && analyzeDstRuleID != "0" && analyzeDstRuleID != traceFlow.Results.SrcRuleID:
+				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is missing,"+
+					" and analyze ingress rule rule different from trace flow egress")
 			}
 		}
 	}

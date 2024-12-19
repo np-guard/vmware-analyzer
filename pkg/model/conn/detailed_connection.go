@@ -47,5 +47,6 @@ type Explanation struct {
 
 func (es *Explanation) Explanations() []connectivityExplanation { return es.explanations }
 func (es *Explanation) AddExplanation(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
-	es.explanations = append(es.explanations, connectivityExplanation{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
+	es.explanations = append(es.explanations,
+		connectivityExplanation{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
 }
