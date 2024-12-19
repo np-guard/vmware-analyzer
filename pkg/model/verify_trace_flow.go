@@ -5,7 +5,7 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conn"
+	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -69,7 +69,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 	return traceFlows
 }
 
-func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conn.DetailedConnection) {
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conns.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
 	if len(dConn.Explanation().Explanations()) == 0 {
@@ -81,7 +81,7 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 		rulesConnString := fmt.Sprintf("%s %d,%d", connString, explanation.EgressRule, explanation.IngressRule)
 		if !explanation.Conn.TCPUDPSet().IsEmpty() {
 			traceFlows.AddTraceFlow(srcIP, dstIP,
-				toTcpTraceFlowProtocol(explanation.Conn.TCPUDPSet()),
+				toTCPTraceFlowProtocol(explanation.Conn.TCPUDPSet()),
 				explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
 		if !explanation.Conn.ICMPSet().IsEmpty() {
@@ -92,7 +92,7 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 	}
 }
 
-func toTcpTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
+func toTCPTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 	partition := set.Partitions()[0]
 	protocol := collector.ProtocolUDP
 	if partition.S1.Contains(netset.TCPCode) {

@@ -4,7 +4,7 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package conn
+package conns
 
 import (
 	"github.com/np-guard/models/pkg/netset"

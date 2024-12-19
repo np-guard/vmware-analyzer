@@ -2,7 +2,7 @@ package dfw
 
 import (
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conn"
+	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
 )
 
 type relevantRules struct {
@@ -12,8 +12,8 @@ type relevantRules struct {
 	ingressDeny  []*FwRule
 }
 
-func calcExplanation(allowEgress, allowIngress *netset.TransportSet, relevantRules *relevantRules) *conn.Explanation {
-	res := &conn.Explanation{}
+func calcExplanation(allowEgress, allowIngress *netset.TransportSet, relevantRules *relevantRules) *conns.Explanation {
+	res := &conns.Explanation{}
 
 	// connections that are denied by an egress rule:
 	denyEgress := netset.AllTransports().Subtract(allowEgress)
