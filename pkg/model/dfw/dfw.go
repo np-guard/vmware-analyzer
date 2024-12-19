@@ -181,4 +181,3 @@ func (d *DFW) collectRelevantRules(src, dst *endpoints.VM) *relevantRules {
 	}
 	return relevantRules
 }
-

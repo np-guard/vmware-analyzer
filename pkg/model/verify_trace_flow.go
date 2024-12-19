@@ -72,7 +72,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conn.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
-	if len(dConn.Explanation().Explanations()) ==0 {
+	if len(dConn.Explanation().Explanations()) == 0 {
 		// one check only using icmp
 		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), 0, 0, connString)
 		return

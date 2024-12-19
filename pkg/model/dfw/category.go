@@ -244,4 +244,3 @@ func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRule
 		}
 	}
 }
-
