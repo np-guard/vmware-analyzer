@@ -23,20 +23,21 @@ var allTests = []synthesisTest{
 	},
 }
 
-func (a *synthesisTest) run(t *testing.T) {
-	params := model.OutputParameters{
-		Format: "txt",
-	}
+func (a *synthesisTest) runPreprocessing(t *testing.T) {
 	rc := data.ExamplesGeneration(a.exData)
-	res, err := NSXSynthesis(rc, params)
+	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
+	err := parser.RunParser()
 	require.Nil(t, err)
-	fmt.Println(res)
+	config := parser.GetConfig()
+	policy := preProcessing(config.Fw.CategoriesSpecs)
+	fmt.Println(policy.string())
+	// todo: test via comparing output to files in a separate PR (issue with window in analyzer tests)
 }
 
-func TestSynthesis(t *testing.T) {
+func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
-		test.run(t)
+		test.runPreprocessing(t)
 	}
 }
