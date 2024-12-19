@@ -12,21 +12,27 @@ type relevantRules struct {
 	ingressDeny  []*FwRule
 }
 
-func calcExplanation(egress, ingress *netset.TransportSet, relevantRules *relevantRules) *conn.Explanation {
+func calcExplanation(allowEgress, allowIngress *netset.TransportSet, relevantRules *relevantRules) *conn.Explanation {
 	res := &conn.Explanation{}
-	denyEgress := netset.AllTransports().Subtract(egress)
-	deniedConnsByEgress := splitByRules(denyEgress, relevantRules.egressDeny)
+
+	// connections that are denied by an egress rule:
+	denyEgress := netset.AllTransports().Subtract(allowEgress)
+	deniedConnsByEgress := splitConnByRulesConn(denyEgress, relevantRules.egressDeny)
 	for _, denyRuleAndConn := range deniedConnsByEgress {
 		res.AddExplanation(denyRuleAndConn.conn, denyRuleAndConn.rule, 0, false)
 	}
-	allowConnsByEgress := splitByRules(egress, relevantRules.egressAllow)
+
+	// connections that are allowed by an egress rule:
+	allowConnsByEgress := splitConnByRulesConn(allowEgress, relevantRules.egressAllow)
 	for _, egressAllowRuleAndConn := range allowConnsByEgress {
-		denyIngress := egressAllowRuleAndConn.conn.Subtract(ingress)
-		deniedConnsByIngress := splitByRules(denyIngress, relevantRules.ingressDeny)
+		// connections that are allowed by an egress rule, but denied by an ingress rule:
+		denyIngress := egressAllowRuleAndConn.conn.Subtract(allowIngress)
+		deniedConnsByIngress := splitConnByRulesConn(denyIngress, relevantRules.ingressDeny)
 		for _, ingressDenyRuleAndConn := range deniedConnsByIngress {
 			res.AddExplanation(ingressDenyRuleAndConn.conn, egressAllowRuleAndConn.rule, ingressDenyRuleAndConn.rule, false)
 		}
-		allowConnsByIngress := splitByRules(egressAllowRuleAndConn.conn, relevantRules.ingressAllow)
+		// connections that are allowed by an egress rule, and by an ingress rule:
+		allowConnsByIngress := splitConnByRulesConn(egressAllowRuleAndConn.conn, relevantRules.ingressAllow)
 		for _, ingressAllowRuleAndConn := range allowConnsByIngress {
 			res.AddExplanation(ingressAllowRuleAndConn.conn, egressAllowRuleAndConn.rule, ingressAllowRuleAndConn.rule, true)
 		}
@@ -39,7 +45,8 @@ type ruleAndConn struct {
 	rule int
 }
 
-func splitByRules(conn *netset.TransportSet, rules []*FwRule) []ruleAndConn {
+// splitConnByRulesConn() split the connectivity according to the rules connectivity
+func splitConnByRulesConn(conn *netset.TransportSet, rules []*FwRule) []ruleAndConn {
 	res := []ruleAndConn{}
 	for _, rule := range rules {
 		relevantConn := rule.conn.Intersect(conn)
@@ -48,5 +55,6 @@ func splitByRules(conn *netset.TransportSet, rules []*FwRule) []ruleAndConn {
 			conn = conn.Subtract(relevantConn)
 		}
 	}
+	// todo - what to do if conn is not empty at the end?
 	return res
 }

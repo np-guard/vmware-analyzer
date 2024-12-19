@@ -229,6 +229,7 @@ func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRule
 		}
 		for _, rule := range rules {
 			if rule.processedRuleCapturesPair(src, dst) {
+				// todo - handle actionJumpToApp rules
 				switch {
 				case rule.action == actionAllow && !isIngress:
 					relevantRules.egressAllow = append(relevantRules.egressAllow, rule)
