@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,9 +16,8 @@ import (
 
 // todo...
 const (
-	examplesDir  = "examples/"
-	synthesisDir = "input/"
-	outDir       = "out/"
+	expectedOutput = "tests_expected_output/"
+	carriageReturn = "\r"
 )
 
 type synthesisTest struct {
@@ -35,12 +35,16 @@ var allTests = []synthesisTest{
 func (a *synthesisTest) runPreprocessing(t *testing.T) {
 	rc := data.ExamplesGeneration(a.exData)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
-	err := parser.RunParser()
-	require.Nil(t, err)
+	err1 := parser.RunParser()
+	require.Nil(t, err1)
 	config := parser.GetConfig()
 	policy := preProcessing(config.Fw.CategoriesSpecs)
 	fmt.Println(policy.string())
-	// todo: test via comparing output to files in a separate PR (issue with window in analyzer tests)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+".txt")
+	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
+	require.Nil(t, err2)
+	expectedOutputStr := string(expectedOutput)
+	require.Equal(t, cleanStr(policy.string()), cleanStr(expectedOutputStr), "output not as expected")
 }
 
 func TestPreprocessing(t *testing.T) {
@@ -52,7 +56,12 @@ func TestPreprocessing(t *testing.T) {
 }
 
 // getTestsDirOut returns the path to the dir where test output files are located
-func getTestsDirOut(testDir string) string {
+func getTestsDirOut() string {
 	currentDir, _ := os.Getwd()
-	return filepath.Join(currentDir, examplesDir+outDir+testDir)
+	return filepath.Join(currentDir, expectedOutput)
+}
+
+// comparison should be insensitive to line comparators; cleaning strings from line comparators
+func cleanStr(str string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(str, "/n", ""), carriageReturn, "")
 }
