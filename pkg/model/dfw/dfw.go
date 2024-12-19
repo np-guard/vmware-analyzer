@@ -9,6 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -20,13 +21,15 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *netset.TransportSet {
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *conns.DetailedConnection {
 	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	logging.Debugf("ingress allowed connections from %s to %s: %s", src.Name(), dst.Name(), ingress.String())
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
 	logging.Debugf("egress allowed connections from %s to %s: %s", src.Name(), dst.Name(), egress.String())
 	// the set of allowed connections from src dst is the intersection of ingress & egress allowed connections
-	return ingress.Intersect(egress)
+	return conns.NewDetailedConnection(ingress.Intersect(egress),
+		calcExplanation(egress, ingress,
+			d.collectRelevantRules(src, dst)))
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
@@ -166,4 +169,15 @@ func (d *DFW) GlobalDefaultAllow() bool {
 
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 	d.pathsToDisplayNames = m
+}
+
+func (d *DFW) collectRelevantRules(src, dst *endpoints.VM) *relevantRules {
+	relevantRules := &relevantRules{}
+	for _, dfwCategory := range d.categoriesSpecs {
+		if dfwCategory.category == ethernetCategory {
+			continue // cuurently skip L2 rules
+		}
+		dfwCategory.collectRelevantRules(src, dst, relevantRules)
+	}
+	return relevantRules
 }

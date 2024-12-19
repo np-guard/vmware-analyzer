@@ -220,3 +220,27 @@ func newEmptyCategory(c DfwCategory, d *DFW) *categorySpec {
 		processedRules: &effectiveRules{},
 	}
 }
+
+func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRules *relevantRules) {
+	for _, isIngress := range []bool{false, true} {
+		rules := c.processedRules.inbound
+		if !isIngress {
+			rules = c.processedRules.outbound
+		}
+		for _, rule := range rules {
+			if rule.processedRuleCapturesPair(src, dst) {
+				// todo - handle actionJumpToApp rules
+				switch {
+				case rule.action == actionAllow && !isIngress:
+					relevantRules.egressAllow = append(relevantRules.egressAllow, rule)
+				case rule.action == actionDeny && !isIngress:
+					relevantRules.egressDeny = append(relevantRules.egressDeny, rule)
+				case rule.action == actionAllow && isIngress:
+					relevantRules.ingressAllow = append(relevantRules.ingressAllow, rule)
+				case rule.action == actionDeny && isIngress:
+					relevantRules.ingressDeny = append(relevantRules.ingressDeny, rule)
+				}
+			}
+		}
+	}
+}
