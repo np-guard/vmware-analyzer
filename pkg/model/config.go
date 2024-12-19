@@ -5,6 +5,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/model/conn"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -14,11 +15,11 @@ type config struct {
 	vms                  []*endpoints.VM          // list of all vms
 	vmsMap               map[string]*endpoints.VM // map from uid to vm objects
 	fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
-	analyzedConnectivity connMap                  // the resulting connectivity map from analyzing this configuration
+	analyzedConnectivity conn.ConnMap                  // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
 
-func (c *config) getConnectivity() connMap {
+func (c *config) getConnectivity() conn.ConnMap {
 	if !c.analysisDone {
 		c.ComputeConnectivity(nil)
 	}
@@ -27,9 +28,9 @@ func (c *config) getConnectivity() connMap {
 
 func (c *config) ComputeConnectivity(vmsFilter []string) {
 	logging.Debugf("compute connectivity on parsed config")
-	res := connMap{}
+	res := conn.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.initPairs(c.fw.GlobalDefaultAllow(), c.vms, vmsFilter)
+	res.InitPairs(c.fw.GlobalDefaultAllow(), c.vms, vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
@@ -37,7 +38,7 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 				continue
 			}
 			conn := c.fw.AllowedConnections(src, dst)
-			res.add(src, dst, conn)
+			res.Add(src, dst, conn)
 		}
 	}
 	c.analyzedConnectivity = res

@@ -9,6 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/model/conn"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -20,7 +21,7 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *common.DetailedConnection {
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *conn.DetailedConnection {
 	ingress := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	logging.Debugf("ingress allowed connections from %s to %s: %s", src.Name(), dst.Name(), ingress.String())
 	egress := d.AllowedConnectionsIngressOrEgress(src, dst, false)
@@ -55,8 +56,8 @@ func splitByRules(conn *netset.TransportSet, rules []*FwRule) []ruleAndConn {
 	return res
 }
 
-func explain(egress, ingress *netset.TransportSet, relevantRules *relevantRules) *common.DetailedConnection {
-	res := common.NewDetailedConnection(ingress.Intersect(egress))
+func explain(egress, ingress *netset.TransportSet, relevantRules *relevantRules) *conn.DetailedConnection {
+	res := conn.NewDetailedConnection(ingress.Intersect(egress))
 	denyEgress := netset.AllTransports().Subtract(egress)
 	deniedConnsByEgress := splitByRules(denyEgress, relevantRules.egressDeny)
 	for _, denyRuleAndConn := range deniedConnsByEgress {

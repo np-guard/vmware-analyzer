@@ -21,9 +21,9 @@ func (c *config) output(params OutputParameters) (res string, err error) {
 	case common.DotFormat, common.SvgFormat:
 		g = common.NewDotGraph(false)
 	}
-	for _, e := range filteredConn.toSlice() {
-		if !e.conn.Conn.IsEmpty() {
-			g.AddEdge(e.src, e.dst, e.conn.Conn)
+	for _, e := range filteredConn.ToSlice() {
+		if !e.Conn.Conn.IsEmpty() {
+			g.AddEdge(e.Src, e.Dst, e.Conn.Conn)
 		}
 	}
 	return common.OutputGraph(g, params.FileName, params.Format)

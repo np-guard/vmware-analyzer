@@ -1,31 +1,30 @@
-package model
+package conn
 
 import (
 	"fmt"
 	"slices"
 	"strings"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-// connMap captures permitted connections between endpoints in the input config
-type connMap map[*endpoints.VM]map[*endpoints.VM]*common.DetailedConnection
+// ConnMap captures permitted connections between endpoints in the input config
+type ConnMap map[*endpoints.VM]map[*endpoints.VM]*DetailedConnection
 type connMapEntry struct {
-	src, dst *endpoints.VM
-	conn     *common.DetailedConnection
+	Src, Dst *endpoints.VM
+	Conn     *DetailedConnection
 }
 
 // add func adds a given pair with specified permitted connection
-func (c connMap) add(src, dst *endpoints.VM, conn *common.DetailedConnection) {
+func (c ConnMap) Add(src, dst *endpoints.VM, conn *DetailedConnection) {
 	if _, ok := c[src]; !ok {
-		c[src] = map[*endpoints.VM]*common.DetailedConnection{}
+		c[src] = map[*endpoints.VM]*DetailedConnection{}
 	}
 	c[src][dst] = conn
 }
 
 // initPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []string) {
+func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []string) {
 	vmsToaAnalyze := map[string]bool{}
 	if len(vmsFilter) > 0 {
 		for _, vmName := range vmsFilter {
@@ -41,9 +40,9 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 				continue
 			}
 			if initAllow {
-				c.add(src, dst, common.NewAllDetailedConnection())
+				c.Add(src, dst, NewAllDetailedConnection())
 			} else {
-				c.add(src, dst, common.NewEmptyDetailedConnection())
+				c.Add(src, dst, NewEmptyDetailedConnection())
 			}
 		}
 	}
@@ -52,32 +51,32 @@ func (c connMap) initPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 // String returns a concatenated lines strings with all VM pairs and their permitted connections.
 // If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
 // Todo: sunset this:
-func (c connMap) String() string {
-	asSlice := c.toSlice()
+func (c ConnMap) String() string {
+	asSlice := c.ToSlice()
 	lines := make([]string, len(asSlice))
 	for i, e := range asSlice {
-		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.src.Name(), e.dst.Name(), e.conn.Conn.String())
+		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.Src.Name(), e.Dst.Name(), e.Conn.Conn.String())
 	}
 	slices.Sort(lines)
 	return strings.Join(lines, "\n")
 }
 
-func (c connMap) Filter(vms []string) connMap {
+func (c ConnMap) Filter(vms []string) ConnMap {
 	if len(vms) == 0 {
 		return c
 	}
-	newC := connMap{}
+	newC := ConnMap{}
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {
 			if slices.Contains(vms, src.Name()) && slices.Contains(vms, dst.Name()) {
-				newC.add(src, dst, conn)
+				newC.Add(src, dst, conn)
 			}
 		}
 	}
 	return newC
 }
 
-func (c connMap) toSlice() (res []connMapEntry) {
+func (c ConnMap) ToSlice() (res []connMapEntry) {
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {
 			res = append(res, connMapEntry{src, dst, conn})
@@ -85,3 +84,5 @@ func (c connMap) toSlice() (res []connMapEntry) {
 	}
 	return res
 }
+
+

@@ -5,7 +5,7 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/model/conn"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -69,15 +69,15 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 	return traceFlows
 }
 
-func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *common.DetailedConnection) {
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conn.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
-	if len(dConn.Explanations()) == 0 {
+	if dConn.Explanations().Empty() {
 		// one check only using icmp
 		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, conn.IsAll(), 0, 0, connString)
 		return
 	}
-	for _, ruleConn := range dConn.Explanations() {
+	for _, ruleConn := range *dConn.Explanations() {
 		rulesConnString := fmt.Sprintf("%s %d,%d", connString, ruleConn.EgressRule, ruleConn.IngressRule)
 		if !ruleConn.Conn.TCPUDPSet().IsEmpty() {
 			traceFlows.AddTraceFlow(srcIP, dstIP, toTcpTraceFlowProtocol(ruleConn.Conn.TCPUDPSet()), ruleConn.Allow, ruleConn.EgressRule, ruleConn.IngressRule, rulesConnString)
