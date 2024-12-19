@@ -100,19 +100,19 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
-	any := Conjunction{tautology{}}
+	tarmAny := Conjunction{tautology{}}
 	srcTerms := getAtomicTermsForGroups(rule.SrcGroups)
 	dstTerms := getAtomicTermsForGroups(rule.DstGroups)
 	switch {
 	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
-		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{any, any})
+		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{tarmAny, tarmAny})
 	case rule.IsAllSrcGroups:
 		for _, dstTerm := range dstTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{any, Conjunction{dstTerm}})
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{tarmAny, Conjunction{dstTerm}})
 		}
 	case rule.IsAllDstGroups:
 		for _, srcTerm := range srcTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{srcTerm}, any})
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{srcTerm}, tarmAny})
 		}
 	default:
 		for _, srcTerm := range srcTerms {
