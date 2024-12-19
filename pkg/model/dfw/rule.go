@@ -316,8 +316,3 @@ func (f *FwRule) originalRuleStr() string {
 		common.Reset,
 	)
 }
-
-// ComputeSymbolic computes symbolicSrc and symbolicDst
-func (f *FwRule) ComputeSymbolic() {
-
-}
