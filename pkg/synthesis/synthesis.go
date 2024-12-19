@@ -15,22 +15,24 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 		return "", err
 	}
 	config := parser.GetConfig()
-	policy := symbolicPolicy{}
-	policy.inbound, policy.outbound = preProcessing(config.Fw.CategoriesSpecs)
+	policy := preProcessing(config.Fw.CategoriesSpecs)
 	fmt.Println(policy.string())
 	return "", nil
 }
 
 // preProcessing: convert policy from spec to symbolicPolicy struct
-func preProcessing(categoriesSpecs []*dfw.CategorySpec) (inbound, outbound []*symbolicRule) {
+func preProcessing(categoriesSpecs []*dfw.CategorySpec) (policy symbolicPolicy) {
+	policy = symbolicPolicy{}
 	for _, category := range categoriesSpecs {
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
 			continue
 		}
-		inbound = append(inbound, convertRulesToSymbolicPaths(category.ProcessedRules.Inbound, category.Category)...)
-		outbound = append(outbound, convertRulesToSymbolicPaths(category.ProcessedRules.Outbound, category.Category)...)
+		policy.inbound = append(policy.inbound, convertRulesToSymbolicPaths(category.ProcessedRules.Inbound,
+			category.Category)...)
+		policy.outbound = append(policy.outbound, convertRulesToSymbolicPaths(category.ProcessedRules.Outbound,
+			category.Category)...)
 	}
-	return inbound, outbound
+	return policy
 }
 
 func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category dfw.DfwCategory) []*symbolicRule {
