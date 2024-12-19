@@ -147,23 +147,29 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
-func (c *categorySpec) relevantRules(src, dst *endpoints.VM, isIngress bool)  []*FwRule {
-		relevantRules := []*FwRule{}
-		rules := c.processedRules.inbound // inbound effective rules
+func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRules *relevantRules) {
+	for _, isIngress := range []bool{false, true} {
+		rules := c.processedRules.inbound
 		if !isIngress {
-			rules = c.processedRules.outbound // outbound effective rules
+			rules = c.processedRules.outbound
 		}
 		for _, rule := range rules {
-			if rule.processedRuleCapturesPair(src, dst) /*rule.capturesPair(src, dst, isIngress)*/ {
-				switch rule.action {
-				case actionAllow,actionDeny:
-					relevantRules = append(relevantRules, rule)
+			if rule.processedRuleCapturesPair(src, dst) {
+				switch {
+				case rule.action == actionAllow && !isIngress:
+					relevantRules.egressAllow = append(relevantRules.egressAllow, rule)
+				case rule.action == actionDeny && !isIngress:
+					relevantRules.egressDeny = append(relevantRules.egressDeny, rule)
+				case rule.action == actionAllow && isIngress:
+					relevantRules.ingressAllow = append(relevantRules.ingressAllow, rule)
+				case rule.action == actionDeny && isIngress:
+					relevantRules.ingressDeny = append(relevantRules.ingressDeny, rule)
 				}
 			}
 		}
-		return relevantRules
 	}
-	
+}
+
 func (c *categorySpec) originalRulesStr() []string {
 	rulesStr := make([]string, len(c.rules))
 	for i := range c.rules {
