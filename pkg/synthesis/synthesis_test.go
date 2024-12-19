@@ -2,6 +2,8 @@ package synthesis
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,6 +11,13 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+)
+
+// todo...
+const (
+	examplesDir  = "examples/"
+	synthesisDir = "input/"
+	outDir       = "out/"
 )
 
 type synthesisTest struct {
@@ -40,4 +49,10 @@ func TestPreprocessing(t *testing.T) {
 		test := &allTests[i]
 		test.runPreprocessing(t)
 	}
+}
+
+// getTestsDirOut returns the path to the dir where test output files are located
+func getTestsDirOut(testDir string) string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, examplesDir+outDir+testDir)
 }
