@@ -28,7 +28,7 @@ func (c *Conjunction) copy() *Conjunction {
 	return &newC
 }
 
-// nolint:unused //will be used
+//nolint:unused //will be used
 func (c *Conjunction) isTautology() bool {
 	if len(*c) == 1 && (*c)[0].isTautology() {
 		return true
