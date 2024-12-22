@@ -5,7 +5,6 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"strings"
 
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 )
 
@@ -130,13 +129,4 @@ func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 		}
 	}
 	return &resSymbolicPaths
-}
-
-// todo: handling only "in group" in this stage
-func getAtomicTermsForGroups(groups []*collector.Group) []*atomicTerm {
-	res := make([]*atomicTerm, len(groups))
-	for i, group := range groups {
-		res[i] = &atomicTerm{property: group, toVal: *group.DisplayName, neg: false}
-	}
-	return res
 }
