@@ -47,7 +47,7 @@ func TestSymbolicPaths(t *testing.T) {
 // src: (s1 = str1) dst: (d1 = str1 and d2 != str2) All connection
 // src: (s1 = str1) dst: (d1 = str1) ICMP, TCP
 // allow symbolic paths:
-func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
+func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
 	atomic1 := &atomicTerm{property: testSrc1, toVal: "str1"}
@@ -72,9 +72,34 @@ func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
+func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
+	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
+	testSrc1 := initTestTag("s1")
+	atomic1 := &atomicTerm{property: testSrc1, toVal: "str1"}
+	conjSrc1 = *conjSrc1.add(atomic1)
+	testDst1 := initTestTag("d1")
+	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
+	conjDst1 = *conjDst1.add(atomicDst1)
+	testSrc2 := initTestTag("s2")
+	atomic2 := &atomicTerm{property: testSrc2, toVal: "str2"}
+	conjSrc2 = *conjSrc2.add(atomic2)
+	testDst2 := initTestTag("d2")
+	atomicDst2 := &atomicTerm{property: testDst2, toVal: "str2"}
+	conjDst2 = *conjDst2.add(atomicDst2)
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllUDPTransport()}
+	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
+	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
+	// todo: output will be just the original allow path after basic optimization
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
+	require.Equal(t, "UDP from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
+		"UDP from (s1 = str1) to (d1 = str1 and d2 != str2)\nUDP from (s1 = str1) to (d1 = str1)",
+		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
+}
+
 // Input:
 // allow symbolic path:
-// (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3)
+// (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) co
 // deny symbolic path:
 // src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`)
 // Output allow paths:
