@@ -2,9 +2,9 @@ package symbolicexpr
 
 import (
 	"fmt"
-	"github.com/np-guard/models/pkg/netset"
 	"testing"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/stretchr/testify/require"
 )
 
