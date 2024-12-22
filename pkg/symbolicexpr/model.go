@@ -1,5 +1,7 @@
 package symbolicexpr
 
+import "github.com/np-guard/models/pkg/netset"
+
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
 // Virtual machines' properties used in atomic group expr, e.g. group = Gryffindor, tag = "backend"
@@ -37,9 +39,9 @@ type Conjunction []atomic
 
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
-	Src Conjunction
-	Dst Conjunction
-	// ToDo: add Conn
+	Src  Conjunction
+	Dst  Conjunction
+	Conn *netset.TransportSet
 }
 
 type SymbolicPaths []*SymbolicPath

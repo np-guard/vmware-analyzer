@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/models/pkg/netset"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -28,7 +29,7 @@ func TestSymbolicPaths(t *testing.T) {
 		negateAtomic := atomic.negate().(atomicTerm)
 		conjDst = *conjDst.add(&negateAtomic)
 	}
-	conjSymbolicPath := SymbolicPath{conjSrc, conjDst}
+	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTransports()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.string())
 	require.Equal(t, "(t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
 		conjSymbolicPath.string(), "conjSymbolicPath not as expected")
@@ -59,8 +60,8 @@ func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	testDst2 := initTestTag("d2")
 	atomicDst2 := &atomicTerm{property: testDst2, toVal: "str2"}
 	conjDst2 = *conjDst2.add(atomicDst2)
-	allowPath := SymbolicPath{conjSrc1, conjDst1}
-	denyPath := SymbolicPath{conjSrc2, conjDst2}
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTransports()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
@@ -90,8 +91,8 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 		atomicDeny := &atomicTerm{property: testDeny, toVal: fmt.Sprintf("str%v`", i)}
 		conjDeny = *conjDeny.add(atomicDeny)
 	}
-	allowPath := SymbolicPath{conjAllow, conjAllow}
-	denyPath := SymbolicPath{conjDeny, conjDeny}
+	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
@@ -125,8 +126,8 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 		conjDeny = *conjDeny.add(atomicDeny)
 	}
 	tautologyConj := Conjunction{tautology{}}
-	allowPath := SymbolicPath{tautologyConj, tautologyConj}
-	denyPath := SymbolicPath{conjDeny, conjDeny}
+	allowPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
@@ -151,8 +152,8 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 	}
 	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet())
 	tautologyConj := Conjunction{tautology{}}
-	allowPath := SymbolicPath{conjAllow, conjAllow}
-	denyPath := SymbolicPath{tautologyConj, tautologyConj}
+	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
@@ -195,13 +196,13 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 			atomicAllowDst := &atomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
 			conjAllowSrc := Conjunction{atomicAllowSrc}
 			conjAllowDst := Conjunction{atomicAllowDst}
-			allowPaths = append(allowPaths, &SymbolicPath{conjAllowSrc, conjAllowDst})
+			allowPaths = append(allowPaths, &SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTransports()})
 		}
 		atomicDenySrc := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
 		atomicDenyDst := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
 		conjDenySrc := Conjunction{atomicDenySrc}
 		conjDenyDst := Conjunction{atomicDenyDst}
-		denyPaths = append(denyPaths, &SymbolicPath{conjDenySrc, conjDenyDst})
+		denyPaths = append(denyPaths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
 	}
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.String(), denyPaths.String())
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths)
@@ -240,8 +241,8 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	testDst1 := initTestTag("d1")
 	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
 	conjDst1 = *conjDst1.add(atomicDst1)
-	allowPath := SymbolicPath{conjSrc1, Conjunction{tautology{}}}
-	denyPath := SymbolicPath{conjSrc1, conjDst1}
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}}
+	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1}
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.string(), denyPath.string(), allowWithDeny.String())

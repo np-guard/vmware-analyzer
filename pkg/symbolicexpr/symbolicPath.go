@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/models/pkg/netset"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -78,9 +79,11 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
 			if allowPath.Src.isTautology() {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{Conjunction{&srcAtomNegate}, allowPath.Dst})
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: Conjunction{&srcAtomNegate}, Dst: allowPath.Dst,
+					Conn: netset.AllTransports()})
 			} else {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{*allowPath.Src.copy().add(&srcAtomNegate), allowPath.Dst})
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(&srcAtomNegate),
+					Dst: allowPath.Dst, Conn: netset.AllTransports()})
 			}
 		}
 	}
@@ -88,16 +91,18 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
 			if allowPath.Dst.isTautology() {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, Conjunction{&dstAtomNegate}})
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: Conjunction{&dstAtomNegate},
+					Conn: netset.AllTransports()})
 			} else {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{allowPath.Src, *allowPath.Dst.copy().add(&dstAtomNegate)})
+				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(&dstAtomNegate),
+					Conn: netset.AllTransports()})
 			}
 		}
 	}
 	return &resAllowPaths
 }
 
-// ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and conn to SymbolicPaths
+// ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	tarmAny := Conjunction{tautology{}}
@@ -105,19 +110,22 @@ func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 	dstTerms := getAtomicTermsForGroups(rule.DstGroups)
 	switch {
 	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
-		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{tarmAny, tarmAny})
+		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: tarmAny, Conn: netset.AllTransports()})
 	case rule.IsAllSrcGroups:
 		for _, dstTerm := range dstTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{tarmAny, Conjunction{dstTerm}})
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: Conjunction{dstTerm},
+				Conn: netset.AllTransports()})
 		}
 	case rule.IsAllDstGroups:
 		for _, srcTerm := range srcTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{srcTerm}, tarmAny})
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: Conjunction{srcTerm}, Dst: tarmAny,
+				Conn: netset.AllTransports()})
 		}
 	default:
 		for _, srcTerm := range srcTerms {
 			for _, dstTerm := range dstTerms {
-				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{srcTerm}, Conjunction{dstTerm}})
+				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: Conjunction{srcTerm},
+					Dst: Conjunction{dstTerm}, Conn: netset.AllTransports()})
 			}
 		}
 	}
