@@ -31,7 +31,8 @@ func TestSymbolicPaths(t *testing.T) {
 	}
 	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTransports()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.string())
-	require.Equal(t, "(t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
+	require.Equal(t, "(t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)"+
+		" All Connections",
 		conjSymbolicPath.string(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
 	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
@@ -65,7 +66,8 @@ func TestComputeAllowGivenDenySingleTermEach(t *testing.T) {
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
-	require.Equal(t, "(s1 = str1 and s2 != str2) to (d1 = str1)\n(s1 = str1) to (d1 = str1 and d2 != str2)",
+	require.Equal(t, "(s1 = str1 and s2 != str2) to (d1 = str1) All Connections\n"+
+		"(s1 = str1) to (d1 = str1 and d2 != str2) All Connections",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
@@ -97,12 +99,18 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
-		"(s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
-			"(s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
-			"(s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
-			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)\n"+
-			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)\n"+
-			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)",
+		"(s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3) "+
+			"All Connections\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)"+
+			" All Connections\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`) to (s1 = str1 and s2 = str2 and s3 = str3)"+
+			" All Connections\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)"+
+			" All Connections\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)"+
+			" All Connections\n"+
+			"(s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)"+
+			" All Connections",
 		allowGivenDeny.String(), "allowGivenDeny three terms computation not as expected")
 }
 
@@ -132,8 +140,9 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
-		"(s1` != str1`) to (*)\n(s2` != str2`) to (*)\n(s3` != str3`) to (*)\n(*) to (s1` != str1`)\n"+
-			"(*) to (s2` != str2`)\n(*) to (s3` != str3`)", allowGivenDeny.String(),
+		"(s1` != str1`) to (*) All Connections\n(s2` != str2`) to (*) All Connections\n"+
+			"(s3` != str3`) to (*) All Connections\n(*) to (s1` != str1`) All Connections\n"+
+			"(*) to (s2` != str2`) All Connections\n(*) to (s3` != str3`) All Connections", allowGivenDeny.String(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
@@ -207,22 +216,22 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.String(), denyPaths.String())
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths)
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
-	require.Equal(t, "(tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1)\n"+
-		"(tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5)\n"+
-		"(tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3)\n"+
-		"(tag = t0 and segment != s0) to (tag = t1 and segment != s3 and segment != s5)\n"+
-		"(tag = t0 and segment != s2 and segment != s4) to (tag = t1 and segment != s1)\n"+
-		"(tag = t0 and segment != s2) to (tag = t1 and segment != s1 and segment != s5)\n"+
-		"(tag = t0 and segment != s4) to (tag = t1 and segment != s1 and segment != s3)\n"+
-		"(tag = t0) to (tag = t1 and segment != s1 and segment != s3 and segment != s5)\n"+
-		"(tag = t2 and segment != s0 and segment != s2 and segment != s4) to (tag = t3)\n"+
-		"(tag = t2 and segment != s0 and segment != s2) to (tag = t3 and segment != s5)\n"+
-		"(tag = t2 and segment != s0 and segment != s4) to (tag = t3 and segment != s3)\n"+
-		"(tag = t2 and segment != s0) to (tag = t3 and segment != s3 and segment != s5)\n"+
-		"(tag = t2 and segment != s2 and segment != s4) to (tag = t3 and segment != s1)\n"+
-		"(tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5)\n"+
-		"(tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3)\n"+
-		"(tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
+	require.Equal(t, "(tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1) All Connections\n"+
+		"(tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5) All Connections\n"+
+		"(tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3) All Connections\n"+
+		"(tag = t0 and segment != s0) to (tag = t1 and segment != s3 and segment != s5) All Connections\n"+
+		"(tag = t0 and segment != s2 and segment != s4) to (tag = t1 and segment != s1) All Connections\n"+
+		"(tag = t0 and segment != s2) to (tag = t1 and segment != s1 and segment != s5) All Connections\n"+
+		"(tag = t0 and segment != s4) to (tag = t1 and segment != s1 and segment != s3) All Connections\n"+
+		"(tag = t0) to (tag = t1 and segment != s1 and segment != s3 and segment != s5) All Connections\n"+
+		"(tag = t2 and segment != s0 and segment != s2 and segment != s4) to (tag = t3) All Connections\n"+
+		"(tag = t2 and segment != s0 and segment != s2) to (tag = t3 and segment != s5) All Connections\n"+
+		"(tag = t2 and segment != s0 and segment != s4) to (tag = t3 and segment != s3) All Connections\n"+
+		"(tag = t2 and segment != s0) to (tag = t3 and segment != s3 and segment != s5) All Connections\n"+
+		"(tag = t2 and segment != s2 and segment != s4) to (tag = t3 and segment != s1) All Connections\n"+
+		"(tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5) All Connections\n"+
+		"(tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3) All Connections\n"+
+		"(tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5) All Connections",
 		ComputeAllowGivenDenies(&allowPaths, &denyPaths).String(),
 		"ComputeAllowGivenDenies computation not as expected")
 }
@@ -241,8 +250,8 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	testDst1 := initTestTag("d1")
 	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
 	conjDst1 = *conjDst1.add(atomicDst1)
-	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}}
-	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1}
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.string(), denyPath.string(), allowWithDeny.String())
