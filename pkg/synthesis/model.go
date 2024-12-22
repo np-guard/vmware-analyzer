@@ -15,9 +15,9 @@ import (
 //nolint:all // todo: tmp for defs without implementation
 type AbstractModelSyn struct {
 	vms VMs
-	// groupsToVms includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
-	groupsToVms map[*collector.Group]VMs // todo compute
-	tagsToVms   map[*collector.Tag]VMs   // todo compute
+	// epToGroups includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
+	epToGroups map[*endpoints.VM]collector.Group // todo compute
+	epToTags   map[*endpoints.VM]Tags            // todo compute
 	// todo: add similar maps to OS, hostname
 	policy []*symbolicPolicy // with default deny
 }
