@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/np-guard/models/pkg/netset"
 	"github.com/stretchr/testify/require"
+
+	"github.com/np-guard/models/pkg/netset"
 )
 
 type testTag struct {
