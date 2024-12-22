@@ -35,6 +35,19 @@ func (c *Conjunction) isTautology() bool {
 	return false
 }
 
+func (c *Conjunction) removeTautology() Conjunction {
+	if len(*c) <= 1 {
+		return *c
+	}
+	newC := Conjunction{}
+	for _, atom := range *c {
+		if !atom.isTautology() {
+			newC = append(newC, atom)
+		}
+	}
+	return newC
+}
+
 // checks whether the Conjunction is empty: either syntactically, or contains an atomicTerm and its negation
 func (c *Conjunction) isEmptySet() bool {
 	if len(*c) == 0 {

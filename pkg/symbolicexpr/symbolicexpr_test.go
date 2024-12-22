@@ -255,14 +255,6 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.string(), denyPath.string(), allowWithDeny.String())
-	negateAtomic1 := atomic1.negate().(atomicTerm)
-	require.Equal(t, true, atomic1.isNegateOf(negateAtomic1), "isNegateOf does not work")
-	for _, thisPath := range *allowWithDeny {
-		fmt.Printf("allowWithDeny.Src is %v isEmptySet? %v\n", thisPath.Src.string(), thisPath.Src.isEmptySet())
-		fmt.Printf("path %v is Empty? %v\n", thisPath.string(), thisPath.isEmpty())
-	}
-	require.Equal(t, true, (*allowWithDeny)[0].Src.isEmptySet(), "isEmptySet() does not work properly")
-	require.Equal(t, false, (*allowWithDeny)[1].Src.isEmptySet(), "isEmptySet() does not work properly")
-	newPath := allowWithDeny.removeEmpty()
-	fmt.Printf("newPath %v\n", newPath.String())
+	require.Equal(t, "(s1 = str1) to (d1 != str1) All Connections", allowWithDeny.String(),
+		"optimized with deny not working properly")
 }

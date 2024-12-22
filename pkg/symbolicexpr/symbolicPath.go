@@ -37,6 +37,17 @@ func (paths *SymbolicPaths) removeEmpty() *SymbolicPaths {
 	return &newPaths
 }
 
+func (paths *SymbolicPaths) removeTautology() *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		if !path.isEmpty() {
+			newPath := &SymbolicPath{Src: path.Src.removeTautology(), Dst: path.Dst.removeTautology(), Conn: path.Conn}
+			newPaths = append(newPaths, newPath)
+		}
+	}
+	return &newPaths
+}
+
 // ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
@@ -76,32 +87,22 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
-			if allowPath.Src.isTautology() {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: Conjunction{&srcAtomNegate}, Dst: allowPath.Dst,
-					Conn: allowPath.Conn})
-			} else {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(&srcAtomNegate),
-					Dst: allowPath.Dst, Conn: allowPath.Conn})
-			}
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(&srcAtomNegate),
+				Dst: allowPath.Dst, Conn: allowPath.Conn})
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
-			if allowPath.Dst.isTautology() {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: Conjunction{&dstAtomNegate},
-					Conn: allowPath.Conn})
-			} else {
-				resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(&dstAtomNegate),
-					Conn: allowPath.Conn})
-			}
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(&dstAtomNegate),
+				Conn: allowPath.Conn})
 		}
 		if !denyPath.Conn.IsAll() { // Connection of deny path is not tautology
 			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 				Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 		}
 	}
-	return &resAllowPaths
+	return resAllowPaths.removeEmpty().removeTautology()
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
