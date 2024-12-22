@@ -82,8 +82,6 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 // algorithm described in README of symbolicexpr
 func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
 	resAllowPaths := SymbolicPaths{}
-	// in case deny path is open from both ends - empty set of allow paths, as will be the result
-	// assumption: if more than one term, then none is tautology
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
