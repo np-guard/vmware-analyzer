@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/models/pkg/netp"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -47,7 +48,6 @@ func TestSymbolicPaths(t *testing.T) {
 // src: (s1 = str1 and s2 != str2) dst (d1 = str1) All connection
 // src: (s1 = str1) dst: (d1 = str1 and d2 != str2) All connection
 // src: (s1 = str1) dst: (d1 = str1) ICMP, TCP
-// allow symbolic paths:
 func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
@@ -73,6 +73,13 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
+// Input:
+// allow symbolic path:
+// src: (s1 = str1) dst: (d1 = str1) UDP
+// deny symbolic path:
+// src: (s2 = str2) dst: (d2 = str2) TCP
+// Output allow paths:
+// src: (s1 = str1) dst: (d1 = str1) UDP
 func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	testSrc1 := initTestTag("s1")
@@ -100,6 +107,32 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "UDP from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
+		"ComputeAllowGivenDenies does not work as expected")
+
+}
+
+// Input:
+// allow symbolic path:
+// src: (s1 = str1) dst: (d1 = str1) TCP
+// deny symbolic path:
+// src: (s1 = str1) dst: (d1 = str2) TCP src port 0-50
+// Output allow paths:
+// src: (s1 = str1) dst: (d1 = str1) TCP src port TCP src-ports: 51-65535
+func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
+	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
+	testSrc1 := initTestTag("s1")
+	atomic1 := &atomicTerm{property: testSrc1, toVal: "str1"}
+	conjSrc1 = *conjSrc1.add(atomic1)
+	testDst1 := initTestTag("d1")
+	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
+	conjDst1 = *conjDst1.add(atomicDst1)
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
+	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.NewTCPTransport(0, 50,
+		netp.MinPort, netp.MaxPort)}
+	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
+	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
+	require.Equal(t, "TCP src-ports: 51-65535 from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
 
 }
