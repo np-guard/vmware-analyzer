@@ -18,6 +18,9 @@ func (c *Conjunction) string() string {
 }
 
 func (c *Conjunction) add(atomic *atomicTerm) *Conjunction {
+	if c.contains(atomic) {
+		return c
+	}
 	res := append(*c, atomic)
 	return &res
 }
@@ -28,7 +31,6 @@ func (c *Conjunction) copy() *Conjunction {
 	return &newC
 }
 
-//nolint:unused //will be used
 func (c *Conjunction) isTautology() bool {
 	if len(*c) == 1 && (*c)[0].isTautology() {
 		return true
@@ -49,7 +51,7 @@ func (c *Conjunction) removeTautology() Conjunction {
 	return newC
 }
 
-// checks whether the Conjunction is empty: either syntactically, or contains an atomicTerm and its negation
+// checks whether the conjunction is empty: either syntactically, or contains an atomicTerm and its negation
 func (c *Conjunction) isEmptySet() bool {
 	if len(*c) == 0 {
 		return true
@@ -61,6 +63,31 @@ func (c *Conjunction) isEmptySet() bool {
 			if outAtomicTerm.isNegateOf(inAtomicTerm) {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+// checks whether conjunction other is implies by conjunction c
+func (c *Conjunction) implies(other *Conjunction) bool {
+	if other.isTautology() {
+		return true
+	}
+	if len(*c) == 0 || len(*other) == 0 {
+		return false
+	}
+	for _, atomicTerm := range *other {
+		if !c.contains(atomicTerm) {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *Conjunction) contains(atom atomic) bool {
+	for _, atomicTerm := range *c {
+		if atomicTerm.string() == (atom).string() {
+			return true
 		}
 	}
 	return false
