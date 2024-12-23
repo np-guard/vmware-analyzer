@@ -108,7 +108,6 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "UDP from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
-
 }
 
 // Input:
@@ -134,7 +133,6 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "TCP src-ports: 51-65535 from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
-
 }
 
 // Input:
@@ -157,7 +155,6 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "empty set ", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
-
 }
 
 // Input:

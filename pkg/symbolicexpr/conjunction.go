@@ -74,22 +74,6 @@ func (c *Conjunction) isEmptySet() bool {
 	return false
 }
 
-// checks whether conjunction other is implies by conjunction c
-func (c *Conjunction) implies(other *Conjunction) bool {
-	if other.isTautology() {
-		return true
-	}
-	if len(*c) == 0 || len(*other) == 0 {
-		return false
-	}
-	for _, atomicTerm := range *other {
-		if !c.contains(atomicTerm) {
-			return false
-		}
-	}
-	return true
-}
-
 // checks whether conjunction other is disjoint to conjunction c
 // this is the case if there's a term in c and its contradiction in other
 // we will later add hints
