@@ -204,10 +204,10 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 // allow symbolic path:
 // src: src: (*) dst: (*)
 // deny symbolic path:
-// src: src: (s1` = str1` and s2` = str2` and s3` = str3`) TCP
+// src: src: (s1` = str1` and s2` = str2` and s3` = str3`) UDP
 // dst: (s1` = str1` and s2` = str2` and s3` = str3`)
 // Output allow paths:
-// src: (*) dst: (*) UDP and ICMP
+// src: (*) dst: (*) TCP and ICMP
 // src: (s1` != str1`) dst: (*)
 // src: (s2` != str2`) dst: (*)
 // src: (s3` != str3`) dst: (*)
