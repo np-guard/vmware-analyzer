@@ -91,11 +91,17 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
-	// todo: output will be just the original allow path after basic optimization
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
+	// computeAllowGivenAllowHigherDeny not optimized
 	require.Equal(t, "UDP from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
 		"UDP from (s1 = str1) to (d1 = str1 and d2 != str2)\nUDP from (s1 = str1) to (d1 = str1)",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
+	// ComputeAllowGivenDenies optimize
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath})
+	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
+	require.Equal(t, "UDP from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
+		"ComputeAllowGivenDenies does not work as expected")
+
 }
 
 // Input:
