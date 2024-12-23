@@ -165,6 +165,7 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 // (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) conn TCP
 // deny symbolic path:
 // src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`) conn ALL
+// src: (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) conn UDP (no effect)
 // Output allow paths:
 // src: (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
 // src: (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
@@ -184,9 +185,11 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	}
 	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTCPTransport()}
 	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllTransports()}
+	denyPathNoEffect := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllUDPTransport()}
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath},
+		&SymbolicPaths{&denyPath, &denyPathNoEffect})
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
-	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
-	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDenyPaths.String())
 	require.Equal(t,
 		"TCP from (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
 			"TCP from (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
@@ -194,13 +197,9 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 			"TCP from (s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)\n"+
 			"TCP from (s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)\n"+
 			"TCP from (s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)",
-		allowGivenDeny.String(), "allowGivenDeny three terms computation not as expected")
+		allowGivenDenyPaths.String(), "allowGivenDeny three terms computation not as expected")
 }
 
-// todo: got here in enriching tests with non trivial connections. Make connection non-trivial when optimization
-//
-//	of removing redundant path is added
-//
 // Input:
 // allow symbolic path:
 // src: src: (*) dst: (*)
