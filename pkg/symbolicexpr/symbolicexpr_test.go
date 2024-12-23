@@ -139,6 +139,29 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 
 // Input:
 // allow symbolic path:
+// src: (s1 = str1) dst: (d1 = str1) TCP
+// deny symbolic path:
+// src: (s1 = str1) dst: (d1 = str2) TCP
+// Output allow paths: empty set
+func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
+	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
+	testSrc1 := initTestTag("s1")
+	atomic1 := &atomicTerm{property: testSrc1, toVal: "str1"}
+	conjSrc1 = *conjSrc1.add(atomic1)
+	testDst1 := initTestTag("d1")
+	atomicDst1 := &atomicTerm{property: testDst1, toVal: "str1"}
+	conjDst1 = *conjDst1.add(atomicDst1)
+	path := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
+	fmt.Printf("allowPath is %v\ndenyPath is %v\n", path.string(), path.string())
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&path}, &SymbolicPaths{&path})
+	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
+	require.Equal(t, "empty set ", allowGivenDenyPaths.String(),
+		"ComputeAllowGivenDenies does not work as expected")
+
+}
+
+// Input:
+// allow symbolic path:
 // (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) conn TCP
 // deny symbolic path:
 // src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`) conn ALL
