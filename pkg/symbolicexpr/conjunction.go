@@ -84,6 +84,24 @@ func (c *Conjunction) implies(other *Conjunction) bool {
 	return true
 }
 
+// checks whether conjunction other is disjoint to conjunction c
+// this is the case if there's a term in c and its contradiction in other
+// we will later add hints
+func (c *Conjunction) disjoint(other *Conjunction) bool {
+	if len(*c) == 0 || len(*other) == 0 {
+		return false
+	}
+	if other.isTautology() || c.isTautology() {
+		return false
+	}
+	for _, atomicTerm := range *other {
+		if c.contains(atomicTerm.negate()) {
+			return true
+		}
+	}
+	return false
+}
+
 func (c *Conjunction) contains(atom atomic) bool {
 	for _, atomicTerm := range *c {
 		if atomicTerm.string() == (atom).string() {

@@ -13,7 +13,13 @@ func (path *SymbolicPath) string() string {
 
 // if the source or destination is empty then so is the entire path
 func (path *SymbolicPath) isEmpty() bool {
-	return path.Src.isEmptySet() || path.Dst.isEmptySet() || path.Conn.IsEmpty()
+	return path.Conn.IsEmpty() || path.Src.isEmptySet() || path.Dst.isEmptySet()
+}
+
+// checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
+func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
+	return (*path).Conn.Intersect((*other).Conn).IsEmpty() || (*path).Src.disjoint(&(*other).Src) ||
+		(*path).Dst.disjoint(&(*other).Dst)
 }
 
 func (paths *SymbolicPaths) String() string {
@@ -62,9 +68,19 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 	}
 	res := SymbolicPaths{}
 	for _, allowPath := range *allowPaths {
+		relevantDenyPaths := SymbolicPaths{}
+		for _, denyPath := range *denyPaths {
+			if !allowPath.disJointPaths(denyPath) {
+				relevantDenyPaths = append(relevantDenyPaths, denyPath)
+			}
+		}
+		if len(relevantDenyPaths) == 0 { // the denys paths are not relevant for this allow. This allow path remains as is
+			res = append(res, allowPath)
+			continue
+		}
 		var computedAllowPaths, newComputedAllowPaths SymbolicPaths
 		newComputedAllowPaths = SymbolicPaths{allowPath}
-		for _, denyPath := range *denyPaths {
+		for _, denyPath := range relevantDenyPaths {
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
