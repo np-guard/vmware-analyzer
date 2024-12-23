@@ -18,8 +18,8 @@ func (path *SymbolicPath) isEmpty() bool {
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
 func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
-	return path.Conn.Intersect((*other).Conn).IsEmpty() || path.Src.disjoint(&(*other).Src) ||
-		path.Dst.disjoint(&(*other).Dst)
+	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src) ||
+		path.Dst.disjoint(&other.Dst)
 }
 
 func (paths *SymbolicPaths) String() string {
