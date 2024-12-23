@@ -43,10 +43,16 @@ func (c *Conjunction) removeTautology() Conjunction {
 		return *c
 	}
 	newC := Conjunction{}
+	tautologyRemoved := false
 	for _, atom := range *c {
 		if !atom.isTautology() {
 			newC = append(newC, atom)
+		} else {
+			tautologyRemoved = true
 		}
+	}
+	if len(newC) == 0 && tautologyRemoved {
+		return Conjunction{tautology{}}
 	}
 	return newC
 }
