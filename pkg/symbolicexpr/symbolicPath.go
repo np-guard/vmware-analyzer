@@ -111,10 +111,10 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(&dstAtomNegate),
 				Conn: allowPath.Conn})
 		}
-		if !denyPath.Conn.IsAll() { // Connection of deny path is not tautology
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
-				Conn: allowPath.Conn.Subtract(denyPath.Conn)})
-		}
+	}
+	if !denyPath.Conn.IsAll() { // Connection of deny path is not tautology
+		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
+			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 	}
 	return resAllowPaths.removeEmpty().removeTautology()
 }

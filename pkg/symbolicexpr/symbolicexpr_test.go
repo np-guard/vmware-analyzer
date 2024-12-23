@@ -204,8 +204,10 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 // allow symbolic path:
 // src: src: (*) dst: (*)
 // deny symbolic path:
-// src: src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`)
+// src: src: (s1` = str1` and s2` = str2` and s3` = str3`) TCP
+// dst: (s1` = str1` and s2` = str2` and s3` = str3`)
 // Output allow paths:
+// src: (*) dst: (*) UDP and ICMP
 // src: (s1` != str1`) dst: (*)
 // src: (s2` != str2`) dst: (*)
 // src: (s3` != str3`) dst: (*)
@@ -221,14 +223,15 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	}
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
-	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllUDPTransport()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.string(), denyPath.string())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath)
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
 		"All Connections from (s1` != str1`) to (*)\nAll Connections from (s2` != str2`) to (*)\n"+
 			"All Connections from (s3` != str3`) to (*)\nAll Connections from (*) to (s1` != str1`)\n"+
-			"All Connections from (*) to (s2` != str2`)\nAll Connections from (*) to (s3` != str3`)", allowGivenDeny.String(),
+			"All Connections from (*) to (s2` != str2`)\nAll Connections from (*) to (s3` != str3`)\n"+
+			"ICMP,TCP from (*) to (*)", allowGivenDeny.String(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
