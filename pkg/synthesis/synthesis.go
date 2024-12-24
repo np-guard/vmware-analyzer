@@ -7,8 +7,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
 
-func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel, params model.OutputParameters) (string, error) {
-	_ = params
+func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel) (string, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {

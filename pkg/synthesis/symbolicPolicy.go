@@ -76,8 +76,8 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 	// we go over categoriesSpecs to make sure we follow the correct order of categories
 	for _, category := range categoriesSpecs {
 		thisCategoryPolicy := categoryToPolicy[category.Category]
-		inboundAllow, outboundAllow := computeAllowOnlyRulesForCategory(thisCategoryPolicy, &globalInboundDenies,
-			&globalOutboundDenies)
+		inboundAllow, outboundAllow := computeAllowOnlyRulesForCategory(thisCategoryPolicy,
+			&globalInboundDenies, &globalOutboundDenies)
 		allowOnlyPolicy.inbound = append(allowOnlyPolicy.inbound, inboundAllow...)
 		allowOnlyPolicy.outbound = append(allowOnlyPolicy.inbound, outboundAllow...)
 		// todo: handle default rule
@@ -86,14 +86,22 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 	return allowOnlyPolicy
 }
 
-func computeAllowOnlyRulesForCategory(policy *symbolicPolicy, globalInboundDenied,
+func computeAllowOnlyRulesForCategory(policy *symbolicPolicy, globalInboundDenies,
 	globalOutboundDenies *symbolicexpr.SymbolicPaths) (inboundAllowOnly, outboundAllowOnly []*symbolicRule) {
-	inboundAllow, inboundDeny := computeAllowOnlyForCategory(&policy.inbound, globalInboundDenied)
-	outboundAllow, outboundDeny := computeAllowOnlyForCategory(&policy.outbound, globalOutboundDenies)
-	inboundAllowOnly = append(inboundAllowOnly, inboundAllow...)
-	outboundAllowOnly = append(outboundAllowOnly, outboundAllow...)
-	globalInboundDenied = inboundDeny
-	globalOutboundDenies = outboundDeny
+	if policy == nil {
+		return
+	}
+	// todo: common code into func
+	if policy.inbound != nil {
+		inboundAllow, inboundDeny := computeAllowOnlyForCategory(&policy.inbound, globalInboundDenies)
+		inboundAllowOnly = append(inboundAllowOnly, inboundAllow...)
+		*globalInboundDenies = append(*globalInboundDenies, *inboundDeny...)
+	}
+	if policy.outbound != nil {
+		outboundAllow, outboundDeny := computeAllowOnlyForCategory(&policy.outbound, globalOutboundDenies)
+		outboundAllowOnly = append(outboundAllowOnly, outboundAllow...)
+		*globalOutboundDenies = append(*globalOutboundDenies, *outboundDeny...)
+	}
 	return
 }
 

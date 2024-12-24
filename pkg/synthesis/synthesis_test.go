@@ -32,6 +32,7 @@ var allTests = []synthesisTest{
 	},
 }
 
+// todo: extract common code and use in runSynthesis
 func (a *synthesisTest) runPreprocessing(t *testing.T) {
 	rc := data.ExamplesGeneration(a.exData)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
@@ -53,6 +54,19 @@ func TestPreprocessing(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		test.runPreprocessing(t)
+	}
+}
+
+func (a *synthesisTest) runSynthesis(t *testing.T) {
+	rc := data.ExamplesGeneration(a.exData)
+	NSXToAbstractModelSynthesis(rc)
+}
+
+func TestSynthesis(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	for i := range allTests {
+		test := &allTests[i]
+		test.runSynthesis(t)
 	}
 }
 
