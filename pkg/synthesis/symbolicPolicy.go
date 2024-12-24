@@ -8,6 +8,12 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
+/////////////////////////////////////////////////////////////////////////////////////
+// preprocessing related functionality
+/////////////////////////////////////////////////////////////////////////////////////
+
+// todo: one category may have few instances in the original NSX policy; need to chain these to one
+
 // preProcessing: convert policy from spec to symbolicPolicy struct
 func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) {
 	categoryToPolicy = map[dfw.DfwCategory]*symbolicPolicy{}
@@ -59,21 +65,76 @@ func stringCategoryToSymbolicPolicy(categoryToPolicy map[dfw.DfwCategory]*symbol
 	return strings.Join(res, "\n")
 }
 
-/*
-func computeAllowOnlyRulesForPolicy(policy *symbolicPolicy) {
-	computeAllowOnlyRulesForRules(&policy.inbound)
-	computeAllowOnlyRulesForRules(&policy.outbound)
-}
+/////////////////////////////////////////////////////////////////////////////////////
+// convert symbolic rules to allow only functionality
+/////////////////////////////////////////////////////////////////////////////////////
 
-func computeAllowOnlyRulesForRules(inboundOrOutbound *[]*symbolicRule) {
-	for _, symbolicRule := range *inboundOrOutbound {
-		computeAllowOnlyFromRule(symbolicRule, nil, nil)
+func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
+	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) symbolicPolicy {
+	allowOnlyPolicy := symbolicPolicy{}
+	globalInboundDenies, globalOutboundDenies := symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{}
+	// we go over categoriesSpecs to make sure we follow the correct order of categories
+	for _, category := range categoriesSpecs {
+		thisCategoryPolicy := categoryToPolicy[category.Category]
+		inboundAllow, outboundAllow := computeAllowOnlyRulesForCategory(thisCategoryPolicy, &globalInboundDenies,
+			&globalOutboundDenies)
+		allowOnlyPolicy.inbound = append(allowOnlyPolicy.inbound, inboundAllow...)
+		allowOnlyPolicy.outbound = append(allowOnlyPolicy.inbound, outboundAllow...)
+		// todo: handle default rule
 	}
+
+	return allowOnlyPolicy
 }
 
-// computes Allow only rules from rule, using the following alg:
-
-func computeAllowOnlyFromRule(symbolicRule *symbolicRule, globalDenies, categoryPasses []*symbolicRule) {
-	_, _, _ = symbolicRule, globalDenies, categoryPasses
+func computeAllowOnlyRulesForCategory(policy *symbolicPolicy, globalInboundDenied,
+	globalOutboundDenies *symbolicexpr.SymbolicPaths) (inboundAllowOnly, outboundAllowOnly []*symbolicRule) {
+	inboundAllow, inboundDeny := computeAllowOnlyForCategory(&policy.inbound, globalInboundDenied)
+	outboundAllow, outboundDeny := computeAllowOnlyForCategory(&policy.outbound, globalOutboundDenies)
+	inboundAllowOnly = append(inboundAllowOnly, inboundAllow...)
+	outboundAllowOnly = append(outboundAllowOnly, outboundAllow...)
+	globalInboundDenied = inboundDeny
+	globalOutboundDenies = outboundDeny
+	return
 }
-*/
+
+// computes allow only rules, using the following algorithm:
+// For each category, in order:
+// Initialization:
+//
+//	category_passes = empty set
+//
+// For each rule, in order
+//
+//	case pass:
+//		category_passes = category_passes  or rule
+//	case deny:
+//		new_denies = merge(category_passes, deny_rule)
+//		global_denies = global_denies  union new_denies
+//	case allow:
+//		new_allow = merge(global_denies or category_passes, allow_rule)
+//		global_allows = global_allows  or new_allows
+//	Output: global_allows
+func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
+	globalDenies *symbolicexpr.SymbolicPaths) (allowRule []*symbolicRule, denyPaths *symbolicexpr.SymbolicPaths) {
+	allowOnlyRules := []*symbolicRule{}
+	categoryPasses := symbolicexpr.SymbolicPaths{}
+	newGlobalDenies := symbolicexpr.SymbolicPaths{}
+	copy(newGlobalDenies, *globalDenies)
+	for _, rule := range *inboundOrOutbound {
+		symbolicDeniesAndPasses := symbolicexpr.SymbolicPaths{}
+		switch rule.origRule.Action {
+		case dfw.ActionJumpToApp:
+			categoryPasses = append(categoryPasses, *rule.origSymbolicPaths...)
+		case dfw.ActionDeny:
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses)
+			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
+		case dfw.ActionAllow:
+			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses)
+			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
+				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths}
+			allowOnlyRules = append(allowOnlyRules, newRule)
+		}
+	}
+	return allowOnlyRules, &newGlobalDenies
+}

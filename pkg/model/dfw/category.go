@@ -119,25 +119,25 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	for _, rule := range rules /*c.rules*/ {
 		if rule.processedRuleCapturesPair(src, dst) /*rule.capturesPair(src, dst, isIngress)*/ {
 			switch rule.Action {
-			case actionAllow:
+			case ActionAllow:
 				addedAllowedConns := rule.Conn.Subtract(deniedConns).Subtract(jumpToAppConns)
 				allowedConns = allowedConns.Union(addedAllowedConns)
-			case actionDeny:
+			case ActionDeny:
 				addedDeniedConns := rule.Conn.Subtract(allowedConns).Subtract(jumpToAppConns)
 				deniedConns = deniedConns.Union(addedDeniedConns)
-			case actionJumpToApp:
+			case ActionJumpToApp:
 				addedJumpToAppConns := rule.Conn.Subtract(allowedConns).Subtract(deniedConns)
 				jumpToAppConns = jumpToAppConns.Union(addedJumpToAppConns)
 			}
 		}
 	}
 	switch c.defaultAction {
-	case actionNone: // no default configured for this category
+	case ActionNone: // no default configured for this category
 		nonDet = netset.AllTransports().Subtract(allowedConns).Subtract(deniedConns).Subtract(jumpToAppConns)
-	case actionAllow: // default allow
+	case ActionAllow: // default allow
 		allowedConns = netset.AllTransports().Subtract(deniedConns).Subtract(jumpToAppConns)
 		nonDet = netset.NoTransports()
-	case actionDeny: // default deny
+	case ActionDeny: // default deny
 		deniedConns = netset.AllTransports().Subtract(allowedConns).Subtract(jumpToAppConns)
 		nonDet = netset.NoTransports()
 	default:
@@ -218,7 +218,7 @@ func newEmptyCategory(c DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
-		defaultAction:  actionNone,
+		defaultAction:  ActionNone,
 		ProcessedRules: &EffectiveRules{},
 	}
 }

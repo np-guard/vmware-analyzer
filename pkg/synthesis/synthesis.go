@@ -17,5 +17,7 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	fmt.Println(stringCategoryToSymbolicPolicy(categoryToPolicy))
+	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	_ = allowOnlyPolicy
 	return "", nil
 }

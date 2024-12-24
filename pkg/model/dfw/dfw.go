@@ -62,7 +62,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 			allAllowedConns).Subtract(allDeniedConns)
 	}
 
-	if d.defaultAction == actionAllow {
+	if d.defaultAction == ActionAllow {
 		// if the last category has no default, use the "global" default (todo: check where this value is configured in the api)
 		allAllowedConns = allAllowedConns.Union(allNotDeterminedConns)
 	}
@@ -151,10 +151,10 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 // NewEmptyDFW returns new DFW with global default as from input
 func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 	res := &DFW{
-		defaultAction: actionDeny,
+		defaultAction: ActionDeny,
 	}
 	if globalDefaultAllow {
-		res.defaultAction = actionAllow
+		res.defaultAction = ActionAllow
 	}
 	for _, c := range categoriesList {
 		res.CategoriesSpecs = append(res.CategoriesSpecs, newEmptyCategory(c, res))
@@ -163,7 +163,7 @@ func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 }
 
 func (d *DFW) GlobalDefaultAllow() bool {
-	return d.defaultAction == actionAllow
+	return d.defaultAction == ActionAllow
 }
 
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
