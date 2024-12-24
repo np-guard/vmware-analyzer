@@ -17,10 +17,12 @@ func NSXSynthesis(recourses *collector.ResourcesContainerModel, params model.Out
 	}
 	config := parser.GetConfig()
 	policy := preProcessing(config.Fw.CategoriesSpecs)
+	//computeAllowOnlyRulesForPolicy(policy)
 	fmt.Println(policy.string())
 	return "", nil
 }
 
+// todo: output should be  (categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy)
 // preProcessing: convert policy from spec to symbolicPolicy struct
 func preProcessing(categoriesSpecs []*dfw.CategorySpec) (policy symbolicPolicy) {
 	policy = symbolicPolicy{}
@@ -44,3 +46,22 @@ func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category dfw.DfwCategory) 
 	}
 	return res
 }
+
+/*
+func computeAllowOnlyRulesForPolicy(policy *symbolicPolicy) {
+	computeAllowOnlyRulesForRules(&policy.inbound)
+	computeAllowOnlyRulesForRules(&policy.outbound)
+}
+
+func computeAllowOnlyRulesForRules(inboundOrOutbound *[]*symbolicRule) {
+	for _, symbolicRule := range *inboundOrOutbound {
+		computeAllowOnlyFromRule(symbolicRule, nil, nil)
+	}
+}
+
+// computes Allow only rules from rule, using the following alg:
+
+func computeAllowOnlyFromRule(symbolicRule *symbolicRule, globalDenies, categoryPasses []*symbolicRule) {
+	_, _, _ = symbolicRule, globalDenies, categoryPasses
+}
+*/
