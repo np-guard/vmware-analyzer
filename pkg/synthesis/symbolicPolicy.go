@@ -58,22 +58,3 @@ func stringCategoryToSymbolicPolicy(categoryToPolicy map[dfw.DfwCategory]*symbol
 	}
 	return strings.Join(res, "\n")
 }
-
-/*
-func computeAllowOnlyRulesForPolicy(policy *symbolicPolicy) {
-	computeAllowOnlyRulesForRules(&policy.inbound)
-	computeAllowOnlyRulesForRules(&policy.outbound)
-}
-
-func computeAllowOnlyRulesForRules(inboundOrOutbound *[]*symbolicRule) {
-	for _, symbolicRule := range *inboundOrOutbound {
-		computeAllowOnlyFromRule(symbolicRule, nil, nil)
-	}
-}
-
-// computes Allow only rules from rule, using the following alg:
-
-func computeAllowOnlyFromRule(symbolicRule *symbolicRule, globalDenies, categoryPasses []*symbolicRule) {
-	_, _, _ = symbolicRule, globalDenies, categoryPasses
-}
-*/
