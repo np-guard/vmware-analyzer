@@ -14,6 +14,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
 
+// todo...
 const (
 	expectedOutput = "tests_expected_output/"
 	carriageReturn = "\r"
@@ -37,13 +38,14 @@ func (a *synthesisTest) runPreprocessing(t *testing.T) {
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
 	config := parser.GetConfig()
-	policy := preProcessing(config.Fw.CategoriesSpecs)
-	fmt.Println(policy.string())
+	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
+	fmt.Println(stringCategoryToSymbolicPolicy(categoryToPolicy))
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+".txt")
 	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
 	require.Nil(t, err2)
 	expectedOutputStr := string(expectedOutput)
-	require.Equal(t, cleanStr(policy.string()), cleanStr(expectedOutputStr), "output not as expected")
+	require.Equal(t, cleanStr(stringCategoryToSymbolicPolicy(categoryToPolicy)), cleanStr(expectedOutputStr),
+		"output not as expected")
 }
 
 func TestPreprocessing(t *testing.T) {
