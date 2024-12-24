@@ -11,24 +11,42 @@ func (term atomicTerm) string() string {
 		equalSign = " != "
 	}
 	labelType := ""
-	switch term.label.(type) {
+	switch term.property.(type) {
 	case *collector.Segment:
 		labelType = "segment "
 	case *endpoints.VM:
 		labelType = "virtual machine "
 	case *collector.Tag:
-		labelType = "tag "
+		labelType = "tag " + term.property.Name()
+	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
+	case *collector.Group:
+		labelType = "group "
+	default: // for structs used for testing
+		labelType = term.property.Name()
 	}
-	return labelType + term.label.Name() + equalSign + term.toVal
+	return labelType + equalSign + term.toVal
+}
+
+func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
+	return &atomicTerm{property: label, toVal: toVal, neg: neg}
 }
 
 // negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
 func (term atomicTerm) negate() atomic {
-	return atomicTerm{label: term.label, toVal: term.toVal, neg: !term.neg}
+	return atomicTerm{property: term.property, toVal: term.toVal, neg: !term.neg}
 }
 
 func (atomicTerm) isTautology() bool {
 	return false
+}
+
+// todo: handling only "in group" in this stage
+func getAtomicTermsForGroups(groups []*collector.Group) []*atomicTerm {
+	res := make([]*atomicTerm, len(groups))
+	for i, group := range groups {
+		res[i] = &atomicTerm{property: group, toVal: *group.DisplayName, neg: false}
+	}
+	return res
 }
 
 // returns true iff otherAt is negation of

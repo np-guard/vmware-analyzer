@@ -3,6 +3,8 @@ package symbolicexpr
 import (
 	"fmt"
 	"strings"
+
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 )
 
 func (path *SymbolicPath) string() string {
@@ -14,7 +16,7 @@ func (path *SymbolicPath) isEmpty() bool {
 	return path.Src.isEmptySet() || path.Dst.isEmptySet()
 }
 
-func (paths *SymbolicPaths) string() string {
+func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet
 	}
@@ -92,4 +94,31 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 		}
 	}
 	return &resAllowPaths
+}
+
+// ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and conn to SymbolicPaths
+func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
+	resSymbolicPaths := SymbolicPaths{}
+	tarmAny := Conjunction{tautology{}}
+	srcTerms := getAtomicTermsForGroups(rule.SrcGroups)
+	dstTerms := getAtomicTermsForGroups(rule.DstGroups)
+	switch {
+	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
+		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{tarmAny, tarmAny})
+	case rule.IsAllSrcGroups:
+		for _, dstTerm := range dstTerms {
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{tarmAny, Conjunction{dstTerm}})
+		}
+	case rule.IsAllDstGroups:
+		for _, srcTerm := range srcTerms {
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{srcTerm}, tarmAny})
+		}
+	default:
+		for _, srcTerm := range srcTerms {
+			for _, dstTerm := range dstTerms {
+				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Conjunction{srcTerm}, Conjunction{dstTerm}})
+			}
+		}
+	}
+	return &resSymbolicPaths
 }

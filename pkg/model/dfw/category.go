@@ -8,7 +8,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
@@ -52,7 +51,7 @@ const (
 	}
 }*/
 
-func (d DfwCategory) string() string {
+func (d DfwCategory) String() string {
 	switch d {
 	case ethernetCategory:
 		return EthernetStr
@@ -75,30 +74,30 @@ var categoriesList = []DfwCategory{
 	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, appCategoty, emptyCategory,
 }
 
-// effectiveRules are built from original rules, split to separate inbound & outbound rules
+// EffectiveRules are built from original rules, split to separate Inbound & Outbound rules
 // consider already the scope from the original rules
-type effectiveRules struct {
-	inbound  []*FwRule
-	outbound []*FwRule
+type EffectiveRules struct {
+	Inbound  []*FwRule
+	Outbound []*FwRule
 }
 
-func (e *effectiveRules) addInboundRule(r *FwRule) {
+func (e *EffectiveRules) addInboundRule(r *FwRule) {
 	if r != nil {
-		e.inbound = append(e.inbound, r)
+		e.Inbound = append(e.Inbound, r)
 	}
 }
 
-func (e *effectiveRules) addOutboundRule(r *FwRule) {
+func (e *EffectiveRules) addOutboundRule(r *FwRule) {
 	if r != nil {
-		e.outbound = append(e.outbound, r)
+		e.Outbound = append(e.Outbound, r)
 	}
 }
 
-type categorySpec struct {
-	category       DfwCategory
+type CategorySpec struct {
+	Category       DfwCategory
 	rules          []*FwRule // ordered list of rules
-	defaultAction  ruleAction
-	processedRules *effectiveRules // ordered list of effective rules
+	defaultAction  RuleAction
+	ProcessedRules *EffectiveRules // ordered list of effective rules
 	dfwRef         *DFW
 }
 
@@ -110,16 +109,16 @@ type categorySpec struct {
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 //
 //nolint:gocritic // for now keep commentedOutCode
-func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
+func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 ) (allowedConns, jumpToAppConns, deniedConns, nonDet *netset.TransportSet) {
 	allowedConns, jumpToAppConns, deniedConns = netset.NoTransports(), netset.NoTransports(), netset.NoTransports()
-	rules := c.processedRules.inbound // inbound effective rules
+	rules := c.ProcessedRules.Inbound // inbound effective rules
 	if !isIngress {
-		rules = c.processedRules.outbound // outbound effective rules
+		rules = c.ProcessedRules.Outbound // outbound effective rules
 	}
 	for _, rule := range rules /*c.rules*/ {
 		if rule.processedRuleCapturesPair(src, dst) /*rule.capturesPair(src, dst, isIngress)*/ {
-			switch rule.action {
+			switch rule.Action {
 			case actionAllow:
 				addedAllowedConns := rule.conn.Subtract(deniedConns).Subtract(jumpToAppConns)
 				allowedConns = allowedConns.Union(addedAllowedConns)
@@ -147,7 +146,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
-func (c *categorySpec) originalRulesStr() []string {
+func (c *CategorySpec) originalRulesStr() []string {
 	rulesStr := make([]string, len(c.rules))
 	for i := range c.rules {
 		rulesStr[i] = c.rules[i].originalRuleStr()
@@ -155,68 +154,71 @@ func (c *categorySpec) originalRulesStr() []string {
 	return rulesStr
 }
 
-func (c *categorySpec) string() string {
+func (c *CategorySpec) string() string {
 	rulesStr := make([]string, len(c.rules)+1)
 	rulesStr[0] = "rules:"
 	for i := range c.rules {
 		rulesStr[i+1] = c.rules[i].string()
 	}
-	return fmt.Sprintf("category: %s\n%s\ndefault action: %s", c.category.string(),
+	return fmt.Sprintf("category: %s\n%s\ndefault action: %s", c.Category.String(),
 		strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
-func (c *categorySpec) inboundEffectiveRules() string {
-	rulesStr := make([]string, len(c.processedRules.inbound))
-	for i := range c.processedRules.inbound {
-		rulesStr[i] = c.processedRules.inbound[i].effectiveRuleStr()
+func (c *CategorySpec) inboundEffectiveRules() string {
+	rulesStr := make([]string, len(c.ProcessedRules.Inbound))
+	for i := range c.ProcessedRules.Inbound {
+		rulesStr[i] = c.ProcessedRules.Inbound[i].effectiveRuleStr()
 	}
 	return strings.Join(rulesStr, lineSeparatorStr)
 }
 
-func (c *categorySpec) outboundEffectiveRules() string {
-	rulesStr := make([]string, len(c.processedRules.outbound))
-	for i := range c.processedRules.outbound {
-		rulesStr[i] = c.processedRules.outbound[i].effectiveRuleStr()
+func (c *CategorySpec) outboundEffectiveRules() string {
+	rulesStr := make([]string, len(c.ProcessedRules.Outbound))
+	for i := range c.ProcessedRules.Outbound {
+		rulesStr[i] = c.ProcessedRules.Outbound[i].effectiveRuleStr()
 	}
 	return strings.Join(rulesStr, lineSeparatorStr)
 }
 
-func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
-	action, direction string, ruleID int, origRule *collector.Rule, scope []*endpoints.VM,
-	secPolicyName string, origDefaultRule *collector.FirewallRule) {
+func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
+	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
+	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
+		SrcGroups:          srcGroups,
+		IsAllSrcGroups:     isAllSrcGroup,
+		DstGroups:          dstGroups,
+		IsAllDstGroups:     isAllDstGroup,
 		conn:               conn,
-		action:             actionFromString(action),
+		Action:             actionFromString(action),
 		direction:          direction,
 		ruleID:             ruleID,
 		origRuleObj:        origRule,
 		origDefaultRuleObj: origDefaultRule,
 		scope:              scope,
+		ScopeGroups:        scopeGroups,
 		secPolicyName:      secPolicyName,
-		secPolicyCategory:  c.category.string(),
+		secPolicyCategory:  c.Category.String(),
 		categoryRef:        c,
 		dfwRef:             c.dfwRef,
-		symbolicSrc:        []*symbolicexpr.SymbolicPath{}, // todo tmp
-		symbolicDst:        []*symbolicexpr.SymbolicPath{}, // todo tmp
 	}
 	c.rules = append(c.rules, newRule)
 
 	inbound, outbound := newRule.effectiveRules()
-	if c.category != ethernetCategory {
-		c.processedRules.addInboundRule(inbound)
-		c.processedRules.addOutboundRule(outbound)
+	if c.Category != ethernetCategory {
+		c.ProcessedRules.addInboundRule(inbound)
+		c.ProcessedRules.addOutboundRule(outbound)
 	} else {
-		logging.Debugf("rule %d in ethernet category is ignored and not added to list of effective rules", ruleID)
+		logging.Debugf("rule %d in ethernet Category is ignored and not added to list of effective rules", ruleID)
 	}
 }
 
-func newEmptyCategory(c DfwCategory, d *DFW) *categorySpec {
-	return &categorySpec{
-		category:       c,
+func newEmptyCategory(c DfwCategory, d *DFW) *CategorySpec {
+	return &CategorySpec{
+		Category:       c,
 		dfwRef:         d,
 		defaultAction:  actionNone,
-		processedRules: &effectiveRules{},
+		ProcessedRules: &EffectiveRules{},
 	}
 }

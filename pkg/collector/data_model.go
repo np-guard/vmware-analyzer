@@ -431,6 +431,13 @@ func (group *Group) UnmarshalJSON(b []byte) error {
 	)
 }
 
+func (group *Group) Name() string {
+	if group.Group.DisplayName == nil {
+		return ""
+	}
+	return *group.Group.DisplayName
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 type Domain struct {
