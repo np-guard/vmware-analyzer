@@ -118,7 +118,7 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {
-		if fwCategory.Category.string() == categoryStr {
+		if fwCategory.Category.String() == categoryStr {
 			fwCategory.addRule(src, dst, srcGroups, dstGroups, scopeGroups, isAllSrcGroups, isAllDstGroups, conn,
 				actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
 		}

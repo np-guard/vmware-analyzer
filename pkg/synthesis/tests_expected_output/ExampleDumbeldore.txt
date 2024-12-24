@@ -1,13 +1,12 @@
-
-symbolicInbound Rules:
-~~~~~~~~~~~~~~~~~~~~~~~
-	category: 4 action: allow paths: (group  = DumbledoreAll) to (*)
-	category: 4 action: deny paths: (group  = DumbledoreNoSly) to (group  = Slytherin)
-	category: 4 action: allow paths: (group  = DumbledoreNoSly) to (*)
-	category: 4 action: deny paths: (*) to (*)
-symbolicOutbound Rules:
-~~~~~~~~~~~~~~~~~~~~~~~~~
-	category: 4 action: allow paths: (group  = DumbledoreAll) to (*)
-	category: 4 action: deny paths: (group  = DumbledoreNoSly) to (group  = Slytherin)
-	category: 4 action: allow paths: (group  = DumbledoreNoSly) to (*)
-	category: 4 action: deny paths: (*) to (*)
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+	0. action: allow paths: (group  = DumbledoreAll) to (*)
+	1. action: deny paths: (group  = DumbledoreNoSly) to (group  = Slytherin)
+	2. action: allow paths: (group  = DumbledoreNoSly) to (*)
+	3. action: deny paths: (*) to (*)
+symbolic outbound rules:
+	0. action: allow paths: (group  = DumbledoreAll) to (*)
+	1. action: deny paths: (group  = DumbledoreNoSly) to (group  = Slytherin)
+	2. action: allow paths: (group  = DumbledoreNoSly) to (*)
+	3. action: deny paths: (*) to (*)
