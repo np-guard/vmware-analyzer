@@ -62,12 +62,3 @@ func (policy symbolicPolicy) string() string {
 	return "\nsymbolicInbound Rules:\n~~~~~~~~~~~~~~~~~~~~~~~\n" + strSymbolicRules(policy.inbound) +
 		"\nsymbolicOutbound Rules:\n~~~~~~~~~~~~~~~~~~~~~~~~~\n" + strSymbolicRules(policy.outbound)
 }
-
-func strSymbolicRules(rules []*symbolicRule) string {
-	resStr := make([]string, len(rules))
-	for i, rule := range rules {
-		resStr[i] = fmt.Sprintf("\tcategory: %v action: %v paths: %v", rule.origRuleCategory, rule.origRule.Action,
-			rule.origSymbolicPaths)
-	}
-	return strings.Join(resStr, "\n")
-}

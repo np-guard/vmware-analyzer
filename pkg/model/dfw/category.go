@@ -51,7 +51,7 @@ const (
 	}
 }*/
 
-func (d DfwCategory) string() string {
+func (d DfwCategory) String() string {
 	switch d {
 	case ethernetCategory:
 		return EthernetStr
@@ -186,12 +186,8 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
-		SrcGroups:          srcGroups,
-		IsAllSrcGroups:     isAllSrcGroup,
-		DstGroups:          dstGroups,
-		IsAllDstGroups:     isAllDstGroup,
-		Conn:               conn,
-		Action:             actionFromString(action),
+		conn:               conn,
+		action:             actionFromString(action),
 		direction:          direction,
 		ruleID:             ruleID,
 		origRuleObj:        origRule,
