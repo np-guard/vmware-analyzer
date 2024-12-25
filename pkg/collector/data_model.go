@@ -340,34 +340,78 @@ type RealizedVirtualMachine struct {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-type ExpressionElement interface{}
+type ExpressionElement interface {
+	string() string
+}
 
 type Condition struct {
 	nsx.Condition
 }
 
+func (e *Condition) string() string {
+	s := []string{
+		string(*e.Key),
+		"Of",
+		string(*e.MemberType),
+		string(*e.Operator),
+		*e.Value,
+	}
+	return strings.Join(s, "-")
+}
+
 type ConjunctionOperator struct {
 	nsx.ConjunctionOperator
 }
+
+func (e *ConjunctionOperator) string() string {
+	return string(*e.ConjunctionOperator.ConjunctionOperator)
+}
+
 type NestedExpression struct {
 	nsx.NestedExpression
 }
+
+func (e *NestedExpression) string() string { return "" } // todo
+
 type IPAddressExpression struct {
 	nsx.IPAddressExpression
 }
+
+func (e *IPAddressExpression) string() string { return "" } // todo
+
 type MACAddressExpression struct {
 	nsx.MACAddressExpression
 }
+
+func (e *MACAddressExpression) string() string { return "" } // todo
+
 type ExternalIDExpression struct {
 	nsx.ExternalIDExpression
 }
+
+func (e *ExternalIDExpression) string() string { return "" } // todo
+
 type PathExpression struct {
 	nsx.PathExpression
 }
+
+func (e *PathExpression) string() string { return "" } // todo
+
 type IdentityGroupExpression struct {
 	nsx.IdentityGroupExpression
 }
+
+func (e *IdentityGroupExpression) string() string { return "" } // todo
+
 type Expression []ExpressionElement
+
+func (e *Expression) string() string {
+	elementsStrings := make([]string, len(*e))
+	for i, el := range *e {
+		elementsStrings[i] = el.string()
+	}
+	return strings.Join(elementsStrings, " ")
+}
 
 func (e *Expression) UnmarshalJSON(b []byte) error {
 	var raws []json.RawMessage
@@ -436,6 +480,17 @@ func (group *Group) Name() string {
 		return ""
 	}
 	return *group.Group.DisplayName
+}
+
+func (group *Group) Description() string {
+	switch {
+	case group.Expression != nil:
+		return group.Expression.string()
+	case group.Group.DisplayName != nil:
+		return *group.Group.DisplayName
+	default:
+		return *group.Group.Id
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
