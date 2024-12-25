@@ -14,7 +14,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
 
-// todo...
 const (
 	expectedOutput = "tests_expected_output/"
 	carriageReturn = "\r"
@@ -40,7 +39,7 @@ func (a *synthesisTest) runPreprocessing(t *testing.T) {
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	fmt.Println(stringCategoryToSymbolicPolicy(categoryToPolicy))
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+".txt")
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+"_PreProcessing.txt")
 	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
 	require.Nil(t, err2)
 	expectedOutputStr := string(expectedOutput)
@@ -53,6 +52,27 @@ func TestPreprocessing(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		test.runPreprocessing(t)
+	}
+}
+
+func (a *synthesisTest) runConvertToAbstract(t *testing.T) {
+	rc := data.ExamplesGeneration(a.exData)
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	require.Nil(t, err)
+	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+"_ConvertToAbstract.txt")
+	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
+	require.Nil(t, err2)
+	expectedOutputStr := string(expectedOutput)
+	require.Equal(t, cleanStr(strAllowOnlyPolicy(allowOnlyPolicy)), cleanStr(expectedOutputStr),
+		"output not as expected")
+}
+
+func TestSynthesis(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	for i := range allTests {
+		test := &allTests[i]
+		test.runConvertToAbstract(t)
 	}
 }
 

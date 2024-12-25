@@ -24,34 +24,34 @@ const (
 var ingressDirections = []string{"IN", "IN_OUT"}*/
 
 const (
-	actionAllow     RuleAction = "allow"
-	actionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
-	actionJumpToApp RuleAction = "jump_to_application"
-	actionNone      RuleAction = "none" // to mark that a default rule is not configured
+	ActionAllow     RuleAction = "allow"
+	ActionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
+	ActionJumpToApp RuleAction = "jump_to_application"
+	ActionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
 /*func actionFromString(input string) RuleAction {
 	switch input {
-	case string(actionAllow):
-		return actionAllow
-	case string(actionDeny):
-		return actionDeny
-	case string(actionJumpToApp):
-		return actionJumpToApp
+	case string(ActionAllow):
+		return ActionAllow
+	case string(ActionDeny):
+		return ActionDeny
+	case string(ActionJumpToApp):
+		return ActionJumpToApp
 	}
-	return actionDeny
+	return ActionDeny
 }*/
 
 func actionFromString(s string) RuleAction {
 	switch strings.ToLower(s) {
-	case string(actionAllow):
-		return actionAllow
-	case string(actionDeny), "reject", "drop": // TODO: change
-		return actionDeny
-	case string(actionJumpToApp):
-		return actionJumpToApp
+	case string(ActionAllow):
+		return ActionAllow
+	case string(ActionDeny), "reject", "drop": // TODO: change
+		return ActionDeny
+	case string(ActionJumpToApp):
+		return ActionJumpToApp
 	default:
-		return actionNone
+		return ActionNone
 	}
 }
 
@@ -67,7 +67,7 @@ type FwRule struct {
 	IsAllDstGroups bool
 	// Scope implies additional condition on any Src and any Dst; will be added in one of the last stages
 	ScopeGroups        []*collector.Group
-	conn               *netset.TransportSet
+	Conn               *netset.TransportSet
 	Action             RuleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
 	origRuleObj        *collector.Rule
@@ -86,7 +86,7 @@ func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 		logging.Debugf("rule %d has no effective inbound/outbound component, since its scope component is empty", f.ruleID)
 		return nil, nil
 	}
-	if f.conn.IsEmpty() {
+	if f.Conn.IsEmpty() {
 		logging.Debugf("rule %d has no effective inbound/outbound component, since its traffic attributes are empty", f.ruleID)
 		return nil, nil
 	}
@@ -122,7 +122,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		IsAllSrcGroups: f.IsAllSrcGroups,
 		IsAllDstGroups: f.IsAllDstGroups,
 		ScopeGroups:    f.ScopeGroups,
-		conn:           f.conn,
+		Conn:           f.Conn,
 		Action:         f.Action,
 		direction:      string(nsx.RuleDirectionIN),
 		origRuleObj:    f.origRuleObj,
@@ -161,7 +161,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		IsAllSrcGroups: f.IsAllSrcGroups,
 		IsAllDstGroups: f.IsAllDstGroups,
 		ScopeGroups:    f.ScopeGroups,
-		conn:           f.conn,
+		Conn:           f.Conn,
 		Action:         f.Action,
 		direction:      string(nsx.RuleDirectionOUT),
 		origRuleObj:    f.origRuleObj,
@@ -200,12 +200,12 @@ func vmsString(vms []*endpoints.VM) string {
 // groups are interpreted to VM members in this representation
 func (f *FwRule) string() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
 func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.conn.String(), string(f.Action), f.direction, f.secPolicyName)
+		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
 }
 
 func getDefaultRuleScope(r *collector.FirewallRule) string {
@@ -253,7 +253,7 @@ func getRulesFormattedHeaderLine() string {
 		"src",
 		"dst",
 		"conn",
-		"Action",
+		"action",
 		"direction",
 		"scope",
 		"sec-policy",

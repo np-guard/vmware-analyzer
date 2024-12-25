@@ -8,6 +8,10 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
+/////////////////////////////////////////////////////////////////////////////////////
+// preprocessing related functionality
+/////////////////////////////////////////////////////////////////////////////////////
+
 // preProcessing: convert policy from spec to symbolicPolicy struct
 func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) {
 	categoryToPolicy = map[dfw.DfwCategory]*symbolicPolicy{}
