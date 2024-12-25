@@ -82,7 +82,7 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 		inboundAllow, outboundAllow := computeAllowOnlyRulesForCategory(thisCategoryPolicy,
 			&globalInboundDenies, &globalOutboundDenies)
 		allowOnlyPolicy.inbound = append(allowOnlyPolicy.inbound, inboundAllow...)
-		allowOnlyPolicy.outbound = append(allowOnlyPolicy.inbound, outboundAllow...)
+		allowOnlyPolicy.outbound = append(allowOnlyPolicy.outbound, outboundAllow...)
 		// todo: handle default rule
 	}
 
@@ -131,7 +131,6 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 	newGlobalDenies := symbolicexpr.SymbolicPaths{}
 	copy(newGlobalDenies, *globalDenies)
 	for _, rule := range *inboundOrOutbound {
-		fmt.Printf("rule action: %v symbolicPaths %v\n", rule.origRule.Action, rule.origSymbolicPaths.String())
 		symbolicDeniesAndPasses := symbolicexpr.SymbolicPaths{}
 		switch rule.origRule.Action {
 		case dfw.ActionJumpToApp:
@@ -139,17 +138,22 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 		case dfw.ActionDeny:
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses)
 			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
-			fmt.Printf("newGlobalDenies is %v\n", newGlobalDenies.String())
 		case dfw.ActionAllow:
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
 				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths}
 			allowOnlyRules = append(allowOnlyRules, newRule)
-			fmt.Printf("allowOnlyRules is %v\n", strAllowOnlyPathsOfRules(allowOnlyRules))
 		}
 	}
 	return allowOnlyRules, &newGlobalDenies
+}
+
+func strAllowOnlyPolicy(policy *symbolicPolicy) string {
+	return fmt.Sprintf("\ninbound allow only rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n") +
+		strAllowOnlyPathsOfRules(policy.inbound) +
+		fmt.Sprintf("\noutbound allow only rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n") +
+		strAllowOnlyPathsOfRules(policy.outbound)
 }
 
 func strAllowOnlyPathsOfRules(rules []*symbolicRule) string {

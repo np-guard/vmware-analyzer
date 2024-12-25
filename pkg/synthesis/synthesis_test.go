@@ -58,7 +58,9 @@ func TestPreprocessing(t *testing.T) {
 
 func (a *synthesisTest) runSynthesis(t *testing.T) {
 	rc := data.ExamplesGeneration(a.exData)
-	NSXToAbstractModelSynthesis(rc)
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	require.Nil(t, err)
+	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
 }
 
 func TestSynthesis(t *testing.T) {
