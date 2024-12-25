@@ -104,7 +104,6 @@ func computeAllowOnlyInboundOrOutbound(originalRules []*symbolicRule, globalDeni
 	newAllows, newDenies := computeAllowOnlyForCategory(&originalRules, globalDenies)
 	*globalDenies = append(*globalDenies, *newDenies...)
 	return newAllows
-
 }
 
 // computes allow only rules, using the following algorithm:
@@ -150,8 +149,8 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 }
 
 func strAllowOnlyPolicy(policy *symbolicPolicy) string {
-	return fmt.Sprintf("Allow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n") +
-		strAllowOnlyPathsOfRules(policy.inbound) + fmt.Sprintf("\noutbound rules\n") +
+	return "Allow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n" +
+		strAllowOnlyPathsOfRules(policy.inbound) + "\noutbound rules\n" +
 		strAllowOnlyPathsOfRules(policy.outbound)
 }
 
