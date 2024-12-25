@@ -24,34 +24,34 @@ const (
 var ingressDirections = []string{"IN", "IN_OUT"}*/
 
 const (
-	actionAllow     RuleAction = "allow"
-	actionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
-	actionJumpToApp RuleAction = "jump_to_application"
-	actionNone      RuleAction = "none" // to mark that a default rule is not configured
+	ActionAllow     RuleAction = "allow"
+	ActionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
+	ActionJumpToApp RuleAction = "jump_to_application"
+	ActionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
 /*func actionFromString(input string) RuleAction {
 	switch input {
-	case string(actionAllow):
-		return actionAllow
-	case string(actionDeny):
-		return actionDeny
-	case string(actionJumpToApp):
-		return actionJumpToApp
+	case string(ActionAllow):
+		return ActionAllow
+	case string(ActionDeny):
+		return ActionDeny
+	case string(ActionJumpToApp):
+		return ActionJumpToApp
 	}
-	return actionDeny
+	return ActionDeny
 }*/
 
 func actionFromString(s string) RuleAction {
 	switch strings.ToLower(s) {
-	case string(actionAllow):
-		return actionAllow
-	case string(actionDeny), "reject", "drop": // TODO: change
-		return actionDeny
-	case string(actionJumpToApp):
-		return actionJumpToApp
+	case string(ActionAllow):
+		return ActionAllow
+	case string(ActionDeny), "reject", "drop": // TODO: change
+		return ActionDeny
+	case string(ActionJumpToApp):
+		return ActionJumpToApp
 	default:
-		return actionNone
+		return ActionNone
 	}
 }
 
