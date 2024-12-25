@@ -150,9 +150,8 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 }
 
 func strAllowOnlyPolicy(policy *symbolicPolicy) string {
-	return fmt.Sprintf("\ninbound allow only rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n") +
-		strAllowOnlyPathsOfRules(policy.inbound) +
-		fmt.Sprintf("\noutbound allow only rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n") +
+	return fmt.Sprintf("Allow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n") +
+		strAllowOnlyPathsOfRules(policy.inbound) + fmt.Sprintf("\noutbound rules\n") +
 		strAllowOnlyPathsOfRules(policy.outbound)
 }
 
@@ -163,7 +162,7 @@ func strAllowOnlyPathsOfRules(rules []*symbolicRule) string {
 			continue
 		}
 		for _, path := range rule.allowOnlyRulePaths {
-			res = append(res, path.String())
+			res = append(res, "\t"+path.String())
 		}
 	}
 	return strings.Join(res, "\n")
