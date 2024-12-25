@@ -160,7 +160,7 @@ func (c *CategorySpec) string() string {
 	for i := range c.rules {
 		rulesStr[i+1] = c.rules[i].string()
 	}
-	return fmt.Sprintf("category: %s\n%s\ndefault action: %s", c.Category.string(),
+	return fmt.Sprintf("category: %s\n%s\ndefault action: %s", c.Category.String(),
 		strings.Join(rulesStr, lineSeparatorStr), string(c.defaultAction))
 }
 
@@ -186,8 +186,12 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
-		conn:               conn,
-		action:             actionFromString(action),
+		SrcGroups:          srcGroups,
+		IsAllSrcGroups:     isAllSrcGroup,
+		DstGroups:          dstGroups,
+		IsAllDstGroups:     isAllDstGroup,
+		Conn:               conn,
+		Action:             actionFromString(action),
 		direction:          direction,
 		ruleID:             ruleID,
 		origRuleObj:        origRule,
@@ -195,7 +199,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 		scope:              scope,
 		ScopeGroups:        scopeGroups,
 		secPolicyName:      secPolicyName,
-		secPolicyCategory:  c.Category.string(),
+		secPolicyCategory:  c.Category.String(),
 		categoryRef:        c,
 		dfwRef:             c.dfwRef,
 	}

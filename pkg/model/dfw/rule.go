@@ -253,7 +253,7 @@ func getRulesFormattedHeaderLine() string {
 		"src",
 		"dst",
 		"conn",
-		"Action",
+		"action",
 		"direction",
 		"scope",
 		"sec-policy",

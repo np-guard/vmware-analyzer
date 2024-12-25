@@ -1,9 +1,6 @@
 package synthesis
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
@@ -57,8 +54,3 @@ type Segments map[string]*collector.Segment
 
 // VMs map from VM name to the VM
 type VMs map[string]*endpoints.VM
-
-func (policy symbolicPolicy) string() string {
-	return "\nsymbolicInbound Rules:\n~~~~~~~~~~~~~~~~~~~~~~~\n" + strSymbolicRules(policy.inbound) +
-		"\nsymbolicOutbound Rules:\n~~~~~~~~~~~~~~~~~~~~~~~~~\n" + strSymbolicRules(policy.outbound)
-}
