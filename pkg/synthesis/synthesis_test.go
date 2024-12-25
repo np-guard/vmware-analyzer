@@ -14,7 +14,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
 
-// todo...
 const (
 	expectedOutput = "tests_expected_output/"
 	carriageReturn = "\r"

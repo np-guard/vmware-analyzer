@@ -142,7 +142,7 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 	newRule := &FwRule{
 		srcVMs: src,
 		dstVMs: dst,
-		conn:   netset.All(), // todo: change
+		Conn:   netset.All(), // todo: change
 		Action: actionFromString(actionStr),
 	}
 	categoryObj.rules = append(categoryObj.rules, newRule)
