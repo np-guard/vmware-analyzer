@@ -7,7 +7,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 )
 
-func (path *SymbolicPath) string() string {
+func (path *SymbolicPath) String() string {
 	return path.Conn.String() + " from " + path.Src.string() + " to " + path.Dst.string()
 }
 
@@ -28,7 +28,7 @@ func (paths *SymbolicPaths) String() string {
 	}
 	res := make([]string, len(*paths))
 	for i, path := range *paths {
-		res[i] = path.string()
+		res[i] = path.String()
 	}
 	return strings.Join(res, "\n")
 }
