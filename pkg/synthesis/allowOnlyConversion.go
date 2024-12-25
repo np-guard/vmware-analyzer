@@ -72,7 +72,6 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 	newGlobalDenies := symbolicexpr.SymbolicPaths{}
 	copy(newGlobalDenies, *globalDenies)
 	for _, rule := range *inboundOrOutbound {
-		symbolicDeniesAndPasses := symbolicexpr.SymbolicPaths{}
 		switch rule.origRule.Action {
 		case dfw.ActionJumpToApp:
 			categoryPasses = append(categoryPasses, *rule.origSymbolicPaths...)
@@ -80,6 +79,8 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses)
 			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
 		case dfw.ActionAllow:
+			symbolicDeniesAndPasses := symbolicexpr.SymbolicPaths{}
+			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, newGlobalDenies...)
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
