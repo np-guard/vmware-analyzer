@@ -14,15 +14,20 @@ type AbstractModelSyn struct {
 	epToTags           map[*endpoints.VM]*[]resources.Tag
 }
 
-func (p *NSXConfigParser) collectVMTags(recourses *collector.ResourcesContainerModel) {
-	abstractModelSyn := AbstractModelSyn{}
+func (p *NSXConfigParser) CollectVMTags(recourses *collector.ResourcesContainerModel) {
+	abstractModelSyn := AbstractModelSyn{
+		epToAtonicGroups   :map[*endpoints.VM][]*collector.Group{},
+		epToEntitiesGroups :map[*endpoints.VM][]*collector.Group{},
+		epToTags           :map[*endpoints.VM]*[]resources.Tag{},
+	
+	}
 	for i := range recourses.VirtualMachineList {
 		vmResource := recourses.VirtualMachineList[i]
 		vm := p.configRes.vmsMap[*vmResource.ExternalId]
 		abstractModelSyn.epToTags[vm] = &vmResource.Tags
 	}
 	for _, g := range p.groups {
-		fmt.Printf("group %s: ", g.Description())
+		fmt.Printf("group %s %s: ",*g.DisplayName, g.Description())
 		vms := p.groupToVMsList(g)
 		for _, vm := range vms {
 			fmt.Printf("%s, ", vm.Name())

@@ -356,7 +356,7 @@ func (e *Condition) string() string {
 		string(*e.Operator),
 		*e.Value,
 	}
-	return strings.Join(s, "-")
+	return "( " + strings.Join(s, " ") + " )"
 }
 
 type ConjunctionOperator struct {
@@ -371,37 +371,37 @@ type NestedExpression struct {
 	nsx.NestedExpression
 }
 
-func (e *NestedExpression) string() string { return "" } // todo
+func (e *NestedExpression) string() string { return "to implement" } // todo
 
 type IPAddressExpression struct {
 	nsx.IPAddressExpression
 }
 
-func (e *IPAddressExpression) string() string { return "" } // todo
+func (e *IPAddressExpression) string() string { return "to implement" } // todo
 
 type MACAddressExpression struct {
 	nsx.MACAddressExpression
 }
 
-func (e *MACAddressExpression) string() string { return "" } // todo
+func (e *MACAddressExpression) string() string { return "to implement" } // todo
 
 type ExternalIDExpression struct {
 	nsx.ExternalIDExpression
 }
 
-func (e *ExternalIDExpression) string() string { return "" } // todo
+func (e *ExternalIDExpression) string() string { return "( members IDs: " + strings.Join(e.ExternalIds, " ") + " )" } // todo
 
 type PathExpression struct {
 	nsx.PathExpression
 }
 
-func (e *PathExpression) string() string { return "" } // todo
+func (e *PathExpression) string() string { return "to implement" } // todo
 
 type IdentityGroupExpression struct {
 	nsx.IdentityGroupExpression
 }
 
-func (e *IdentityGroupExpression) string() string { return "" } // todo
+func (e *IdentityGroupExpression) string() string { return "to implement" } // todo
 
 type Expression []ExpressionElement
 
@@ -410,7 +410,7 @@ func (e *Expression) string() string {
 	for i, el := range *e {
 		elementsStrings[i] = el.string()
 	}
-	return strings.Join(elementsStrings, " ")
+	return "( " + strings.Join(elementsStrings, " ") + " )"
 }
 
 func (e *Expression) UnmarshalJSON(b []byte) error {
@@ -484,7 +484,7 @@ func (group *Group) Name() string {
 
 func (group *Group) Description() string {
 	switch {
-	case group.Expression != nil:
+	case len(group.Expression) != 0:
 		return group.Expression.string()
 	case group.Group.DisplayName != nil:
 		return *group.Group.DisplayName
