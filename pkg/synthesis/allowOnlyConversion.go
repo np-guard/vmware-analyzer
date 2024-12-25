@@ -25,9 +25,7 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 			&globalInboundDenies, &globalOutboundDenies)
 		allowOnlyPolicy.inbound = append(allowOnlyPolicy.inbound, inboundAllow...)
 		allowOnlyPolicy.outbound = append(allowOnlyPolicy.outbound, outboundAllow...)
-		// todo: handle default rule
 	}
-
 	return allowOnlyPolicy
 }
 
