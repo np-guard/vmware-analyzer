@@ -64,7 +64,7 @@ func (p *NSXConfigParser) GetConfig() *config {
 	return p.configRes
 }
 
-func (p *NSXConfigParser) VMsGroups() *map[*endpoints.VM][]*collector.Group {
+func (p *NSXConfigParser) VMsGroups() map[*endpoints.VM][]*collector.Group {
 	groups := map[*endpoints.VM][]*collector.Group{}
 	for _, g := range p.groups {
 		vms := p.groupToVMsList(g)
@@ -72,11 +72,11 @@ func (p *NSXConfigParser) VMsGroups() *map[*endpoints.VM][]*collector.Group {
 			groups[vm] = append(groups[vm], g)
 		}
 	}
-	return &groups
+	return groups
 }
 
-func (p *NSXConfigParser) VMs() *[]*endpoints.VM {
-	return &p.configRes.vms
+func (p *NSXConfigParser) VMs() []*endpoints.VM {
+	return p.configRes.vms
 }
 
 func (p *NSXConfigParser) AddPathsToDisplayNames() {

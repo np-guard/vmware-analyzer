@@ -340,6 +340,8 @@ type RealizedVirtualMachine struct {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+func addParentheses(s []string) string { return fmt.Sprintf("(%s)", strings.Join(s, " ")) }
+
 type ExpressionElement interface {
 	string() string
 }
@@ -356,7 +358,7 @@ func (e *Condition) string() string {
 		string(*e.Operator),
 		*e.Value,
 	}
-	return "( " + strings.Join(s, " ") + " )"
+	return addParentheses(s)
 }
 
 type ConjunctionOperator struct {
@@ -371,39 +373,41 @@ type NestedExpression struct {
 	nsx.NestedExpression
 }
 
-func (e *NestedExpression) string() string { return "to implement" } // todo
+const toImplement = "to implement"
+
+func (e *NestedExpression) string() string { return toImplement } // todo
 
 type IPAddressExpression struct {
 	nsx.IPAddressExpression
 }
 
-func (e *IPAddressExpression) string() string { return "to implement" } // todo
+func (e *IPAddressExpression) string() string { return toImplement } // todo
 
 type MACAddressExpression struct {
 	nsx.MACAddressExpression
 }
 
-func (e *MACAddressExpression) string() string { return "to implement" } // todo
+func (e *MACAddressExpression) string() string { return toImplement } // todo
 
 type ExternalIDExpression struct {
 	nsx.ExternalIDExpression
 }
 
 func (e *ExternalIDExpression) string() string {
-	return "( members IDs: " + strings.Join(e.ExternalIds, " ") + " )"
+	return addParentheses(append([]string{"( members IDs: "}, e.ExternalIds...))
 } // todo
 
 type PathExpression struct {
 	nsx.PathExpression
 }
 
-func (e *PathExpression) string() string { return "to implement" } // todo
+func (e *PathExpression) string() string { return toImplement } // todo
 
 type IdentityGroupExpression struct {
 	nsx.IdentityGroupExpression
 }
 
-func (e *IdentityGroupExpression) string() string { return "to implement" } // todo
+func (e *IdentityGroupExpression) string() string { return toImplement } // todo
 
 type Expression []ExpressionElement
 
@@ -412,7 +416,7 @@ func (e *Expression) string() string {
 	for i, el := range *e {
 		elementsStrings[i] = el.string()
 	}
-	return "( " + strings.Join(elementsStrings, " ") + " )"
+	return addParentheses(elementsStrings)
 }
 
 func (e *Expression) UnmarshalJSON(b []byte) error {

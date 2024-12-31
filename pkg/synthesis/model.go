@@ -8,11 +8,9 @@ import (
 )
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
-//
-//nolint:all // todo: tmp for defs without implementation
 type AbstractModelSyn struct {
 	vms        []*endpoints.VM
-	epToGroups *map[*endpoints.VM][]*collector.Group
+	epToGroups map[*endpoints.VM][]*collector.Group
 	// todo: add similar maps to OS, hostname
 	policy []*symbolicPolicy // with default deny
 }
