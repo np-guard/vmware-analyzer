@@ -395,7 +395,7 @@ type ExternalIDExpression struct {
 
 func (e *ExternalIDExpression) string() string {
 	return addParentheses(append([]string{"( members IDs: "}, e.ExternalIds...))
-} // todo
+}
 
 type PathExpression struct {
 	nsx.PathExpression
