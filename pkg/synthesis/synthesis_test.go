@@ -28,7 +28,6 @@ type testMode int
 const (
 	OutputComparison testMode = iota // compare actual output to expected output
 	OutputGeneration                 // generate expected output
-	OutputIgnore                     // ignore expected output
 )
 
 type synthesisTest struct {
@@ -44,27 +43,24 @@ var allTests = []synthesisTest{
 	},
 }
 
-func (synTest *synthesisTest) runPreprocessing(t *testing.T) {
+func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(synTest.exData)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	fmt.Println(stringCategoryToSymbolicPolicy(categoryToPolicy))
+	actualOutput := stringCategoryToSymbolicPolicy(categoryToPolicy)
+	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_PreProcessing.txt")
-	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
-	require.Nil(t, err2)
-	expectedOutputStr := string(expectedOutput)
-	require.Equal(t, cleanStr(stringCategoryToSymbolicPolicy(categoryToPolicy)), cleanStr(expectedOutputStr),
-		"output not as expected")
+	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
-		test.runPreprocessing(t)
+		test.runPreprocessing(t, OutputComparison)
 	}
 }
 
@@ -76,15 +72,6 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
-	if mode == OutputComparison {
-		expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
-		require.Nil(t, err2)
-		expectedOutputStr := string(expectedOutput)
-		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
-			"output not as expected")
-	} else if mode == OutputGeneration {
-		fmt.Printf("outputGeneration\n")
-	}
 }
 
 func TestSynthesis(t *testing.T) {
