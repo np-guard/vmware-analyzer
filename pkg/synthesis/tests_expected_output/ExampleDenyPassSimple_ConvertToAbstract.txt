@@ -1,0 +1,6 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+	All Connections from (*) to (*)
+outbound rules
+	All Connections from (*) to (*)
