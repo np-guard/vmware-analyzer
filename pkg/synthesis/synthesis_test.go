@@ -19,9 +19,21 @@ const (
 	carriageReturn = "\r"
 )
 
+const (
+	writeFileMde = 0o600
+)
+
+type testMode int
+
+const (
+	OutputComparison testMode = iota // compare actual output to expected output
+	OutputGeneration                 // generate expected output
+)
+
 type synthesisTest struct {
 	name   string
 	exData data.Example
+	Mode   testMode
 }
 
 var allTests = []synthesisTest{
@@ -31,48 +43,62 @@ var allTests = []synthesisTest{
 	},
 }
 
-func (a *synthesisTest) runPreprocessing(t *testing.T) {
-	rc := data.ExamplesGeneration(a.exData)
+func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
+	rc := data.ExamplesGeneration(synTest.exData)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	fmt.Println(stringCategoryToSymbolicPolicy(categoryToPolicy))
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+"_PreProcessing.txt")
-	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
-	require.Nil(t, err2)
-	expectedOutputStr := string(expectedOutput)
-	require.Equal(t, cleanStr(stringCategoryToSymbolicPolicy(categoryToPolicy)), cleanStr(expectedOutputStr),
-		"output not as expected")
+	actualOutput := stringCategoryToSymbolicPolicy(categoryToPolicy)
+	fmt.Println(actualOutput)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_PreProcessing.txt")
+	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
-		test.runPreprocessing(t)
+		// to generate output comment the following line and uncomment the one after
+		test.runPreprocessing(t, OutputComparison)
+		//nolint:gocritic // uncomment for generating output
+		// test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
-func (a *synthesisTest) runConvertToAbstract(t *testing.T) {
-	rc := data.ExamplesGeneration(a.exData)
+func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
+	rc := data.ExamplesGeneration(synTest.exData)
 	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
-	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), a.name+"_ConvertToAbstract.txt")
-	expectedOutput, err2 := os.ReadFile(expectedOutputFileName)
-	require.Nil(t, err2)
-	expectedOutputStr := string(expectedOutput)
-	require.Equal(t, cleanStr(strAllowOnlyPolicy(allowOnlyPolicy)), cleanStr(expectedOutputStr),
-		"output not as expected")
+	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
+	fmt.Println(actualOutput)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
+	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-func TestSynthesis(t *testing.T) {
+func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
-		test.runConvertToAbstract(t)
+		// to generate output comment the following line and uncomment the one after
+		test.runConvertToAbstract(t, OutputComparison)
+		//nolint:gocritic // uncomment for generating output
+		// test.runConvertToAbstract(t, OutputGeneration)
+	}
+}
+
+func compareOrRegenerateOutputPerTest(t *testing.T, mode testMode, actualOutput, expectedOutputFileName, testName string) {
+	if mode == OutputComparison {
+		expectedOutput, err := os.ReadFile(expectedOutputFileName)
+		require.Nil(t, err)
+		expectedOutputStr := string(expectedOutput)
+		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
+			fmt.Sprintf("output of test %v not as expected", testName))
+	} else if mode == OutputGeneration {
+		fmt.Printf("outputGeneration\n")
+		err := os.WriteFile(expectedOutputFileName, []byte(actualOutput), writeFileMde)
+		require.Nil(t, err)
 	}
 }
 
