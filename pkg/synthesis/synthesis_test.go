@@ -60,7 +60,9 @@ func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
+		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
+		//test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
@@ -74,11 +76,13 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-func TestSynthesis(t *testing.T) {
+func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
 		test := &allTests[i]
+		// to generate output comment the following line and uncomment the one after
 		test.runConvertToAbstract(t, OutputComparison)
+		//test.runConvertToAbstract(t, OutputGeneration)
 	}
 }
 
