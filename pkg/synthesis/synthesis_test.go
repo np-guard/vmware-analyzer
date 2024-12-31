@@ -62,6 +62,7 @@ func TestPreprocessing(t *testing.T) {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
+		//nolint:gocritic // uncomment for generating output
 		// test.runPreprocessing(t, OutputGeneration)
 	}
 }
@@ -82,6 +83,7 @@ func TestConvertToAbsract(t *testing.T) {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runConvertToAbstract(t, OutputComparison)
+		//nolint:gocritic // uncomment for generating output
 		// test.runConvertToAbstract(t, OutputGeneration)
 	}
 }
