@@ -41,6 +41,14 @@ var allTests = []synthesisTest{
 		name:   "ExampleDumbeldore",
 		exData: data.ExampleDumbeldore,
 	},
+	{
+		name:   "ExampleTwoDeniesSimple",
+		exData: data.ExampleTwoDeniesSimple,
+	},
+	{
+		name:   "ExampleDenyPassSimple",
+		exData: data.ExampleDenyPassSimple,
+	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
