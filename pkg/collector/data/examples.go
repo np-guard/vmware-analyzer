@@ -456,69 +456,6 @@ var ExampleDenyPassSimple = Example{
 				},
 			},
 		},
-
-		{
-			name:         "Slytherin-Intra-App-Policy",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "Slytherin-Client-Access",
-					id:       3048,
-					source:   "ANY",
-					dest:     "Slytherin-Web",
-					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
-					action:   allow,
-				},
-				{
-					name:     "Slytherin-Web-To-App-Access",
-					id:       3049,
-					source:   "Slytherin-Web",
-					dest:     "Slytherin-App",
-					services: []string{"/infra/services/Vmware-VC-WebAccess"},
-					action:   allow,
-				},
-				{
-					name:     "Slytherin-App-To-DB-Access",
-					id:       3050,
-					source:   "Slytherin-App",
-					dest:     "Slytherin-DB",
-					services: []string{"/infra/services/SMB"},
-					action:   allow,
-				},
-			},
-		},
-
-		{
-			name:         "Hufflepuff-Intra-App-Policy",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "Hufflepuff-Client-Access",
-					id:       2048,
-					source:   "ANY",
-					dest:     "Hufflepuff-Web",
-					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
-					action:   allow,
-				},
-				{
-					name:     "Hufflepuff-Web-To-App-Access",
-					id:       2049,
-					source:   "Hufflepuff-Web",
-					dest:     "Hufflepuff-App",
-					services: []string{"/infra/services/Vmware-VC-WebAccess"},
-					action:   allow,
-				},
-				{
-					name:     "Hufflepuff-App-To-DB-Access",
-					id:       2050,
-					source:   "Hufflepuff-App",
-					dest:     "Hufflepuff-DB",
-					services: []string{"/infra/services/SMB"},
-					action:   allow,
-				},
-			},
-		},
-
 		{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
