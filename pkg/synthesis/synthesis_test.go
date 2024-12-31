@@ -62,7 +62,7 @@ func TestPreprocessing(t *testing.T) {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
-		//test.runPreprocessing(t, OutputGeneration)
+		// test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
@@ -82,7 +82,7 @@ func TestConvertToAbsract(t *testing.T) {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runConvertToAbstract(t, OutputComparison)
-		//test.runConvertToAbstract(t, OutputGeneration)
+		// test.runConvertToAbstract(t, OutputGeneration)
 	}
 }
 
