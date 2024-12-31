@@ -335,3 +335,196 @@ var ExampleDumbeldore = Example{
 		},
 	},
 }
+
+// ExampleTwoDeniesSimple
+// Simple example with two denies
+// Slytherin can talk to all but Dumbledore
+// Gryffindor can talk to all but Dumbledore
+var ExampleTwoDeniesSimple = Example{
+	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	groups: map[string][]string{
+		"Slytherin":   {"Slytherin"},
+		"Hufflepuff":  {"Hufflepuff"},
+		"Gryffindor":  {"Gryffindor"},
+		"Dumbledore":  {"Dumbledore1", "Dumbledore2"},
+		"Dumbledore1": {"Dumbledore1"},
+		"Dumbledore2": {"Dumbledore2"},
+	},
+	policies: []category{
+		{
+			name:         "Two-Denys-Simple-Test",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "no-conn-to-dumb1",
+					id:       1,
+					source:   "ANY",
+					dest:     "Dumbledore1",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "no-conn-to-dumb2",
+					id:       2,
+					source:   "ANY",
+					dest:     "Dumbledore2",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "Slytherin-to-all",
+					id:       3,
+					source:   "Slytherin",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+				{
+					name:     "Gryffindor-to-all",
+					id:       4,
+					source:   "Gryffindor",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+			},
+		},
+		{
+			name:         "Default-L3-Section",
+			categoryType: "Application",
+			rules: []rule{
+				defaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+// ExampleDenyPassSimple one pass and two denies, span over two categories
+// all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
+var ExampleDenyPassSimple = Example{
+	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	groups: map[string][]string{
+		"Slytherin":   {"Slytherin"},
+		"Hufflepuff":  {"Hufflepuff"},
+		"Gryffindor":  {"Gryffindor"},
+		"Dumbledore":  {"Dumbledore1", "Dumbledore2"},
+		"Dumbledore1": {"Dumbledore1"},
+		"Dumbledore2": {"Dumbledore2"},
+	},
+	policies: []category{
+		{
+			name:         "Env-pass-and-deny",
+			categoryType: "Environment",
+			rules: []rule{
+				{
+					name:     "pass-all-to-dumb",
+					id:       10218,
+					source:   "ANY",
+					dest:     "Dumbledore",
+					services: []string{"ANY"},
+					action:   jumpToApp,
+				},
+				{
+					name:     "deny-all-to-Hufflepuff",
+					id:       10219,
+					source:   "ANY",
+					dest:     "Hufflepuff",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "deny-all-to-Slytherin",
+					id:       10220,
+					source:   "ANY",
+					dest:     "Slytherin",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+			},
+		},
+		{
+			name:         "App-Allow-All",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "allow-all-to-all",
+					id:       newRuleID,
+					source:   "ANY",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+			},
+		},
+
+		{
+			name:         "Slytherin-Intra-App-Policy",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "Slytherin-Client-Access",
+					id:       3048,
+					source:   "ANY",
+					dest:     "Slytherin-Web",
+					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
+					action:   allow,
+				},
+				{
+					name:     "Slytherin-Web-To-App-Access",
+					id:       3049,
+					source:   "Slytherin-Web",
+					dest:     "Slytherin-App",
+					services: []string{"/infra/services/Vmware-VC-WebAccess"},
+					action:   allow,
+				},
+				{
+					name:     "Slytherin-App-To-DB-Access",
+					id:       3050,
+					source:   "Slytherin-App",
+					dest:     "Slytherin-DB",
+					services: []string{"/infra/services/SMB"},
+					action:   allow,
+				},
+			},
+		},
+
+		{
+			name:         "Hufflepuff-Intra-App-Policy",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "Hufflepuff-Client-Access",
+					id:       2048,
+					source:   "ANY",
+					dest:     "Hufflepuff-Web",
+					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
+					action:   allow,
+				},
+				{
+					name:     "Hufflepuff-Web-To-App-Access",
+					id:       2049,
+					source:   "Hufflepuff-Web",
+					dest:     "Hufflepuff-App",
+					services: []string{"/infra/services/Vmware-VC-WebAccess"},
+					action:   allow,
+				},
+				{
+					name:     "Hufflepuff-App-To-DB-Access",
+					id:       2050,
+					source:   "Hufflepuff-App",
+					dest:     "Hufflepuff-DB",
+					services: []string{"/infra/services/SMB"},
+					action:   allow,
+				},
+			},
+		},
+
+		{
+			name:         "Default-L3-Section",
+			categoryType: "Application",
+			rules: []rule{
+				defaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
