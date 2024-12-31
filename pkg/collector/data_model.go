@@ -389,7 +389,9 @@ type ExternalIDExpression struct {
 	nsx.ExternalIDExpression
 }
 
-func (e *ExternalIDExpression) string() string { return "( members IDs: " + strings.Join(e.ExternalIds, " ") + " )" } // todo
+func (e *ExternalIDExpression) string() string {
+	return "( members IDs: " + strings.Join(e.ExternalIds, " ") + " )"
+} // todo
 
 type PathExpression struct {
 	nsx.PathExpression

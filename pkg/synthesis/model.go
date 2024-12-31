@@ -11,7 +11,7 @@ import (
 //
 //nolint:all // todo: tmp for defs without implementation
 type AbstractModelSyn struct {
-	vms []*endpoints.VM
+	vms        []*endpoints.VM
 	epToGroups *map[*endpoints.VM][]*collector.Group
 	// todo: add similar maps to OS, hostname
 	policy []*symbolicPolicy // with default deny
