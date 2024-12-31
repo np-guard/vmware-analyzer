@@ -14,9 +14,11 @@ func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel) (
 		return nil, err
 	}
 	config := parser.GetConfig()
-	parser.CollectVMTags(recourses)
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	fmt.Println(stringCategoryToSymbolicPolicy(categoryToPolicy))
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	model := &AbstractModelSyn{}
+	model.epToGroups = parser.VMsGroups()
+	model.policy = append(model.policy, &allowOnlyPolicy)
 	return &allowOnlyPolicy, nil
 }
