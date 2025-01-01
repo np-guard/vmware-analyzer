@@ -353,14 +353,14 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 // path1Tag: conj1 to conj1 All
 // path2: conj2 to conj2 TCP
 // path3: conj3 to conj3 TCP
-// path4: conj1 tp conj2 TCP
+// path4: conj1 to conj2 TCP
 // path5: conj3 to conj2 TCP
 // tests:
-// path1 is contained in all others paths
-// path1Tag is not contained in path3
-// path2 is contained in path3 and in path5, is not contained in path4
-// path5 is contained in path3 but not in path2
-func TestSymbolicPathsContains(t *testing.T) {
+// path1 is implied by all paths
+// path1Tag is not implied by path3
+// path2 is implied by path3 and path5, is not implied by path4
+// path5 is implied by path3 but not by path2
+func TestSymbolicPathsImplied(t *testing.T) {
 	conj1, conj2, conj3 := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
 		testAllow := initTestTag(fmt.Sprintf("s%v", i))
@@ -380,9 +380,10 @@ func TestSymbolicPathsContains(t *testing.T) {
 	path4 := &SymbolicPath{Src: conj1, Dst: conj2, Conn: netset.AllTCPTransport()}
 	path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
 	// tests:
-	require.Equal(t, true, path1Tag.contains(path1) && path2.contains(path1) && path3.contains(path1) && path4.contains(path1) &&
-		path5.contains(path1), "each of the other paths should contain path1")
-	require.Equal(t, true, !path3.contains(path1Tag), "path3 does not contain path1Tag due to the connection")
-	require.Equal(t, true, path3.contains(path2) && path5.contains(path2) && !path4.contains(path2),
-		"path2 should be contained in path3 and in path5, and not contained in path4")
+	require.Equal(t, true, path1.impliedBy(path1) && path1.impliedBy(path1Tag) && path1.impliedBy(path2) &&
+		path1.impliedBy(path3) && path1.impliedBy(path4) && path1.impliedBy(path5),
+		"path1 should be implied by all paths")
+	require.Equal(t, true, !path1Tag.impliedBy(path3), "path3 does not imply path1Tag due to the connection")
+	require.Equal(t, true, path2.impliedBy(path3) && path2.impliedBy(path5) && !path2.impliedBy(path4),
+		"path2 should be implied by path3 and path5, is not implied by path4")
 }

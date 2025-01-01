@@ -18,7 +18,7 @@ func (c *Conjunction) string() string {
 }
 
 func (c *Conjunction) add(atomic *atomicTerm) *Conjunction {
-	if c.containsAtom(atomic) {
+	if c.contains(atomic) {
 		return c
 	}
 	res := append(*c, atomic)
@@ -57,7 +57,7 @@ func (c *Conjunction) removeTautology() Conjunction {
 	return newC
 }
 
-// checks whether the conjunction is empty: either syntactically, or containsAtom an atomicTerm and its negation
+// checks whether the conjunction is empty: either syntactically, or contains an atomicTerm and its negation
 func (c *Conjunction) isEmptySet() bool {
 	if len(*c) == 0 {
 		return true
@@ -85,14 +85,14 @@ func (c *Conjunction) disjoint(other *Conjunction) bool {
 		return false
 	}
 	for _, atomicTerm := range *other {
-		if c.containsAtom(atomicTerm.negate()) {
+		if c.contains(atomicTerm.negate()) {
 			return true
 		}
 	}
 	return false
 }
 
-func (c *Conjunction) containsAtom(atom atomic) bool {
+func (c *Conjunction) contains(atom atomic) bool {
 	for _, atomicTerm := range *c {
 		if atomicTerm.string() == (atom).string() {
 			return true
@@ -101,12 +101,13 @@ func (c *Conjunction) containsAtom(atom atomic) bool {
 	return false
 }
 
-func (c *Conjunction) contains(other *Conjunction) bool {
-	if other == nil && !c.isTautology() { // nil Conjunction is equiv to tautology
+// Conjunction c is implied by other iff any term in other also exists in c
+func (c *Conjunction) impliedBy(other *Conjunction) bool {
+	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
 	}
-	for _, atom := range *other {
-		if !c.containsAtom(atom) {
+	for _, atom := range *c {
+		if !other.contains(atom) {
 			return false
 		}
 	}
