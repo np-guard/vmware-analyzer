@@ -23,7 +23,7 @@ func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
 }
 
 func (path *SymbolicPath) impliedBy(other *SymbolicPath) bool {
-	return path.Conn.Subtract(other.Conn).IsEmpty() && path.Src.impliedBy(&other.Src) && path.Dst.impliedBy(&other.Dst)
+	return path.Conn.IsSubset(other.Conn) && path.Src.impliedBy(&other.Src) && path.Dst.impliedBy(&other.Dst)
 }
 
 func (paths *SymbolicPaths) String() string {
