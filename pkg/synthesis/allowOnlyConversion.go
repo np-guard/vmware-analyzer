@@ -68,7 +68,7 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 	allowOnlyRules := []*symbolicRule{}
 	categoryPasses := symbolicexpr.SymbolicPaths{}
 	newGlobalDenies := symbolicexpr.SymbolicPaths{}
-	copy(newGlobalDenies, *globalDenies)
+	newGlobalDenies = append(newGlobalDenies, *globalDenies...)
 	for _, rule := range *inboundOrOutbound {
 		switch rule.origRule.Action {
 		case dfw.ActionJumpToApp:
