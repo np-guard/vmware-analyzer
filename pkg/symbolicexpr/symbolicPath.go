@@ -22,6 +22,10 @@ func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
 		path.Dst.disjoint(&other.Dst)
 }
 
+func (path *SymbolicPath) contains(other *SymbolicPath) bool {
+	return other.Conn.Subtract(path.Conn).IsEmpty() && path.Src.contains(&other.Src) && path.Dst.contains(&other.Dst)
+}
+
 func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet

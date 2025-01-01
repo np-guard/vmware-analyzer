@@ -345,3 +345,44 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	require.Equal(t, "All Connections from (s1 = str1) to (d1 != str1)", allowWithDeny.String(),
 		"optimized with deny not working properly")
 }
+
+// conj1: (s1 = str1)
+// conj2: (s1 = str1), (s2 = str2)
+// conj3: (s1 = str1), (s2 = str2), (s3 = str3)
+// path1: conj1 to conj1 TCP
+// path1Tag: conj1 to conj1 All
+// path2: conj2 to conj2 TCP
+// path3: conj3 to conj3 TCP
+// path4: conj1 tp conj2 TCP
+// path5: conj3 to conj2 TCP
+// tests:
+// path1 is contained in all others paths
+// path1Tag is not contained in path3
+// path2 is contained in path3 and in path5, is not contained in path4
+// path5 is contained in path3 but not in path2
+func TestSymbolicPathsContains(t *testing.T) {
+	conj1, conj2, conj3 := Conjunction{}, Conjunction{}, Conjunction{}
+	for i := 1; i <= 3; i++ {
+		testAllow := initTestTag(fmt.Sprintf("s%v", i))
+		atomicAllow := &atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v", i)}
+		if i < 2 {
+			conj1 = *conj1.add(atomicAllow)
+		}
+		if i < 3 {
+			conj2 = *conj2.add(atomicAllow)
+		}
+		conj3 = *conj3.add(atomicAllow)
+	}
+	path1 := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTCPTransport()}
+	path1Tag := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTransports()}
+	path2 := &SymbolicPath{Src: conj2, Dst: conj2, Conn: netset.AllTCPTransport()}
+	path3 := &SymbolicPath{Src: conj3, Dst: conj3, Conn: netset.AllTCPTransport()}
+	path4 := &SymbolicPath{Src: conj1, Dst: conj2, Conn: netset.AllTCPTransport()}
+	path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
+	// tests:
+	require.Equal(t, true, path1Tag.contains(path1) && path2.contains(path1) && path3.contains(path1) && path4.contains(path1) &&
+		path5.contains(path1), "each of the other paths should contain path1")
+	require.Equal(t, true, !path3.contains(path1Tag), "path3 does not contain path1Tag due to the connection")
+	require.Equal(t, true, path3.contains(path2) && path5.contains(path2) && !path4.contains(path2),
+		"path2 should be contained in path3 and in path5, and not contained in path4")
+}
