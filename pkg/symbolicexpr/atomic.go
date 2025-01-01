@@ -72,7 +72,3 @@ func (tautology) isTautology() bool {
 func (tautology) isNegateOf(atomic) bool {
 	return false
 }
-
-func (tautology) contains(*Conjunction) bool {
-	return true
-}
