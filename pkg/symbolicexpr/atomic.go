@@ -31,7 +31,7 @@ func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
 	return &atomicTerm{property: label, toVal: toVal, neg: neg}
 }
 
-// negate an atomicTerm expression; return pointer to corresponding expression from Atomics, if not there yet then add it
+// negate an atomicTerm expression
 func (term atomicTerm) negate() atomic {
 	return atomicTerm{property: term.property, toVal: term.toVal, neg: !term.neg}
 }

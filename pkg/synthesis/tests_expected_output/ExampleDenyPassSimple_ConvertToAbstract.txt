@@ -1,6 +1,12 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	All Connections from (*) to (*)
+	All Connections from (*) to (group  != Hufflepuff and group  != Slytherin)
+	All Connections from (*) to (group  != Hufflepuff and group  = Dumbledore)
+	All Connections from (*) to (group  = Dumbledore and group  != Slytherin)
+	All Connections from (*) to (group  = Dumbledore)
 outbound rules
-	All Connections from (*) to (*)
+	All Connections from (*) to (group  != Hufflepuff and group  != Slytherin)
+	All Connections from (*) to (group  != Hufflepuff and group  = Dumbledore)
+	All Connections from (*) to (group  = Dumbledore and group  != Slytherin)
+	All Connections from (*) to (group  = Dumbledore)

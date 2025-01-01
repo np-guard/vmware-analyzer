@@ -1,6 +1,7 @@
 package synthesis
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -67,8 +68,7 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 	globalDenies *symbolicexpr.SymbolicPaths) (allowRule []*symbolicRule, denyPaths *symbolicexpr.SymbolicPaths) {
 	allowOnlyRules := []*symbolicRule{}
 	categoryPasses := symbolicexpr.SymbolicPaths{}
-	newGlobalDenies := symbolicexpr.SymbolicPaths{}
-	copy(newGlobalDenies, *globalDenies)
+	newGlobalDenies := slices.Clone(*globalDenies)
 	for _, rule := range *inboundOrOutbound {
 		switch rule.origRule.Action {
 		case dfw.ActionJumpToApp:
@@ -77,8 +77,7 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule,
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses)
 			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
 		case dfw.ActionAllow:
-			symbolicDeniesAndPasses := symbolicexpr.SymbolicPaths{}
-			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, newGlobalDenies...)
+			symbolicDeniesAndPasses := slices.Clone(newGlobalDenies)
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
