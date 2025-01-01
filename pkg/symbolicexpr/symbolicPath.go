@@ -22,6 +22,10 @@ func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
 		path.Dst.disjoint(&other.Dst)
 }
 
+func (path *SymbolicPath) impliedBy(other *SymbolicPath) bool {
+	return path.Conn.IsSubset(other.Conn) && path.Src.impliedBy(&other.Src) && path.Dst.impliedBy(&other.Dst)
+}
+
 func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet
@@ -41,6 +45,26 @@ func (paths *SymbolicPaths) removeEmpty() *SymbolicPaths {
 		}
 	}
 	return &newPaths
+}
+
+func (paths SymbolicPaths) removeImplied() SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for outerIndex, outerPath := range paths {
+		addPath := true
+		for innerIndex, innerPath := range paths {
+			if innerIndex == outerIndex {
+				continue
+			}
+			if innerPath.impliedBy(outerPath) && !(outerPath.impliedBy(innerPath) && outerIndex < innerIndex) {
+				addPath = false
+				break
+			}
+		}
+		if addPath {
+			newPaths = append(newPaths, outerPath)
+		}
+	}
+	return newPaths
 }
 
 func (paths *SymbolicPaths) removeTautology() *SymbolicPaths {
@@ -92,6 +116,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
 	}
+	res = res.removeImplied()
 	return &res
 }
 

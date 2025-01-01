@@ -58,7 +58,7 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	require.Nil(t, err1)
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	actualOutput := stringCategoryToSymbolicPolicy(categoryToPolicy)
+	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_PreProcessing.txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
