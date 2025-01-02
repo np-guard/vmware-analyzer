@@ -12,6 +12,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 const (
@@ -81,7 +82,7 @@ func TestPreprocessing(t *testing.T) {
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(synTest.exData)
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, synTest.exData.DisjointGroups)
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: synTest.exData.DisjointGroups})
 	require.Nil(t, err)
 	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
 	fmt.Println(actualOutput)

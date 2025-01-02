@@ -13,7 +13,7 @@ import (
 /////////////////////////////////////////////////////////////////////////////////////
 
 func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy, groupsDisjointHint [][]string) symbolicPolicy {
+	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy, hints *symbolicexpr.Hints) symbolicPolicy {
 	allowOnlyPolicy := symbolicPolicy{}
 	globalInboundDenies, globalOutboundDenies := symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{}
 	// we go over categoriesSpecs to make sure we follow the correct order of categories
@@ -23,7 +23,7 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 			continue
 		}
 		inboundAllow, outboundAllow := computeAllowOnlyRulesForCategory(thisCategoryPolicy,
-			&globalInboundDenies, &globalOutboundDenies, groupsDisjointHint)
+			&globalInboundDenies, &globalOutboundDenies, hints)
 		allowOnlyPolicy.inbound = append(allowOnlyPolicy.inbound, inboundAllow...)
 		allowOnlyPolicy.outbound = append(allowOnlyPolicy.outbound, outboundAllow...)
 	}
@@ -32,19 +32,18 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 
 // gets here only if policy is not nil
 func computeAllowOnlyRulesForCategory(originalPolicy *symbolicPolicy, globalInboundDenies,
-	globalOutboundDenies *symbolicexpr.SymbolicPaths,
-	groupsDisjointHint [][]string) (inboundAllowOnly, outboundAllowOnly []*symbolicRule) {
-	inboundAllowOnly = computeAllowOnlyInboundOrOutbound(originalPolicy.inbound, globalInboundDenies, groupsDisjointHint)
-	outboundAllowOnly = computeAllowOnlyInboundOrOutbound(originalPolicy.outbound, globalOutboundDenies, groupsDisjointHint)
+	globalOutboundDenies *symbolicexpr.SymbolicPaths, hints *symbolicexpr.Hints) (inboundAllowOnly, outboundAllowOnly []*symbolicRule) {
+	inboundAllowOnly = computeAllowOnlyInboundOrOutbound(originalPolicy.inbound, globalInboundDenies, hints)
+	outboundAllowOnly = computeAllowOnlyInboundOrOutbound(originalPolicy.outbound, globalOutboundDenies, hints)
 	return
 }
 
 func computeAllowOnlyInboundOrOutbound(originalRules []*symbolicRule, globalDenies *symbolicexpr.SymbolicPaths,
-	groupsDisjointHint [][]string) []*symbolicRule {
+	hints *symbolicexpr.Hints) []*symbolicRule {
 	if originalRules == nil {
 		return nil
 	}
-	newAllows, newDenies := computeAllowOnlyForCategory(&originalRules, globalDenies, groupsDisjointHint)
+	newAllows, newDenies := computeAllowOnlyForCategory(&originalRules, globalDenies, hints)
 	*globalDenies = append(*globalDenies, *newDenies...)
 	return newAllows
 }
@@ -67,7 +66,7 @@ func computeAllowOnlyInboundOrOutbound(originalRules []*symbolicRule, globalDeni
 //		global_allows = global_allows  or new_allows
 //	Output: global_allows
 func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenies *symbolicexpr.SymbolicPaths,
-	groupsDisjointHint [][]string) (allowRule []*symbolicRule, denyPaths *symbolicexpr.SymbolicPaths) {
+	hints *symbolicexpr.Hints) (allowRule []*symbolicRule, denyPaths *symbolicexpr.SymbolicPaths) {
 	allowOnlyRules := []*symbolicRule{}
 	categoryPasses := symbolicexpr.SymbolicPaths{}
 	newGlobalDenies := slices.Clone(*globalDenies)
@@ -76,14 +75,12 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenie
 		case dfw.ActionJumpToApp:
 			categoryPasses = append(categoryPasses, *rule.origSymbolicPaths...)
 		case dfw.ActionDeny:
-			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses,
-				groupsDisjointHint)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses, hints)
 			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
 		case dfw.ActionAllow:
 			symbolicDeniesAndPasses := slices.Clone(newGlobalDenies)
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
-			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses,
-				groupsDisjointHint)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses, hints)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
 				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths}
 			allowOnlyRules = append(allowOnlyRules, newRule)
