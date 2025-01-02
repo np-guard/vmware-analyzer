@@ -29,6 +29,9 @@ func (v *VM) AddTag(t string) {
 	}
 	v.tags = append(v.tags, t)
 }
+func (v *VM) Tags() []string {
+	return v.tags
+}
 
 func NewVM(name, uid string) *VM {
 	return &VM{
