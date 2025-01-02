@@ -49,6 +49,10 @@ var allTests = []synthesisTest{
 		name:   "ExampleDenyPassSimple",
 		exData: data.ExampleDenyPassSimple,
 	},
+	{
+		name:   "ExampleHintsDisjoint",
+		exData: data.ExampleHintsDisjoint,
+	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
@@ -69,9 +73,9 @@ func TestPreprocessing(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runPreprocessing(t, OutputComparison)
+		// test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		// test.runPreprocessing(t, OutputGeneration)
+		test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
@@ -90,9 +94,9 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runConvertToAbstract(t, OutputComparison)
+		//test.runConvertToAbstract(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		// test.runConvertToAbstract(t, OutputGeneration)
+		test.runConvertToAbstract(t, OutputGeneration)
 	}
 }
 

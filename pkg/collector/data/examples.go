@@ -465,3 +465,64 @@ var ExampleDenyPassSimple = Example{
 		},
 	},
 }
+
+// ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
+// Dumbledore1 can talk to all but Slytherin
+// Dumbledore2 can talk to all but Gryffindor
+var ExampleHintsDisjoint = Example{
+	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	groups: map[string][]string{
+		"Slytherin":   {"Slytherin"},
+		"Hufflepuff":  {"Hufflepuff"},
+		"Gryffindor":  {"Gryffindor"},
+		"Dumbledore1": {"Dumbledore1"},
+		"Dumbledore2": {"Dumbledore2"},
+	},
+	policies: []category{
+		{
+			name:         "From-Dumbledore-connection",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "Dumb1-Not-Sly",
+					id:       newRuleID,
+					source:   "Dumbledore1",
+					dest:     "Slytherin",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "Dumb2-Not-Gryf",
+					id:       9195,
+					source:   "Dumbledore2",
+					dest:     "Gryffindor",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "Dumb1-To-All",
+					id:       9196,
+					source:   "Dumbledore1",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+				{
+					name:     "Dumb2-To-All",
+					id:       9196,
+					source:   "Dumbledore2",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+			},
+		},
+		{
+			name:         "Default-L3-Section",
+			categoryType: "Application",
+			rules: []rule{
+				defaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
