@@ -10,8 +10,16 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	if err != nil {
 		return "", err
 	}
-	return config.output(params)
+
+	res, err := config.genConnectivityOutput(params)
+
+	return res, err
 }
+
+func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.ResourcesContainerModel) (string, error) {
+	return NSXConnectivityFromResourcesContainer(recourses, OutputParameters{Format: "txt"})
+}
+
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, vmsFilter []string) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
@@ -25,5 +33,8 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, 
 
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity(vmsFilter)
+	//config.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.NewTCPTransport(1, 65535, 445, 445))
+
+	//config.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.AllICMPTransport())
 	return config, nil
 }

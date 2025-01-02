@@ -1,4 +1,4 @@
-analyzed connectivity:
+Analyzed connectivity::
 Dumbledore1 => Gryffindor-Web: TCP dst-ports: 80,443
 Dumbledore1 => Hufflepuff-Web: TCP dst-ports: 80,443
 Dumbledore1 => Slytherin-Web: TCP dst-ports: 80,443
@@ -7,7 +7,6 @@ Dumbledore2 => Hufflepuff-Web: TCP dst-ports: 80,443
 Dumbledore2 => Slytherin-Web: TCP dst-ports: 80,443
 Gryffindor-App => Gryffindor-DB: TCP dst-ports: 445
 Gryffindor-App => Gryffindor-Web: TCP dst-ports: 80,443
-Gryffindor-App => Hufflepuff-App: All Connections
 Gryffindor-App => Hufflepuff-Web: TCP dst-ports: 80,443
 Gryffindor-App => Slytherin-Web: TCP dst-ports: 80,443
 Gryffindor-DB => Gryffindor-Web: TCP dst-ports: 80,443

@@ -1,3 +1,4 @@
+// todo: rename package
 package conns
 
 import (
@@ -5,14 +6,68 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 // ConnMap captures permitted connections between endpoints in the input config
 type ConnMap map[*endpoints.VM]map[*endpoints.VM]*DetailedConnection
+
+// connMapEntry captures one entry in ConnMap
 type connMapEntry struct {
 	Src, Dst *endpoints.VM
 	Conn     *DetailedConnection
+}
+
+/*func (c connMapEntry) String() string {
+	return fmt.Sprintf("src:%s, dst: %s, allowedConns: %s ", c.Src.Name(), c.Dst.Name(), c.Conn.String())
+}*/
+
+func (c connMapEntry) FullExplanationString() string {
+	header := fmt.Sprintf("src: %s, dst: %s", c.Src.Name(), c.Dst.Name())
+	deniedConn := netset.AllTransports().Subtract(c.Conn.Conn)
+	allowedConns := fmt.Sprintf("allowed connections: %s, rules details:\n%s", c.Conn.Conn.String(), c.Conn.DetailedExplanationString(c.Conn.Conn))
+	deniedConns := fmt.Sprintf("denied connections: %s, rules details:\n%s", deniedConn.String(), c.Conn.DetailedExplanationString(deniedConn))
+	return strings.Join([]string{header, allowedConns, deniedConns}, "\n")
+}
+
+func (c ConnMap) GetExplanationPerConnection(srcVM, dstVM string, inputConn *netset.TransportSet) (isAllowed bool, ingress []int, egress []int) {
+	logging.Debugf("GetExplanationPerConnection")
+	for src, srcMap := range c {
+		if src.Name() != srcVM {
+			//logging.Debugf("src.Name: %s, srcVM: %s", src.Name(), srcVM)
+			continue
+		}
+		logging.Debugf("src.Name: %s, srcVM: %s", src.Name(), srcVM)
+		for dst, connEntry := range srcMap {
+			if dst.Name() != dstVM {
+				continue
+			}
+			logging.Debugf("dst.Name: %s, dst: %s", dst.Name(), dstVM)
+			logging.Debugf("inputConn: %s ,connEntry.Conn: %s, res: %t ", inputConn.String(), connEntry.Conn.String(), inputConn.IsSubset(connEntry.Conn))
+			// assuming inputConn is fully contained in allowed/denied connection (inputConn should be specific connection of protocol and port)
+			// todo: add warning/err/other handling if this is not the case
+			if inputConn.IsSubset(connEntry.Conn) {
+				isAllowed = true
+			}
+			for _, ingressEntry := range connEntry.ExplanationObj.IngressExplanations {
+				logging.Debugf("inputConn: %s, ingressEntry.Conn: %s", inputConn.String(), ingressEntry.Conn.String())
+				if !(inputConn.Intersect(ingressEntry.Conn)).IsEmpty() {
+					ingress = append(ingress, ingressEntry.Rule)
+					logging.Debugf("append")
+				}
+			}
+			for _, egressEntry := range connEntry.ExplanationObj.EgressExplanations {
+				if !(inputConn.Intersect(egressEntry.Conn)).IsEmpty() {
+					egress = append(egress, egressEntry.Rule)
+				}
+			}
+
+		}
+	}
+	return isAllowed, ingress, egress
 }
 
 // add func adds a given pair with specified permitted connection
@@ -45,6 +100,7 @@ func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 				c.Add(src, dst, NewEmptyDetailedConnection())
 			}
 		}
+
 	}
 }
 
@@ -52,13 +108,21 @@ func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 // If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
 // Todo: sunset this:
 func (c ConnMap) String() string {
-	asSlice := c.ToSlice()
-	lines := make([]string, len(asSlice))
+	return c.FullOutputWithExplanations()
+	//asSlice := c.ToSlice()
+	//return common.SortedJoinStringifiedSlice(asSlice, "\n")
+
+	/*lines := make([]string, len(asSlice))
 	for i, e := range asSlice {
-		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.Src.Name(), e.Dst.Name(), e.Conn.Conn.String())
+		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s ", e.Src.Name(), e.Dst.Name(), e.Conn.String())
 	}
 	slices.Sort(lines)
-	return strings.Join(lines, "\n")
+	return strings.Join(lines, "\n")*/
+}
+
+func (c ConnMap) FullOutputWithExplanations() string {
+	asSlice := c.ToSlice()
+	return common.SortedJoinCustomStrFuncSlice(asSlice, func(c connMapEntry) string { return c.FullExplanationString() }, common.ShortSep)
 }
 
 func (c ConnMap) Filter(vms []string) ConnMap {

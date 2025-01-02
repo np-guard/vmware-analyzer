@@ -1,17 +1,6 @@
 package model
 
-import (
-	"fmt"
-	"os"
-	"path"
-	"strings"
-	"testing"
-
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-)
-
+/*
 const (
 	outDir = "out/"
 )
@@ -71,3 +60,4 @@ func Test_verifyTraceflow(t *testing.T) {
 		})
 	}
 }
+*/

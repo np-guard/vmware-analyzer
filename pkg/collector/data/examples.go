@@ -8,23 +8,56 @@ const (
 
 //nolint:all
 var Example1 = Example{
-	vms: []string{"A", "B"},
-	groups: map[string][]string{
+	VMs: []string{"A", "B"},
+	Groups: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
-	policies: []category{
+	Policies: []category{
 		{
 			name:         "app-x",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "allow_smb_incoming",
-					id:       1004,
-					source:   "frontend",
-					dest:     "backend",
-					services: []string{"/infra/services/SMB"},
-					action:   allow,
+					Name:     "allow_smb_incoming",
+					ID:       1004,
+					Source:   "frontend",
+					Dest:     "backend",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				defaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+var Example1a = Example{
+	VMs: []string{"A", "B"},
+	Groups: map[string][]string{
+		"frontend": {"A"},
+		"backend":  {"B"},
+	},
+	Policies: []category{
+		{
+			name:         "app-x",
+			categoryType: "Application",
+			rules: []Rule{
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1004,
+					Source:   "frontend",
+					Dest:     "backend",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_all_frontend_to_backend",
+					ID:       1005,
+					Source:   "frontend",
+					Dest:     "backend",
+					Services: []string{"ANY"},
+					Action:   Allow,
 				},
 				defaultDenyRule(denyRuleIDApp),
 			},
@@ -62,9 +95,9 @@ micro segmentation
 */
 
 var Example2 = Example{
-	vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
+	VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
-	groups: map[string][]string{
+	Groups: map[string][]string{
 		"Slytherin":      {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
 		"Hufflepuff":     {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 		"Gryffindor":     {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
@@ -79,68 +112,68 @@ var Example2 = Example{
 		"Hufflepuff-App": {"Hufflepuff-App"},
 		"Hufflepuff-DB":  {"Hufflepuff-DB"},
 	},
-	policies: []category{
+	Policies: []category{
 		{
 			name:         "Gryffindor-to-Gryffindor-allow",
 			categoryType: "Environment",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "allow-Gryffindor-to-Gryffindor",
-					id:       10218,
-					source:   "Gryffindor",
-					dest:     "Gryffindor",
-					services: []string{"ANY"},
-					action:   jumpToApp,
+					Name:     "allow-Gryffindor-to-Gryffindor",
+					ID:       10218,
+					Source:   "Gryffindor",
+					Dest:     "Gryffindor",
+					Services: []string{"ANY"},
+					Action:   JumpToApp,
 				},
 			},
 		},
 		{
 			name:         "Hufflepuff-to-Hufflepuff-allow",
 			categoryType: "Environment",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "allow-Hufflepuff-to-Hufflepuff",
-					id:       10219,
-					source:   "Hufflepuff",
-					dest:     "Hufflepuff",
-					services: []string{"ANY"},
-					action:   jumpToApp,
+					Name:     "allow-Hufflepuff-to-Hufflepuff",
+					ID:       10219,
+					Source:   "Hufflepuff",
+					Dest:     "Hufflepuff",
+					Services: []string{"ANY"},
+					Action:   JumpToApp,
 				},
 			},
 		},
 		{
 			name:         "Slytherin-to-Slytherin-allow",
 			categoryType: "Environment",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "allow-Slytherin-to-Slytherin",
-					id:       10220,
-					source:   "Slytherin",
-					dest:     "Slytherin",
-					services: []string{"ANY"},
-					action:   jumpToApp,
+					Name:     "allow-Slytherin-to-Slytherin",
+					ID:       10220,
+					Source:   "Slytherin",
+					Dest:     "Slytherin",
+					Services: []string{"ANY"},
+					Action:   JumpToApp,
 				},
 			},
 		},
 		{
 			name:         "Gryffindor-to-Dumbledore-allow",
 			categoryType: "Environment",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "allow-Gryffindor-to-Dumbledore",
-					id:       10216,
-					source:   "Gryffindor",
-					dest:     "Dumbledore",
-					services: []string{"ANY"},
-					action:   jumpToApp,
+					Name:     "allow-Gryffindor-to-Dumbledore",
+					ID:       10216,
+					Source:   "Gryffindor",
+					Dest:     "Dumbledore",
+					Services: []string{"ANY"},
+					Action:   JumpToApp,
 				},
 				{
-					name:     "allow-Dumbledore-to-Gryffindor",
-					id:       10217,
-					source:   "Dumbledore",
-					dest:     "Gryffindor",
-					services: []string{"ANY"},
-					action:   jumpToApp,
+					Name:     "allow-Dumbledore-to-Gryffindor",
+					ID:       10217,
+					Source:   "Dumbledore",
+					Dest:     "Gryffindor",
+					Services: []string{"ANY"},
+					Action:   JumpToApp,
 				},
 			},
 		},
@@ -148,38 +181,38 @@ var Example2 = Example{
 		{
 			name:         "Gryffindor-Intra-App-Policy",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "new-rule",
-					id:       newRuleID,
-					source:   "Gryffindor-App",
-					dest:     "Hufflepuff-App",
-					services: []string{"ANY"},
-					action:   allow,
+					Name:     "new-rule",
+					ID:       newRuleID,
+					Source:   "Gryffindor-App",
+					Dest:     "Hufflepuff-App",
+					Services: []string{"ANY"},
+					Action:   Allow,
 				},
 				{
-					name:     "Gryffindor-Client-Access",
-					id:       9195,
-					source:   "ANY",
-					dest:     "Gryffindor-Web",
-					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
-					action:   allow,
+					Name:     "Gryffindor-Client-Access",
+					ID:       9195,
+					Source:   "ANY",
+					Dest:     "Gryffindor-Web",
+					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
+					Action:   Allow,
 				},
 				{
-					name:     "Gryffindor-Web-To-App-Access",
-					id:       9196,
-					source:   "Gryffindor-Web",
-					dest:     "Gryffindor-App",
-					services: []string{"/infra/services/Vmware-VC-WebAccess"},
-					action:   allow,
+					Name:     "Gryffindor-Web-To-App-Access",
+					ID:       9196,
+					Source:   "Gryffindor-Web",
+					Dest:     "Gryffindor-App",
+					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
+					Action:   Allow,
 				},
 				{
-					name:     "Gryffindor-App-To-DB-Access",
-					id:       9197,
-					source:   "Gryffindor-App",
-					dest:     "Gryffindor-DB",
-					services: []string{"/infra/services/SMB"},
-					action:   allow,
+					Name:     "Gryffindor-App-To-DB-Access",
+					ID:       9197,
+					Source:   "Gryffindor-App",
+					Dest:     "Gryffindor-DB",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
 				},
 			},
 		},
@@ -187,30 +220,30 @@ var Example2 = Example{
 		{
 			name:         "Slytherin-Intra-App-Policy",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "Slytherin-Client-Access",
-					id:       3048,
-					source:   "ANY",
-					dest:     "Slytherin-Web",
-					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
-					action:   allow,
+					Name:     "Slytherin-Client-Access",
+					ID:       3048,
+					Source:   "ANY",
+					Dest:     "Slytherin-Web",
+					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
+					Action:   Allow,
 				},
 				{
-					name:     "Slytherin-Web-To-App-Access",
-					id:       3049,
-					source:   "Slytherin-Web",
-					dest:     "Slytherin-App",
-					services: []string{"/infra/services/Vmware-VC-WebAccess"},
-					action:   allow,
+					Name:     "Slytherin-Web-To-App-Access",
+					ID:       3049,
+					Source:   "Slytherin-Web",
+					Dest:     "Slytherin-App",
+					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
+					Action:   Allow,
 				},
 				{
-					name:     "Slytherin-App-To-DB-Access",
-					id:       3050,
-					source:   "Slytherin-App",
-					dest:     "Slytherin-DB",
-					services: []string{"/infra/services/SMB"},
-					action:   allow,
+					Name:     "Slytherin-App-To-DB-Access",
+					ID:       3050,
+					Source:   "Slytherin-App",
+					Dest:     "Slytherin-DB",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
 				},
 			},
 		},
@@ -218,30 +251,30 @@ var Example2 = Example{
 		{
 			name:         "Hufflepuff-Intra-App-Policy",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "Hufflepuff-Client-Access",
-					id:       2048,
-					source:   "ANY",
-					dest:     "Hufflepuff-Web",
-					services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
-					action:   allow,
+					Name:     "Hufflepuff-Client-Access",
+					ID:       2048,
+					Source:   "ANY",
+					Dest:     "Hufflepuff-Web",
+					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
+					Action:   Allow,
 				},
 				{
-					name:     "Hufflepuff-Web-To-App-Access",
-					id:       2049,
-					source:   "Hufflepuff-Web",
-					dest:     "Hufflepuff-App",
-					services: []string{"/infra/services/Vmware-VC-WebAccess"},
-					action:   allow,
+					Name:     "Hufflepuff-Web-To-App-Access",
+					ID:       2049,
+					Source:   "Hufflepuff-Web",
+					Dest:     "Hufflepuff-App",
+					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
+					Action:   Allow,
 				},
 				{
-					name:     "Hufflepuff-App-To-DB-Access",
-					id:       2050,
-					source:   "Hufflepuff-App",
-					dest:     "Hufflepuff-DB",
-					services: []string{"/infra/services/SMB"},
-					action:   allow,
+					Name:     "Hufflepuff-App-To-DB-Access",
+					ID:       2050,
+					Source:   "Hufflepuff-App",
+					Dest:     "Hufflepuff-DB",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
 				},
 			},
 		},
@@ -249,7 +282,7 @@ var Example2 = Example{
 		{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				defaultDenyRule(denyRuleIDApp),
 			},
 		},
@@ -264,17 +297,17 @@ func example3FromExample2() Example {
 	defaultDenyEnvCategory := category{
 		name:         "defaultDenyEnvCategory",
 		categoryType: "Environment",
-		rules: []rule{
+		rules: []Rule{
 			defaultDenyRule(denyRuleIDEnv),
 		},
 	}
-	res.policies = append(res.policies, defaultDenyEnvCategory)
+	res.Policies = append(res.Policies, defaultDenyEnvCategory)
 
 	// change rule 9198, to have both src and dest as Gryffindor-App
-	for _, c := range res.policies {
-		for _, r := range c.rules {
-			if r.id == newRuleID {
-				r.dest = "Gryffindor-App"
+	for i := range res.Policies {
+		for j := range res.Policies[i].rules {
+			if res.Policies[i].rules[j].ID == newRuleID {
+				res.Policies[i].rules[j].Dest = "Gryffindor-App"
 			}
 		}
 	}
@@ -285,8 +318,8 @@ func example3FromExample2() Example {
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
 var ExampleDumbeldore = Example{
-	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	groups: map[string][]string{
+	VMs: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	Groups: map[string][]string{
 		"Slytherin":       {"Slytherin"},
 		"Hufflepuff":      {"Hufflepuff"},
 		"Gryffindor":      {"Gryffindor"},
@@ -294,34 +327,34 @@ var ExampleDumbeldore = Example{
 		"DumbledoreAll":   {"Dumbledore1"},
 		"DumbledoreNoSly": {"Dumbledore2"},
 	},
-	policies: []category{
+	Policies: []category{
 		{
 			name:         "From-Dumbledore-connection",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				{
-					name:     "Dumb1-To-All",
-					id:       newRuleID,
-					source:   "DumbledoreAll",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
+					Name:     "Dumb1-To-All",
+					ID:       newRuleID,
+					Source:   "DumbledoreAll",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   Allow,
 				},
 				{
-					name:     "Dumb2-Not-Sly",
-					id:       9195,
-					source:   "DumbledoreNoSly",
-					dest:     "Slytherin",
-					services: []string{"ANY"},
-					action:   drop,
+					Name:     "Dumb2-Not-Sly",
+					ID:       9195,
+					Source:   "DumbledoreNoSly",
+					Dest:     "Slytherin",
+					Services: []string{"ANY"},
+					Action:   Drop,
 				},
 				{
-					name:     "Dumb2-To-All",
-					id:       9196,
-					source:   "DumbledoreNoSly",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
+					Name:     "Dumb2-To-All",
+					ID:       9196,
+					Source:   "DumbledoreNoSly",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   Allow,
 				},
 			},
 		},
@@ -329,7 +362,7 @@ var ExampleDumbeldore = Example{
 		{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
-			rules: []rule{
+			rules: []Rule{
 				defaultDenyRule(denyRuleIDApp),
 			},
 		},
