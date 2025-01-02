@@ -100,3 +100,16 @@ func (c *Conjunction) contains(atom atomic) bool {
 	}
 	return false
 }
+
+// Conjunction c is implied by other iff any term in other also exists in c
+func (c *Conjunction) impliedBy(other *Conjunction) bool {
+	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
+		return false
+	}
+	for _, atom := range *c {
+		if !other.contains(atom) {
+			return false
+		}
+	}
+	return true
+}

@@ -52,12 +52,19 @@ func strSymbolicRules(rules []*symbolicRule) string {
 	return strings.Join(resStr, "\n")
 }
 
-func stringCategoryToSymbolicPolicy(categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) string {
+// prints all symbolic rules by ordered category
+// categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
+func stringCategoryToSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
+	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) string {
 	res := []string{}
-	for category, policy := range categoryToPolicy {
+	for _, category := range categoriesSpecs {
+		policy := categoryToPolicy[category.Category]
+		if policy == nil {
+			continue
+		}
 		if len(policy.inbound) > 0 || len(policy.outbound) > 0 {
 			res = append(res, fmt.Sprintf("category: %s\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v",
-				category.String(), policy.string()))
+				category.Category.String(), policy.string()))
 		}
 	}
 	return strings.Join(res, "\n")

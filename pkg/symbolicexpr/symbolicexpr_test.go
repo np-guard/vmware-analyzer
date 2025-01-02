@@ -345,3 +345,45 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	require.Equal(t, "All Connections from (s1 = str1) to (d1 != str1)", allowWithDeny.String(),
 		"optimized with deny not working properly")
 }
+
+// conj1: (s1 = str1)
+// conj2: (s1 = str1), (s2 = str2)
+// conj3: (s1 = str1), (s2 = str2), (s3 = str3)
+// path1: conj1 to conj1 TCP
+// path1Tag: conj1 to conj1 All
+// path2: conj2 to conj2 TCP
+// path3: conj3 to conj3 TCP
+// path4: conj1 to conj2 TCP
+// path5: conj3 to conj2 TCP
+// tests:
+// path1 is implied by all paths
+// path1Tag is not implied by path3
+// path2 is implied by path3 and path5, is not implied by path4
+// path5 is implied by path3 but not by path2
+func TestSymbolicPathsImplied(t *testing.T) {
+	conj1, conj2, conj3 := Conjunction{}, Conjunction{}, Conjunction{}
+	for i := 1; i <= 3; i++ {
+		testAllow := initTestTag(fmt.Sprintf("s%v", i))
+		atomicAllow := &atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v", i)}
+		if i < 2 {
+			conj1 = *conj1.add(atomicAllow)
+		}
+		if i < 3 {
+			conj2 = *conj2.add(atomicAllow)
+		}
+		conj3 = *conj3.add(atomicAllow)
+	}
+	path1 := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTCPTransport()}
+	path1Tag := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTransports()}
+	path2 := &SymbolicPath{Src: conj2, Dst: conj2, Conn: netset.AllTCPTransport()}
+	path3 := &SymbolicPath{Src: conj3, Dst: conj3, Conn: netset.AllTCPTransport()}
+	path4 := &SymbolicPath{Src: conj1, Dst: conj2, Conn: netset.AllTCPTransport()}
+	path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
+	// tests:
+	require.Equal(t, true, path1.impliedBy(path1) && path1.impliedBy(path1Tag) && path1.impliedBy(path2) &&
+		path1.impliedBy(path3) && path1.impliedBy(path4) && path1.impliedBy(path5),
+		"path1 should be implied by all paths")
+	require.Equal(t, true, !path1Tag.impliedBy(path3), "path3 does not imply path1Tag due to the connection")
+	require.Equal(t, true, path2.impliedBy(path3) && path2.impliedBy(path5) && !path2.impliedBy(path4),
+		"path2 should be implied by path3 and path5, is not implied by path4")
+}
