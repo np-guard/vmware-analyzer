@@ -9,7 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -21,7 +21,7 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *conns.DetailedConnection {
+func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	//logging.Debugf("ingress allowed connections from %s to %s: %s", src.Name(), dst.Name(), ingress.String())
 	logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
@@ -40,9 +40,9 @@ func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *conns.DetailedConnecti
 	return buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egressDenied, ingressDelegated, egressDelegated)
 }
 
-func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egressDenied, ingressDelegated, egressDelegated *connectionsAndRules) *conns.DetailedConnection {
+func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egressDenied, ingressDelegated, egressDelegated *connectionsAndRules) *connectivity.DetailedConnection {
 	conn := ingressAllowed.accumulatedConns.Intersect(egressAllowed.accumulatedConns)
-	explanation := &conns.Explanation{}
+	explanation := &connectivity.Explanation{}
 
 	explanation.IngressExplanations = append(explanation.IngressExplanations, ingressAllowed.partitionsByRules...)
 	explanation.IngressExplanations = append(explanation.IngressExplanations, ingressDenied.partitionsByRules...)
@@ -55,7 +55,7 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 	common.JoinStringifiedSlice(explanation.IngressExplanations, ";"),
 	common.JoinStringifiedSlice(explanation.EgressExplanations, ";"))*/
 
-	return conns.NewDetailedConnection(conn, explanation)
+	return connectivity.NewDetailedConnection(conn, explanation)
 
 }
 
@@ -239,7 +239,7 @@ func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 	d.pathsToDisplayNames = m
 }
 
-func (d *DFW) collectRelevantRules(src, dst *endpoints.VM) *relevantRules {
+/*func (d *DFW) collectRelevantRules(src, dst *endpoints.VM) *relevantRules {
 	relevantRules := &relevantRules{}
 	for _, dfwCategory := range d.categoriesSpecs {
 		if dfwCategory.category == ethernetCategory {
@@ -248,4 +248,4 @@ func (d *DFW) collectRelevantRules(src, dst *endpoints.VM) *relevantRules {
 		dfwCategory.collectRelevantRules(src, dst, relevantRules)
 	}
 	return relevantRules
-}
+}*/

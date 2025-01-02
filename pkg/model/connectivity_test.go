@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -35,7 +35,7 @@ var config2 = &config{
 	fw:  dfwAllowAllByDefault,
 }
 
-func sumPairs(c conns.ConnMap) int {
+func sumPairs(c connectivity.ConnMap) int {
 	res := 0
 	for _, srcMap := range c {
 		res += len(srcMap)
@@ -43,7 +43,7 @@ func sumPairs(c conns.ConnMap) int {
 	return res
 }
 
-func sumNoConns(c conns.ConnMap) int {
+func sumNoConns(c connectivity.ConnMap) int {
 	res := 0
 	for _, srcMap := range c {
 		for _, dDonn := range srcMap {

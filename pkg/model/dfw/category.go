@@ -10,7 +10,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
 	//"github.com/np-guard/vmware-analyzer/pkg/model/conns"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -108,7 +108,7 @@ type categorySpec struct {
 
 type connectionsAndRules struct {
 	accumulatedConns  *netset.TransportSet
-	partitionsByRules []*conns.RuleAndConn
+	partitionsByRules []*connectivity.RuleAndConn
 }
 
 func (cr *connectionsAndRules) String() string {
@@ -119,7 +119,7 @@ func (cr *connectionsAndRules) String() string {
 
 func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *netset.TransportSet) {
 	// complete deletion for those fully contained in higher prio conns:
-	cr.partitionsByRules = slices.DeleteFunc(cr.partitionsByRules, func(n *conns.RuleAndConn) bool {
+	cr.partitionsByRules = slices.DeleteFunc(cr.partitionsByRules, func(n *connectivity.RuleAndConn) bool {
 		return n.Conn.IsSubset(higherPrioConns)
 	})
 	// partial deletion for those that intersect but are not subset:
@@ -127,7 +127,7 @@ func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *nets
 		p.Conn = p.Conn.Subtract(higherPrioConns)
 	}
 	//clean nil entries
-	newSlice := []*conns.RuleAndConn{}
+	newSlice := []*connectivity.RuleAndConn{}
 	for _, r := range cr.partitionsByRules {
 		if r != nil {
 			newSlice = append(newSlice, r)
@@ -170,7 +170,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 			switch rule.action {
 			case actionAllow:
 				addedAllowedConns := rule.conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &conns.RuleAndConn{Rule: rule.ruleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{Rule: rule.ruleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
@@ -178,7 +178,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 
 			case actionDeny:
 				addedDeniedConns := rule.conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &conns.RuleAndConn{Rule: rule.ruleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{Rule: rule.ruleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
 				deniedConns.accumulatedConns = deniedConns.accumulatedConns.Union(addedDeniedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					deniedConns.partitionsByRules = append(deniedConns.partitionsByRules, rulePartition)
@@ -186,7 +186,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 
 			case actionJumpToApp:
 				addedJumpToAppConns := rule.conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
-				rulePartition := &conns.RuleAndConn{Rule: rule.ruleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{Rule: rule.ruleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
 				jumpToAppConns.accumulatedConns = jumpToAppConns.accumulatedConns.Union(addedJumpToAppConns)
 				if !rulePartition.Conn.IsEmpty() {
 					jumpToAppConns.partitionsByRules = append(jumpToAppConns.partitionsByRules, rulePartition)
@@ -199,14 +199,14 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	case actionNone: // no default configured for this category
 		nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 	case actionAllow: // default allow
-		rulePartition := &conns.RuleAndConn{Rule: 0, Conn: netset.AllTransports().Subtract(allowedConns.accumulatedConns)}
+		rulePartition := &connectivity.RuleAndConn{Rule: 0, Conn: netset.AllTransports().Subtract(allowedConns.accumulatedConns)}
 		allowedConns.accumulatedConns = netset.AllTransports().Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 		nonDet.accumulatedConns = netset.NoTransports()
 		if !rulePartition.Conn.IsEmpty() {
 			allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
 		}
 	case actionDeny: // default deny
-		rulePartition := &conns.RuleAndConn{Rule: 0, Conn: netset.AllTransports().Subtract(deniedConns.accumulatedConns)}
+		rulePartition := &connectivity.RuleAndConn{Rule: 0, Conn: netset.AllTransports().Subtract(deniedConns.accumulatedConns)}
 		deniedConns.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 		nonDet.accumulatedConns = netset.NoTransports()
 		if !rulePartition.Conn.IsEmpty() {
@@ -302,7 +302,7 @@ func newEmptyCategory(c DfwCategory, d *DFW) *categorySpec {
 	}
 }
 
-func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRules *relevantRules) {
+/*func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRules *relevantRules) {
 	for _, isIngress := range []bool{false, true} {
 		rules := c.processedRules.inbound
 		if !isIngress {
@@ -324,4 +324,4 @@ func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRule
 			}
 		}
 	}
-}
+}*/

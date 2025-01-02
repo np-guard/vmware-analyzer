@@ -1,11 +1,9 @@
 package model
 
 import (
-	"fmt"
-
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -69,8 +67,8 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 	return traceFlows
 }
 
-func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conns.DetailedConnection) {
-	conn := dConn.Conn
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *connectivity.DetailedConnection) {
+	/*conn := dConn.Conn
 	connString := conn.String()
 	if len(dConn.Explanation().Explanations()) == 0 {
 		// one check only using icmp
@@ -89,7 +87,7 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 				collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP},
 				explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
-	}
+	}*/
 }
 
 func toTCPTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {

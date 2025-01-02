@@ -4,7 +4,7 @@ Copyright 2023- IBM Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package conns
+package connectivity
 
 import (
 	"fmt"
@@ -60,17 +60,18 @@ type ConnectivityExplanation struct {
 
 // currently, the explanation is a list of connectivityExplanation, each represent another connection
 type Explanation struct {
-	ExplanationsList []ConnectivityExplanation
+	//ExplanationsList []ConnectivityExplanation
 	//CurrentExplainStr   string
 	IngressExplanations []*RuleAndConn
 	EgressExplanations  []*RuleAndConn
 }
 
-func (es *Explanation) Explanations() []ConnectivityExplanation { return es.ExplanationsList }
-func (es *Explanation) AddExplanation(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
+//func (es *Explanation) Explanations() []ConnectivityExplanation { return es.ExplanationsList }
+
+/*func (es *Explanation) AddExplanation(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
 	es.ExplanationsList = append(es.ExplanationsList,
 		ConnectivityExplanation{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
-}
+}*/
 
 func (es *Explanation) DetailsStr(connSet *netset.TransportSet) (ingress, egress string) {
 	ingressExplanationsFiltered := filterExplanation(es.IngressExplanations, connSet)

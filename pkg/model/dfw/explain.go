@@ -1,18 +1,13 @@
 package dfw
 
-import (
-	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
-)
-
-type relevantRules struct {
+/*type relevantRules struct {
 	egressAllow  []*FwRule
 	egressDeny   []*FwRule
 	ingressAllow []*FwRule
 	ingressDeny  []*FwRule
-}
+}*/
 
-func calcExplanation(allowEgress, allowIngress *netset.TransportSet, relevantRules *relevantRules) *conns.Explanation {
+/*func calcExplanation(allowEgress, allowIngress *netset.TransportSet, relevantRules *relevantRules) *conns.Explanation {
 	res := &conns.Explanation{}
 
 	// connections that are denied by an egress rule:
@@ -38,10 +33,10 @@ func calcExplanation(allowEgress, allowIngress *netset.TransportSet, relevantRul
 		}
 	}
 	return res
-}
+}*/
 
 // splitConnByRulesConn() split the connectivity according to the rules connectivity
-func splitConnByRulesConn(conn *netset.TransportSet, rules []*FwRule) []conns.RuleAndConn {
+/*func splitConnByRulesConn(conn *netset.TransportSet, rules []*FwRule) []conns.RuleAndConn {
 	res := []conns.RuleAndConn{}
 	for _, rule := range rules {
 		relevantConn := rule.conn.Intersect(conn)
@@ -54,3 +49,4 @@ func splitConnByRulesConn(conn *netset.TransportSet, rules []*FwRule) []conns.Ru
 	// todo - what to do if conn is not empty at the end?
 	return res
 }
+*/
