@@ -90,7 +90,7 @@ const (
 type Example struct {
 	vms            []string
 	groups         map[string][]string
-	disjointGroups [][]string
+	DisjointGroups [][]string
 	policies       []category
 }
 

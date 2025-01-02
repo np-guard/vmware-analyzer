@@ -13,7 +13,7 @@ var Example1 = Example{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
-	disjointGroups: [][]string{},
+	DisjointGroups: [][]string{},
 	policies: []category{
 		{
 			name:         "app-x",
@@ -80,7 +80,7 @@ var Example2 = Example{
 		"Hufflepuff-App": {"Hufflepuff-App"},
 		"Hufflepuff-DB":  {"Hufflepuff-DB"},
 	},
-	disjointGroups: [][]string{
+	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
 		{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB",
 			"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
@@ -356,7 +356,7 @@ var ExampleTwoDeniesSimple = Example{
 		"Dumbledore1": {"Dumbledore1"},
 		"Dumbledore2": {"Dumbledore2"},
 	},
-	disjointGroups: [][]string{
+	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
 	},
 	policies: []category{
@@ -420,7 +420,7 @@ var ExampleDenyPassSimple = Example{
 		"Dumbledore1": {"Dumbledore1"},
 		"Dumbledore2": {"Dumbledore2"},
 	},
-	disjointGroups: [][]string{
+	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
 	},
 	policies: []category{
@@ -490,7 +490,7 @@ var ExampleHintsDisjoint = Example{
 		"Dumbledore1": {"Dumbledore1"},
 		"Dumbledore2": {"Dumbledore2"},
 	},
-	disjointGroups: [][]string{
+	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
 	},
 	policies: []category{

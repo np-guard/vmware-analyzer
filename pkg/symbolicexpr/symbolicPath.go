@@ -86,7 +86,7 @@ func (paths *SymbolicPaths) removeTautology() *SymbolicPaths {
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
-func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPaths {
+func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, groupsDisjointHint [][]string) *SymbolicPaths {
 	if len(*denyPaths) == 0 {
 		return allowPaths
 	}

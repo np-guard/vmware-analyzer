@@ -81,7 +81,7 @@ func TestPreprocessing(t *testing.T) {
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(synTest.exData)
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, synTest.exData.DisjointGroups)
 	require.Nil(t, err)
 	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
 	fmt.Println(actualOutput)
