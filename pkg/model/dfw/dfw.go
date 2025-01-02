@@ -51,9 +51,9 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 	explanation.EgressExplanations = append(explanation.EgressExplanations, egressDenied.partitionsByRules...)
 	explanation.EgressExplanations = append(explanation.EgressExplanations, egressDelegated.partitionsByRules...)
 
-	explanation.CurrentExplainStr = fmt.Sprintf("IngressExplanations: %s, EgressExplanations: %s",
-		common.JoinStringifiedSlice(explanation.IngressExplanations, ";"),
-		common.JoinStringifiedSlice(explanation.EgressExplanations, ";"))
+	/*explanation.CurrentExplainStr = fmt.Sprintf("IngressExplanations: %s, EgressExplanations: %s",
+	common.JoinStringifiedSlice(explanation.IngressExplanations, ";"),
+	common.JoinStringifiedSlice(explanation.EgressExplanations, ";"))*/
 
 	return conns.NewDetailedConnection(conn, explanation)
 

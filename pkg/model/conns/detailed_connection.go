@@ -32,10 +32,13 @@ func NewAllDetailedConnection() *DetailedConnection {
 func (d *DetailedConnection) Explanation() *Explanation {
 	return d.ExplanationObj
 }
-func (d *DetailedConnection) String() string {
-	return d.Conn.String()
-	//return fmt.Sprintf("%s %s", d.Conn.String(), d.ExplanationObj.String())
-}
+
+/*
+	func (d *DetailedConnection) String() string {
+		return d.Conn.String()
+		//return fmt.Sprintf("%s %s", d.Conn.String(), d.ExplanationObj.String())
+	}
+*/
 func (d *DetailedConnection) DetailedExplanationString(connSet *netset.TransportSet) string {
 	ingress, egress := d.ExplanationObj.DetailsStr(connSet)
 	return fmt.Sprintf("%s\n%s", ingress, egress)
@@ -51,14 +54,14 @@ type ConnectivityExplanation struct {
 	Allow       bool
 }
 
-func (ce ConnectivityExplanation) String() string {
+/*func (ce ConnectivityExplanation) String() string {
 	return fmt.Sprintf("conn: %s, egress rule: %d, ingress rule: %d, isAllow: %t", ce.Conn.String(), ce.EgressRule, ce.IngressRule, ce.Allow)
-}
+}*/
 
 // currently, the explanation is a list of connectivityExplanation, each represent another connection
 type Explanation struct {
-	ExplanationsList    []ConnectivityExplanation
-	CurrentExplainStr   string
+	ExplanationsList []ConnectivityExplanation
+	//CurrentExplainStr   string
 	IngressExplanations []*RuleAndConn
 	EgressExplanations  []*RuleAndConn
 }
@@ -79,9 +82,9 @@ func (es *Explanation) DetailsStr(connSet *netset.TransportSet) (ingress, egress
 	return fmt.Sprintf("ingress: %s", ingress), fmt.Sprintf("egress: %s", egress)
 }
 
-func (es *Explanation) String() string {
+/*func (es *Explanation) String() string {
 	return es.CurrentExplainStr
-}
+}*/
 
 type RuleAndConn struct {
 	Conn *netset.TransportSet

@@ -162,7 +162,7 @@ func runCommand(args *inArgs) error {
 		fmt.Println(topology)
 	}
 	if !args.skipAnalysis {
-		params := model.OutputParameters{
+		params := common.OutputParameters{
 			Format:   args.outputFormat,
 			FileName: args.outputFile,
 			VMs:      args.outputFilter,

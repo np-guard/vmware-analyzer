@@ -1,19 +1,6 @@
 package model
 
-import (
-	"fmt"
-
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-)
-
-type OutputParameters struct {
-	Format   string
-	FileName string
-	VMs      []string
-	Explain  bool
-}
-
-func (c *config) genConnectivityOutput(params OutputParameters) (res string, err error) {
+/*func (c *config) genConnectivityOutput(params common.OutputParameters) (res string, err error) {
 	filteredConn := c.analyzedConnectivity.Filter(params.VMs)
 	var g common.Graph
 	switch params.Format {
@@ -43,3 +30,4 @@ func (c *config) genConnectivityOutput(params OutputParameters) (res string, err
 func (c *config) genExplanationOutput() string {
 	return fmt.Sprintf("\n\nExplanation section:\n%s", c.analyzedConnectivity.FullOutputWithExplanations())
 }
+*/

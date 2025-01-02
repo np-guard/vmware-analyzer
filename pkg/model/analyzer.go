@@ -2,22 +2,23 @@ package model
 
 import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
+func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
 	config, err := configFromResourcesContainer(recourses, params.VMs)
 	if err != nil {
 		return "", err
 	}
 
-	res, err := config.genConnectivityOutput(params)
+	res, err := config.analyzedConnectivity.GenConnectivityOutput(params)
 
 	return res, err
 }
 
 func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.ResourcesContainerModel) (string, error) {
-	return NSXConnectivityFromResourcesContainer(recourses, OutputParameters{Format: "txt"})
+	return NSXConnectivityFromResourcesContainer(recourses, common.OutputParameters{Format: common.TextFormat})
 }
 
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, vmsFilter []string) (*config, error) {

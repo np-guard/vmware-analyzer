@@ -22,7 +22,7 @@ type connMapEntry struct {
 }
 
 /*func (c connMapEntry) String() string {
-	return fmt.Sprintf("src:%s, dst: %s, allowedConns: %s ", c.Src.Name(), c.Dst.Name(), c.Conn.String())
+	return fmt.Sprintf("src:%s, dst: %s, allowedConns: %s ", c.Src.Name(), c.Dst.Name(), c.Conn.Conn.String())
 }*/
 
 func (c connMapEntry) FullExplanationString() string {
@@ -107,18 +107,13 @@ func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 // String returns a concatenated lines strings with all VM pairs and their permitted connections.
 // If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
 // Todo: sunset this:
+/*
 func (c ConnMap) String() string {
 	return c.FullOutputWithExplanations()
 	//asSlice := c.ToSlice()
 	//return common.SortedJoinStringifiedSlice(asSlice, "\n")
-
-	/*lines := make([]string, len(asSlice))
-	for i, e := range asSlice {
-		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s ", e.Src.Name(), e.Dst.Name(), e.Conn.String())
-	}
-	slices.Sort(lines)
-	return strings.Join(lines, "\n")*/
 }
+*/
 
 func (c ConnMap) FullOutputWithExplanations() string {
 	asSlice := c.ToSlice()
@@ -147,4 +142,38 @@ func (c ConnMap) ToSlice() (res []connMapEntry) {
 		}
 	}
 	return res
+}
+
+func (c ConnMap) GenTextualConnectivityOutput() (res string, err error) {
+	return c.GenConnectivityOutput(common.OutputParameters{Format: common.TextFormat})
+}
+
+func (c ConnMap) GenConnectivityOutput(params common.OutputParameters) (res string, err error) {
+	filteredConn := c.Filter(params.VMs)
+	var g common.Graph
+	switch params.Format {
+	case common.JSONFormat:
+		g = common.NewEdgesGraph("")
+	case common.TextFormat:
+		g = common.NewEdgesGraph("Analyzed connectivity:")
+	case common.DotFormat, common.SvgFormat:
+		g = common.NewDotGraph(false)
+	}
+	for _, e := range filteredConn.ToSlice() {
+		if !e.Conn.Conn.IsEmpty() {
+			g.AddEdge(e.Src, e.Dst, e.Conn.Conn)
+		}
+	}
+	res, err = common.OutputGraph(g, params.FileName, params.Format)
+	if err != nil {
+		return res, err
+	}
+	if params.Format == common.TextFormat && params.Explain {
+		res += c.genExplanationOutput()
+	}
+	return res, nil
+}
+
+func (c ConnMap) genExplanationOutput() string {
+	return fmt.Sprintf("\n\nExplanation section:\n%s", c.FullOutputWithExplanations())
 }

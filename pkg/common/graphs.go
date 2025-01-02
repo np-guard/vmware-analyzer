@@ -109,11 +109,6 @@ func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 
 func (eg *EdgesGraph) String() string {
 	edgesStr := SortedJoinCustomStrFuncSlice(eg.edges, func(e edge) string { return e.string() }, "\n")
-	/*strs := make([]string, len(eg.edges))
-	for i, e := range eg.edges {
-		strs[i] = e.string()
-	}
-	slices.Sort(strs)*/
 	return fmt.Sprintf("%s:\n%s", eg.header, edgesStr)
 }
 
