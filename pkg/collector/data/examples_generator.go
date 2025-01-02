@@ -88,9 +88,10 @@ const (
 
 // Example is in s single domain
 type Example struct {
-	vms      []string
-	groups   map[string][]string
-	policies []category
+	vms            []string
+	groups         map[string][]string
+	disjointGroups [][]string
+	policies       []category
 }
 
 func defaultDenyRule(id int) rule {
