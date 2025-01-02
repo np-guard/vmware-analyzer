@@ -30,13 +30,13 @@ func (c ConnMap) GetExplanationPerConnection(srcVM, dstVM string, inputConn *net
 			for _, ingressEntry := range connEntry.ExplanationObj.IngressExplanations {
 				logging.Debugf("inputConn: %s, ingressEntry.Conn: %s", inputConn.String(), ingressEntry.Conn.String())
 				if !(inputConn.Intersect(ingressEntry.Conn)).IsEmpty() {
-					ingress = append(ingress, ingressEntry.Rule)
+					ingress = append(ingress, ingressEntry.RuleID)
 					logging.Debugf("append")
 				}
 			}
 			for _, egressEntry := range connEntry.ExplanationObj.EgressExplanations {
 				if !(inputConn.Intersect(egressEntry.Conn)).IsEmpty() {
-					egress = append(egress, egressEntry.Rule)
+					egress = append(egress, egressEntry.RuleID)
 				}
 			}
 

@@ -170,7 +170,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 			switch rule.action {
 			case actionAllow:
 				addedAllowedConns := rule.conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{Rule: rule.ruleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.ruleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
@@ -178,7 +178,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 
 			case actionDeny:
 				addedDeniedConns := rule.conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{Rule: rule.ruleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.ruleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
 				deniedConns.accumulatedConns = deniedConns.accumulatedConns.Union(addedDeniedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					deniedConns.partitionsByRules = append(deniedConns.partitionsByRules, rulePartition)
@@ -186,7 +186,7 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 
 			case actionJumpToApp:
 				addedJumpToAppConns := rule.conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{Rule: rule.ruleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.ruleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
 				jumpToAppConns.accumulatedConns = jumpToAppConns.accumulatedConns.Union(addedJumpToAppConns)
 				if !rulePartition.Conn.IsEmpty() {
 					jumpToAppConns.partitionsByRules = append(jumpToAppConns.partitionsByRules, rulePartition)
@@ -199,14 +199,14 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	case actionNone: // no default configured for this category
 		nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 	case actionAllow: // default allow
-		rulePartition := &connectivity.RuleAndConn{Rule: 0, Conn: netset.AllTransports().Subtract(allowedConns.accumulatedConns)}
+		rulePartition := &connectivity.RuleAndConn{RuleID: 0, Conn: netset.AllTransports().Subtract(allowedConns.accumulatedConns)}
 		allowedConns.accumulatedConns = netset.AllTransports().Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 		nonDet.accumulatedConns = netset.NoTransports()
 		if !rulePartition.Conn.IsEmpty() {
 			allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
 		}
 	case actionDeny: // default deny
-		rulePartition := &connectivity.RuleAndConn{Rule: 0, Conn: netset.AllTransports().Subtract(deniedConns.accumulatedConns)}
+		rulePartition := &connectivity.RuleAndConn{RuleID: 0, Conn: netset.AllTransports().Subtract(deniedConns.accumulatedConns)}
 		deniedConns.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 		nonDet.accumulatedConns = netset.NoTransports()
 		if !rulePartition.Conn.IsEmpty() {

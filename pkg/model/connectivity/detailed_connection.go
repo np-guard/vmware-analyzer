@@ -15,10 +15,31 @@ import (
 
 //////////////////////////////////////////////////////////////////////
 
+// connectivity explanation types - context is between two specific endpoints
+
+// DetailedConnection holds a connection set of permitted/blocked connections between two endpoints,
+// and explanation object that holds the set of all rules reltaed to these connections
 type DetailedConnection struct {
 	Conn           *netset.TransportSet
 	ExplanationObj *Explanation
 }
+
+// Explanation is composed of ingress and egress slices for rules and connections.
+// a connection C from vm1 to vm2 is explained as follows:
+// ingress: all rule IDs in IngressExplanations for which C is contained in the connection set object
+// egress: all rule IDs in EgressExplanations for which C is contained in the connection set object
+type Explanation struct {
+	IngressExplanations []*RuleAndConn
+	EgressExplanations  []*RuleAndConn
+}
+
+// RuleAndConn contains a set of connections and a rule ID which is directly related to these connections
+type RuleAndConn struct {
+	Conn   *netset.TransportSet
+	RuleID int
+}
+
+//////////////////////////////////////////////////////////////////////
 
 func NewDetailedConnection(conn *netset.TransportSet, explanations *Explanation) *DetailedConnection {
 	return &DetailedConnection{Conn: conn, ExplanationObj: explanations}
@@ -29,71 +50,25 @@ func NewEmptyDetailedConnection() *DetailedConnection {
 func NewAllDetailedConnection() *DetailedConnection {
 	return &DetailedConnection{Conn: netset.AllTransports(), ExplanationObj: &Explanation{}}
 }
-func (d *DetailedConnection) Explanation() *Explanation {
-	return d.ExplanationObj
-}
 
-/*
-	func (d *DetailedConnection) String() string {
-		return d.Conn.String()
-		//return fmt.Sprintf("%s %s", d.Conn.String(), d.ExplanationObj.String())
-	}
-*/
 func (d *DetailedConnection) DetailedExplanationString(connSet *netset.TransportSet) string {
-	ingress, egress := d.ExplanationObj.DetailsStr(connSet)
-	return fmt.Sprintf("%s\n%s", ingress, egress)
-
+	/*ingress, egress := d.ExplanationObj.String(connSet)
+	return fmt.Sprintf("%s\n%s", ingress, egress)*/
+	return d.ExplanationObj.String(connSet)
 }
 
-// ConnectivityExplanation has the explanation of specific connectivity:
-// whether the connectivity allowed, and what are the rules that allow/deny it
-type ConnectivityExplanation struct {
-	Conn        *netset.TransportSet
-	EgressRule  int
-	IngressRule int
-	Allow       bool
-}
-
-/*func (ce ConnectivityExplanation) String() string {
-	return fmt.Sprintf("conn: %s, egress rule: %d, ingress rule: %d, isAllow: %t", ce.Conn.String(), ce.EgressRule, ce.IngressRule, ce.Allow)
-}*/
-
-// currently, the explanation is a list of connectivityExplanation, each represent another connection
-type Explanation struct {
-	//ExplanationsList []ConnectivityExplanation
-	//CurrentExplainStr   string
-	IngressExplanations []*RuleAndConn
-	EgressExplanations  []*RuleAndConn
-}
-
-//func (es *Explanation) Explanations() []ConnectivityExplanation { return es.ExplanationsList }
-
-/*func (es *Explanation) AddExplanation(conn *netset.TransportSet, egressRule, ingressRule int, allow bool) {
-	es.ExplanationsList = append(es.ExplanationsList,
-		ConnectivityExplanation{Conn: conn, EgressRule: egressRule, IngressRule: ingressRule, Allow: allow})
-}*/
-
-func (es *Explanation) DetailsStr(connSet *netset.TransportSet) (ingress, egress string) {
+func (es *Explanation) String(connSet *netset.TransportSet) string {
 	ingressExplanationsFiltered := filterExplanation(es.IngressExplanations, connSet)
 	egressExplanationsFiltered := filterExplanation(es.EgressExplanations, connSet)
 
-	ingress = common.JoinStringifiedSlice(ingressExplanationsFiltered, ",")
-	egress = common.JoinStringifiedSlice(egressExplanationsFiltered, ",")
+	ingress := common.JoinStringifiedSlice(ingressExplanationsFiltered, ",")
+	egress := common.JoinStringifiedSlice(egressExplanationsFiltered, ",")
 
-	return fmt.Sprintf("ingress: %s", ingress), fmt.Sprintf("egress: %s", egress)
-}
-
-/*func (es *Explanation) String() string {
-	return es.CurrentExplainStr
-}*/
-
-type RuleAndConn struct {
-	Conn *netset.TransportSet
-	Rule int
+	return fmt.Sprintf("ingress: %s\negress: %s", ingress, egress)
 }
 
 func (rac *RuleAndConn) String() string {
-	return fmt.Sprintf("{conn: %s, ruleID: %d}", rac.Conn.String(), rac.Rule)
+	return fmt.Sprintf("{conn: %s, ruleID: %d}", rac.Conn.String(), rac.RuleID)
 }
 
 func filterExplanation(allExplanations []*RuleAndConn, connSet *netset.TransportSet) []*RuleAndConn {
@@ -103,7 +78,7 @@ func filterExplanation(allExplanations []*RuleAndConn, connSet *netset.Transport
 			panic(r)
 		}
 		if !r.Conn.Intersect(connSet).IsEmpty() {
-			res = append(res, &RuleAndConn{Rule: r.Rule, Conn: r.Conn.Intersect(connSet)})
+			res = append(res, &RuleAndConn{RuleID: r.RuleID, Conn: r.Conn.Intersect(connSet)})
 		}
 	}
 	return res
