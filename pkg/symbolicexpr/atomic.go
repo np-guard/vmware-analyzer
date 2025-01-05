@@ -1,6 +1,8 @@
 package symbolicexpr
 
 import (
+	"slices"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -55,9 +57,33 @@ func (term atomicTerm) isNegateOf(otherAt atomic) bool {
 	return term.string() == otherAt.negate().string()
 }
 
-// returns true iff otherAt is dsijoint to atomicTerm as given by hints
+// returns true iff otherAt is disjoint to atomicTerm as given by hints
 func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
-	return false // todo implement
+	otherTerm, ok := otherAt.(atomicTerm)
+	if !ok {
+		return false
+	}
+	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if of the same type
+	// (tag/groups/.. as presented by property) and of the same negation (as presented by property)
+	if term.neg != otherTerm.neg || term.property != otherTerm.property {
+		return false
+	}
+	return hints.disjoint(term.toVal, otherTerm.toVal)
+}
+
+// returns true iff term is implied by to atomic as given by hints
+func (term atomicTerm) impliedBy(otherAt atomic, hints *Hints) bool {
+	otherTerm, ok := otherAt.(atomicTerm)
+	if !ok {
+		return false
+	}
+	// in hints list of disjoint groups/tags/.. is given. Term1 is implied by term2 if both are of the same type
+	// (tag/groups/.. as presented by property) and term1 is not negated while term2 is
+	// e.g., given that Slytherin and Hufflepuff are disjoint, group = Slytherin implies group != Hufflepuff
+	if term.property != otherTerm.property && term.neg && !otherTerm.neg {
+		return false
+	}
+	return hints.disjoint(term.toVal, otherTerm.toVal)
 }
 
 func (tautology) string() string {
@@ -80,5 +106,18 @@ func (tautology) isNegateOf(atomic) bool {
 
 // tautology is not disjoint to any atomic term
 func (tautology) disjoint(atomic, *Hints) bool {
+	return false
+}
+
+// are two given by name atomicTerms in disjoint list
+func (hints *Hints) disjoint(name1, name2 string) bool {
+	if name1 == name2 {
+		return false
+	}
+	for _, disjointGroup := range hints.GroupsDisjoint {
+		if slices.Contains(disjointGroup, name1) && slices.Contains(disjointGroup, name2) {
+			return true
+		}
+	}
 	return false
 }
