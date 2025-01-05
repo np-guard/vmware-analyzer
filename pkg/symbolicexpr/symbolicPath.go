@@ -67,18 +67,23 @@ func (paths SymbolicPaths) removeImplied(hints *Hints) SymbolicPaths {
 	return newPaths
 }
 
-func (paths *SymbolicPaths) removeTautology(hints *Hints) *SymbolicPaths {
+func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
 		if !path.isEmpty(hints) {
-			newPath := &SymbolicPath{Src: path.Src.removeTautology(), Dst: path.Dst.removeTautology(), Conn: path.Conn}
-			newPaths = append(newPaths, newPath)
+			newPaths = append(newPaths, path.removeRedundant(hints))
 		}
 	}
 	return &newPaths
 }
 
 func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
+	fmt.Printf("removeRedundant for %v\n", path.String())
+	fmt.Printf("hints:")
+	for _, disjointGroup := range hints.GroupsDisjoint {
+		fmt.Printf("%v\n", disjointGroup)
+	}
+	fmt.Println()
 	return &SymbolicPath{Src: path.Src.removeRedundant(hints), Dst: path.Dst.removeRedundant(hints), Conn: path.Conn}
 }
 
@@ -130,14 +135,14 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(&srcAtomNegate),
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
 				Dst: allowPath.Dst, Conn: allowPath.Conn})
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(&dstAtomNegate),
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
 				Conn: allowPath.Conn})
 		}
 	}

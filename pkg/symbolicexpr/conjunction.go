@@ -1,6 +1,7 @@
 package symbolicexpr
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -45,15 +46,15 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 		return *c
 	}
 	newC := Conjunction{}
-	tautologyRemoved := false
+	redundantRemoved := false
 	for _, atom := range *c {
 		if !atom.isTautology() && !impliedBy(atom, c, hints) {
 			newC = append(newC, atom)
 		} else {
-			tautologyRemoved = true
+			redundantRemoved = true
 		}
 	}
-	if len(newC) == 0 && tautologyRemoved {
+	if len(newC) == 0 && redundantRemoved {
 		return Conjunction{tautology{}}
 	}
 	return newC
