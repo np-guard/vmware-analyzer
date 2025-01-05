@@ -58,6 +58,7 @@ func (c *Conjunction) removeTautology() Conjunction {
 }
 
 // checks whether the conjunction is empty: either syntactically, or contains an atomicTerm and its negation
+// todo: use also isDisjointTo; to that end need hints parm
 func (c *Conjunction) isEmptySet() bool {
 	if len(*c) == 0 {
 		return true
@@ -106,6 +107,7 @@ func (c *Conjunction) impliedBy(other *Conjunction) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
 	}
+	// todo: use also isDisjointTo; to that end needs hints parm
 	for _, atom := range *c {
 		if !other.contains(atom) {
 			return false

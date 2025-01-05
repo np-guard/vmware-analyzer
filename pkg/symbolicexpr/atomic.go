@@ -55,6 +55,11 @@ func (term atomicTerm) isNegateOf(otherAt atomic) bool {
 	return term.string() == otherAt.negate().string()
 }
 
+// returns true iff otherAt is dsijoint to atomicTerm as given by hints
+func (term atomicTerm) isDisjointTo(otherAt atomic, hints *Hints) bool {
+	return false // todo implement
+}
+
 func (tautology) string() string {
 	return "*"
 }
@@ -70,5 +75,10 @@ func (tautology) isTautology() bool {
 // returns true iff otherAt is negation of
 // once we cache the atomic terms, we can just compare pointers
 func (tautology) isNegateOf(atomic) bool {
+	return false
+}
+
+// tautology is not disjoint to any atomic term
+func (tautology) isDisjointTo(atomic, *Hints) bool {
 	return false
 }
