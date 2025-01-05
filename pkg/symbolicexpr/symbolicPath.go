@@ -78,6 +78,10 @@ func (paths *SymbolicPaths) removeTautology(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
+func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
+	return &SymbolicPath{Src: path.Src.removeRedundant(hints), Dst: path.Dst.removeRedundant(hints), Conn: path.Conn}
+}
+
 // ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
@@ -141,7 +145,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 	}
-	return resAllowPaths.removeEmpty(hints).removeTautology(hints)
+	return resAllowPaths.removeEmpty(hints).removeRedundant(hints)
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths

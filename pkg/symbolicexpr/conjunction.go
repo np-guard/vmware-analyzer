@@ -38,14 +38,16 @@ func (c *Conjunction) isTautology() bool {
 	return false
 }
 
-func (c *Conjunction) removeTautology() Conjunction {
+// remove redundant terms: tautology or redundant as per hints; the latter is when e.g., a and b are disjoint
+// then "a and not b" - b is redundant
+func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	if len(*c) <= 1 {
 		return *c
 	}
 	newC := Conjunction{}
 	tautologyRemoved := false
 	for _, atom := range *c {
-		if !atom.isTautology() {
+		if !atom.isTautology() && !impliedBy(atom, c, hints) {
 			newC = append(newC, atom)
 		} else {
 			tautologyRemoved = true
@@ -117,14 +119,14 @@ func (c *Conjunction) impliedBy(other *Conjunction, hints *Hints) bool {
 		return false
 	}
 	for _, atom := range *c {
-		if !other.contains(atom) && !impliedBy(c, atom, hints) {
+		if !other.contains(atom) && !impliedBy(atom, c, hints) {
 			return false
 		}
 	}
 	return true
 }
 
-func impliedBy(c *Conjunction, atom atomic, hints *Hints) bool {
+func impliedBy(atom atomic, c *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false
 	}

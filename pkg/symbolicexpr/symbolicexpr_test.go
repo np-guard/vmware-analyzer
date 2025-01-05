@@ -67,6 +67,23 @@ func TestSymbolicPaths(t *testing.T) {
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
 	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
+	// tests removeRedundant
+	slytherin, gryffindor := "Slytherin", "Gryffindor"
+	testGroup := initTestTag("group")
+	atomicSly := atomicTerm{property: testGroup, toVal: slytherin}
+	atomicNegSly := atomicTerm{property: testGroup, toVal: slytherin, neg: true}
+	atomicGry := atomicTerm{property: testGroup, toVal: gryffindor}
+	atomicNegGry := atomicTerm{property: testGroup, toVal: gryffindor, neg: true}
+	src := Conjunction{atomicGry, atomicNegSly}
+	dst := Conjunction{atomicSly, atomicNegGry}
+	path := SymbolicPath{src, dst, netset.AllTCPTransport()}
+	fmt.Printf("path is %v\n", path.String())
+	disjoint := [][]string{{slytherin, gryffindor}}
+	hints := Hints{GroupsDisjoint: disjoint}
+	pathNoRedundant := path.removeRedundant(&hints)
+	fmt.Printf("pathNoRedundant:%v\n", pathNoRedundant)
+	require.Equal(t, "TCP from (group = Gryffindor) to (group = Slytherin)", pathNoRedundant.String(),
+		"redundant removal not working")
 }
 
 // Input:
