@@ -58,8 +58,7 @@ func (c *Conjunction) removeTautology() Conjunction {
 }
 
 // checks whether the conjunction is empty: either syntactically, or contains an atomicTerm and its negation
-// or contains two atoms that are disjoint to each other
-// todo: use also disjoint
+// or contains two atoms that are disjoint to each other by hints
 func (c *Conjunction) isEmptySet(hints *Hints) bool {
 	if len(*c) == 0 {
 		return true
@@ -68,7 +67,7 @@ func (c *Conjunction) isEmptySet(hints *Hints) bool {
 		reminder := *c
 		reminder = reminder[i+1:]
 		for _, inAtomicTerm := range reminder {
-			if outAtomicTerm.isNegateOf(inAtomicTerm) {
+			if outAtomicTerm.isNegateOf(inAtomicTerm) || outAtomicTerm.disjoint(inAtomicTerm, hints) {
 				return true
 			}
 		}
@@ -79,7 +78,6 @@ func (c *Conjunction) isEmptySet(hints *Hints) bool {
 // checks whether conjunction other is disjoint to conjunction c
 // this is the case if there's a term in c and its contradiction in other
 // or if there are two terms that are disjoint to each other by hints
-// todo: use disjoint hints on atomic terms
 func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 || len(*other) == 0 {
 		return false
@@ -88,7 +86,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 		return false
 	}
 	for _, atomicTerm := range *other {
-		if c.contains(atomicTerm.negate()) {
+		if c.contains(atomicTerm.negate()) || c.contradicts(atomicTerm, hints) {
 			return true
 		}
 	}
@@ -104,16 +102,36 @@ func (c *Conjunction) contains(atom atomic) bool {
 	return false
 }
 
-// Conjunction c is implied by other iff any term in other also exists in c
+func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
+	for _, atomicTerm := range *c {
+		if atomicTerm.disjoint(atom, hints) {
+			return true
+		}
+	}
+	return false
+}
+
+// Conjunction c is implied by other iff any term in other also exists in c or is implied by it
 func (c *Conjunction) impliedBy(other *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
 	}
-	// todo: use also disjoint
 	for _, atom := range *c {
-		if !other.contains(atom) {
+		if !other.contains(atom) && !impliedBy(c, atom, hints) {
 			return false
 		}
 	}
 	return true
+}
+
+func impliedBy(c *Conjunction, atom atomic, hints *Hints) bool {
+	if len(*c) == 0 { // nil Conjunction is equiv to tautology
+		return false
+	}
+	for _, otherAtom := range *c {
+		if atom.impliedBy(otherAtom, hints) {
+			return true
+		}
+	}
+	return false
 }

@@ -106,6 +106,10 @@ func (tautology) disjoint(atomic, *Hints) bool {
 	return false
 }
 
+func (tautology) impliedBy(atom atomic, hints *Hints) bool {
+	return atom.isTautology()
+}
+
 // are two given by name atomicTerms in disjoint list
 func (hints *Hints) disjoint(name1, name2 string) bool {
 	if name1 == name2 {
