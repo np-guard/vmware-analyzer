@@ -74,16 +74,13 @@ func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
 // returns true iff term is implied by to atomic as given by hints
 func (term atomicTerm) impliedBy(otherAt atomic, hints *Hints) bool {
 	otherTerm, ok := otherAt.(atomicTerm)
-	if !ok {
+	if !ok || term.property != otherTerm.property {
 		return false
 	}
 	// in hints list of disjoint groups/tags/.. is given. Term1 is implied by term2 if both are of the same type
 	// (tag/groups/.. as presented by property) and term1 is not negated while term2 is
 	// e.g., given that Slytherin and Hufflepuff are disjoint, group = Slytherin implies group != Hufflepuff
-	if term.property != otherTerm.property && term.neg && !otherTerm.neg {
-		return false
-	}
-	return hints.disjoint(term.toVal, otherTerm.toVal)
+	return hints.disjoint(term.toVal, otherTerm.toVal) && term.neg && !otherTerm.neg
 }
 
 func (tautology) string() string {

@@ -32,6 +32,7 @@ func TestAtomicTerms(t *testing.T) {
 	atomicNegGry := atomicTerm{property: testGroup, toVal: gryffindor, neg: true}
 	disjoint := [][]string{{slytherin, gryffindor}}
 	hints := Hints{GroupsDisjoint: disjoint}
+	// test disjoint between atomics
 	require.Equal(t, atomicGry.disjoint(atomicSly, &hints), true,
 		"Slytherin and Gryffindor should be disjoint")
 	require.Equal(t, atomicNegSly.disjoint(atomicNegGry, &hints), true,
@@ -40,6 +41,15 @@ func TestAtomicTerms(t *testing.T) {
 		"Slytherin and dontCare should not be disjoint")
 	require.Equal(t, atomicGry.disjoint(atomicNegSly, &hints), false,
 		"Slytherin and Neg Gryffindor should not be disjoint")
+	// test impliedBy between atomics
+	require.Equal(t, atomicGry.impliedBy(atomicSly, &hints), false,
+		"Gryffindor not implied by Slytherin")
+	require.Equal(t, atomicNegSly.impliedBy(atomicNegGry, &hints), false,
+		"Neg Gryffindor not implied by Neg Slytherin  should be disjoint")
+	require.Equal(t, atomicGry.impliedBy(atomicDontCare, &hints), false,
+		"Slytherin not implied by dontCare")
+	require.Equal(t, atomicNegSly.impliedBy(atomicGry, &hints), true,
+		"Slytherin neg implied by Gryffindor")
 }
 
 func TestSymbolicPaths(t *testing.T) {
