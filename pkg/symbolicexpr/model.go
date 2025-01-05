@@ -32,7 +32,7 @@ type atomic interface {
 	negate() atomic
 	isTautology() bool
 	isNegateOf(atomic) bool
-	isDisjointTo(atomic, *Hints) bool // based on hint
+	disjoint(atomic, *Hints) bool // based on hint
 }
 
 // Conjunction a DNF Conjunction of Atomics

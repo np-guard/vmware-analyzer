@@ -17,9 +17,9 @@ func (path *SymbolicPath) isEmpty(hints *Hints) bool {
 }
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
-func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
-	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src) ||
-		path.Dst.disjoint(&other.Dst)
+func (path *SymbolicPath) disJointPaths(other *SymbolicPath, hints *Hints) bool {
+	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src, hints) ||
+		path.Dst.disjoint(&other.Dst, hints)
 }
 
 func (path *SymbolicPath) impliedBy(other *SymbolicPath, hints *Hints) bool {
@@ -94,7 +94,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 	for _, allowPath := range *allowPaths {
 		relevantDenyPaths := SymbolicPaths{}
 		for _, denyPath := range *denyPaths {
-			if !allowPath.disJointPaths(denyPath) {
+			if !allowPath.disJointPaths(denyPath, hints) {
 				relevantDenyPaths = append(relevantDenyPaths, denyPath)
 			}
 		}

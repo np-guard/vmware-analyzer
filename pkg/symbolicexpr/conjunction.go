@@ -58,7 +58,8 @@ func (c *Conjunction) removeTautology() Conjunction {
 }
 
 // checks whether the conjunction is empty: either syntactically, or contains an atomicTerm and its negation
-// todo: use also isDisjointTo
+// or contains two atoms that are disjoint to each other
+// todo: use also disjoint
 func (c *Conjunction) isEmptySet(hints *Hints) bool {
 	if len(*c) == 0 {
 		return true
@@ -77,8 +78,9 @@ func (c *Conjunction) isEmptySet(hints *Hints) bool {
 
 // checks whether conjunction other is disjoint to conjunction c
 // this is the case if there's a term in c and its contradiction in other
-// we will later add hints
-func (c *Conjunction) disjoint(other *Conjunction) bool {
+// or if there are two terms that are disjoint to each other by hints
+// todo: use disjoint hints on atomic terms
+func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 || len(*other) == 0 {
 		return false
 	}
@@ -107,7 +109,7 @@ func (c *Conjunction) impliedBy(other *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
 	}
-	// todo: use also isDisjointTo
+	// todo: use also disjoint
 	for _, atom := range *c {
 		if !other.contains(atom) {
 			return false

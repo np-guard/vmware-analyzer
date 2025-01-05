@@ -56,7 +56,7 @@ func (term atomicTerm) isNegateOf(otherAt atomic) bool {
 }
 
 // returns true iff otherAt is dsijoint to atomicTerm as given by hints
-func (term atomicTerm) isDisjointTo(otherAt atomic, hints *Hints) bool {
+func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
 	return false // todo implement
 }
 
@@ -79,6 +79,6 @@ func (tautology) isNegateOf(atomic) bool {
 }
 
 // tautology is not disjoint to any atomic term
-func (tautology) isDisjointTo(atomic, *Hints) bool {
+func (tautology) disjoint(atomic, *Hints) bool {
 	return false
 }
