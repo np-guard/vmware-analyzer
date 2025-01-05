@@ -18,7 +18,7 @@ func (c *Conjunction) string() string {
 	return "(" + strings.Join(resArray, " and ") + ")"
 }
 
-func (c *Conjunction) add(atomic *atomicTerm) *Conjunction {
+func (c *Conjunction) add(atomic atomicTerm) *Conjunction {
 	if c.contains(atomic) {
 		return c
 	}
