@@ -28,8 +28,10 @@ type tautology struct {
 
 // atomic interface for atomic expression - implemented by atomicTerm and tautology
 type atomic interface {
-	string() string
+	name() string   // name of group/tag/...
+	string() string // full expression e.g. "group = slytherin"
 	negate() atomic
+	isNegation() bool
 	isTautology() bool
 	isNegateOf(atomic) bool
 	disjoint(atomic, *Hints) bool  // based on hints

@@ -78,12 +78,6 @@ func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
 }
 
 func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
-	fmt.Printf("removeRedundant for %v\n", path.String())
-	fmt.Printf("hints:")
-	for _, disjointGroup := range hints.GroupsDisjoint {
-		fmt.Printf("%v\n", disjointGroup)
-	}
-	fmt.Println()
 	return &SymbolicPath{Src: path.Src.removeRedundant(hints), Dst: path.Dst.removeRedundant(hints), Conn: path.Conn}
 }
 

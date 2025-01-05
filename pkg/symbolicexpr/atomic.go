@@ -42,6 +42,14 @@ func (atomicTerm) isTautology() bool {
 	return false
 }
 
+func (term atomicTerm) isNegation() bool {
+	return term.neg
+}
+
+func (term atomicTerm) name() string {
+	return term.toVal
+}
+
 // todo: handling only "in group" in this stage
 func getAtomicTermsForGroups(groups []*collector.Group) []*atomicTerm {
 	res := make([]*atomicTerm, len(groups))
@@ -58,37 +66,38 @@ func (term atomicTerm) isNegateOf(otherAt atomic) bool {
 }
 
 // returns true iff otherAt is disjoint to atomicTerm as given by hints
+// todo: only if of the same type as by (tag/groups/.. as presented by property)?
 func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
-	otherTerm, ok := otherAt.(atomicTerm)
-	if !ok {
+	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if of the same negation
+	if term.isNegation() != otherAt.isNegation() {
 		return false
 	}
-	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if of the same type
-	// (tag/groups/.. as presented by property) and of the same negation (as presented by property)
-	if term.neg != otherTerm.neg || term.property != otherTerm.property {
-		return false
-	}
-	return hints.disjoint(term.toVal, otherTerm.toVal)
+	return hints.disjoint(term.name(), otherAt.name())
 }
 
 // returns true iff term is implied by to atomic as given by hints
+// todo: only if of the same type as by (tag/groups/.. as presented by property)?
 func (term atomicTerm) impliedBy(otherAt atomic, hints *Hints) bool {
-	otherTerm, ok := otherAt.(atomicTerm)
-	if !ok || term.property != otherTerm.property {
-		return false
-	}
 	// in hints list of disjoint groups/tags/.. is given. Term1 is implied by term2 if both are of the same type
 	// (tag/groups/.. as presented by property) and term1 is not negated while term2 is
 	// e.g., given that Slytherin and Hufflepuff are disjoint, group = Slytherin implies group != Hufflepuff
-	return hints.disjoint(term.toVal, otherTerm.toVal) && term.neg && !otherTerm.neg
+	return hints.disjoint(term.toVal, otherAt.name()) && term.isNegation() && !otherAt.isNegation()
 }
 
 func (tautology) string() string {
 	return "*"
 }
 
+func (tautology) name() string {
+	return ""
+}
+
 func (tautology) negate() atomic {
 	return tautology{}
+}
+
+func (tautology) isNegation() bool {
+	return false
 }
 
 func (tautology) isTautology() bool {
