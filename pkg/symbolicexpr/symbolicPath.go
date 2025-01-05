@@ -12,8 +12,8 @@ func (path *SymbolicPath) String() string {
 }
 
 // if the source or destination is empty then so is the entire path
-func (path *SymbolicPath) isEmpty() bool {
-	return path.Conn.IsEmpty() || path.Src.isEmptySet() || path.Dst.isEmptySet()
+func (path *SymbolicPath) isEmpty(hints *Hints) bool {
+	return path.Conn.IsEmpty() || path.Src.isEmptySet(hints) || path.Dst.isEmptySet(hints)
 }
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
@@ -22,8 +22,8 @@ func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
 		path.Dst.disjoint(&other.Dst)
 }
 
-func (path *SymbolicPath) impliedBy(other *SymbolicPath) bool {
-	return path.Conn.IsSubset(other.Conn) && path.Src.impliedBy(&other.Src) && path.Dst.impliedBy(&other.Dst)
+func (path *SymbolicPath) impliedBy(other *SymbolicPath, hints *Hints) bool {
+	return path.Conn.IsSubset(other.Conn) && path.Src.impliedBy(&other.Src, hints) && path.Dst.impliedBy(&other.Dst, hints)
 }
 
 func (paths *SymbolicPaths) String() string {
@@ -37,17 +37,17 @@ func (paths *SymbolicPaths) String() string {
 	return strings.Join(res, "\n")
 }
 
-func (paths *SymbolicPaths) removeEmpty() *SymbolicPaths {
+func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
-		if !path.isEmpty() {
+		if !path.isEmpty(hints) {
 			newPaths = append(newPaths, path)
 		}
 	}
 	return &newPaths
 }
 
-func (paths SymbolicPaths) removeImplied() SymbolicPaths {
+func (paths SymbolicPaths) removeImplied(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
 		addPath := true
@@ -55,7 +55,7 @@ func (paths SymbolicPaths) removeImplied() SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.impliedBy(outerPath) && !(outerPath.impliedBy(innerPath) && outerIndex < innerIndex) {
+			if innerPath.impliedBy(outerPath, hints) && !(outerPath.impliedBy(innerPath, hints) && outerIndex < innerIndex) {
 				addPath = false
 				break
 			}
@@ -67,10 +67,10 @@ func (paths SymbolicPaths) removeImplied() SymbolicPaths {
 	return newPaths
 }
 
-func (paths *SymbolicPaths) removeTautology() *SymbolicPaths {
+func (paths *SymbolicPaths) removeTautology(hints *Hints) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
-		if !path.isEmpty() {
+		if !path.isEmpty(hints) {
 			newPath := &SymbolicPath{Src: path.Src.removeTautology(), Dst: path.Dst.removeTautology(), Conn: path.Conn}
 			newPaths = append(newPaths, newPath)
 		}
@@ -108,7 +108,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
-				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath)
+				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
 			computedAllowPaths = newComputedAllowPaths
@@ -116,12 +116,12 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
 	}
-	res = res.removeImplied()
+	res = res.removeImplied(hints)
 	return &res
 }
 
 // algorithm described in README of symbolicexpr
-func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
+func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
 	resAllowPaths := SymbolicPaths{}
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
@@ -141,7 +141,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 	}
-	return resAllowPaths.removeEmpty().removeTautology()
+	return resAllowPaths.removeEmpty(hints).removeTautology(hints)
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
