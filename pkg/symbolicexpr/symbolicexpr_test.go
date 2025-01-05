@@ -22,6 +22,26 @@ func (testT *testTag) Name() string {
 	return testT.name
 }
 
+func TestAtomicTerms(t *testing.T) {
+	slytherin, gryffindor, dontCare := "Slytherin", "Gryffindor", "dontCare"
+	testGroup := initTestTag("group")
+	atomicSly := atomicTerm{property: testGroup, toVal: slytherin}
+	atomicDontCare := atomicTerm{property: testGroup, toVal: dontCare}
+	atomicNegSly := atomicTerm{property: testGroup, toVal: slytherin, neg: true}
+	atomicGry := atomicTerm{property: testGroup, toVal: gryffindor}
+	atomicNegGry := atomicTerm{property: testGroup, toVal: gryffindor, neg: true}
+	disjoint := [][]string{{slytherin, gryffindor}}
+	hints := Hints{GroupsDisjoint: disjoint}
+	require.Equal(t, atomicGry.disjoint(atomicSly, &hints), true,
+		"Slytherin and Gryffindor should be disjoint")
+	require.Equal(t, atomicNegSly.disjoint(atomicNegGry, &hints), true,
+		"Neg Slytherin and Neg Gryffindor should be disjoint")
+	require.Equal(t, atomicGry.disjoint(atomicDontCare, &hints), false,
+		"Slytherin and dontCare should not be disjoint")
+	require.Equal(t, atomicGry.disjoint(atomicNegSly, &hints), false,
+		"Slytherin and Neg Gryffindor should not be disjoint")
+}
+
 func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
