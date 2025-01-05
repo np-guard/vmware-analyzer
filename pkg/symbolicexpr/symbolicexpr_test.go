@@ -292,12 +292,12 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 		atomicAllow := atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v`", i)}
 		conjAllow = *conjAllow.add(atomicAllow)
 	}
-	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet(nil))
+	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet(&Hints{GroupsDisjoint: [][]string{}}))
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
-	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, nil)
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t, emptySet, allowGivenDeny.String(),
 		"allowGivenDeny deny tautology computation not as expected")
@@ -428,11 +428,14 @@ func TestSymbolicPathsImplied(t *testing.T) {
 	path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
 	// tests:
 	require.Equal(t, true,
-		path1.impliedBy(path1, nil) && path1.impliedBy(path1Tag, nil) && path1.impliedBy(path2, nil) &&
-			path1.impliedBy(path3, nil) && path1.impliedBy(path4, nil) && path1.impliedBy(path5, nil),
+		path1.impliedBy(path1, &Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path1Tag,
+			&Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path2, &Hints{GroupsDisjoint: [][]string{}}) &&
+			path1.impliedBy(path3, &Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path4,
+			&Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path5, &Hints{GroupsDisjoint: [][]string{}}),
 		"path1 should be implied by all paths")
-	require.Equal(t, true, !path1Tag.impliedBy(path3, nil), "path3 does not imply path1Tag due to the connection")
-	require.Equal(t, true,
-		path2.impliedBy(path3, nil) && path2.impliedBy(path5, nil) && !path2.impliedBy(path4, nil),
+	require.Equal(t, true, !path1Tag.impliedBy(path3, &Hints{GroupsDisjoint: [][]string{}}),
+		"path3 does not imply path1Tag due to the connection")
+	require.Equal(t, true, path2.impliedBy(path3, &Hints{GroupsDisjoint: [][]string{}}) &&
+		path2.impliedBy(path5, &Hints{GroupsDisjoint: [][]string{}}) && !path2.impliedBy(path4, &Hints{GroupsDisjoint: [][]string{}}),
 		"path2 should be implied by path3 and path5, is not implied by path4")
 }
