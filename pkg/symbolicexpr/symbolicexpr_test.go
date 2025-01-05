@@ -22,7 +22,7 @@ func (testT *testTag) Name() string {
 	return testT.name
 }
 
-/*func TestAtomicTerms(t *testing.T) {
+func TestAtomicTerms(t *testing.T) {
 	slytherin, gryffindor, dontCare := "Slytherin", "Gryffindor", "dontCare"
 	testGroup := initTestTag("group")
 	atomicSly := atomicTerm{property: testGroup, toVal: slytherin}
@@ -50,7 +50,7 @@ func (testT *testTag) Name() string {
 		"Slytherin not implied by dontCare")
 	require.Equal(t, atomicNegSly.impliedBy(atomicGry, &hints), true,
 		"Slytherin neg implied by Gryffindor")
-}*/
+}
 
 func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
