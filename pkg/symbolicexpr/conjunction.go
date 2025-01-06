@@ -47,7 +47,7 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	newC := Conjunction{}
 	redundantRemoved := false
 	for _, atom := range *c {
-		if !atom.isTautology() && !supersetOf(atom, c, hints) {
+		if !atom.isTautology() && !atomSupersetOfConj(atom, c, hints) {
 			newC = append(newC, atom)
 		} else {
 			redundantRemoved = true
@@ -113,7 +113,7 @@ func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
 	return false
 }
 
-// Conjunction c is a superset of other iff any term in other also exists in c
+// Conjunction c is a superset of other iff any term in other exists in c or is a
 func (c *Conjunction) supersetOf(other *Conjunction) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
@@ -127,7 +127,7 @@ func (c *Conjunction) supersetOf(other *Conjunction) bool {
 }
 
 // atomic atom is a superset of Conjunction c, if it is a superset of one of c's terms
-func supersetOf(atom atomic, c *Conjunction, hints *Hints) bool {
+func atomSupersetOfConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false
 	}
