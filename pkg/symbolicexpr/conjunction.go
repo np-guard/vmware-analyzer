@@ -126,7 +126,7 @@ func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
 	return false
 }
 
-// Conjunction c is a subset of other iff any term in other either exists in c or c is a superset of it
+// Conjunction c is a subset of other iff any term in c either exists in other
 func (c *Conjunction) isSubset(other *Conjunction) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
