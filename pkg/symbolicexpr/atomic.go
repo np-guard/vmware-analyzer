@@ -68,8 +68,8 @@ func (term atomicTerm) isNegateOf(otherAt atomic) bool {
 // returns true iff otherAt is disjoint to atomicTerm as given by hints
 // todo: only if of the same type as by (tag/groups/.. as presented by property)?
 func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
-	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if of the same negation
-	if term.isNegation() != otherAt.isNegation() {
+	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if both not negated
+	if term.isNegation() || otherAt.isNegation() {
 		return false
 	}
 	return hints.disjoint(term.name(), otherAt.name())
