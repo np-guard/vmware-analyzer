@@ -22,8 +22,9 @@ func (path *SymbolicPath) disJointPaths(other *SymbolicPath, hints *Hints) bool 
 		path.Dst.disjoint(&other.Dst, hints)
 }
 
-func (path *SymbolicPath) isSubset(other *SymbolicPath) bool {
-	return path.Conn.IsSubset(other.Conn) && path.Src.isSubset(&other.Src) && path.Dst.isSubset(&other.Dst)
+func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
+	return path.Conn.IsSubset(other.Conn) && path.Src.isSubset(&other.Src, hints) &&
+		path.Dst.isSubset(&other.Dst, hints)
 }
 
 func (paths *SymbolicPaths) String() string {
@@ -47,7 +48,7 @@ func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
-func (paths SymbolicPaths) removeIsSubsetPath() SymbolicPaths {
+func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
 		addPath := true
@@ -55,7 +56,7 @@ func (paths SymbolicPaths) removeIsSubsetPath() SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.isSubset(outerPath) && !(outerPath.isSubset(innerPath) && outerIndex < innerIndex) {
+			if innerPath.isSubset(outerPath, hints) && !(outerPath.isSubset(innerPath, hints) && outerIndex < innerIndex) {
 				addPath = false
 				break
 			}
@@ -119,7 +120,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
 	}
-	res = res.removeIsSubsetPath()
+	res = res.removeIsSubsetPath(hints)
 	return &res
 }
 
