@@ -119,6 +119,8 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
 	}
+	fmt.Printf("ComputeAllowGivenDenies for\nallowPaths:%v\ndenyPaths%v\n", allowPaths.String(), denyPaths.String())
+	fmt.Printf("res:\n%v", res.String())
 	res = res.removeImplied()
 	return &res
 }
