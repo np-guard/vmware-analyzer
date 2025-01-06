@@ -366,8 +366,7 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 			"TCP from (tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5)\n"+
 			"TCP from (tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3)\n"+
 			"TCP from (tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
-		ComputeAllowGivenDenies(&allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}}).String(),
-		"ComputeAllowGivenDenies computation not as expected")
+		res.String(), "ComputeAllowGivenDenies computation not as expected")
 }
 
 // Input:
