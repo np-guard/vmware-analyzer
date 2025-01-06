@@ -420,22 +420,18 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		}
 		conj3 = *conj3.add(atomicAllow)
 	}
-	//path1 := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTCPTransport()}
-	//path1Tag := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTransports()}
-	//path2 := &SymbolicPath{Src: conj2, Dst: conj2, Conn: netset.AllTCPTransport()}
-	//path3 := &SymbolicPath{Src: conj3, Dst: conj3, Conn: netset.AllTCPTransport()}
-	//path4 := &SymbolicPath{Src: conj1, Dst: conj2, Conn: netset.AllTCPTransport()}
-	//path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
-	//// tests:
-	//require.Equal(t, true,
-	//	path1.impliedBy(path1, &Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path1Tag,
-	//		&Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path2, &Hints{GroupsDisjoint: [][]string{}}) &&
-	//		path1.impliedBy(path3, &Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path4,
-	//		&Hints{GroupsDisjoint: [][]string{}}) && path1.impliedBy(path5, &Hints{GroupsDisjoint: [][]string{}}),
-	//	"path1 should be implied by all paths")
-	//require.Equal(t, true, !path1Tag.impliedBy(path3, &Hints{GroupsDisjoint: [][]string{}}),
-	//	"path3 does not imply path1Tag due to the connection")
-	//require.Equal(t, true, path2.impliedBy(path3, &Hints{GroupsDisjoint: [][]string{}}) &&
-	//	path2.impliedBy(path5, &Hints{GroupsDisjoint: [][]string{}}) && !path2.impliedBy(path4, &Hints{GroupsDisjoint: [][]string{}}),
-	//	"path2 should be implied by path3 and path5, is not implied by path4")
+	path1 := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTCPTransport()}
+	path1Tag := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTransports()}
+	path2 := &SymbolicPath{Src: conj2, Dst: conj2, Conn: netset.AllTCPTransport()}
+	path3 := &SymbolicPath{Src: conj3, Dst: conj3, Conn: netset.AllTCPTransport()}
+	path4 := &SymbolicPath{Src: conj1, Dst: conj2, Conn: netset.AllTCPTransport()}
+	path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
+	// tests:
+	require.Equal(t, true,
+		path1.impliedBy(path1) && path1.impliedBy(path1Tag) && path1.impliedBy(path2) && path1.impliedBy(path3) &&
+			path1.impliedBy(path4) && path1.impliedBy(path5), "path1 should be implied by all paths")
+	require.Equal(t, true, !path1Tag.impliedBy(path3),
+		"path3 does not imply path1Tag due to the connection")
+	require.Equal(t, true, path2.impliedBy(path3) && path2.impliedBy(path5) && !path2.impliedBy(path4),
+		"path2 should be implied by path3 and path5, is not implied by path4")
 }
