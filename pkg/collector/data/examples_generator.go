@@ -9,7 +9,7 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-// nolint:gocritic // just for testing
+//nolint:gocritic // just for testing
 func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
