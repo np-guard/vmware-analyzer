@@ -151,7 +151,8 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 		"UDP from (s1 = str1) to (d1 = str1 and d2 != str2)\nUDP from (s1 = str1) to (d1 = str1)",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 	// ComputeAllowGivenDenies optimize
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath}, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "UDP from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
@@ -176,7 +177,8 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.NewTCPTransport(0, 50,
 		netp.MinPort, netp.MaxPort)}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath}, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "TCP src-ports: 51-65535 from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
@@ -198,7 +200,8 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 	conjDst1 = *conjDst1.add(atomicDst1)
 	path := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", path.String(), path.String())
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&path}, &SymbolicPaths{&path}, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&path}, &SymbolicPaths{&path},
+		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "empty set ", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
@@ -292,7 +295,8 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 		atomicAllow := atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v`", i)}
 		conjAllow = *conjAllow.add(atomicAllow)
 	}
-	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(), conjAllow.isEmptySet(&Hints{GroupsDisjoint: [][]string{}}))
+	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(),
+		conjAllow.isEmptySet(&Hints{GroupsDisjoint: [][]string{}}))
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
@@ -385,7 +389,8 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjDst1 = *conjDst1.add(atomicDst1)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
-	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath}, &Hints{GroupsDisjoint: [][]string{}})
+	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.String())
 	require.Equal(t, "All Connections from (s1 = str1) to (d1 != str1)", allowWithDeny.String(),
