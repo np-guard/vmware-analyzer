@@ -75,12 +75,13 @@ func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
 	return hints.disjoint(term.name(), otherAt.name())
 }
 
-// returns true iff term is implied by to atomic as given by hints
+// returns true iff term is superset of atomic other as given by hints
 // todo: only if of the same type as by (tag/groups/.. as presented by property)?
-func (term atomicTerm) impliedBy(otherAt atomic, hints *Hints) bool {
-	// in hints list of disjoint groups/tags/.. is given. Term1 is implied by term2 if both are of the same type
-	// (tag/groups/.. as presented by property) and term1 is not negated while term2 is
-	// e.g., given that Slytherin and Hufflepuff are disjoint, group = Slytherin implies group != Hufflepuff
+// in hints list of disjoint groups/tags/.. is given. Term1 is superset by term2 if they are disjoint and
+// term1 is not negated while term2 is
+// e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
+// if in the same Clause, we can rid group != Hufflepuff
+func (term atomicTerm) supersetOf(otherAt atomic, hints *Hints) bool {
 	return hints.disjoint(term.toVal, otherAt.name()) && term.isNegation() && !otherAt.isNegation()
 }
 
@@ -115,7 +116,7 @@ func (tautology) disjoint(atomic, *Hints) bool {
 	return false
 }
 
-func (tautology) impliedBy(atom atomic, hints *Hints) bool {
+func (tautology) supersetOf(atom atomic, hints *Hints) bool {
 	return atom.isTautology()
 }
 

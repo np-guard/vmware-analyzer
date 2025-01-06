@@ -47,7 +47,7 @@ func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
-func (paths SymbolicPaths) removeImplied() SymbolicPaths {
+func (paths SymbolicPaths) removeIsSubsetPath() SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
 		addPath := true
@@ -119,7 +119,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
 	}
-	res = res.removeImplied()
+	res = res.removeIsSubsetPath()
 	return &res
 }
 

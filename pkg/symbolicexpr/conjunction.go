@@ -131,7 +131,7 @@ func impliedBy(atom atomic, c *Conjunction, hints *Hints) bool {
 		return false
 	}
 	for _, otherAtom := range *c {
-		if atom.impliedBy(otherAtom, hints) {
+		if atom.supersetOf(otherAtom, hints) {
 			return true
 		}
 	}
