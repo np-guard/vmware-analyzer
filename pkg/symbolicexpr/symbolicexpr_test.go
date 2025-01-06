@@ -35,8 +35,8 @@ func TestAtomicTerms(t *testing.T) {
 	// test disjoint between atomics
 	require.Equal(t, atomicGry.disjoint(atomicSly, &hints), true,
 		"Slytherin and Gryffindor should be disjoint")
-	require.Equal(t, atomicNegSly.disjoint(atomicNegGry, &hints), true,
-		"Neg Slytherin and Neg Gryffindor should be disjoint")
+	require.Equal(t, atomicNegSly.disjoint(atomicNegGry, &hints), false,
+		"Neg Slytherin and Neg Gryffindor should not be disjoint")
 	require.Equal(t, atomicGry.disjoint(atomicDontCare, &hints), false,
 		"Slytherin and dontCare should not be disjoint")
 	require.Equal(t, atomicGry.disjoint(atomicNegSly, &hints), false,
