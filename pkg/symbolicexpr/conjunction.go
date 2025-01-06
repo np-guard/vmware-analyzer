@@ -113,8 +113,8 @@ func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
 	return false
 }
 
-// Conjunction c is a superset of other iff any term in other exists in c or is a
-func (c *Conjunction) supersetOf(other *Conjunction) bool {
+// Conjunction c is a subset of other iff any term in other exists in c
+func (c *Conjunction) isSubset(other *Conjunction) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
 	}
