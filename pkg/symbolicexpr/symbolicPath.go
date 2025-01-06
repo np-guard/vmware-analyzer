@@ -22,7 +22,7 @@ func (path *SymbolicPath) disJointPaths(other *SymbolicPath, hints *Hints) bool 
 		path.Dst.disjoint(&other.Dst, hints)
 }
 
-func (path *SymbolicPath) impliedBy(other *SymbolicPath) bool {
+func (path *SymbolicPath) isSubset(other *SymbolicPath) bool {
 	return path.Conn.IsSubset(other.Conn) && path.Src.impliedBy(&other.Src) && path.Dst.impliedBy(&other.Dst)
 }
 
@@ -55,7 +55,7 @@ func (paths SymbolicPaths) removeImplied() SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.impliedBy(outerPath) && !(outerPath.impliedBy(innerPath) && outerIndex < innerIndex) {
+			if innerPath.isSubset(outerPath) && !(outerPath.isSubset(innerPath) && outerIndex < innerIndex) {
 				addPath = false
 				break
 			}

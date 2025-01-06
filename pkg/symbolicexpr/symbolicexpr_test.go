@@ -432,10 +432,10 @@ func TestSymbolicPathsImplied(t *testing.T) {
 	path5 := &SymbolicPath{Src: conj3, Dst: conj2, Conn: netset.AllTCPTransport()}
 	// tests:
 	require.Equal(t, true,
-		path1.impliedBy(path1) && path1.impliedBy(path1Tag) && path1.impliedBy(path2) && path1.impliedBy(path3) &&
-			path1.impliedBy(path4) && path1.impliedBy(path5), "path1 should be implied by all paths")
-	require.Equal(t, true, !path1Tag.impliedBy(path3),
+		path1.isSubset(path1) && path1.isSubset(path1Tag) && path1.isSubset(path2) && path1.isSubset(path3) &&
+			path1.isSubset(path4) && path1.isSubset(path5), "path1 should be implied by all paths")
+	require.Equal(t, true, !path1Tag.isSubset(path3),
 		"path3 does not imply path1Tag due to the connection")
-	require.Equal(t, true, path2.impliedBy(path3) && path2.impliedBy(path5) && !path2.impliedBy(path4),
+	require.Equal(t, true, path2.isSubset(path3) && path2.isSubset(path5) && !path2.isSubset(path4),
 		"path2 should be implied by path3 and path5, is not implied by path4")
 }
