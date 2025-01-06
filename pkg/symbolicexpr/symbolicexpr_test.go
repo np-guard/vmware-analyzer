@@ -43,13 +43,13 @@ func TestAtomicTerms(t *testing.T) {
 		"Slytherin and Neg Gryffindor should not be disjoint")
 	// test supersetOf between atomics
 	require.Equal(t, atomicGry.supersetOf(atomicSly, &hints), false,
-		"Gryffindor not implied by Slytherin")
+		"Gryffindor not supersetOf Slytherin")
 	require.Equal(t, atomicNegSly.supersetOf(atomicNegGry, &hints), false,
-		"Neg Gryffindor not implied by Neg Slytherin  should be disjoint")
+		"Neg Gryffindor not supersetOf Neg Slytherin  should be disjoint")
 	require.Equal(t, atomicGry.supersetOf(atomicDontCare, &hints), false,
-		"Slytherin not implied by dontCare")
+		"Slytherin not supersetOf dontCare")
 	require.Equal(t, atomicNegSly.supersetOf(atomicGry, &hints), true,
-		"Slytherin neg implied by Gryffindor")
+		"Slytherin neg supersetOf Gryffindor")
 }
 
 func TestSymbolicPaths(t *testing.T) {
