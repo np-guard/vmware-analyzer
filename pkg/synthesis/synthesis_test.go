@@ -114,7 +114,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
 }
