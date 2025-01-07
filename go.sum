@@ -25,8 +25,8 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
-github.com/np-guard/models v0.5.3 h1:XtpLNTyhU1ptmFrYL3MCZestEvRa0uyiYV7YptIeE/k=
-github.com/np-guard/models v0.5.3/go.mod h1:dqRdt5EQID1GmHuYsMOJzg4sS104om6NwEZ6sVO55z8=
+github.com/np-guard/models v0.5.4 h1:AoIu+XqQ6cFt67PkaD8NTPjxtDwz4pU2u9ptCrVPImU=
+github.com/np-guard/models v0.5.4/go.mod h1:Cj2nHAECvIuNoEBHXyzvauf3jXYgLzjxuHH73COaazE=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
