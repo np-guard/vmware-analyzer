@@ -17,7 +17,7 @@ func (path *SymbolicPath) isEmpty(hints *Hints) bool {
 }
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
-func (path *SymbolicPath) disJointPaths(other *SymbolicPath, hints *Hints) bool {
+func (path *SymbolicPath) disjointPaths(other *SymbolicPath, hints *Hints) bool {
 	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src, hints) ||
 		path.Dst.disjoint(&other.Dst, hints)
 }
@@ -38,12 +38,24 @@ func (paths *SymbolicPaths) String() string {
 	return strings.Join(res, "\n")
 }
 
+// remove empty SymbolicPaths; a path is empty if any of its components (src, dst, conn) is empty
 func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
 		if !path.isEmpty(hints) {
 			newPaths = append(newPaths, path)
 		}
+	}
+	return &newPaths
+}
+
+// Given SymbolicPaths, removes redundant terms from each SymbolicPath
+// a term is redundant if it is a tautology or if it is implied by other terms given hints;
+// e.g., given that Slytherin and Gryffindor are disjoint, = Gryffindor implies != Slytherin
+func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		newPaths = append(newPaths, path.removeRedundant(hints))
 	}
 	return &newPaths
 }
@@ -68,16 +80,6 @@ func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	return newPaths
 }
 
-func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
-	newPaths := SymbolicPaths{}
-	for _, path := range *paths {
-		if !path.isEmpty(hints) {
-			newPaths = append(newPaths, path.removeRedundant(hints))
-		}
-	}
-	return &newPaths
-}
-
 func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 	return &SymbolicPath{Src: path.Src.removeRedundant(hints), Dst: path.Dst.removeRedundant(hints), Conn: path.Conn}
 }
@@ -90,15 +92,18 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
+// all optimizations are documented in README
 func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints) *SymbolicPaths {
 	if len(*denyPaths) == 0 {
 		return allowPaths
 	}
 	res := SymbolicPaths{}
 	for _, allowPath := range *allowPaths {
+		// if the "allow" and "deny" paths are disjoint, then the "deny" has no effect and could be ignored
+		// e.g.   allow: a to d TCP deny: e to d on UDP  - the "deny" has no effect
 		relevantDenyPaths := SymbolicPaths{}
 		for _, denyPath := range *denyPaths {
-			if !allowPath.disJointPaths(denyPath, hints) {
+			if !allowPath.disjointPaths(denyPath, hints) {
 				relevantDenyPaths = append(relevantDenyPaths, denyPath)
 			}
 		}
@@ -145,6 +150,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 	}
+	// removes empty SymblicPaths; of non-empty paths removed redundant terms
 	return resAllowPaths.removeEmpty(hints).removeRedundant(hints)
 }
 
