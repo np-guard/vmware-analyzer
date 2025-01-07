@@ -115,7 +115,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
 	policies := ToNetworkPolicies(allowOnlyPolicy)
-	policiesFileName := filepath.Join("out", "from_collected_policies.yaml")
+	policiesFileName := filepath.Join("out", "from_collection_policies.yaml")
 	err = common.WriteYamlUsingJSON(policies, policiesFileName)
 	require.Nil(t, err)
 
