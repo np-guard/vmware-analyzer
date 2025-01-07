@@ -5,26 +5,31 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
+func (term atomicTerm) labelKey() string {
+	switch term.property.(type) {
+	case *collector.Segment:
+		return "segment "
+	case *endpoints.VM:
+		return "virtual machine "
+	case *collector.Tag:
+		return "tag " + term.property.Name()
+	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
+	case *collector.Group:
+		return "group "
+	default: // for structs used for testing
+		return term.property.Name()
+	}
+}
+
 func (term atomicTerm) string() string {
 	equalSign := " = "
 	if term.neg {
 		equalSign = " != "
 	}
-	labelType := ""
-	switch term.property.(type) {
-	case *collector.Segment:
-		labelType = "segment "
-	case *endpoints.VM:
-		labelType = "virtual machine "
-	case *collector.Tag:
-		labelType = "tag " + term.property.Name()
-	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
-	case *collector.Group:
-		labelType = "group "
-	default: // for structs used for testing
-		labelType = term.property.Name()
-	}
-	return labelType + equalSign + term.toVal
+	return term.labelKey() + equalSign + term.toVal
+}
+func (term atomicTerm) AsSelector() (string, bool, []string) {
+	return term.labelKey(), term.neg, []string{term.toVal}
 }
 
 func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
@@ -71,4 +76,7 @@ func (tautology) isTautology() bool {
 // once we cache the atomic terms, we can just compare pointers
 func (tautology) isNegateOf(atomic) bool {
 	return false
+}
+func (tautology) AsSelector() (string, bool, []string) {
+	return "", false, nil
 }
