@@ -75,21 +75,25 @@ func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	return selector
 }
 
+func pointerTo[T any](t T) *T {
+	return &t
+}
+
 func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 
 	ports := []networking.NetworkPolicyPort{}
 	if conn.IsAll() {
 		return []networking.NetworkPolicyPort{}
 	}
-	tcpSet := conn.TCPUDPSet()
+	tcpUdpSet := conn.TCPUDPSet()
 	icmpSet := conn.ICMPSet()
-	tcpProtocol := core.ProtocolTCP
-	icmpProtocol := core.ProtocolSCTP
-	if tcpSet.IsAll() {
-		ports = append(ports, networking.NetworkPolicyPort{Protocol: &tcpProtocol, Port: nil, EndPort: nil})
+	if tcpUdpSet.IsAll() {
+		ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolTCP), Port: nil, EndPort: nil})
+		ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolUDP), Port: nil, EndPort: nil})
 	} else {
-		partitions := tcpSet.Partitions()
+		partitions := tcpUdpSet.Partitions()
 		for _, partition := range partitions {
+			protocols := partition.S1.Intervals()[0]
 			portRanges := partition.S3
 			for _, portRange := range portRanges.Intervals() {
 				var portPointer *intstr.IntOrString
@@ -101,12 +105,18 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 					endPort := int32(portRange.End())
 					endPortPointer = &endPort
 				}
-				ports = append(ports, networking.NetworkPolicyPort{Protocol: &tcpProtocol, Port: portPointer, EndPort: endPortPointer})
+				for _, protocolCode := range protocols.Elements() {
+					protocol := core.ProtocolTCP
+					if protocolCode == netset.UDPCode {
+						protocol = core.ProtocolUDP
+					}
+					ports = append(ports, networking.NetworkPolicyPort{Protocol: &protocol, Port: portPointer, EndPort: endPortPointer})
+				}
 			}
 		}
 	}
 	if !icmpSet.IsEmpty() {
-		ports = append(ports, networking.NetworkPolicyPort{Protocol: &icmpProtocol, Port: nil, EndPort: nil})
+		ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: nil, EndPort: nil})
 
 	}
 	return ports
