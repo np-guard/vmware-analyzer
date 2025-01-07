@@ -91,10 +91,10 @@ type Example struct {
 	policies       []category
 }
 
-func defaultDenyRule(id int) rule {
+func defaultDenyRule() rule {
 	return rule{
 		name:     "default-deny-rule",
-		id:       id,
+		id:       denyRuleIDApp,
 		source:   anyStr,
 		dest:     anyStr,
 		services: []string{anyStr},

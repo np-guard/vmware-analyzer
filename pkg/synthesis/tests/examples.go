@@ -54,7 +54,7 @@ var ExampleDumbeldore = Example{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
 			rules: []rule{
-				defaultDenyRule(denyRuleIDApp),
+				defaultDenyRule(),
 			},
 		},
 	},
@@ -120,7 +120,7 @@ var ExampleTwoDeniesSimple = Example{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
 			rules: []rule{
-				defaultDenyRule(denyRuleIDApp),
+				defaultDenyRule(),
 			},
 		},
 	},
@@ -190,7 +190,7 @@ var ExampleDenyPassSimple = Example{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
 			rules: []rule{
-				defaultDenyRule(denyRuleIDApp),
+				defaultDenyRule(),
 			},
 		},
 	},
@@ -254,7 +254,7 @@ var ExampleHintsDisjoint = Example{
 			name:         "Default-L3-Section",
 			categoryType: "Application",
 			rules: []rule{
-				defaultDenyRule(denyRuleIDApp),
+				defaultDenyRule(),
 			},
 		},
 	},
