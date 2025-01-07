@@ -224,7 +224,7 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 	}
 }
 
-func (traceFlows *TraceFlows) Summery() {
+func (traceFlows *TraceFlows) Summary() {
 	var notSent, withAPIErrors, withResultErrors, withError, falseAllow, falseDeny int
 	var apiErrors, resultErrors, errors []string
 	for _, traceFlow := range traceFlows.Tfs {
@@ -256,7 +256,7 @@ func (traceFlows *TraceFlows) Summery() {
 	errors = slices.Compact(errors)
 	apiErrors = slices.Compact(apiErrors)
 	resultErrors = slices.Compact(resultErrors)
-	fmt.Println("traceflow summery:")
+	fmt.Println("traceflow summary:")
 	fmt.Printf("N of traceflow sent: %d, out of %d\n", len(traceFlows.Tfs)-notSent, len(traceFlows.Tfs))
 	fmt.Printf("N of traceflow with errors: %d\n", withError)
 	fmt.Printf("N of false allow: %d\n", falseAllow)

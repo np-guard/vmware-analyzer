@@ -22,7 +22,7 @@ func compareConfigToTraceflows(
 	}
 	traceFlows := createTraceflows(resources, server, config, vmFilter)
 	traceFlows.Execute()
-	traceFlows.Summery()
+	traceFlows.Summary()
 	return traceFlows, nil
 }
 

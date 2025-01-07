@@ -70,4 +70,5 @@ func Test_verifyTraceflow(t *testing.T) {
 			fmt.Printf("traceflow results at %s\n", tfPath)
 		})
 	}
+	fmt.Printf("done")
 }
