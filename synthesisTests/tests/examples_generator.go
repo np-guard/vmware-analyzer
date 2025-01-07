@@ -1,11 +1,7 @@
-package data
+package tests
 
 import (
-	"os"
-	"path/filepath"
-
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -75,7 +71,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 
 	res.DomainList[0].Resources.SecurityPolicyList = policiesList
 
-	res.ServiceList = getServices()
+	res.ServiceList = []collector.Service{} // todo not needed here, at least in this stage
 	return res
 }
 
@@ -89,9 +85,10 @@ const (
 
 // Example is in s single domain
 type Example struct {
-	vms      []string
-	groups   map[string][]string
-	policies []category
+	vms            []string
+	groups         map[string][]string
+	DisjointGroups [][]string
+	policies       []category
 }
 
 func defaultDenyRule(id int) rule {
@@ -119,17 +116,4 @@ type category struct {
 	categoryType string
 	rules        []rule
 	// TODO: add scope, consider other fields
-}
-
-func getServices() []collector.Service {
-	servicesFilePath := filepath.Join(projectpath.Root, "pkg", "collector", "data", "services.json")
-	inputConfigContent, err := os.ReadFile(servicesFilePath)
-	if err != nil {
-		return nil
-	}
-	rc, err := collector.FromJSONString(inputConfigContent)
-	if err != nil {
-		return nil
-	}
-	return rc.ServiceList
 }
