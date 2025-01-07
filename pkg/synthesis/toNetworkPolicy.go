@@ -93,7 +93,7 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 	} else {
 		partitions := tcpUdpSet.Partitions()
 		for _, partition := range partitions {
-			protocols := partition.S1.Intervals()[0]
+			protocols := partition.S1.Elements()
 			portRanges := partition.S3
 			for _, portRange := range portRanges.Intervals() {
 				var portPointer *intstr.IntOrString
@@ -105,7 +105,7 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 					endPort := int32(portRange.End())
 					endPortPointer = &endPort
 				}
-				for _, protocolCode := range protocols.Elements() {
+				for _, protocolCode := range protocols {
 					protocol := core.ProtocolTCP
 					if protocolCode == netset.UDPCode {
 						protocol = core.ProtocolUDP
