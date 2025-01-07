@@ -80,13 +80,19 @@ func TestPreprocessing(t *testing.T) {
 	}
 }
 
-func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
+func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
 	rc := data.ExamplesGeneration(synTest.exData)
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: synTest.exData.DisjointGroups})
+	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	suffix := "_ConvertToAbstractNoHint.txt"
+	if withHints {
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+		suffix = "_ConvertToAbstract.txt"
+	}
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, hintsParm)
 	require.Nil(t, err)
 	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
 	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
@@ -95,9 +101,11 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runConvertToAbstract(t, OutputComparison)
+		test.runConvertToAbstract(t, OutputComparison, true)
+		test.runConvertToAbstract(t, OutputComparison, false)
 		//nolint:gocritic // uncomment for generating output
-		//test.runConvertToAbstract(t, OutputGeneration)
+		//test.runConvertToAbstract(t, OutputGeneration, true)
+		//test.runConvertToAbstract(t, OutputGeneration, false)
 	}
 }
 
