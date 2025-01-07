@@ -2,7 +2,6 @@ package synthesis
 
 import (
 	"fmt"
-	"github.com/np-guard/vmware-analyzer/synthesisTests/tests"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +13,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
 
 const (

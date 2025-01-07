@@ -1,8 +1,0 @@
-Allow Only Rules
-~~~~~~~~~~~~~~~~~
-inbound rules
-	All Connections from (group  = Dumbledore1) to (group  != Slytherin)
-	All Connections from (group  = Dumbledore2) to (group  != Gryffindor)
-outbound rules
-	All Connections from (group  = Dumbledore1) to (group  != Slytherin)
-	All Connections from (group  = Dumbledore2) to (group  != Gryffindor)
