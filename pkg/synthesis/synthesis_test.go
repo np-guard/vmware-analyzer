@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
@@ -34,7 +35,7 @@ const (
 
 type synthesisTest struct {
 	name   string
-	exData tests.Example
+	exData tests.ExampleSynthesis
 	Mode   testMode
 }
 
@@ -58,7 +59,7 @@ var allTests = []synthesisTest{
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
-	rc := tests.ExamplesGeneration(synTest.exData)
+	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
@@ -82,7 +83,7 @@ func TestPreprocessing(t *testing.T) {
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
-	rc := tests.ExamplesGeneration(synTest.exData)
+	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	suffix := "_ConvertToAbstractNoHint.txt"
 	if withHints {

@@ -1,60 +1,62 @@
 package tests
 
-const (
-	denyRuleIDApp = 1003
-	newRuleID     = 9198
-)
+import "github.com/np-guard/vmware-analyzer/pkg/collector/data"
+
+type ExampleSynthesis struct {
+	FromNSX        data.Example
+	DisjointGroups [][]string
+}
 
 // ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
-var ExampleDumbeldore = Example{
-	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	groups: map[string][]string{
-		"Slytherin":       {"Slytherin"},
-		"Hufflepuff":      {"Hufflepuff"},
-		"Gryffindor":      {"Gryffindor"},
-		"Dumbledore":      {"Dumbledore1", "Dumbledore2"},
-		"DumbledoreAll":   {"Dumbledore1"},
-		"DumbledoreNoSly": {"Dumbledore2"},
-	},
-	policies: []category{
-		{
-			name:         "From-Dumbledore-connection",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "Dumb1-To-All",
-					id:       newRuleID,
-					source:   "DumbledoreAll",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
-				},
-				{
-					name:     "Dumb2-Not-Sly",
-					id:       9195,
-					source:   "DumbledoreNoSly",
-					dest:     "Slytherin",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-				{
-					name:     "Dumb2-To-All",
-					id:       9196,
-					source:   "DumbledoreNoSly",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
+var ExampleDumbeldore = ExampleSynthesis{
+	FromNSX: data.Example{Vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+		Groups: map[string][]string{
+			"Slytherin":       {"Slytherin"},
+			"Hufflepuff":      {"Hufflepuff"},
+			"Gryffindor":      {"Gryffindor"},
+			"Dumbledore":      {"Dumbledore1", "Dumbledore2"},
+			"DumbledoreAll":   {"Dumbledore1"},
+			"DumbledoreNoSly": {"Dumbledore2"},
+		},
+		Policies: []data.Category{
+			{
+				Name:         "From-Dumbledore-connection",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					{
+						Name:     "Dumb1-To-All",
+						Id:       data.NewRuleID,
+						Source:   "DumbledoreAll",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+					{
+						Name:     "Dumb2-Not-Sly",
+						Id:       9195,
+						Source:   "DumbledoreNoSly",
+						Dest:     "Slytherin",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+					{
+						Name:     "Dumb2-To-All",
+						Id:       9196,
+						Source:   "DumbledoreNoSly",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
 				},
 			},
-		},
-
-		{
-			name:         "Default-L3-Section",
-			categoryType: "Application",
-			rules: []rule{
-				defaultDenyRule(),
+			{
+				Name:         "Default-L3-Section",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					data.DefaultDenyRule(data.DenyRuleIDEnv),
+				},
 			},
 		},
 	},
@@ -64,198 +66,201 @@ var ExampleDumbeldore = Example{
 // Simple example with two denies
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
-var ExampleTwoDeniesSimple = Example{
-	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	groups: map[string][]string{
-		"Slytherin":   {"Slytherin"},
-		"Hufflepuff":  {"Hufflepuff"},
-		"Gryffindor":  {"Gryffindor"},
-		"Dumbledore":  {"Dumbledore1", "Dumbledore2"},
-		"Dumbledore1": {"Dumbledore1"},
-		"Dumbledore2": {"Dumbledore2"},
+var ExampleTwoDeniesSimple = ExampleSynthesis{
+	FromNSX: data.Example{Vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+		Groups: map[string][]string{
+			"Slytherin":   {"Slytherin"},
+			"Hufflepuff":  {"Hufflepuff"},
+			"Gryffindor":  {"Gryffindor"},
+			"Dumbledore":  {"Dumbledore1", "Dumbledore2"},
+			"Dumbledore1": {"Dumbledore1"},
+			"Dumbledore2": {"Dumbledore2"},
+		},
+		Policies: []data.Category{
+			{
+				Name:         "Two-Denys-Simple-Test",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					{
+						Name:     "no-conn-to-dumb1",
+						Id:       1,
+						Source:   "ANY",
+						Dest:     "Dumbledore1",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+					{
+						Name:     "no-conn-to-dumb2",
+						Id:       2,
+						Source:   "ANY",
+						Dest:     "Dumbledore2",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+					{
+						Name:     "Slytherin-to-all",
+						Id:       3,
+						Source:   "Slytherin",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+					{
+						Name:     "Gryffindor-to-all",
+						Id:       4,
+						Source:   "Gryffindor",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+				},
+			},
+			{
+				Name:         "Default-L3-Section",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					data.DefaultDenyRule(data.DenyRuleIDEnv),
+				},
+			},
+		},
 	},
 	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	},
-	policies: []category{
-		{
-			name:         "Two-Denys-Simple-Test",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "no-conn-to-dumb1",
-					id:       1,
-					source:   "ANY",
-					dest:     "Dumbledore1",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-				{
-					name:     "no-conn-to-dumb2",
-					id:       2,
-					source:   "ANY",
-					dest:     "Dumbledore2",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-				{
-					name:     "Slytherin-to-all",
-					id:       3,
-					source:   "Slytherin",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
-				},
-				{
-					name:     "Gryffindor-to-all",
-					id:       4,
-					source:   "Gryffindor",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
-				},
-			},
-		},
-		{
-			name:         "Default-L3-Section",
-			categoryType: "Application",
-			rules: []rule{
-				defaultDenyRule(),
-			},
-		},
 	},
 }
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
-var ExampleDenyPassSimple = Example{
-	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	groups: map[string][]string{
-		"Slytherin":   {"Slytherin"},
-		"Hufflepuff":  {"Hufflepuff"},
-		"Gryffindor":  {"Gryffindor"},
-		"Dumbledore":  {"Dumbledore1", "Dumbledore2"},
-		"Dumbledore1": {"Dumbledore1"},
-		"Dumbledore2": {"Dumbledore2"},
+var ExampleDenyPassSimple = ExampleSynthesis{
+	FromNSX: data.Example{Vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+		Groups: map[string][]string{
+			"Slytherin":   {"Slytherin"},
+			"Hufflepuff":  {"Hufflepuff"},
+			"Gryffindor":  {"Gryffindor"},
+			"Dumbledore":  {"Dumbledore1", "Dumbledore2"},
+			"Dumbledore1": {"Dumbledore1"},
+			"Dumbledore2": {"Dumbledore2"},
+		},
+		Policies: []data.Category{
+			{
+				Name:         "Env-pass-and-deny",
+				CategoryType: "Environment",
+				Rules: []data.Rule{
+					{
+						Name:     "pass-all-to-dumb",
+						Id:       10218,
+						Source:   "ANY",
+						Dest:     "Dumbledore",
+						Services: []string{"ANY"},
+						Action:   data.JumpToApp,
+					},
+					{
+						Name:     "deny-all-to-Hufflepuff",
+						Id:       10219,
+						Source:   "ANY",
+						Dest:     "Hufflepuff",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+					{
+						Name:     "deny-all-to-Slytherin",
+						Id:       10220,
+						Source:   "ANY",
+						Dest:     "Slytherin",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+				},
+			},
+			{
+				Name:         "App-Allow-All",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					{
+						Name:     "allow-all-to-all",
+						Id:       data.NewRuleID,
+						Source:   "ANY",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+				},
+			},
+			{
+				Name:         "Default-L3-Section",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					data.DefaultDenyRule(data.DenyRuleIDEnv),
+				},
+			},
+		},
 	},
 	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore", "Dumbledore1", "Dumbledore2"},
-	},
-	policies: []category{
-		{
-			name:         "Env-pass-and-deny",
-			categoryType: "Environment",
-			rules: []rule{
-				{
-					name:     "pass-all-to-dumb",
-					id:       10218,
-					source:   "ANY",
-					dest:     "Dumbledore",
-					services: []string{"ANY"},
-					action:   jumpToApp,
-				},
-				{
-					name:     "deny-all-to-Hufflepuff",
-					id:       10219,
-					source:   "ANY",
-					dest:     "Hufflepuff",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-				{
-					name:     "deny-all-to-Slytherin",
-					id:       10220,
-					source:   "ANY",
-					dest:     "Slytherin",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-			},
-		},
-		{
-			name:         "App-Allow-All",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "allow-all-to-all",
-					id:       newRuleID,
-					source:   "ANY",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
-				},
-			},
-		},
-		{
-			name:         "Default-L3-Section",
-			categoryType: "Application",
-			rules: []rule{
-				defaultDenyRule(),
-			},
-		},
 	},
 }
 
 // ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
-var ExampleHintsDisjoint = Example{
-	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	groups: map[string][]string{
-		"Slytherin":   {"Slytherin"},
-		"Hufflepuff":  {"Hufflepuff"},
-		"Gryffindor":  {"Gryffindor"},
-		"Dumbledore1": {"Dumbledore1"},
-		"Dumbledore2": {"Dumbledore2"},
+var ExampleHintsDisjoint = ExampleSynthesis{
+	FromNSX: data.Example{Vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+		Groups: map[string][]string{
+			"Slytherin":   {"Slytherin"},
+			"Hufflepuff":  {"Hufflepuff"},
+			"Gryffindor":  {"Gryffindor"},
+			"Dumbledore1": {"Dumbledore1"},
+			"Dumbledore2": {"Dumbledore2"},
+		},
+		Policies: []data.Category{
+			{
+				Name:         "From-Dumbledore-connection",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					{
+						Name:     "Dumb1-Not-Sly",
+						Id:       data.NewRuleID,
+						Source:   "Dumbledore1",
+						Dest:     "Slytherin",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+					{
+						Name:     "Dumb2-Not-Gryf",
+						Id:       9195,
+						Source:   "Dumbledore2",
+						Dest:     "Gryffindor",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+					{
+						Name:     "Dumb1-To-All",
+						Id:       9196,
+						Source:   "Dumbledore1",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+					{
+						Name:     "Dumb2-To-All",
+						Id:       9196,
+						Source:   "Dumbledore2",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+				},
+			},
+			{
+				Name:         "Default-L3-Section",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					data.DefaultDenyRule(data.DenyRuleIDEnv),
+				},
+			},
+		},
 	},
 	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	},
-	policies: []category{
-		{
-			name:         "From-Dumbledore-connection",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "Dumb1-Not-Sly",
-					id:       newRuleID,
-					source:   "Dumbledore1",
-					dest:     "Slytherin",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-				{
-					name:     "Dumb2-Not-Gryf",
-					id:       9195,
-					source:   "Dumbledore2",
-					dest:     "Gryffindor",
-					services: []string{"ANY"},
-					action:   drop,
-				},
-				{
-					name:     "Dumb1-To-All",
-					id:       9196,
-					source:   "Dumbledore1",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
-				},
-				{
-					name:     "Dumb2-To-All",
-					id:       9196,
-					source:   "Dumbledore2",
-					dest:     "ANY",
-					services: []string{"ANY"},
-					action:   allow,
-				},
-			},
-		},
-		{
-			name:         "Default-L3-Section",
-			categoryType: "Application",
-			rules: []rule{
-				defaultDenyRule(),
-			},
-		},
 	},
 }
