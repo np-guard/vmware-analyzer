@@ -421,7 +421,7 @@ var ExampleDenyPassSimple = Example{
 		"Dumbledore2": {"Dumbledore2"},
 	},
 	DisjointGroups: [][]string{
-		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore", "Dumbledore1", "Dumbledore2"},
 	},
 	policies: []category{
 		{
