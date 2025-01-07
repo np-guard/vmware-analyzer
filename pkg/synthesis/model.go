@@ -8,13 +8,9 @@ import (
 )
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
-//
-//nolint:all // todo: tmp for defs without implementation
 type AbstractModelSyn struct {
-	vms VMs
-	// epToGroups includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
-	epToGroups map[*endpoints.VM]collector.Group // todo compute
-	epToTags   map[*endpoints.VM]Tags            // todo compute
+	vms        []*endpoints.VM
+	epToGroups map[*endpoints.VM][]*collector.Group
 	// todo: add similar maps to OS, hostname
 	policy []*symbolicPolicy // with default deny
 }
@@ -51,6 +47,3 @@ type symbolicPolicy struct {
 
 // Segments topology; map from segment name to the segment
 type Segments map[string]*collector.Segment
-
-// VMs map from VM name to the VM
-type VMs map[string]*endpoints.VM
