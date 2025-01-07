@@ -17,7 +17,7 @@ func (path *SymbolicPath) isEmpty(hints *Hints) bool {
 }
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
-func (path *SymbolicPath) disJointPaths(other *SymbolicPath, hints *Hints) bool {
+func (path *SymbolicPath) disjointPaths(other *SymbolicPath, hints *Hints) bool {
 	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src, hints) ||
 		path.Dst.disjoint(&other.Dst, hints)
 }
@@ -68,16 +68,6 @@ func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	return newPaths
 }
 
-func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
-	newPaths := SymbolicPaths{}
-	for _, path := range *paths {
-		if !path.isEmpty(hints) {
-			newPaths = append(newPaths, path.removeRedundant(hints))
-		}
-	}
-	return &newPaths
-}
-
 func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 	return &SymbolicPath{Src: path.Src.removeRedundant(hints), Dst: path.Dst.removeRedundant(hints), Conn: path.Conn}
 }
@@ -96,9 +86,11 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 	}
 	res := SymbolicPaths{}
 	for _, allowPath := range *allowPaths {
+		// if the "allow" and "deny" paths are disjoint, then the "deny" has no effect and could be ignored
+		// e.g.   allow: a to d TCP deny: e to d on UDP  - the "deny" has no effect
 		relevantDenyPaths := SymbolicPaths{}
 		for _, denyPath := range *denyPaths {
-			if !allowPath.disJointPaths(denyPath, hints) {
+			if !allowPath.disjointPaths(denyPath, hints) {
 				relevantDenyPaths = append(relevantDenyPaths, denyPath)
 			}
 		}
