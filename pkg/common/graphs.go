@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"slices"
-	"strings"
 )
 
 const (
@@ -31,6 +30,10 @@ type label interface {
 	String() string
 }
 
+// Graph interface is implemented by:
+// EdgesGraph (for text output)
+// DotGraph (for dot/svg output)
+// TreeGraph (for json output)
 type Graph interface {
 	AddEdge(src, dst node, label label)
 	String() string
@@ -105,12 +108,8 @@ func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 }
 
 func (eg *EdgesGraph) String() string {
-	strs := make([]string, len(eg.edges))
-	for i, e := range eg.edges {
-		strs[i] = e.string()
-	}
-	slices.Sort(strs)
-	return fmt.Sprintf("%s:\n%s", eg.header, strings.Join(strs, "\n"))
+	edgesStr := SortedJoinCustomStrFuncSlice(eg.edges, func(e edge) string { return e.string() }, "\n")
+	return fmt.Sprintf("%s:\n%s", eg.header, edgesStr)
 }
 
 func (eg *EdgesGraph) JSONString() (string, error) {
@@ -226,32 +225,41 @@ func (dotGraph *DotGraph) rankString() string {
 	for n, dn := range dotGraph.nodes {
 		nodesByKinds[n.Kind()] = append(nodesByKinds[n.Kind()], dn)
 	}
-	ranks := make([]string, len(nodesByKinds))
+	return JoinCustomStrFuncSlice(slices.Collect(maps.Values(nodesByKinds)),
+		func(nodesList []*dotNode) string {
+			nodeIdsStr := JoinCustomStrFuncSlice(nodesList, func(n *dotNode) string { return fmt.Sprintf("node_%d_", n.ID) }, " ")
+			return fmt.Sprintf("{rank=same; %s}", nodeIdsStr)
+		}, "\n")
+
+	/*ranks := make([]string, len(nodesByKinds))
 	for ri, nodes := range slices.Collect(maps.Values(nodesByKinds)) {
+		nodeIdsStr := JoinCustomStrFuncSlice(nodes, func(n *dotNode) string { return fmt.Sprintf("node_%d_", n.ID) }, " ")
 		nodesIds := make([]string, len(nodes))
 		for ni, n := range nodes {
 			nodesIds[ni] = fmt.Sprintf("node_%d_", n.ID)
 		}
-		ranks[ri] = fmt.Sprintf("{rank=same; %s}", strings.Join(nodesIds, " "))
+		ranks[ri] = fmt.Sprintf("{rank=same; %s}", nodeIdsStr)
 	}
-	return strings.Join(ranks, "\n")
+	return strings.Join(ranks, "\n")*/
 }
 
 func (dotGraph *DotGraph) String() string {
-	nodeLines := make([]string, len(dotGraph.nodes))
+	nodeLines := JoinCustomStrFuncSlice(slices.Collect(maps.Values(dotGraph.nodes)), func(n *dotNode) string { return n.string() }, "\n")
+	/*nodeLines := make([]string, len(dotGraph.nodes))
 	for i, n := range slices.Collect(maps.Values(dotGraph.nodes)) {
 		nodeLines[i] = n.string()
-	}
-	edgeLines := make([]string, len(dotGraph.edges))
+	}*/
+	edgeLines := JoinCustomStrFuncSlice(dotGraph.edges, func(e *dotEdge) string { return e.string() }, "\n")
+	/*edgeLines := make([]string, len(dotGraph.edges))
 	for i, e := range dotGraph.edges {
 		edgeLines[i] = e.string()
-	}
+	}*/
 	var rankdir, rankString string
 	if dotGraph.rank {
 		rankdir = "rankdir = \"LR\";"
 		rankString = dotGraph.rankString()
 	}
-	return fmt.Sprintf("digraph{\n%s\n%s\n\n%s\n\n%s\n}\n", rankdir, strings.Join(nodeLines, "\n"), rankString, strings.Join(edgeLines, "\n"))
+	return fmt.Sprintf("digraph{\n%s\n%s\n\n%s\n\n%s\n}\n", rankdir, nodeLines, rankString, edgeLines)
 }
 
 func (dotGraph *DotGraph) JSONString() (string, error) {

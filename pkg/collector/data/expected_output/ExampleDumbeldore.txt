@@ -1,4 +1,4 @@
-analyzed connectivity:
+Analyzed connectivity::
 Dumbledore1 => Dumbledore2: All Connections
 Dumbledore1 => Gryffindor: All Connections
 Dumbledore1 => Hufflepuff: All Connections

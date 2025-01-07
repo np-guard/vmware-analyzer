@@ -1,17 +1,45 @@
 package model
 
 import (
+	"fmt"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params OutputParameters) (string, error) {
+func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
 	config, err := configFromResourcesContainer(recourses, params.VMs)
 	if err != nil {
 		return "", err
 	}
-	return config.output(params)
+
+	res, err := config.analyzedConnectivity.GenConnectivityOutput(params)
+
+	allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")
+	fmt.Println("allowed disjoint explains:")
+	for _, a := range allowed {
+		fmt.Printf("conn: %s, ingress rules: %s, egress rules: %s\n", a.Conn.String(),
+			common.JoinCustomStrFuncSlice(a.ExplanationObj.IngressExplanations, func(s *connectivity.RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
+			common.JoinCustomStrFuncSlice(a.ExplanationObj.EgressExplanations, func(s *connectivity.RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
+		)
+	}
+	fmt.Println("denied disjoint explains:")
+	for _, a := range denied {
+		fmt.Printf("conn: %s, ingress rules: %s, egress rules: %s\n", a.Conn.String(),
+			common.JoinCustomStrFuncSlice(a.ExplanationObj.IngressExplanations, func(s *connectivity.RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
+			common.JoinCustomStrFuncSlice(a.ExplanationObj.EgressExplanations, func(s *connectivity.RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
+		)
+	}
+
+	return res, err
 }
+
+func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.ResourcesContainerModel) (string, error) {
+	return NSXConnectivityFromResourcesContainer(recourses, common.OutputParameters{Format: common.TextFormat})
+}
+
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, vmsFilter []string) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
@@ -25,5 +53,8 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, 
 
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity(vmsFilter)
+	//config.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.NewTCPTransport(1, 65535, 445, 445))
+
+	//config.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.AllICMPTransport())
 	return config, nil
 }

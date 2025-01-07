@@ -36,6 +36,7 @@ const (
 	outputFilterFlag       = "output-filter"
 	quietFlag              = "quiet"
 	verboseFlag            = "verbose"
+	explainFlag            = "explain"
 
 	resourceInputFileHelp = "file path input JSON of NSX resources"
 	hostHelp              = "nsx host url"
@@ -63,6 +64,7 @@ type inArgs struct {
 	outputFormat      string
 	quiet             bool
 	verbose           bool
+	explain           bool
 	outputFilter      []string
 }
 
@@ -89,7 +91,7 @@ It uses REST API calls from NSX manager. `,
 		},
 	}
 
-	rootCmd.PersistentFlags().StringVar(&args.resourceInputFile, resourceInputFileFlag, "", resourceInputFileHelp)
+	rootCmd.PersistentFlags().StringVarP(&args.resourceInputFile, resourceInputFileFlag, "r", "", resourceInputFileHelp)
 	rootCmd.PersistentFlags().StringVar(&args.host, hostFlag, "", hostHelp)
 	rootCmd.PersistentFlags().StringVar(&args.user, userFlag, "", userHelp)
 	rootCmd.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
@@ -102,6 +104,7 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, "runs quietly, reports only severe errors and results")
 	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, "runs with more informative messages printed to log")
+	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, "connectivity output with rules explanations per allowed/denied connections")
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
@@ -159,10 +162,11 @@ func runCommand(args *inArgs) error {
 		fmt.Println(topology)
 	}
 	if !args.skipAnalysis {
-		params := model.OutputParameters{
+		params := common.OutputParameters{
 			Format:   args.outputFormat,
 			FileName: args.outputFile,
 			VMs:      args.outputFilter,
+			Explain:  args.explain,
 		}
 		logging.Infof("starting connectivity analysis")
 		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)

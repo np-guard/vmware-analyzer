@@ -55,10 +55,7 @@ func (a *analyzerTest) run(t *testing.T) {
 		require.Nil(t, err)
 	}
 
-	params := OutputParameters{
-		Format: "txt",
-	}
-	res, err := NSXConnectivityFromResourcesContainer(rc, params)
+	res, err := NSXConnectivityFromResourcesContainerPlainText(rc)
 	require.Nil(t, err)
 	fmt.Println(res)
 

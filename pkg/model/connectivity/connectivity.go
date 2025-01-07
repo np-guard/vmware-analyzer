@@ -1,19 +1,14 @@
-package conns
+package connectivity
 
 import (
-	"fmt"
 	"slices"
-	"strings"
 
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 // ConnMap captures permitted connections between endpoints in the input config
 type ConnMap map[*endpoints.VM]map[*endpoints.VM]*DetailedConnection
-type connMapEntry struct {
-	Src, Dst *endpoints.VM
-	Conn     *DetailedConnection
-}
 
 // add func adds a given pair with specified permitted connection
 func (c ConnMap) Add(src, dst *endpoints.VM, conn *DetailedConnection) {
@@ -45,23 +40,11 @@ func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 				c.Add(src, dst, NewEmptyDetailedConnection())
 			}
 		}
+
 	}
 }
 
-// String returns a concatenated lines strings with all VM pairs and their permitted connections.
-// If the input vms list is not empty, if returns only connection lines with pairs contained in this list.
-// Todo: sunset this:
-func (c ConnMap) String() string {
-	asSlice := c.ToSlice()
-	lines := make([]string, len(asSlice))
-	for i, e := range asSlice {
-		lines[i] = fmt.Sprintf("src:%s, dst: %s, allowedConns: %s", e.Src.Name(), e.Dst.Name(), e.Conn.Conn.String())
-	}
-	slices.Sort(lines)
-	return strings.Join(lines, "\n")
-}
-
-func (c ConnMap) Filter(vms []string) ConnMap {
+func (c ConnMap) filter(vms []string) ConnMap {
 	if len(vms) == 0 {
 		return c
 	}
@@ -76,11 +59,28 @@ func (c ConnMap) Filter(vms []string) ConnMap {
 	return newC
 }
 
-func (c ConnMap) ToSlice() (res []connMapEntry) {
+// connMapEntry captures one entry in ConnMap
+type connMapEntry struct {
+	Src, Dst     *endpoints.VM
+	DetailedConn *DetailedConnection
+}
+
+func (c ConnMap) toSlice() (res []*connMapEntry) {
 	for src, srcMap := range c {
 		for dst, conn := range srcMap {
-			res = append(res, connMapEntry{src, dst, conn})
+			res = append(res, &connMapEntry{src, dst, conn})
 		}
 	}
 	return res
+}
+
+func (c ConnMap) getEntryPerEndpoints(srcVM, dstVM string) *connMapEntry {
+	entries := c.toSlice()
+	for _, entry := range entries {
+		if entry.Src.Name() == srcVM && entry.Dst.Name() == dstVM {
+			return entry
+		}
+	}
+	logging.Debugf("could not find entry for srcVN,dstVM : %s, %s", srcVM, dstVM)
+	return nil
 }

@@ -5,7 +5,8 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
@@ -58,18 +59,41 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 				continue
 			}
 			dstIP := vmIPs[0]
-			conn := config.analyzedConnectivity[srcVM][dstVM]
+			//conn := config.analyzedConnectivity[srcVM][dstVM]
 			// temp fix till analyze will consider topology:
 			if !collector.IsVMConnected(resources, srcUID, dstUID) {
 				continue
 			}
-			createTraceFlowsForConn(traceFlows, srcIP, dstIP, conn)
+			createTraceFlowsForConn(traceFlows, srcIP, dstIP, srcVM, dstVM, config.analyzedConnectivity)
 		}
 	}
 	return traceFlows
 }
 
-func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *conns.DetailedConnection) {
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, srcVM, dstVM *endpoints.VM, connmap connectivity.ConnMap) {
+	allowed, denied := connmap.GetDisjointExplanationsPerEndpoints(srcVM.Name(), dstVM.Name())
+	for _, a := range allowed {
+		createTraceFlowsForConnNewSingleExplain(traceFlows, srcIP, dstIP, a, true)
+	}
+	for _, d := range denied {
+		createTraceFlowsForConnNewSingleExplain(traceFlows, srcIP, dstIP, d, false)
+	}
+}
+
+func createTraceFlowsForConnNewSingleExplain(traceFlows *collector.TraceFlows, srcIP, dstIP string, connExplain *connectivity.DetailedConnection, isAllow bool) {
+	ingressRules, egressRules := connExplain.ExplanationObj.RuleIDs()
+	ingressRulesStr := common.JoinCustomStrFuncSlice(ingressRules, func(i int) string { return fmt.Sprintf("%d", i) }, ", ")
+	egressRulesStr := common.JoinCustomStrFuncSlice(egressRules, func(i int) string { return fmt.Sprintf("%d", i) }, ", ")
+	rulesConnString := fmt.Sprintf("conn: %s ingress rules: %s, egress rules: %s", connExplain.Conn.String(), ingressRulesStr, egressRulesStr)
+	if !connExplain.Conn.TCPUDPSet().IsEmpty() {
+		traceFlows.AddTraceFlow(srcIP, dstIP, toTCPTraceFlowProtocol(connExplain.Conn.TCPUDPSet()), isAllow, ingressRules, egressRules, rulesConnString)
+	}
+	if !connExplain.Conn.ICMPSet().IsEmpty() {
+
+	}
+}
+
+/*func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, dConn *connectivity.DetailedConnection) {
 	conn := dConn.Conn
 	connString := conn.String()
 	if len(dConn.Explanation().Explanations()) == 0 {
@@ -90,7 +114,7 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 				explanation.Allow, explanation.EgressRule, explanation.IngressRule, rulesConnString)
 		}
 	}
-}
+}*/
 
 func toTCPTraceFlowProtocol(set *netset.TCPUDPSet) collector.TraceFlowProtocol {
 	partition := set.Partitions()[0]

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/np-guard/vmware-analyzer/pkg/model/conns"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -35,7 +35,7 @@ var config2 = &config{
 	fw:  dfwAllowAllByDefault,
 }
 
-func sumPairs(c conns.ConnMap) int {
+func sumPairs(c connectivity.ConnMap) int {
 	res := 0
 	for _, srcMap := range c {
 		res += len(srcMap)
@@ -43,7 +43,7 @@ func sumPairs(c conns.ConnMap) int {
 	return res
 }
 
-func sumNoConns(c conns.ConnMap) int {
+func sumNoConns(c connectivity.ConnMap) int {
 	res := 0
 	for _, srcMap := range c {
 		for _, dDonn := range srcMap {
@@ -61,14 +61,18 @@ func TestConnectivityBasicGlobalDefaultDeny(t *testing.T) {
 	require.Equal(t, len(allVms)*(len(allVms)-1), sumPairs(conn1Res))
 	// in this test, all entires are expecetd to be with No connections
 	require.Equal(t, sumPairs(conn1Res), sumNoConns(conn1Res))
-	fmt.Printf("%s\n", conn1Res.String())
+	res, err := conn1Res.GenTextualConnectivityOutput()
+	require.Nil(t, err)
+	fmt.Printf("%s\n", res)
 
 	conn2Res := config2.getConnectivity()
 	// all vm pairs (except of vm to itself) should be in the input connRes
 	require.Equal(t, len(allVms)*(len(allVms)-1), sumPairs(conn2Res))
 	// in this test, all entires are expecetd to be with No connections
 	require.Equal(t, 0, sumNoConns(conn2Res))
-	fmt.Printf("%s\n", conn2Res.String())
+	res, err = conn2Res.GenTextualConnectivityOutput()
+	require.Nil(t, err)
+	fmt.Printf("%s\n", res)
 
 	fmt.Println("done")
 }

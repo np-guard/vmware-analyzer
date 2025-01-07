@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"math/big"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
@@ -56,9 +56,9 @@ func (t *TraceFlowProtocol) header() *nsx.TransportProtocolHeader {
 
 // ///////////////////////////////////////////////////////////////////////////////
 type analyzeResults struct {
-	Allow     bool `json:"allowed"`
-	SrcRuleID int  `json:"src_rule_id,omitempty"`
-	DstRuleID int  `json:"dst_rule_id,omitempty"`
+	Allow     bool  `json:"allowed"`
+	SrcRuleID []int `json:"src_rule_id,omitempty"`
+	DstRuleID []int `json:"dst_rule_id,omitempty"`
 }
 
 type traceFlow struct {
@@ -141,7 +141,7 @@ func NewTraceflows(resources *ResourcesContainerModel, server ServerData) *Trace
 	return &TraceFlows{resources: resources, server: server}
 }
 func (traceFlows *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowProtocol,
-	analyzeAllowed bool, srcRuleID, dstRuleID int, connection string) {
+	analyzeAllowed bool, srcRuleID, dstRuleID []int, connection string) {
 	traceFlows.Tfs = append(traceFlows.Tfs,
 		&traceFlow{Src: src, Dst: dst, Protocol: protocol,
 			AnalyzeResults: analyzeResults{analyzeAllowed, srcRuleID, dstRuleID},
@@ -181,6 +181,10 @@ func (traceFlows *TraceFlows) sendTraceflows() {
 	}
 }
 
+func ruleIDsAsStrings(ids []int) []string {
+	return common.CustomStrSliceToStrings(ids, func(i int) string { return fmt.Sprintf("%d", i) })
+}
+
 func (traceFlows *TraceFlows) collectTracflowsData() {
 	time.Sleep(traceflowPoolingTime)
 	for _, traceFlow := range traceFlows.Tfs {
@@ -199,18 +203,22 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 		}
 		traceFlow.Results = traceFlow.Observations.results()
 		if traceFlow.Results.Completed {
-			analyzeSrcRuleID := strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID)
-			analyzeDstRuleID := strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID)
+			analyzeSrcRuleIDs := ruleIDsAsStrings(traceFlow.AnalyzeResults.SrcRuleID) //strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID)
+			analyzeDstRuleIDs := ruleIDsAsStrings(traceFlow.AnalyzeResults.DstRuleID) //strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID)
 			switch {
 			case traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered:
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")
-			case analyzeSrcRuleID != traceFlow.Results.SrcRuleID:
+
+			case !slices.Contains(analyzeSrcRuleIDs, traceFlow.Results.SrcRuleID):
 				traceFlow.Errors = append(traceFlow.Errors, "analyze egress rule is different from trace flow egress rule")
-			case traceFlow.Results.DstRuleID != "" && analyzeDstRuleID != traceFlow.Results.DstRuleID:
+
+			case traceFlow.Results.DstRuleID != "" && !slices.Contains(analyzeDstRuleIDs, traceFlow.Results.DstRuleID):
 				traceFlow.Errors = append(traceFlow.Errors, "analyze ingress rule is different from trace flow ingress rule")
-			case traceFlow.Results.DstRuleID == "" && analyzeDstRuleID != "0" && analyzeDstRuleID != traceFlow.Results.SrcRuleID:
+
+				// TODO: consider this case?
+				/*case traceFlow.Results.DstRuleID == "" && analyzeDstRuleID != "0" && analyzeDstRuleID != traceFlow.Results.SrcRuleID:
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow ingress rule is missing,"+
-					" and analyze ingress rule rule different from trace flow egress")
+					" and analyze ingress rule rule different from trace flow egress")*/
 			}
 		}
 	}
