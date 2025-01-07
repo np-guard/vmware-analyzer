@@ -38,12 +38,24 @@ func (paths *SymbolicPaths) String() string {
 	return strings.Join(res, "\n")
 }
 
+// remove empty SymbolicPaths; a path is empty if any of its components (src, dst, conn) is empty
 func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
 		if !path.isEmpty(hints) {
 			newPaths = append(newPaths, path)
 		}
+	}
+	return &newPaths
+}
+
+// Given SymbolicPaths, removes redundant terms from each SymbolicPath
+// a term is redundant if it is a tautology or if it is implied by other terms given hints;
+// e.g., given that Slytherin and Gryffindor are disjoint, = Gryffindor implies != Slytherin
+func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		newPaths = append(newPaths, path.removeRedundant(hints))
 	}
 	return &newPaths
 }
