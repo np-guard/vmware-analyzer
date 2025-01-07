@@ -19,5 +19,9 @@ func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel,
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	fmt.Println(stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy))
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, hints)
+	abstractModel := &AbstractModelSyn{}
+	abstractModel.epToGroups = parser.VMsGroups()
+	abstractModel.vms = parser.VMs()
+	abstractModel.policy = append(abstractModel.policy, &allowOnlyPolicy)
 	return &allowOnlyPolicy, nil
 }

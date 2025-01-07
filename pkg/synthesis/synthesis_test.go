@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
@@ -94,6 +95,28 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+}
+
+func TestCollectAndConvertToAbstract(t *testing.T) {
+	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
+	if (server == collector.ServerData{}) {
+		fmt.Println("didn't got any server")
+		return
+	}
+
+	rc, err := collector.CollectResources(server)
+	if err != nil {
+		t.Errorf("CollectResources() error = %v", err)
+		return
+	}
+	if rc == nil {
+		t.Errorf("didnt got resources")
+		return
+	}
+
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	require.Nil(t, err)
+	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
 }
 
 func TestConvertToAbsract(t *testing.T) {
