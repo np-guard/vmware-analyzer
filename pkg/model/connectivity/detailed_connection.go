@@ -65,22 +65,14 @@ func (es *Explanation) String(connSet *netset.TransportSet) string {
 	return fmt.Sprintf("ingress: %s\negress: %s", ingress, egress)
 }
 
-func (es *Explanation) RuleIDsAsStrings(ids []int) []string {
-	res := make([]string, len(ids))
-	for i := range ids {
-		res[i] = fmt.Sprintf("%d", ids[i])
-	}
-	return res
-}
-
 func (es *Explanation) RuleIDs() (ingress, egress []int) {
 	ingress = make([]int, len(es.IngressExplanations))
-	for _, ingressExp := range es.IngressExplanations {
-		ingress = append(ingress, ingressExp.RuleID)
+	for i := range es.IngressExplanations {
+		ingress[i] = es.IngressExplanations[i].RuleID
 	}
 	egress = make([]int, len(es.IngressExplanations))
-	for _, egressExp := range es.EgressExplanations {
-		egress = append(egress, egressExp.RuleID)
+	for i := range es.EgressExplanations {
+		egress[i] = es.EgressExplanations[i].RuleID
 	}
 	return ingress, egress
 }
