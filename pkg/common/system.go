@@ -9,6 +9,10 @@ package common
 import (
 	"os"
 	"path"
+	"encoding/json"
+
+	"gopkg.in/yaml.v3"
+
 )
 
 const (
@@ -21,4 +25,27 @@ func WriteToFile(file, content string) error {
 		return err
 	}
 	return os.WriteFile(file, []byte(content), writeFileMode)
+}
+
+
+func WriteYamlUsingJSON(content interface{},file string) error {
+	// Directly marshaling content into YAML, results in malformed Kubernetes resources.
+	// This is because K8s NetworkPolicy struct has json field tags, but no yaml field tags (also true for other resources).
+	// The (somewhat ugly) solution is to first marshal content to json, unmarshal to an interface{} var and marshal to yaml
+	buf, err := json.Marshal(content)
+	if err != nil {
+		return err
+	}
+
+	var contentFromJSON interface{}
+	err = json.Unmarshal(buf, &contentFromJSON)
+	if err != nil {
+		return err
+	}
+
+	buf, err = yaml.Marshal(contentFromJSON)
+	if err != nil {
+		return err
+	}
+	return WriteToFile(file, string(buf))
 }
