@@ -92,6 +92,7 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
+// all optimizations are documented in README
 func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints) *SymbolicPaths {
 	if len(*denyPaths) == 0 {
 		return allowPaths
@@ -149,6 +150,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 	}
+	// removes empty SymblicPaths; of non-empty paths removed redundant terms
 	return resAllowPaths.removeEmpty(hints).removeRedundant(hints)
 }
 
