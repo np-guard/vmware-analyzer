@@ -8,14 +8,14 @@ import (
 func (term atomicTerm) labelKey() string {
 	switch term.property.(type) {
 	case *collector.Segment:
-		return "segment "
+		return "segment"
 	case *endpoints.VM:
-		return "virtual machine "
+		return "virtual machine"
 	case *collector.Tag:
 		return "tag " + term.property.Name()
 	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
 	case *collector.Group:
-		return "group "
+		return "group"
 	default: // for structs used for testing
 		return term.property.Name()
 	}

@@ -3,6 +3,7 @@ package synthesis
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
@@ -80,6 +82,12 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	rc := data.ExamplesGeneration(synTest.exData)
 	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
+	
+	policies := ToNetworkPolicies(allowOnlyPolicy)
+	policiesFileName := path.Join("out", synTest.name+"_policies.yaml")
+	err = common.WriteYamlUsingJSON(policies, policiesFileName)
+	require.Nil(t, err)
+
 	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
@@ -106,6 +114,11 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
+	policies := ToNetworkPolicies(allowOnlyPolicy)
+	policiesFileName := filepath.Join("out", "from_collected_policies.yaml")
+	err = common.WriteYamlUsingJSON(policies, policiesFileName)
+	require.Nil(t, err)
+
 }
 
 func TestConvertToAbsract(t *testing.T) {
