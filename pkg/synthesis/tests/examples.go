@@ -301,12 +301,12 @@ micro segmentation
 
 var ExampleHogwarts = ExampleSynthesis{
 	FromNSX: data.Example{Vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
-		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
+		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore"},
 		Groups: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
 			"Hufflepuff": {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 			"Gryffindor": {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-			"Dumbledore": {"Dumbledore1", "Dumbledore2"},
+			"Dumbledore": {"Dumbledore"},
 			"Web":        {"Slytherin-Web", "Gryffindor-Web", "Hufflepuff-Web"},
 			"App":        {"Slytherin-App", "Gryffindor-App", "Hufflepuff-App"},
 			"DB":         {"Slytherin-DB", "Gryffindor-DB", "Hufflepuff-DB"},
@@ -373,6 +373,14 @@ var ExampleHogwarts = ExampleSynthesis{
 						Dest:     "Gryffindor",
 						Services: []string{"ANY"},
 						Action:   data.JumpToApp,
+					},
+					{
+						Name:     "default-deny-env",
+						Id:       10218,
+						Source:   "ANY",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
 					},
 				},
 			},
