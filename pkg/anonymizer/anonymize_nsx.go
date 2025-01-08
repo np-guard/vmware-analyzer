@@ -50,18 +50,18 @@ var inst anonInstruction = anonInstruction{
 	idFields: []string{
 		"ExternalId",
 		"UniqueId",
-		"Id",
+		"ID",
 	},
 	idsToKeep: []idToKeep{
-		{"Service", "Id"},
-		{"IPProtocolServiceEntry", "Id"},
-		{"IGMPTypeServiceEntry", "Id"},
-		{"ICMPTypeServiceEntry", "Id"},
-		{"ALGTypeServiceEntry", "Id"},
-		{"L4PortSetServiceEntry", "Id"},
-		{"EtherTypeServiceEntry", "Id"},
-		{"NestedServiceServiceEntry", "Id"},
-		{"FirewallRule", "Id"},
+		{"Service", "ID"},
+		{"IPProtocolServiceEntry", "ID"},
+		{"IGMPTypeServiceEntry", "ID"},
+		{"ICMPTypeServiceEntry", "ID"},
+		{"ALGTypeServiceEntry", "ID"},
+		{"L4PortSetServiceEntry", "ID"},
+		{"EtherTypeServiceEntry", "ID"},
+		{"NestedServiceServiceEntry", "ID"},
+		{"FirewallRule", "ID"},
 	},
 
 	idRefFields: []string{

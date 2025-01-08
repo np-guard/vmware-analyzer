@@ -20,7 +20,7 @@ var Example1 = Example{
 			Rules: []Rule{
 				{
 					Name:     "allow_smb_incoming",
-					Id:       1004,
+					ID:       1004,
 					Source:   "frontend",
 					Dest:     "backend",
 					Services: []string{"/infra/services/SMB"},
@@ -86,7 +86,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "allow-Gryffindor-to-Gryffindor",
-					Id:       10218,
+					ID:       10218,
 					Source:   "Gryffindor",
 					Dest:     "Gryffindor",
 					Services: []string{"ANY"},
@@ -100,7 +100,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "allow-Hufflepuff-to-Hufflepuff",
-					Id:       10219,
+					ID:       10219,
 					Source:   "Hufflepuff",
 					Dest:     "Hufflepuff",
 					Services: []string{"ANY"},
@@ -114,7 +114,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "allow-Slytherin-to-Slytherin",
-					Id:       10220,
+					ID:       10220,
 					Source:   "Slytherin",
 					Dest:     "Slytherin",
 					Services: []string{"ANY"},
@@ -128,7 +128,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "allow-Gryffindor-to-Dumbledore",
-					Id:       10216,
+					ID:       10216,
 					Source:   "Gryffindor",
 					Dest:     "Dumbledore",
 					Services: []string{"ANY"},
@@ -136,7 +136,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "allow-Dumbledore-to-Gryffindor",
-					Id:       10217,
+					ID:       10217,
 					Source:   "Dumbledore",
 					Dest:     "Gryffindor",
 					Services: []string{"ANY"},
@@ -151,7 +151,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "new-rule",
-					Id:       NewRuleID,
+					ID:       NewRuleID,
 					Source:   "Gryffindor-App",
 					Dest:     "Hufflepuff-App",
 					Services: []string{"ANY"},
@@ -159,7 +159,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Gryffindor-Client-Access",
-					Id:       9195,
+					ID:       9195,
 					Source:   "ANY",
 					Dest:     "Gryffindor-Web",
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
@@ -167,7 +167,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Gryffindor-Web-To-App-Access",
-					Id:       9196,
+					ID:       9196,
 					Source:   "Gryffindor-Web",
 					Dest:     "Gryffindor-App",
 					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
@@ -175,7 +175,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Gryffindor-App-To-DB-Access",
-					Id:       9197,
+					ID:       9197,
 					Source:   "Gryffindor-App",
 					Dest:     "Gryffindor-DB",
 					Services: []string{"/infra/services/SMB"},
@@ -190,7 +190,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "Slytherin-Client-Access",
-					Id:       3048,
+					ID:       3048,
 					Source:   "ANY",
 					Dest:     "Slytherin-Web",
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
@@ -198,7 +198,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Slytherin-Web-To-App-Access",
-					Id:       3049,
+					ID:       3049,
 					Source:   "Slytherin-Web",
 					Dest:     "Slytherin-App",
 					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
@@ -206,7 +206,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Slytherin-App-To-DB-Access",
-					Id:       3050,
+					ID:       3050,
 					Source:   "Slytherin-App",
 					Dest:     "Slytherin-DB",
 					Services: []string{"/infra/services/SMB"},
@@ -221,7 +221,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "Hufflepuff-Client-Access",
-					Id:       2048,
+					ID:       2048,
 					Source:   "ANY",
 					Dest:     "Hufflepuff-Web",
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
@@ -229,7 +229,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Hufflepuff-Web-To-App-Access",
-					Id:       2049,
+					ID:       2049,
 					Source:   "Hufflepuff-Web",
 					Dest:     "Hufflepuff-App",
 					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
@@ -237,7 +237,7 @@ var Example2 = Example{
 				},
 				{
 					Name:     "Hufflepuff-App-To-DB-Access",
-					Id:       2050,
+					ID:       2050,
 					Source:   "Hufflepuff-App",
 					Dest:     "Hufflepuff-DB",
 					Services: []string{"/infra/services/SMB"},
@@ -273,7 +273,7 @@ func example3FromExample2() Example {
 	// change Rule 9198, to have both src and Dest as Gryffindor-App
 	for _, c := range res.Policies {
 		for _, r := range c.Rules {
-			if r.Id == NewRuleID {
+			if r.ID == NewRuleID {
 				r.Dest = "Gryffindor-App"
 			}
 		}
@@ -301,7 +301,7 @@ var ExampleDumbeldore = Example{
 			Rules: []Rule{
 				{
 					Name:     "Dumb1-To-All",
-					Id:       NewRuleID,
+					ID:       NewRuleID,
 					Source:   "DumbledoreAll",
 					Dest:     "ANY",
 					Services: []string{"ANY"},
@@ -309,7 +309,7 @@ var ExampleDumbeldore = Example{
 				},
 				{
 					Name:     "Dumb2-Not-Sly",
-					Id:       9195,
+					ID:       9195,
 					Source:   "DumbledoreNoSly",
 					Dest:     "Slytherin",
 					Services: []string{"ANY"},
@@ -317,7 +317,7 @@ var ExampleDumbeldore = Example{
 				},
 				{
 					Name:     "Dumb2-To-All",
-					Id:       9196,
+					ID:       9196,
 					Source:   "DumbledoreNoSly",
 					Dest:     "ANY",
 					Services: []string{"ANY"},

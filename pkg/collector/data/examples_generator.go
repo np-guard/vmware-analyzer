@@ -9,7 +9,6 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-//nolint:gocritic // just for testing
 func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
@@ -56,7 +55,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 		for _, rule := range policy.Rules {
 			newRule := nsx.Rule{
 				DisplayName:       &rule.Name,
-				RuleId:            &rule.Id,
+				RuleId:            &rule.ID,
 				Action:            (*nsx.RuleAction)(&rule.Action),
 				SourceGroups:      []string{rule.Source},
 				DestinationGroups: []string{rule.Dest},
@@ -97,7 +96,7 @@ type Example struct {
 func DefaultDenyRule(id int) Rule {
 	return Rule{
 		Name:     "default-deny-Rule",
-		Id:       id,
+		ID:       id,
 		Source:   anyStr,
 		Dest:     anyStr,
 		Services: []string{anyStr},
@@ -107,7 +106,7 @@ func DefaultDenyRule(id int) Rule {
 
 type Rule struct {
 	Name     string
-	Id       int
+	ID       int
 	Source   string
 	Dest     string
 	Services []string
