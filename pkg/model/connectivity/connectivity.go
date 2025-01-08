@@ -40,7 +40,6 @@ func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []stri
 				c.Add(src, dst, NewEmptyDetailedConnection())
 			}
 		}
-
 	}
 }
 

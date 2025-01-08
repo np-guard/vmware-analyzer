@@ -9,7 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func (c ConnMap) GetExplanationPerConnection(srcVM, dstVM string, inputConn *netset.TransportSet) (isAllowed bool, ingress []int, egress []int) {
+func (c ConnMap) GetExplanationPerConnection(srcVM, dstVM string, inputConn *netset.TransportSet) (isAllowed bool, ingress, egress []int) {
 	logging.Debugf("GetExplanationPerConnection")
 	entry := c.getEntryPerEndpoints(srcVM, dstVM)
 	if entry == nil {
@@ -43,7 +43,9 @@ func (c ConnMap) fullOutputWithExplanations() string {
 func (c connMapEntry) fullExplanationString() string {
 	header := fmt.Sprintf("src: %s, dst: %s", c.Src.Name(), c.Dst.Name())
 	deniedConn := netset.AllTransports().Subtract(c.DetailedConn.Conn)
-	allowedConns := fmt.Sprintf("allowed connections: %s, rules details:\n%s", c.DetailedConn.Conn.String(), c.DetailedConn.DetailedExplanationString(c.DetailedConn.Conn))
-	deniedConns := fmt.Sprintf("denied connections: %s, rules details:\n%s", deniedConn.String(), c.DetailedConn.DetailedExplanationString(deniedConn))
+	allowedConns := fmt.Sprintf("allowed connections: %s, rules details:\n%s",
+		c.DetailedConn.Conn.String(), c.DetailedConn.DetailedExplanationString(c.DetailedConn.Conn))
+	deniedConns := fmt.Sprintf("denied connections: %s, rules details:\n%s",
+		deniedConn.String(), c.DetailedConn.DetailedExplanationString(deniedConn))
 	return strings.Join([]string{header, allowedConns, deniedConns}, "\n")
 }

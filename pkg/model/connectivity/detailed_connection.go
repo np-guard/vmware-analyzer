@@ -59,8 +59,8 @@ func (es *Explanation) String(connSet *netset.TransportSet) string {
 	ingressExplanationsFiltered := filterExplanation(es.IngressExplanations, connSet)
 	egressExplanationsFiltered := filterExplanation(es.EgressExplanations, connSet)
 
-	ingress := common.JoinStringifiedSlice(ingressExplanationsFiltered, ",")
-	egress := common.JoinStringifiedSlice(egressExplanationsFiltered, ",")
+	ingress := common.JoinStringifiedSlice(ingressExplanationsFiltered, common.CommaSeparator)
+	egress := common.JoinStringifiedSlice(egressExplanationsFiltered, common.CommaSeparator)
 
 	return fmt.Sprintf("ingress: %s\negress: %s", ingress, egress)
 }

@@ -58,9 +58,9 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 		// add policy rules
 		for _, rule := range policy.rules {
 			newRule := rule.toNSXRule()
-			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, newRule)
+			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, *newRule)
 			collectorRule := collector.Rule{
-				Rule: newRule,
+				Rule: *newRule,
 			}
 			newPolicy.Rules = append(newPolicy.Rules, collectorRule)
 		}
@@ -127,7 +127,6 @@ func (e *Example) InitEmptyEnvAppCategories() {
 			categoryType: dfw.ApplicationStr,
 		},
 	}
-
 }
 
 func (e *Example) AddRuleToExampleInCategory(categoryType string, ruleToAdd *Rule) error {
@@ -143,7 +142,7 @@ func (e *Example) AddRuleToExampleInCategory(categoryType string, ruleToAdd *Rul
 		ruleToAdd.ID = numRulesCurrent + 1
 	}
 	if categoryIndex > 0 {
-		ruleToAdd.ID = ruleToAdd.ID + len(e.Policies[categoryIndex-1].rules)
+		ruleToAdd.ID += len(e.Policies[categoryIndex-1].rules)
 	}
 
 	// add the rule as last in the rules list of the given category
@@ -172,8 +171,8 @@ type Rule struct {
 	Direction string // if not set, used as default with "IN_OUT"
 }
 
-func (r Rule) toNSXRule() nsx.Rule {
-	return nsx.Rule{
+func (r *Rule) toNSXRule() *nsx.Rule {
+	return &nsx.Rule{
 		DisplayName:       &r.Name,
 		RuleId:            &r.ID,
 		Action:            (*nsx.RuleAction)(&r.Action),
@@ -197,7 +196,7 @@ var enumValues_RuleDirection = []interface{}{
 }
 */
 
-func (r Rule) directionStr() nsx.RuleDirection {
+func (r *Rule) directionStr() nsx.RuleDirection {
 	switch r.Direction {
 	case string(nsx.RuleDirectionIN):
 		return nsx.RuleDirectionIN

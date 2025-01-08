@@ -230,30 +230,11 @@ func (dotGraph *DotGraph) rankString() string {
 			nodeIdsStr := JoinCustomStrFuncSlice(nodesList, func(n *dotNode) string { return fmt.Sprintf("node_%d_", n.ID) }, " ")
 			return fmt.Sprintf("{rank=same; %s}", nodeIdsStr)
 		}, "\n")
-
-	/*ranks := make([]string, len(nodesByKinds))
-	for ri, nodes := range slices.Collect(maps.Values(nodesByKinds)) {
-		nodeIdsStr := JoinCustomStrFuncSlice(nodes, func(n *dotNode) string { return fmt.Sprintf("node_%d_", n.ID) }, " ")
-		nodesIds := make([]string, len(nodes))
-		for ni, n := range nodes {
-			nodesIds[ni] = fmt.Sprintf("node_%d_", n.ID)
-		}
-		ranks[ri] = fmt.Sprintf("{rank=same; %s}", nodeIdsStr)
-	}
-	return strings.Join(ranks, "\n")*/
 }
 
 func (dotGraph *DotGraph) String() string {
 	nodeLines := JoinCustomStrFuncSlice(slices.Collect(maps.Values(dotGraph.nodes)), func(n *dotNode) string { return n.string() }, "\n")
-	/*nodeLines := make([]string, len(dotGraph.nodes))
-	for i, n := range slices.Collect(maps.Values(dotGraph.nodes)) {
-		nodeLines[i] = n.string()
-	}*/
 	edgeLines := JoinCustomStrFuncSlice(dotGraph.edges, func(e *dotEdge) string { return e.string() }, "\n")
-	/*edgeLines := make([]string, len(dotGraph.edges))
-	for i, e := range dotGraph.edges {
-		edgeLines[i] = e.string()
-	}*/
 	var rankdir, rankString string
 	if dotGraph.rank {
 		rankdir = "rankdir = \"LR\";"

@@ -203,8 +203,8 @@ func (traceFlows *TraceFlows) collectTracflowsData() {
 		}
 		traceFlow.Results = traceFlow.Observations.results()
 		if traceFlow.Results.Completed {
-			analyzeSrcRuleIDs := ruleIDsAsStrings(traceFlow.AnalyzeResults.SrcRuleID) //strconv.Itoa(traceFlow.AnalyzeResults.SrcRuleID)
-			analyzeDstRuleIDs := ruleIDsAsStrings(traceFlow.AnalyzeResults.DstRuleID) //strconv.Itoa(traceFlow.AnalyzeResults.DstRuleID)
+			analyzeSrcRuleIDs := ruleIDsAsStrings(traceFlow.AnalyzeResults.SrcRuleID)
+			analyzeDstRuleIDs := ruleIDsAsStrings(traceFlow.AnalyzeResults.DstRuleID)
 			switch {
 			case traceFlow.AnalyzeResults.Allow != traceFlow.Results.Delivered:
 				traceFlow.Errors = append(traceFlow.Errors, "trace flow result is different from analyze result")

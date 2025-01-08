@@ -9,6 +9,9 @@ const (
 	OutputSectionSep = "\n-------------------------------------------------------------------\n"
 	ShortSep         = "\n-------------------------\n"
 
+	CommaSeparator      string = ","
+	CommaSpaceSeparator string = ", "
+
 	// ANSI escape codes - for colored output printed to the terminal
 	Reset   = "\033[0m"
 	Red     = "\033[31m"

@@ -9,7 +9,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
-	//"github.com/np-guard/vmware-analyzer/pkg/model/conns"
 	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
@@ -114,7 +113,6 @@ type connectionsAndRules struct {
 func (cr *connectionsAndRules) String() string {
 	partitionsByRulesStr := common.JoinStringifiedSlice(cr.partitionsByRules, ";")
 	return fmt.Sprintf("accumulatedConns: %s, partitionsByRules: %s", cr.accumulatedConns.String(), partitionsByRulesStr)
-	//return fmt.Sprintf("partitionsByRules: %s", partitionsByRulesStr)
 }
 
 func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *netset.TransportSet) {
@@ -126,7 +124,7 @@ func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *nets
 	for _, p := range cr.partitionsByRules {
 		p.Conn = p.Conn.Subtract(higherPrioConns)
 	}
-	//clean nil entries
+	// clean nil entries
 	newSlice := []*connectivity.RuleAndConn{}
 	for _, r := range cr.partitionsByRules {
 		if r != nil {
@@ -155,9 +153,10 @@ func emptyConnectionsAndRules() *connectionsAndRules {
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 ) (allowedConns, // allowedConns are the set of connections between src to dst, which are allowed by this category rules.
-	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the rule action jump_to_app.
+	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the
+	// rule action jump_to_app.
 	deniedConns, // deniedConns are the set of connections between src to dst, which are denied by this category rules.
-	nonDet *connectionsAndRules, //notDeterminedConns are the set of connections between src to dst, for which this category
+	nonDet *connectionsAndRules, // notDeterminedConns are the set of connections between src to dst, for which this category
 // has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
 ) {
 	allowedConns, jumpToAppConns, deniedConns = emptyConnectionsAndRules(), emptyConnectionsAndRules(), emptyConnectionsAndRules()
@@ -197,7 +196,8 @@ func (c *categorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	nonDet = emptyConnectionsAndRules()
 	switch c.defaultAction {
 	case actionNone: // no default configured for this category
-		nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
+		nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(
+			jumpToAppConns.accumulatedConns)
 	case actionAllow: // default allow
 		rulePartition := &connectivity.RuleAndConn{RuleID: 0, Conn: netset.AllTransports().Subtract(allowedConns.accumulatedConns)}
 		allowedConns.accumulatedConns = netset.AllTransports().Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
@@ -227,39 +227,21 @@ func (c *categorySpec) originalRulesStr() []string {
 }
 
 func (c *categorySpec) String() string {
-	/*rulesStr := make([]string, len(c.rules)+1)
-	rulesStr[0] = "rules:"
-	for i := range c.rules {
-		rulesStr[i+1] = c.rules[i].String()
-	}*/
 	rulesStr := common.JoinStringifiedSlice(c.rules, lineSeparatorStr)
 	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.category.string(),
 		rulesStr, string(c.defaultAction))
 }
 
 func (c *categorySpec) inboundEffectiveRules() string {
-
 	return common.JoinCustomStrFuncSlice(c.processedRules.inbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
 		lineSeparatorStr)
-
-	/*rulesStr := make([]string, len(c.processedRules.inbound))
-	for i := range c.processedRules.inbound {
-		rulesStr[i] = c.processedRules.inbound[i].effectiveRuleStr()
-	}
-	return strings.Join(rulesStr, lineSeparatorStr)*/
 }
 
 func (c *categorySpec) outboundEffectiveRules() string {
 	return common.JoinCustomStrFuncSlice(c.processedRules.outbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
 		lineSeparatorStr)
-
-	/*rulesStr := make([]string, len(c.processedRules.outbound))
-	for i := range c.processedRules.outbound {
-		rulesStr[i] = c.processedRules.outbound[i].effectiveRuleStr()
-	}
-	return strings.Join(rulesStr, lineSeparatorStr)*/
 }
 
 func (c *categorySpec) addRule(src, dst []*endpoints.VM, conn *netset.TransportSet,
@@ -301,27 +283,3 @@ func newEmptyCategory(c DfwCategory, d *DFW) *categorySpec {
 		processedRules: &effectiveRules{},
 	}
 }
-
-/*func (c *categorySpec) collectRelevantRules(src, dst *endpoints.VM, relevantRules *relevantRules) {
-	for _, isIngress := range []bool{false, true} {
-		rules := c.processedRules.inbound
-		if !isIngress {
-			rules = c.processedRules.outbound
-		}
-		for _, rule := range rules {
-			if rule.processedRuleCapturesPair(src, dst) {
-				// todo - handle actionJumpToApp rules
-				switch {
-				case rule.action == actionAllow && !isIngress:
-					relevantRules.egressAllow = append(relevantRules.egressAllow, rule)
-				case rule.action == actionDeny && !isIngress:
-					relevantRules.egressDeny = append(relevantRules.egressDeny, rule)
-				case rule.action == actionAllow && isIngress:
-					relevantRules.ingressAllow = append(relevantRules.ingressAllow, rule)
-				case rule.action == actionDeny && isIngress:
-					relevantRules.ingressDeny = append(relevantRules.ingressDeny, rule)
-				}
-			}
-		}
-	}
-}*/

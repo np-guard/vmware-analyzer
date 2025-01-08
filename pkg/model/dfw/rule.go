@@ -183,12 +183,6 @@ func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 
 func vmsString(vms []*endpoints.VM) string {
 	return common.JoinCustomStrFuncSlice(vms, func(vm *endpoints.VM) string { return vm.Name() }, listSeparatorStr)
-
-	/*names := make([]string, len(vms))
-	for i := range vms {
-		names[i] = vms[i].Name()
-	}
-	return strings.Join(names, listSeparatorStr)*/
 }
 
 // return a String representation of a single rule
@@ -212,14 +206,6 @@ func getDefaultRuleScope(r *collector.FirewallRule) string {
 			}
 			return ""
 		}, listSeparatorStr)
-
-	/*res := []string{}
-	for _, s := range r.AppliedTos {
-		if s.TargetDisplayName != nil {
-			res = append(res, *s.TargetDisplayName)
-		}
-	}
-	return strings.Join(res, listSeparatorStr)*/
 }
 
 func (f *FwRule) pathToShortPathString(path string) string {
@@ -245,38 +231,11 @@ func (f *FwRule) pathToShortPathString(path string) string {
 		res = res[0:strLenLimit] + trimmedStr
 	}
 	return res
-
 }
 
 func (f *FwRule) getShortPathsString(paths []string) string {
 	return common.JoinCustomStrFuncSlice(paths,
 		func(p string) string { return f.pathToShortPathString(p) }, listSeparatorStr)
-
-	/*const (
-		strLenLimit = 12
-		pathSep     = "/"
-		trimmedStr  = "..."
-	)
-
-	shortPaths := make([]string, len(paths))
-	for i := range paths {
-		// get display name from path when possible
-		if name, ok := f.dfwRef.pathsToDisplayNames[paths[i]]; ok {
-			shortPaths[i] = name
-		} else {
-			// shorten the path str in output
-			pathElems := strings.Split(paths[i], pathSep)
-			if len(pathElems) == 0 {
-				continue
-			}
-			shortPaths[i] = pathElems[len(pathElems)-1]
-		}
-		if len(shortPaths[i]) > strLenLimit {
-			// shorten long strings in output, to enable readable table of the input fw-rules
-			shortPaths[i] = shortPaths[i][0:strLenLimit] + trimmedStr
-		}
-	}
-	return strings.Join(shortPaths, listSeparatorStr)*/
 }
 
 func getRulesFormattedHeaderLine() string {

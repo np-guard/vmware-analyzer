@@ -104,7 +104,8 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, "runs quietly, reports only severe errors and results")
 	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, "runs with more informative messages printed to log")
-	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, "connectivity output with rules explanations per allowed/denied connections")
+	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false,
+		"connectivity output with rules explanations per allowed/denied connections")
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 
 	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)

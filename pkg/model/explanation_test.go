@@ -6,12 +6,13 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
-	"github.com/stretchr/testify/require"
 )
 
 // Test connectivity analysis explanation:
@@ -60,7 +61,8 @@ const (
 	httpsPort = 443
 )
 
-var rulesTests = []rulesTest{
+//nolint:lll // long lines for test spec only
+var rulesTests = []*rulesTest{
 	{
 		// simple test: one allow rule with default deny rule
 		testName: "one_allow_and_default_deny",
@@ -445,7 +447,7 @@ var rulesTests = []rulesTest{
 	},
 }
 
-func (r rulesTest) compareActualRulesExplanation(t *testing.T, expected []string, actual []int, message string) {
+func (r *rulesTest) compareActualRulesExplanation(t *testing.T, expected []string, actual []int, message string) {
 	expectedIDs, err := r.rulesNamesToRulesIDs(expected)
 	require.Nil(t, err)
 	slices.Sort(expectedIDs)
@@ -453,7 +455,7 @@ func (r rulesTest) compareActualRulesExplanation(t *testing.T, expected []string
 	require.Equal(t, expectedIDs, actual, message)
 }
 
-func (r rulesTest) rulesNamesToRulesIDs(names []string) ([]int, error) {
+func (r *rulesTest) rulesNamesToRulesIDs(names []string) ([]int, error) {
 	res := make([]int, len(names))
 	for i, name := range names {
 		if id := r.ruleIDFromName(name); id >= 0 {
@@ -466,7 +468,7 @@ func (r rulesTest) rulesNamesToRulesIDs(names []string) ([]int, error) {
 	return res, nil
 }
 
-func (r rulesTest) ruleIDFromName(ruleName string) int {
+func (r *rulesTest) ruleIDFromName(ruleName string) int {
 	index := slices.IndexFunc(r.appRulesList, func(rule data.Rule) bool { return rule.Name == ruleName })
 	if index < 0 {
 		index = slices.IndexFunc(r.envRulesList, func(rule data.Rule) bool { return rule.Name == ruleName })
@@ -479,7 +481,7 @@ func (r rulesTest) ruleIDFromName(ruleName string) int {
 	return len(r.envRulesList) + index + 1
 }
 
-func (r rulesTest) runTest(t *testing.T) {
+func (r *rulesTest) runTest(t *testing.T) {
 	// build example from input
 	example := basicExampleTopology.CopyTopology()
 	example.InitEmptyEnvAppCategories()
@@ -495,7 +497,9 @@ func (r rulesTest) runTest(t *testing.T) {
 	rc := data.ExamplesGeneration(*example)
 
 	rcJSON, _ := rc.ToJSONString()
-	os.WriteFile("example.json", []byte(rcJSON), 0o600)
+	// TODO: set path for JSON versions of these tests
+	err := os.WriteFile("example.json", []byte(rcJSON), 0o600)
+	require.Nil(t, err)
 
 	connResStr, err := NSXConnectivityFromResourcesContainerPlainText(rc)
 	require.Nil(t, err)
@@ -508,8 +512,10 @@ func (r rulesTest) runTest(t *testing.T) {
 	for i, e := range r.expectedRes {
 		isAllowed, ingress, egress := configWithAnalysis.analyzedConnectivity.GetExplanationPerConnection("A", "B", e.conn)
 		require.Equal(t, e.isAllowed, isAllowed, "test %s failed in isAllowed comparison of expectedRes[%d]", r.testName, i)
-		r.compareActualRulesExplanation(t, e.ingressRules, ingress, fmt.Sprintf("test %s failed in ingressRules comparison of expectedRes[%d]", r.testName, i))
-		r.compareActualRulesExplanation(t, e.egressRules, egress, fmt.Sprintf("test %s failed in egressRules comparison of expectedRes[%d]", r.testName, i))
+		r.compareActualRulesExplanation(t, e.ingressRules, ingress,
+			fmt.Sprintf("test %s failed in ingressRules comparison of expectedRes[%d]", r.testName, i))
+		r.compareActualRulesExplanation(t, e.egressRules, egress,
+			fmt.Sprintf("test %s failed in egressRules comparison of expectedRes[%d]", r.testName, i))
 	}
 
 	disjointConns := configWithAnalysis.analyzedConnectivity.GetDisjointConnecionSetsPerExplanationsForEndpoints("A", "B")
@@ -525,7 +531,6 @@ func (r rulesTest) runTest(t *testing.T) {
 	fmt.Printf("%v %v %v", isAllowed, ingress, egress)*/
 
 	fmt.Println("done")
-
 }
 
 // main function to run the tests in this file
@@ -533,7 +538,6 @@ func TestAnalysisRulesExplanation(t *testing.T) {
 	for i := range rulesTests {
 		rulesTests[i].runTest(t)
 	}
-
 }
 
 // todo: move these functions to another package
@@ -542,6 +546,7 @@ func newTCPWithPort(p int64) *netset.TransportSet {
 	return netset.NewTCPTransport(1, 65535, p, p)
 }
 
+//nolint:unparam //  `p1` always receives `1` only currently..needs both params
 func newTCPWIthPortRange(p1, p2 int64) *netset.TransportSet {
 	return netset.NewTCPTransport(1, 65535, p1, p2)
 }

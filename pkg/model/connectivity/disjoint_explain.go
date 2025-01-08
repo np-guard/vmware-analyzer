@@ -107,7 +107,6 @@ func (c ConnMap) GetDisjointExplanationsPerEndpoints(srcVM, dstVM string) (allow
 			if conn.IsSubset(ingressExp.Conn) {
 				connExplanation.ExplanationObj.IngressExplanations = append(connExplanation.ExplanationObj.IngressExplanations, ingressExp)
 			}
-
 		}
 		if isAllowed {
 			allowed = append(allowed, connExplanation)
@@ -120,18 +119,21 @@ func (c ConnMap) GetDisjointExplanationsPerEndpoints(srcVM, dstVM string) (allow
 
 // todo: just for debugging for now
 func PrintDisjointExplanations(allowed, denied []*DetailedConnection) {
+	var ruleIDToStr = func(s *RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }
+	var lineStr = "conn: %s, ingress rules: %s, egress rules: %s\n"
+	var separator = " ; "
 	fmt.Println("allowed disjoint explains:")
 	for _, a := range allowed {
-		fmt.Printf("conn: %s, ingress rules: %s, egress rules: %s\n", a.Conn.String(),
-			common.JoinCustomStrFuncSlice(a.ExplanationObj.IngressExplanations, func(s *RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
-			common.JoinCustomStrFuncSlice(a.ExplanationObj.EgressExplanations, func(s *RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
+		fmt.Printf(lineStr, a.Conn.String(),
+			common.JoinCustomStrFuncSlice(a.ExplanationObj.IngressExplanations, ruleIDToStr, separator),
+			common.JoinCustomStrFuncSlice(a.ExplanationObj.EgressExplanations, ruleIDToStr, separator),
 		)
 	}
 	fmt.Println("denied disjoint explains:")
-	for _, a := range denied {
-		fmt.Printf("conn: %s, ingress rules: %s, egress rules: %s\n", a.Conn.String(),
-			common.JoinCustomStrFuncSlice(a.ExplanationObj.IngressExplanations, func(s *RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
-			common.JoinCustomStrFuncSlice(a.ExplanationObj.EgressExplanations, func(s *RuleAndConn) string { return fmt.Sprintf("%d", s.RuleID) }, " ; "),
+	for _, d := range denied {
+		fmt.Printf(lineStr, d.Conn.String(),
+			common.JoinCustomStrFuncSlice(d.ExplanationObj.IngressExplanations, ruleIDToStr, separator),
+			common.JoinCustomStrFuncSlice(d.ExplanationObj.EgressExplanations, ruleIDToStr, separator),
 		)
 	}
 }

@@ -59,7 +59,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 				continue
 			}
 			dstIP := vmIPs[0]
-			//conn := config.analyzedConnectivity[srcVM][dstVM]
+			// conn := config.analyzedConnectivity[srcVM][dstVM]
 			// temp fix till analyze will consider topology:
 			if !collector.IsVMConnected(resources, srcUID, dstUID) {
 				continue
@@ -70,7 +70,8 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 	return traceFlows
 }
 
-func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string, srcVM, dstVM *endpoints.VM, connmap connectivity.ConnMap) {
+func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string,
+	srcVM, dstVM *endpoints.VM, connmap connectivity.ConnMap) {
 	fmt.Printf("createTraceFlowsForConn: srcVM %s, dstVM: %s\n", srcVM.Name(), dstVM.Name())
 	allowed, denied := connmap.GetDisjointExplanationsPerEndpoints(srcVM.Name(), dstVM.Name())
 	for _, a := range allowed {
@@ -81,17 +82,21 @@ func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP stri
 	}
 }
 
-func createTraceFlowsForConnNewSingleExplain(traceFlows *collector.TraceFlows, srcIP, dstIP string, connExplain *connectivity.DetailedConnection, isAllow bool) {
+func createTraceFlowsForConnNewSingleExplain(traceFlows *collector.TraceFlows, srcIP, dstIP string,
+	connExplain *connectivity.DetailedConnection, isAllow bool) {
 	ingressRules, egressRules := connExplain.ExplanationObj.RuleIDs()
-	ingressRulesStr := common.JoinCustomStrFuncSlice(ingressRules, func(i int) string { return fmt.Sprintf("%d", i) }, ", ")
-	egressRulesStr := common.JoinCustomStrFuncSlice(egressRules, func(i int) string { return fmt.Sprintf("%d", i) }, ", ")
+	var intToStr = func(i int) string { return fmt.Sprintf("%d", i) }
+	ingressRulesStr := common.JoinCustomStrFuncSlice(ingressRules, intToStr, common.CommaSpaceSeparator)
+	egressRulesStr := common.JoinCustomStrFuncSlice(egressRules, intToStr, common.CommaSpaceSeparator)
 	rulesConnString := fmt.Sprintf("conn: %s ingress rules: %s, egress rules: %s", connExplain.Conn.String(), ingressRulesStr, egressRulesStr)
 	fmt.Printf("isAllow: %t, rulesConnString: %s\n", isAllow, rulesConnString)
 	if !connExplain.Conn.TCPUDPSet().IsEmpty() {
-		traceFlows.AddTraceFlow(srcIP, dstIP, toTCPTraceFlowProtocol(connExplain.Conn.TCPUDPSet()), isAllow, ingressRules, egressRules, rulesConnString)
+		traceFlows.AddTraceFlow(srcIP, dstIP,
+			toTCPTraceFlowProtocol(connExplain.Conn.TCPUDPSet()), isAllow, ingressRules, egressRules, rulesConnString)
 	}
 	if !connExplain.Conn.ICMPSet().IsEmpty() {
-		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, isAllow, ingressRules, egressRules, rulesConnString)
+		traceFlows.AddTraceFlow(srcIP, dstIP,
+			collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, isAllow, ingressRules, egressRules, rulesConnString)
 	}
 }
 
