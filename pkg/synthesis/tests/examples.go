@@ -301,12 +301,12 @@ micro segmentation
 
 var ExampleHogwarts = ExampleSynthesis{
 	FromNSX: data.Example{Vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
-		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore"},
+		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
 		Groups: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
 			"Hufflepuff": {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 			"Gryffindor": {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-			"Dumbledore": {"Dumbledore"},
+			"Dumbledore": {"Dumbledore1", "Dumbledore2"},
 			"Web":        {"Slytherin-Web", "Gryffindor-Web", "Hufflepuff-Web"},
 			"App":        {"Slytherin-App", "Gryffindor-App", "Hufflepuff-App"},
 			"DB":         {"Slytherin-DB", "Gryffindor-DB", "Hufflepuff-DB"},
