@@ -139,7 +139,7 @@ func (a *anonymizer) anonymizeAllPaths() error {
 func (a *anonymizer) anonymizePath(p string) error {
 	parent, id := path.Dir(p), path.Base(p)
 	if _, ok := a.oldToAnonsInfo[id]; !ok {
-		return fmt.Errorf("error - did not find anon ID %s from path %s", id, p)
+		return fmt.Errorf("error - did not find anon Id %s from path %s", id, p)
 	}
 	parent, title := path.Dir(parent), path.Base(parent)
 	if _, ok := a.anonymizedPaths[parent]; !ok {

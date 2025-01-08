@@ -18,17 +18,17 @@ import (
 // * there are three kind of fields, IDs, Paths and regular fields
 // * here some anonymization types by examples, all at the form:
 //     <struct name>.<field>                     = <new anon value>:
-// 1.  Service.ID                                = DCM_Java_Object_Cache_port
+// 1.  Service.Id                                = DCM_Java_Object_Cache_port
 // 2.  Service.UniqId                            = "Service.UniqueId:10010"
 // 3.  Service.RealizationId                     = "Service.UniqueId:10010"
 // 4.  VirtualMachine.ExternalId                 = "VirtualMachine.ExternalId:10784"
 // 5.  VirtualMachine.DisplayName                = "VirtualMachine.DisplayName:10784"
 // 6.  RealizedVirtualMachine.DisplayName        = "VirtualMachine.DisplayName:10784"
-// 7.  RealizedVirtualMachine.ID                 = "VirtualMachine.ExternalId:10784"
+// 7.  RealizedVirtualMachine.Id                 = "VirtualMachine.ExternalId:10784"
 // 8.  VirtualNetworkInterface.OwnerVmId         = "VirtualMachine.ExternalId:10784"
 // 9.  IpAddressInfo.IpAddresses                 = "IpAddressInfo.IpAddresses:10932.0"
 // 10. IpAddressInfo.IpAddresses                 = ""192.168.1.2""
-// 11. SegmentPort.Path                          = "/infra/segments/Segment.ID:10833/ports/SegmentPort.ID:10834"
+// 11. SegmentPort.Path                          = "/infra/segments/Segment.Id:10833/ports/SegmentPort.Id:10834"
 // 12. SegmentPort.RemotePath                    = nil
 // 13. FirewallRule.Sources[0].TargetId          = "Group.UniqueId:10884"
 // 14. FirewallRule.Sources[0].TargetDisplayName = "Group.DisplayName:10884"
@@ -46,7 +46,7 @@ import (
 // fields                 - fields that are not ids, we anonymize using the instance number (see example 5)
 // fieldsByCondition      - fields that are not ids, we anonymize only if it satisfy a condition function (see examples 9,10)
 // slicesByCondition      - same, but for slices
-// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given ID.
+// fieldsByRef            - fields that are not ids, we anonymize using the instance number of another instance, according to a given Id.
 //                          (see example 14, according to example 13)
 // structsToNotAnonFields - struct that we do not anonymize their fields(which are not Ids) ( see example 15)
 // fieldsToClear          - field to delete the content (see example 12)
@@ -89,7 +89,7 @@ type anonInstruction struct {
 	rootPaths              []string
 }
 
-// anonInfo holds the info of one ID anonymization
+// anonInfo holds the info of one Id anonymization
 type anonInfo struct {
 	newValue       string
 	oldValue       string

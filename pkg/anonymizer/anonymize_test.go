@@ -70,8 +70,8 @@ func Test_anonymize(t *testing.T) {
 	}
 	err := AnonymizeNsx(sa)
 	require.Equal(t, nil, err)
-	saID := "structA.ID:10000"
-	bID := "structB.ID:10003"
+	saID := "structA.Id:10000"
+	bID := "structB.Id:10003"
 	require.Equal(t, saID, *sa.Id)
 	require.Equal(t, saID, *sa.BAsPointer.OwnerVmId)
 	require.Equal(t, saID, *sa.BAsStruct.OwnerVmId)

@@ -32,7 +32,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb1-To-All",
-						ID:       newRuleID,
+						Id:       newRuleID,
 						Source:   "DumbledoreAll",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -40,7 +40,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-Not-Sly",
-						ID:       9195,
+						Id:       9195,
 						Source:   "DumbledoreNoSly",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -48,7 +48,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-To-All",
-						ID:       9196,
+						Id:       9196,
 						Source:   "DumbledoreNoSly",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -88,7 +88,7 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "no-conn-to-dumb1",
-						ID:       1,
+						Id:       1,
 						Source:   "ANY",
 						Dest:     "Dumbledore1",
 						Services: []string{"ANY"},
@@ -96,7 +96,7 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 					},
 					{
 						Name:     "no-conn-to-dumb2",
-						ID:       2,
+						Id:       2,
 						Source:   "ANY",
 						Dest:     "Dumbledore2",
 						Services: []string{"ANY"},
@@ -104,7 +104,7 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 					},
 					{
 						Name:     "Slytherin-to-all",
-						ID:       3,
+						Id:       3,
 						Source:   "Slytherin",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -112,7 +112,7 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 					},
 					{
 						Name:     "Gryffindor-to-all",
-						ID:       4,
+						Id:       4,
 						Source:   "Gryffindor",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -153,7 +153,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "pass-all-to-dumb",
-						ID:       10218,
+						Id:       10218,
 						Source:   "ANY",
 						Dest:     "Dumbledore",
 						Services: []string{"ANY"},
@@ -161,7 +161,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 					},
 					{
 						Name:     "deny-all-to-Hufflepuff",
-						ID:       10219,
+						Id:       10219,
 						Source:   "ANY",
 						Dest:     "Hufflepuff",
 						Services: []string{"ANY"},
@@ -169,7 +169,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 					},
 					{
 						Name:     "deny-all-to-Slytherin",
-						ID:       10220,
+						Id:       10220,
 						Source:   "ANY",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -183,7 +183,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-all-to-all",
-						ID:       newRuleID,
+						Id:       newRuleID,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -224,7 +224,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb1-Not-Sly",
-						ID:       newRuleID,
+						Id:       newRuleID,
 						Source:   "Dumbledore1",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -232,7 +232,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-Not-Gryf",
-						ID:       9195,
+						Id:       9195,
 						Source:   "Dumbledore2",
 						Dest:     "Gryffindor",
 						Services: []string{"ANY"},
@@ -240,7 +240,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb1-To-All",
-						ID:       9196,
+						Id:       9196,
 						Source:   "Dumbledore1",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -248,7 +248,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-To-All",
-						ID:       9196,
+						Id:       9196,
 						Source:   "Dumbledore2",
 						Dest:     "ANY",
 						Services: []string{"ANY"},

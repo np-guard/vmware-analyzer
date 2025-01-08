@@ -55,7 +55,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 		for _, rule := range policy.Rules {
 			newRule := nsx.Rule{
 				DisplayName:       &rule.Name,
-				RuleId:            &rule.ID,
+				RuleId:            &rule.Id,
 				Action:            (*nsx.RuleAction)(&rule.Action),
 				SourceGroups:      []string{rule.Source},
 				DestinationGroups: []string{rule.Dest},
@@ -96,7 +96,7 @@ type Example struct {
 func DefaultDenyRule(id int) Rule {
 	return Rule{
 		Name:     "default-deny-Rule",
-		ID:       id,
+		Id:       id,
 		Source:   anyStr,
 		Dest:     anyStr,
 		Services: []string{anyStr},
@@ -105,8 +105,9 @@ func DefaultDenyRule(id int) Rule {
 }
 
 type Rule struct {
-	Name     string
-	ID       int
+	Name string
+	//nolint:stylecheck // keep it Id and not ID
+	Id       int
 	Source   string
 	Dest     string
 	Services []string
