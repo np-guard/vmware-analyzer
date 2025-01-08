@@ -14,6 +14,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
 
 const (
@@ -34,31 +35,31 @@ const (
 
 type synthesisTest struct {
 	name   string
-	exData data.Example
+	exData tests.ExampleSynthesis
 	Mode   testMode
 }
 
 var allTests = []synthesisTest{
 	{
 		name:   "ExampleDumbeldore",
-		exData: data.ExampleDumbeldore,
+		exData: tests.ExampleDumbeldore,
 	},
 	{
 		name:   "ExampleTwoDeniesSimple",
-		exData: data.ExampleTwoDeniesSimple,
+		exData: tests.ExampleTwoDeniesSimple,
 	},
 	{
 		name:   "ExampleDenyPassSimple",
-		exData: data.ExampleDenyPassSimple,
+		exData: tests.ExampleDenyPassSimple,
 	},
 	{
 		name:   "ExampleHintsDisjoint",
-		exData: data.ExampleHintsDisjoint,
+		exData: tests.ExampleHintsDisjoint,
 	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(synTest.exData)
+	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
@@ -82,7 +83,7 @@ func TestPreprocessing(t *testing.T) {
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
-	rc := data.ExamplesGeneration(synTest.exData)
+	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	suffix := "_ConvertToAbstractNoHint.txt"
 	if withHints {

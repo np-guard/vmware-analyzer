@@ -9,11 +9,10 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-//nolint:gocritic // just for testing
 func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
-	for _, vmName := range e.vms {
+	for _, vmName := range e.Vms {
 		newVM := nsx.VirtualMachine{
 			DisplayName: &vmName,
 			ExternalId:  &vmName,
@@ -31,7 +30,7 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 
 	// add groups
 	groupList := []collector.Group{}
-	for group, members := range e.groups {
+	for group, members := range e.Groups {
 		newGroup := collector.Group{}
 		newGroup.Group.DisplayName = &group
 		newGroup.Group.Path = &group
@@ -47,20 +46,20 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 
 	// add dfw
 	policiesList := []collector.SecurityPolicy{}
-	for _, policy := range e.policies {
+	for _, policy := range e.Policies {
 		newPolicy := collector.SecurityPolicy{}
-		newPolicy.Category = &policy.categoryType
-		newPolicy.DisplayName = &policy.name
+		newPolicy.Category = &policy.CategoryType
+		newPolicy.DisplayName = &policy.Name
 		newPolicy.Scope = []string{anyStr} // TODO: add scope as configurable
 		// add policy rules
-		for _, rule := range policy.rules {
+		for _, rule := range policy.Rules {
 			newRule := nsx.Rule{
-				DisplayName:       &rule.name,
-				RuleId:            &rule.id,
-				Action:            (*nsx.RuleAction)(&rule.action),
-				SourceGroups:      []string{rule.source},
-				DestinationGroups: []string{rule.dest},
-				Services:          rule.services,
+				DisplayName:       &rule.Name,
+				RuleId:            &rule.Id,
+				Action:            (*nsx.RuleAction)(&rule.Action),
+				SourceGroups:      []string{rule.Source},
+				DestinationGroups: []string{rule.Dest},
+				Services:          rule.Services,
 				Direction:         "IN_OUT",         // TODO: add Direction as configurable
 				Scope:             []string{anyStr}, // TODO: add scope as configurable
 			}
@@ -82,43 +81,43 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 // examples generator
 const (
 	anyStr    = "ANY"
-	drop      = "DROP"
-	allow     = "ALLOW"
-	jumpToApp = "JUMP_TO_APPLICATION"
+	Drop      = "DROP"
+	Allow     = "ALLOW"
+	JumpToApp = "JUMP_TO_APPLICATION"
 )
 
 // Example is in s single domain
 type Example struct {
-	vms            []string
-	groups         map[string][]string
-	DisjointGroups [][]string
-	policies       []category
+	Vms      []string
+	Groups   map[string][]string
+	Policies []Category
 }
 
-func defaultDenyRule(id int) rule {
-	return rule{
-		name:     "default-deny-rule",
-		id:       id,
-		source:   anyStr,
-		dest:     anyStr,
-		services: []string{anyStr},
-		action:   drop,
+func DefaultDenyRule(id int) Rule {
+	return Rule{
+		Name:     "default-deny-Rule",
+		Id:       id,
+		Source:   anyStr,
+		Dest:     anyStr,
+		Services: []string{anyStr},
+		Action:   Drop,
 	}
 }
 
-type rule struct {
-	name     string
-	id       int
-	source   string
-	dest     string
-	services []string
-	action   string
+type Rule struct {
+	Name string
+	//nolint:stylecheck // keep it Id and not ID
+	Id       int
+	Source   string
+	Dest     string
+	Services []string
+	Action   string
 }
 
-type category struct {
-	name         string
-	categoryType string
-	rules        []rule
+type Category struct {
+	Name         string
+	CategoryType string
+	Rules        []Rule
 	// TODO: add scope, consider other fields
 }
 
