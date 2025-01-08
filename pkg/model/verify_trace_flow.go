@@ -91,7 +91,7 @@ func createTraceFlowsForConnNewSingleExplain(traceFlows *collector.TraceFlows, s
 		traceFlows.AddTraceFlow(srcIP, dstIP, toTCPTraceFlowProtocol(connExplain.Conn.TCPUDPSet()), isAllow, ingressRules, egressRules, rulesConnString)
 	}
 	if !connExplain.Conn.ICMPSet().IsEmpty() {
-		//traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, isAllow, ingressRules, egressRules, rulesConnString)
+		traceFlows.AddTraceFlow(srcIP, dstIP, collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, isAllow, ingressRules, egressRules, rulesConnString)
 	}
 }
 
