@@ -355,7 +355,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				},
 			},
 			{
-				Name:         "Gryffindor-connection",
+				Name:         "Dumbledore-connection",
 				CategoryType: "Environment",
 				Rules: []data.Rule{
 					{
@@ -410,6 +410,89 @@ var ExampleHogwarts = ExampleSynthesis{
 						Id:       9197,
 						Source:   "App",
 						Dest:     "DB",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+				},
+			},
+			{
+				Name:         "Default-L3-Section",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					data.DefaultDenyRule(denyRuleIDEnv),
+				},
+			},
+		},
+	},
+	DisjointGroups: [][]string{
+		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
+		{"Web", "App", "DB"},
+	},
+}
+
+var ExampleHogwartsSimpler = ExampleSynthesis{
+	FromNSX: data.Example{Vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB",
+		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
+		Groups: map[string][]string{
+			"Slytherin":  {"Slytherin-Web", "Slytherin-App"},
+			"Gryffindor": {"Gryffindor-Web", "Gryffindor-App"},
+			"Web":        {"Slytherin-Web", "Gryffindor-Web"},
+			"App":        {"Slytherin-App", "Gryffindor-App"},
+		},
+		Policies: []data.Category{
+			{
+				Name:         "Gryffindor-to-Gryffindor-allow",
+				CategoryType: "Environment",
+				Rules: []data.Rule{
+					{
+						Name:     "allow-Gryffindor-to-Gryffindor",
+						Id:       10218,
+						Source:   "Gryffindor",
+						Dest:     "Gryffindor",
+						Services: []string{"ANY"},
+						Action:   data.JumpToApp,
+					},
+				},
+			},
+			{
+				Name:         "Slytherin-to-Slytherin-allow",
+				CategoryType: "Environment",
+				Rules: []data.Rule{
+					{
+						Name:     "allow-Slytherin-to-Slytherin",
+						Id:       10220,
+						Source:   "Slytherin",
+						Dest:     "Slytherin",
+						Services: []string{"ANY"},
+						Action:   data.JumpToApp,
+					},
+					{
+						Name:     "default-deny-env",
+						Id:       10218,
+						Source:   "ANY",
+						Dest:     "ANY",
+						Services: []string{"ANY"},
+						Action:   data.Drop,
+					},
+				},
+			},
+			{
+				Name:         "Intra-App-Policy",
+				CategoryType: "Application",
+				Rules: []data.Rule{
+					{
+						Name:     "Client-Access",
+						Id:       9195,
+						Source:   "ANY",
+						Dest:     "Web",
+						Services: []string{"ANY"},
+						Action:   data.Allow,
+					},
+					{
+						Name:     "Web-To-App-Access",
+						Id:       9196,
+						Source:   "Web",
+						Dest:     "App",
 						Services: []string{"ANY"},
 						Action:   data.Allow,
 					},
