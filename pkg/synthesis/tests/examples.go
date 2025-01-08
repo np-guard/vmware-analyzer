@@ -2,6 +2,11 @@ package tests
 
 import "github.com/np-guard/vmware-analyzer/pkg/collector/data"
 
+const (
+	denyRuleIDEnv = 2144
+	newRuleID     = 1925
+)
+
 type ExampleSynthesis struct {
 	FromNSX        data.Example
 	DisjointGroups [][]string
@@ -27,7 +32,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb1-To-All",
-						ID:       data.NewRuleID,
+						ID:       newRuleID,
 						Source:   "DumbledoreAll",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -55,7 +60,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 				Name:         "Default-L3-Section",
 				CategoryType: "Application",
 				Rules: []data.Rule{
-					data.DefaultDenyRule(data.DenyRuleIDEnv),
+					data.DefaultDenyRule(denyRuleIDEnv),
 				},
 			},
 		},
@@ -119,7 +124,7 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 				Name:         "Default-L3-Section",
 				CategoryType: "Application",
 				Rules: []data.Rule{
-					data.DefaultDenyRule(data.DenyRuleIDEnv),
+					data.DefaultDenyRule(denyRuleIDEnv),
 				},
 			},
 		},
@@ -178,7 +183,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-all-to-all",
-						ID:       data.NewRuleID,
+						ID:       newRuleID,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -190,7 +195,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 				Name:         "Default-L3-Section",
 				CategoryType: "Application",
 				Rules: []data.Rule{
-					data.DefaultDenyRule(data.DenyRuleIDEnv),
+					data.DefaultDenyRule(denyRuleIDEnv),
 				},
 			},
 		},
@@ -219,7 +224,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb1-Not-Sly",
-						ID:       data.NewRuleID,
+						ID:       newRuleID,
 						Source:   "Dumbledore1",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -255,7 +260,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 				Name:         "Default-L3-Section",
 				CategoryType: "Application",
 				Rules: []data.Rule{
-					data.DefaultDenyRule(data.DenyRuleIDEnv),
+					data.DefaultDenyRule(denyRuleIDEnv),
 				},
 			},
 		},

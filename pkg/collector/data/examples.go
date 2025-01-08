@@ -2,8 +2,8 @@ package data
 
 const (
 	denyRuleIDApp = 1003
-	DenyRuleIDEnv = 10230
-	NewRuleID     = 9198
+	denyRuleIDEnv = 10230
+	newRuleID     = 9198
 )
 
 //nolint:all
@@ -151,7 +151,7 @@ var Example2 = Example{
 			Rules: []Rule{
 				{
 					Name:     "new-rule",
-					ID:       NewRuleID,
+					ID:       newRuleID,
 					Source:   "Gryffindor-App",
 					Dest:     "Hufflepuff-App",
 					Services: []string{"ANY"},
@@ -265,7 +265,7 @@ func example3FromExample2() Example {
 		Name:         "defaultDenyEnvCategory",
 		CategoryType: "Environment",
 		Rules: []Rule{
-			DefaultDenyRule(DenyRuleIDEnv),
+			DefaultDenyRule(denyRuleIDEnv),
 		},
 	}
 	res.Policies = append(res.Policies, defaultDenyEnvCategory)
@@ -273,7 +273,7 @@ func example3FromExample2() Example {
 	// change Rule 9198, to have both src and Dest as Gryffindor-App
 	for _, c := range res.Policies {
 		for _, r := range c.Rules {
-			if r.ID == NewRuleID {
+			if r.ID == newRuleID {
 				r.Dest = "Gryffindor-App"
 			}
 		}
@@ -301,7 +301,7 @@ var ExampleDumbeldore = Example{
 			Rules: []Rule{
 				{
 					Name:     "Dumb1-To-All",
-					ID:       NewRuleID,
+					ID:       newRuleID,
 					Source:   "DumbledoreAll",
 					Dest:     "ANY",
 					Services: []string{"ANY"},
