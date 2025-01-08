@@ -120,18 +120,21 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 
 func ToPods(model *AbstractModelSyn) []*core.Pod {
 	pods := []*core.Pod{}
+	i := 0
 	for _, vm := range model.vms {
 		pod := &core.Pod{}
-		pod.TypeMeta.Kind = "NetworkPolicy"
+		pod.TypeMeta.Kind = "Pod"
 		pod.TypeMeta.APIVersion = "networking.k8s.io/v1"
 		pod.ObjectMeta.Name = vm.Name()
 		pod.ObjectMeta.UID = types.UID(vm.ID())
+		pod.Status.PodIP =fmt.Sprintf("0.0.0.%d", i)
+		i++
 		if len(model.epToGroups[vm]) == 0{
 			continue
 		}
 		pod.ObjectMeta.Labels = map[string]string{}
 		for _, group := range model.epToGroups[vm] {
-			label := fmt.Sprintf("group_%s", group.Name())
+			label := fmt.Sprintf("group__%s", group.Name())
 			pod.ObjectMeta.Labels[label] = label
 		}
 		pods = append(pods, pod)
