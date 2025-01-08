@@ -36,33 +36,40 @@ const (
 type synthesisTest struct {
 	name   string
 	exData tests.ExampleSynthesis
-	Mode   testMode
+	mode   testMode
+	noHint bool // run also with no hint
 }
 
 var allTests = []synthesisTest{
 	{
 		name:   "ExampleDumbeldore",
 		exData: tests.ExampleDumbeldore,
+		noHint: true,
 	},
 	{
 		name:   "ExampleTwoDeniesSimple",
 		exData: tests.ExampleTwoDeniesSimple,
+		noHint: true,
 	},
 	{
 		name:   "ExampleDenyPassSimple",
 		exData: tests.ExampleDenyPassSimple,
+		noHint: true,
 	},
 	{
 		name:   "ExampleHintsDisjoint",
 		exData: tests.ExampleHintsDisjoint,
+		noHint: true,
 	},
 	{
 		name:   "ExampleHogwartsSimpler",
 		exData: tests.ExampleHogwartsSimpler,
+		noHint: true,
 	},
 	{
 		name:   "ExampleHogwartsNoDumbledore",
 		exData: tests.ExampleHogwartsNoDumbledore,
+		noHint: false,
 	},
 }
 
@@ -134,10 +141,14 @@ func TestConvertToAbsract(t *testing.T) {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
 		//test.runConvertToAbstract(t, OutputComparison, true)
-		//test.runConvertToAbstract(t, OutputComparison, false)
+		//if test.noHint {
+		//	test.runConvertToAbstract(t, OutputComparison, false)
+		//}
 		//nolint:gocritic // uncomment for generating output
 		test.runConvertToAbstract(t, OutputGeneration, true)
-		//test.runConvertToAbstract(t, OutputGeneration, false)
+		if test.noHint {
+			test.runConvertToAbstract(t, OutputGeneration, false)
+		}
 	}
 }
 
