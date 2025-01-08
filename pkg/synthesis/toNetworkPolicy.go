@@ -8,40 +8,44 @@ import (
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func ToNetworkPolicies(p *symbolicPolicy) []*networking.NetworkPolicy {
+func ToNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 	policies := []*networking.NetworkPolicy{}
+
 	addNewPolicy := func(description string) *networking.NetworkPolicy {
 		pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies)), description)
 		policies = append(policies, pol)
 		return pol
 	}
-	for _, ob := range p.outbound {
-		for _, p := range ob.allowOnlyRulePaths {
-			srcSelector := conjunctionToSelector(p.Src)
-			dstSelector := conjunctionToSelector(p.Dst)
-			ports := toPolicyPorts(p.Conn)
-			to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
-			rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
-			pol := addNewPolicy(p.String())
-			pol.Spec.Egress = rules
-			pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
-			pol.Spec.PodSelector = *srcSelector
+	for _, p := range model.policy {
+		for _, ob := range p.outbound {
+			for _, p := range ob.allowOnlyRulePaths {
+				srcSelector := conjunctionToSelector(p.Src)
+				dstSelector := conjunctionToSelector(p.Dst)
+				ports := toPolicyPorts(p.Conn)
+				to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
+				rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
+				pol := addNewPolicy(p.String())
+				pol.Spec.Egress = rules
+				pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
+				pol.Spec.PodSelector = *srcSelector
+			}
 		}
-	}
-	for _, ib := range p.inbound {
-		for _, p := range ib.allowOnlyRulePaths {
-			srcSelector := conjunctionToSelector(p.Src)
-			dstSelector := conjunctionToSelector(p.Dst)
-			ports := toPolicyPorts(p.Conn)
-			from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
-			rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
-			pol := addNewPolicy(p.String())
-			pol.Spec.Ingress = rules
-			pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
-			pol.Spec.PodSelector = *dstSelector
+		for _, ib := range p.inbound {
+			for _, p := range ib.allowOnlyRulePaths {
+				srcSelector := conjunctionToSelector(p.Src)
+				dstSelector := conjunctionToSelector(p.Dst)
+				ports := toPolicyPorts(p.Conn)
+				from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
+				rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
+				pol := addNewPolicy(p.String())
+				pol.Spec.Ingress = rules
+				pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
+				pol.Spec.PodSelector = *dstSelector
+			}
 		}
 	}
 	return policies
@@ -56,27 +60,23 @@ func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	return pol
 }
 
+var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
+var boolToOperator = map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
+
+func pointerTo[T any](t T) *T {
+	return &t
+}
+
 func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	selector := &meta.LabelSelector{}
 	for _, a := range con {
-		key, notIn, vals := a.AsSelector()
-		switch {
-		case len(vals) == 0: // tautology
-		case !notIn && len(vals) == 1:
-			selector.MatchLabels = map[string]string{key: vals[0]}
-		case !notIn:
-			req := meta.LabelSelectorRequirement{Key: key, Operator: meta.LabelSelectorOpIn, Values: vals}
-			selector.MatchExpressions = append(selector.MatchExpressions, req)
-		case notIn:
-			req := meta.LabelSelectorRequirement{Key: key, Operator: meta.LabelSelectorOpNotIn, Values: vals}
+		label, notIn := a.AsSelector()
+		if label != "" { // tautology
+			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			selector.MatchExpressions = append(selector.MatchExpressions, req)
 		}
 	}
 	return selector
-}
-
-func pointerTo[T any](t T) *T {
-	return &t
 }
 
 func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
@@ -106,11 +106,7 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 					endPortPointer = &endPort
 				}
 				for _, protocolCode := range protocols {
-					protocol := core.ProtocolTCP
-					if protocolCode == netset.UDPCode {
-						protocol = core.ProtocolUDP
-					}
-					ports = append(ports, networking.NetworkPolicyPort{Protocol: &protocol, Port: portPointer, EndPort: endPortPointer})
+					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(codeToProtocol[int(protocolCode)]), Port: portPointer, EndPort: endPortPointer})
 				}
 			}
 		}
@@ -120,4 +116,25 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 
 	}
 	return ports
+}
+
+func ToPods(model *AbstractModelSyn) []*core.Pod {
+	pods := []*core.Pod{}
+	for _, vm := range model.vms {
+		pod := &core.Pod{}
+		pod.TypeMeta.Kind = "NetworkPolicy"
+		pod.TypeMeta.APIVersion = "networking.k8s.io/v1"
+		pod.ObjectMeta.Name = vm.Name()
+		pod.ObjectMeta.UID = types.UID(vm.ID())
+		if len(model.epToGroups[vm]) == 0{
+			continue
+		}
+		pod.ObjectMeta.Labels = map[string]string{}
+		for _, group := range model.epToGroups[vm] {
+			label := fmt.Sprintf("group_%s", group.Name())
+			pod.ObjectMeta.Labels[label] = label
+		}
+		pods = append(pods, pod)
+	}
+	return pods
 }

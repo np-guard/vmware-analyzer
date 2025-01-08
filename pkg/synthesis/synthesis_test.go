@@ -80,15 +80,20 @@ func TestPreprocessing(t *testing.T) {
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(synTest.exData)
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
-	require.Nil(t, err)
-	
-	policies := ToNetworkPolicies(allowOnlyPolicy)
-	policiesFileName := path.Join("out", synTest.name+"_policies.yaml")
-	err = common.WriteYamlUsingJSON(policies, policiesFileName)
+	model, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
 
-	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
+	outDir := path.Join("out", synTest.name)
+	policies := ToNetworkPolicies(model)
+	policiesFileName := path.Join(outDir, "policies.yaml")
+	err = common.WriteYamlUsingJSON(policies, policiesFileName)
+	require.Nil(t, err)
+	pods := ToPods(model)
+	podsFileName := path.Join(outDir, "pods.yaml")
+	err = common.WriteYamlUsingJSON(pods, podsFileName)
+	require.Nil(t, err)
+
+	actualOutput := strAllowOnlyPolicy(model.policy[0])
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
@@ -111,12 +116,20 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	model, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
-	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
-	policies := ToNetworkPolicies(allowOnlyPolicy)
-	policiesFileName := filepath.Join("out", "from_collection_policies.yaml")
+	fmt.Println(strAllowOnlyPolicy(model.policy[0]))
+
+	outDir := path.Join("out", "from_collection")
+
+	policies := ToNetworkPolicies(model)
+	policiesFileName := filepath.Join(outDir,"policies.yaml")
 	err = common.WriteYamlUsingJSON(policies, policiesFileName)
+	require.Nil(t, err)
+
+	pods := ToPods(model)
+	podsFileName := path.Join(outDir, "pods.yaml")
+	err = common.WriteYamlUsingJSON(pods, podsFileName)
 	require.Nil(t, err)
 
 }

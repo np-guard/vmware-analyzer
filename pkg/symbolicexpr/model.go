@@ -32,7 +32,7 @@ type atomic interface {
 	negate() atomic
 	isTautology() bool
 	isNegateOf(atomic) bool
-	AsSelector() (string, bool, []string)
+	AsSelector() (string, bool)
 }
 
 // Conjunction a DNF Conjunction of Atomics

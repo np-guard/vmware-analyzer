@@ -7,7 +7,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
 
-func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel) (*symbolicPolicy, error) {
+func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel) (*AbstractModelSyn, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
@@ -21,5 +21,5 @@ func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel) (
 	abstractModel.epToGroups = parser.VMsGroups()
 	abstractModel.vms = parser.VMs()
 	abstractModel.policy = append(abstractModel.policy, &allowOnlyPolicy)
-	return &allowOnlyPolicy, nil
+	return abstractModel, nil
 }

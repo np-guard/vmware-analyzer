@@ -1,6 +1,8 @@
 package symbolicexpr
 
 import (
+	"fmt"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -28,8 +30,8 @@ func (term atomicTerm) string() string {
 	}
 	return term.labelKey() + equalSign + term.toVal
 }
-func (term atomicTerm) AsSelector() (string, bool, []string) {
-	return term.labelKey(), term.neg, []string{term.toVal}
+func (term atomicTerm) AsSelector() (string, bool) {
+	return fmt.Sprintf("%s__%s",term.labelKey(),term.toVal), term.neg
 }
 
 func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
@@ -77,6 +79,6 @@ func (tautology) isTautology() bool {
 func (tautology) isNegateOf(atomic) bool {
 	return false
 }
-func (tautology) AsSelector() (string, bool, []string) {
-	return "", false, nil
+func (tautology) AsSelector() (string, bool) {
+	return "", false
 }
