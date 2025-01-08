@@ -13,11 +13,11 @@ var Example1 = Example{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
-	Policies: []category{
+	Policies: []Category{
 		{
-			name:         "app-x",
-			categoryType: "Application",
-			rules: []Rule{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
@@ -26,7 +26,7 @@ var Example1 = Example{
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
-				defaultDenyRule(denyRuleIDApp),
+				DefaultDenyRule(denyRuleIDApp),
 			},
 		},
 	},
@@ -38,11 +38,11 @@ var Example1a = Example{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
-	Policies: []category{
+	Policies: []Category{
 		{
-			name:         "app-x",
-			categoryType: "Application",
-			rules: []Rule{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
@@ -59,7 +59,7 @@ var Example1a = Example{
 					Services: []string{"ANY"},
 					Action:   Allow,
 				},
-				defaultDenyRule(denyRuleIDApp),
+				DefaultDenyRule(denyRuleIDApp),
 			},
 		},
 	},
@@ -68,10 +68,10 @@ var Example1a = Example{
 /*
 Example 2 with macro and micro segmentation
 
-Slytherin House {vms : S1, S2, S3}
-Hufflepuff House {vms: H1, H2, H3}
-Gryffindor House {vms: G1, G2, G3}
-Dumbledore {vms: D1, D2}
+Slytherin House {Vms : S1, S2, S3}
+Hufflepuff House {Vms: H1, H2, H3}
+Gryffindor House {Vms: G1, G2, G3}
+Dumbledore {Vms: D1, D2}
 	Slytherin Web {S1}
 	Slytherin APP {S2}
 	Slytherin DB  {S3}
@@ -112,11 +112,11 @@ var Example2 = Example{
 		"Hufflepuff-App": {"Hufflepuff-App"},
 		"Hufflepuff-DB":  {"Hufflepuff-DB"},
 	},
-	Policies: []category{
+	Policies: []Category{
 		{
-			name:         "Gryffindor-to-Gryffindor-allow",
-			categoryType: "Environment",
-			rules: []Rule{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: "Environment",
+			Rules: []Rule{
 				{
 					Name:     "allow-Gryffindor-to-Gryffindor",
 					ID:       10218,
@@ -128,9 +128,9 @@ var Example2 = Example{
 			},
 		},
 		{
-			name:         "Hufflepuff-to-Hufflepuff-allow",
-			categoryType: "Environment",
-			rules: []Rule{
+			Name:         "Hufflepuff-to-Hufflepuff-allow",
+			CategoryType: "Environment",
+			Rules: []Rule{
 				{
 					Name:     "allow-Hufflepuff-to-Hufflepuff",
 					ID:       10219,
@@ -142,9 +142,9 @@ var Example2 = Example{
 			},
 		},
 		{
-			name:         "Slytherin-to-Slytherin-allow",
-			categoryType: "Environment",
-			rules: []Rule{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: "Environment",
+			Rules: []Rule{
 				{
 					Name:     "allow-Slytherin-to-Slytherin",
 					ID:       10220,
@@ -156,9 +156,9 @@ var Example2 = Example{
 			},
 		},
 		{
-			name:         "Gryffindor-to-Dumbledore-allow",
-			categoryType: "Environment",
-			rules: []Rule{
+			Name:         "Gryffindor-to-Dumbledore-allow",
+			CategoryType: "Environment",
+			Rules: []Rule{
 				{
 					Name:     "allow-Gryffindor-to-Dumbledore",
 					ID:       10216,
@@ -179,9 +179,9 @@ var Example2 = Example{
 		},
 
 		{
-			name:         "Gryffindor-Intra-App-Policy",
-			categoryType: "Application",
-			rules: []Rule{
+			Name:         "Gryffindor-Intra-App-Policy",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:     "new-rule",
 					ID:       newRuleID,
@@ -218,9 +218,9 @@ var Example2 = Example{
 		},
 
 		{
-			name:         "Slytherin-Intra-App-Policy",
-			categoryType: "Application",
-			rules: []Rule{
+			Name:         "Slytherin-Intra-App-Policy",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:     "Slytherin-Client-Access",
 					ID:       3048,
@@ -249,9 +249,9 @@ var Example2 = Example{
 		},
 
 		{
-			name:         "Hufflepuff-Intra-App-Policy",
-			categoryType: "Application",
-			rules: []Rule{
+			Name:         "Hufflepuff-Intra-App-Policy",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:     "Hufflepuff-Client-Access",
 					ID:       2048,
@@ -280,10 +280,10 @@ var Example2 = Example{
 		},
 
 		{
-			name:         "Default-L3-Section",
-			categoryType: "Application",
-			rules: []Rule{
-				defaultDenyRule(denyRuleIDApp),
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDApp),
 			},
 		},
 	},
@@ -293,21 +293,21 @@ var Example3 = example3FromExample2()
 
 func example3FromExample2() Example {
 	res := Example2
-	// add a default deny for env category
-	defaultDenyEnvCategory := category{
-		name:         "defaultDenyEnvCategory",
-		categoryType: "Environment",
-		rules: []Rule{
-			defaultDenyRule(denyRuleIDEnv),
+	// add a default deny for env Category
+	defaultDenyEnvCategory := Category{
+		Name:         "defaultDenyEnvCategory",
+		CategoryType: "Environment",
+		Rules: []Rule{
+			DefaultDenyRule(denyRuleIDEnv),
 		},
 	}
 	res.Policies = append(res.Policies, defaultDenyEnvCategory)
 
 	// change rule 9198, to have both src and dest as Gryffindor-App
 	for i := range res.Policies {
-		for j := range res.Policies[i].rules {
-			if res.Policies[i].rules[j].ID == newRuleID {
-				res.Policies[i].rules[j].Dest = "Gryffindor-App"
+		for j := range res.Policies[i].Rules {
+			if res.Policies[i].Rules[j].ID == newRuleID {
+				res.Policies[i].Rules[j].Dest = "Gryffindor-App"
 			}
 		}
 	}
@@ -327,11 +327,11 @@ var ExampleDumbeldore = Example{
 		"DumbledoreAll":   {"Dumbledore1"},
 		"DumbledoreNoSly": {"Dumbledore2"},
 	},
-	Policies: []category{
+	Policies: []Category{
 		{
-			name:         "From-Dumbledore-connection",
-			categoryType: "Application",
-			rules: []Rule{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:     "Dumb1-To-All",
 					ID:       newRuleID,
@@ -360,10 +360,10 @@ var ExampleDumbeldore = Example{
 		},
 
 		{
-			name:         "Default-L3-Section",
-			categoryType: "Application",
-			rules: []Rule{
-				defaultDenyRule(denyRuleIDApp),
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDApp),
 			},
 		},
 	},

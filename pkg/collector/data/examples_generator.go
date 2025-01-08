@@ -52,11 +52,11 @@ func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	policiesList := []collector.SecurityPolicy{}
 	for _, policy := range e.Policies {
 		newPolicy := collector.SecurityPolicy{}
-		newPolicy.Category = &policy.categoryType
-		newPolicy.DisplayName = &policy.name
+		newPolicy.Category = &policy.CategoryType
+		newPolicy.DisplayName = &policy.Name
 		newPolicy.Scope = []string{AnyStr} // TODO: add scope as configurable
 		// add policy rules
-		for _, rule := range policy.rules {
+		for _, rule := range policy.Rules {
 			newRule := rule.toNSXRule()
 			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, *newRule)
 			collectorRule := collector.Rule{
@@ -85,7 +85,7 @@ const (
 type Example struct {
 	VMs      []string
 	Groups   map[string][]string
-	Policies []category
+	Policies []Category
 }
 
 func (e *Example) CopyTopology() *Example {
@@ -117,40 +117,40 @@ Policies: []category{
 */
 
 func (e *Example) InitEmptyEnvAppCategories() {
-	e.Policies = []category{
+	e.Policies = []Category{
 		{
-			name:         dfw.EnvironmentStr,
-			categoryType: dfw.EnvironmentStr,
+			Name:         dfw.EnvironmentStr,
+			CategoryType: dfw.EnvironmentStr,
 		},
 		{
-			name:         dfw.ApplicationStr,
-			categoryType: dfw.ApplicationStr,
+			Name:         dfw.ApplicationStr,
+			CategoryType: dfw.ApplicationStr,
 		},
 	}
 }
 
 func (e *Example) AddRuleToExampleInCategory(categoryType string, ruleToAdd *Rule) error {
 	// assuming env/app categories already initialized
-	categoryIndex := slices.IndexFunc(e.Policies, func(c category) bool { return c.categoryType == categoryType })
+	categoryIndex := slices.IndexFunc(e.Policies, func(c Category) bool { return c.CategoryType == categoryType })
 	if categoryIndex < 0 {
 		return fmt.Errorf("could not find category type %s in example object", categoryType)
 	}
 
 	// set rule ID by index in rules list
 	ruleToAdd.ID = 1
-	if numRulesCurrent := len(e.Policies[categoryIndex].rules); numRulesCurrent > 0 {
+	if numRulesCurrent := len(e.Policies[categoryIndex].Rules); numRulesCurrent > 0 {
 		ruleToAdd.ID = numRulesCurrent + 1
 	}
 	if categoryIndex > 0 {
-		ruleToAdd.ID += len(e.Policies[categoryIndex-1].rules)
+		ruleToAdd.ID += len(e.Policies[categoryIndex-1].Rules)
 	}
 
 	// add the rule as last in the rules list of the given category
-	e.Policies[categoryIndex].rules = append(e.Policies[categoryIndex].rules, *ruleToAdd)
+	e.Policies[categoryIndex].Rules = append(e.Policies[categoryIndex].Rules, *ruleToAdd)
 	return nil
 }
 
-func defaultDenyRule(id int) Rule {
+func DefaultDenyRule(id int) Rule {
 	return Rule{
 		Name:     "default-deny-rule",
 		ID:       id,
@@ -207,10 +207,10 @@ func (r *Rule) directionStr() nsx.RuleDirection {
 	}
 }
 
-type category struct {
-	name         string
-	categoryType string
-	rules        []Rule
+type Category struct {
+	Name         string
+	CategoryType string
+	Rules        []Rule
 	// TODO: add scope, consider other fields
 }
 

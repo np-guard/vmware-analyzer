@@ -14,8 +14,8 @@ import (
 )
 
 type DFW struct {
-	categoriesSpecs []*categorySpec // ordered list of categories
-	defaultAction   ruleAction      // global default (?)
+	CategoriesSpecs []*CategorySpec // ordered list of categories
+	defaultAction   RuleAction      // global default (?)
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
@@ -60,14 +60,14 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	allNotDeterminedConns := emptyConnectionsAndRules()
 	delegatedConns = emptyConnectionsAndRules()
 
-	for _, dfwCategory := range d.categoriesSpecs {
-		if dfwCategory.category == ethernetCategory {
+	for _, dfwCategory := range d.CategoriesSpecs {
+		if dfwCategory.Category == ethernetCategory {
 			continue // cuurently skip L2 rules
 		}
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t", dfwCategory.category.string(), src, dst, isIngress)
+		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t", dfwCategory.Category.String(), src, dst, isIngress)
 		logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
 		logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
 		logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
@@ -115,7 +115,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	}
 	// todo: add warning if there are remaining non determined connections
 
-	if d.defaultAction == actionAllow {
+	if d.defaultAction == ActionAllow {
 		// if the last category has no default, use the "global" default (todo: check where this value is configured in the api)
 		allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(allNotDeterminedConns.accumulatedConns)
 	}
@@ -128,7 +128,7 @@ func (d *DFW) OriginalRulesStrFormatted() string {
 	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
 	fmt.Fprintln(writer, "original rules:")
 	fmt.Fprintln(writer, getRulesFormattedHeaderLine())
-	for _, c := range d.categoriesSpecs {
+	for _, c := range d.CategoriesSpecs {
 		for _, ruleStr := range c.originalRulesStr() {
 			if ruleStr == "" {
 				continue
@@ -142,15 +142,15 @@ func (d *DFW) OriginalRulesStrFormatted() string {
 
 // return a string rep that shows the fw-rules in all categories
 func (d *DFW) String() string {
-	return common.JoinStringifiedSlice(d.categoriesSpecs, lineSeparatorStr)
+	return common.JoinStringifiedSlice(d.CategoriesSpecs, lineSeparatorStr)
 }
 
 func (d *DFW) AllEffectiveRules() string {
-	inboundResStr := common.JoinCustomStrFuncSlice(d.categoriesSpecs,
-		func(c *categorySpec) string { return c.inboundEffectiveRules() },
+	inboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
+		func(c *CategorySpec) string { return c.inboundEffectiveRules() },
 		lineSeparatorStr)
-	outboundResStr := common.JoinCustomStrFuncSlice(d.categoriesSpecs,
-		func(c *categorySpec) string { return c.outboundEffectiveRules() },
+	outboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
+		func(c *CategorySpec) string { return c.outboundEffectiveRules() },
 		lineSeparatorStr)
 
 	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, inboundResStr)
@@ -160,34 +160,36 @@ func (d *DFW) AllEffectiveRules() string {
 
 // AddRule func for testing purposes
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr, actionStr, direction string,
+func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
+	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
-	for _, fwCategory := range d.categoriesSpecs {
-		if fwCategory.category.string() == categoryStr {
-			fwCategory.addRule(src, dst, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
+	for _, fwCategory := range d.CategoriesSpecs {
+		if fwCategory.Category.String() == categoryStr {
+			fwCategory.addRule(src, dst, srcGroups, dstGroups, scopeGroups, isAllSrcGroups, isAllDstGroups, conn,
+				actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
 		}
 	}
 }
 
 /*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr string, actionStr string) {
-	var categoryObj *categorySpec
-	for _, c := range d.categoriesSpecs {
-		if c.category.string() == categoryStr {
+	var categoryObj *CategorySpec
+	for _, c := range d.CategoriesSpecs {
+		if c.Category.string() == categoryStr {
 			categoryObj = c
 		}
 	}
-	if categoryObj == nil { // create new category if missing
-		categoryObj = &categorySpec{
-			category: dfwCategoryFromString(categoryStr),
+	if categoryObj == nil { // create new Category if missing
+		categoryObj = &CategorySpec{
+			Category: dfwCategoryFromString(categoryStr),
 		}
-		d.categoriesSpecs = append(d.categoriesSpecs, categoryObj)
+		d.CategoriesSpecs = append(d.CategoriesSpecs, categoryObj)
 	}
 
 	newRule := &FwRule{
 		srcVMs: src,
 		dstVMs: dst,
-		conn:   netset.All(), // todo: change
-		action: actionFromString(actionStr),
+		Conn:   netset.All(), // todo: change
+		Action: actionFromString(actionStr),
 	}
 	categoryObj.rules = append(categoryObj.rules, newRule)
 }*/
@@ -195,19 +197,19 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categ
 // NewEmptyDFW returns new DFW with global default as from input
 func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 	res := &DFW{
-		defaultAction: actionDeny,
+		defaultAction: ActionDeny,
 	}
 	if globalDefaultAllow {
-		res.defaultAction = actionAllow
+		res.defaultAction = ActionAllow
 	}
 	for _, c := range categoriesList {
-		res.categoriesSpecs = append(res.categoriesSpecs, newEmptyCategory(c, res))
+		res.CategoriesSpecs = append(res.CategoriesSpecs, newEmptyCategory(c, res))
 	}
 	return res
 }
 
 func (d *DFW) GlobalDefaultAllow() bool {
-	return d.defaultAction == actionAllow
+	return d.defaultAction == ActionAllow
 }
 
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
