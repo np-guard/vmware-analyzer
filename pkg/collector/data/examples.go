@@ -23,7 +23,7 @@ var Example1 = Example{
 					Id:       1004,
 					Source:   "frontend",
 					Dest:     "backend",
-					Services: []string{"/infra/Services/SMB"},
+					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 				DefaultDenyRule(denyRuleIDApp),
@@ -150,7 +150,7 @@ var Example2 = Example{
 			CategoryType: "Application",
 			Rules: []Rule{
 				{
-					Name:     "new-Rule",
+					Name:     "new-rule",
 					Id:       NewRuleID,
 					Source:   "Gryffindor-App",
 					Dest:     "Hufflepuff-App",
@@ -162,7 +162,7 @@ var Example2 = Example{
 					Id:       9195,
 					Source:   "ANY",
 					Dest:     "Gryffindor-Web",
-					Services: []string{"/infra/Services/HTTP", "/infra/Services/HTTPS"},
+					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
 				},
 				{
@@ -170,7 +170,7 @@ var Example2 = Example{
 					Id:       9196,
 					Source:   "Gryffindor-Web",
 					Dest:     "Gryffindor-App",
-					Services: []string{"/infra/Services/Vmware-VC-WebAccess"},
+					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
 					Action:   Allow,
 				},
 				{
@@ -178,7 +178,7 @@ var Example2 = Example{
 					Id:       9197,
 					Source:   "Gryffindor-App",
 					Dest:     "Gryffindor-DB",
-					Services: []string{"/infra/Services/SMB"},
+					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 			},
@@ -193,7 +193,7 @@ var Example2 = Example{
 					Id:       3048,
 					Source:   "ANY",
 					Dest:     "Slytherin-Web",
-					Services: []string{"/infra/Services/HTTP", "/infra/Services/HTTPS"},
+					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
 				},
 				{
@@ -201,7 +201,7 @@ var Example2 = Example{
 					Id:       3049,
 					Source:   "Slytherin-Web",
 					Dest:     "Slytherin-App",
-					Services: []string{"/infra/Services/Vmware-VC-WebAccess"},
+					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
 					Action:   Allow,
 				},
 				{
@@ -209,7 +209,7 @@ var Example2 = Example{
 					Id:       3050,
 					Source:   "Slytherin-App",
 					Dest:     "Slytherin-DB",
-					Services: []string{"/infra/Services/SMB"},
+					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 			},
@@ -224,7 +224,7 @@ var Example2 = Example{
 					Id:       2048,
 					Source:   "ANY",
 					Dest:     "Hufflepuff-Web",
-					Services: []string{"/infra/Services/HTTP", "/infra/Services/HTTPS"},
+					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
 				},
 				{
@@ -232,7 +232,7 @@ var Example2 = Example{
 					Id:       2049,
 					Source:   "Hufflepuff-Web",
 					Dest:     "Hufflepuff-App",
-					Services: []string{"/infra/Services/Vmware-VC-WebAccess"},
+					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
 					Action:   Allow,
 				},
 				{
@@ -240,7 +240,7 @@ var Example2 = Example{
 					Id:       2050,
 					Source:   "Hufflepuff-App",
 					Dest:     "Hufflepuff-DB",
-					Services: []string{"/infra/Services/SMB"},
+					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 			},
