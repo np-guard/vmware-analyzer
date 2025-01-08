@@ -11,7 +11,7 @@ import (
 
 func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	res := &collector.ResourcesContainerModel{}
-	// add Vms
+	// add vms
 	for _, vmName := range e.Vms {
 		newVM := nsx.VirtualMachine{
 			DisplayName: &vmName,
@@ -121,7 +121,7 @@ type Category struct {
 }
 
 func getServices() []collector.Service {
-	servicesFilePath := filepath.Join(projectpath.Root, "pkg", "collector", "data", "Services.json")
+	servicesFilePath := filepath.Join(projectpath.Root, "pkg", "collector", "data", "services.json")
 	inputConfigContent, err := os.ReadFile(servicesFilePath)
 	if err != nil {
 		return nil
