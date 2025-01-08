@@ -13,6 +13,7 @@ var Example1 = Example{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
+	DisjointGroups: [][]string{},
 	policies: []category{
 		{
 			name:         "app-x",
@@ -78,6 +79,11 @@ var Example2 = Example{
 		"Hufflepuff-Web": {"Hufflepuff-Web"},
 		"Hufflepuff-App": {"Hufflepuff-App"},
 		"Hufflepuff-DB":  {"Hufflepuff-DB"},
+	},
+	DisjointGroups: [][]string{
+		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
+		{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB",
+			"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 	},
 	policies: []category{
 		{
@@ -350,6 +356,9 @@ var ExampleTwoDeniesSimple = Example{
 		"Dumbledore1": {"Dumbledore1"},
 		"Dumbledore2": {"Dumbledore2"},
 	},
+	DisjointGroups: [][]string{
+		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	},
 	policies: []category{
 		{
 			name:         "Two-Denys-Simple-Test",
@@ -411,6 +420,9 @@ var ExampleDenyPassSimple = Example{
 		"Dumbledore1": {"Dumbledore1"},
 		"Dumbledore2": {"Dumbledore2"},
 	},
+	DisjointGroups: [][]string{
+		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore", "Dumbledore1", "Dumbledore2"},
+	},
 	policies: []category{
 		{
 			name:         "Env-pass-and-deny",
@@ -450,6 +462,70 @@ var ExampleDenyPassSimple = Example{
 					name:     "allow-all-to-all",
 					id:       newRuleID,
 					source:   "ANY",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+			},
+		},
+		{
+			name:         "Default-L3-Section",
+			categoryType: "Application",
+			rules: []rule{
+				defaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+// ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
+// Dumbledore1 can talk to all but Slytherin
+// Dumbledore2 can talk to all but Gryffindor
+var ExampleHintsDisjoint = Example{
+	vms: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	groups: map[string][]string{
+		"Slytherin":   {"Slytherin"},
+		"Hufflepuff":  {"Hufflepuff"},
+		"Gryffindor":  {"Gryffindor"},
+		"Dumbledore1": {"Dumbledore1"},
+		"Dumbledore2": {"Dumbledore2"},
+	},
+	DisjointGroups: [][]string{
+		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	},
+	policies: []category{
+		{
+			name:         "From-Dumbledore-connection",
+			categoryType: "Application",
+			rules: []rule{
+				{
+					name:     "Dumb1-Not-Sly",
+					id:       newRuleID,
+					source:   "Dumbledore1",
+					dest:     "Slytherin",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "Dumb2-Not-Gryf",
+					id:       9195,
+					source:   "Dumbledore2",
+					dest:     "Gryffindor",
+					services: []string{"ANY"},
+					action:   drop,
+				},
+				{
+					name:     "Dumb1-To-All",
+					id:       9196,
+					source:   "Dumbledore1",
+					dest:     "ANY",
+					services: []string{"ANY"},
+					action:   allow,
+				},
+				{
+					name:     "Dumb2-To-All",
+					id:       9196,
+					source:   "Dumbledore2",
 					dest:     "ANY",
 					services: []string{"ANY"},
 					action:   allow,

@@ -9,6 +9,7 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
+//nolint:gocritic // just for testing
 func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
@@ -88,9 +89,10 @@ const (
 
 // Example is in s single domain
 type Example struct {
-	vms      []string
-	groups   map[string][]string
-	policies []category
+	vms            []string
+	groups         map[string][]string
+	DisjointGroups [][]string
+	policies       []category
 }
 
 func defaultDenyRule(id int) rule {

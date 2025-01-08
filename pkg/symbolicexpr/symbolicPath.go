@@ -12,18 +12,19 @@ func (path *SymbolicPath) String() string {
 }
 
 // if the source or destination is empty then so is the entire path
-func (path *SymbolicPath) isEmpty() bool {
-	return path.Conn.IsEmpty() || path.Src.isEmptySet() || path.Dst.isEmptySet()
+func (path *SymbolicPath) isEmpty(hints *Hints) bool {
+	return path.Conn.IsEmpty() || path.Src.isEmptySet(hints) || path.Dst.isEmptySet(hints)
 }
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint
-func (path *SymbolicPath) disJointPaths(other *SymbolicPath) bool {
-	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src) ||
-		path.Dst.disjoint(&other.Dst)
+func (path *SymbolicPath) disjointPaths(other *SymbolicPath, hints *Hints) bool {
+	return path.Conn.Intersect(other.Conn).IsEmpty() || path.Src.disjoint(&other.Src, hints) ||
+		path.Dst.disjoint(&other.Dst, hints)
 }
 
-func (path *SymbolicPath) impliedBy(other *SymbolicPath) bool {
-	return path.Conn.IsSubset(other.Conn) && path.Src.impliedBy(&other.Src) && path.Dst.impliedBy(&other.Dst)
+func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
+	return path.Conn.IsSubset(other.Conn) && path.Src.isSubset(&other.Src, hints) &&
+		path.Dst.isSubset(&other.Dst, hints)
 }
 
 func (paths *SymbolicPaths) String() string {
@@ -37,17 +38,29 @@ func (paths *SymbolicPaths) String() string {
 	return strings.Join(res, "\n")
 }
 
-func (paths *SymbolicPaths) removeEmpty() *SymbolicPaths {
+// remove empty SymbolicPaths; a path is empty if any of its components (src, dst, conn) is empty
+func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
-		if !path.isEmpty() {
+		if !path.isEmpty(hints) {
 			newPaths = append(newPaths, path)
 		}
 	}
 	return &newPaths
 }
 
-func (paths SymbolicPaths) removeImplied() SymbolicPaths {
+// Given SymbolicPaths, removes redundant terms from each SymbolicPath
+// a term is redundant if it is a tautology or if it is implied by other terms given hints;
+// e.g., given that Slytherin and Gryffindor are disjoint, = Gryffindor implies != Slytherin
+func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		newPaths = append(newPaths, path.removeRedundant(hints))
+	}
+	return &newPaths
+}
+
+func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
 		addPath := true
@@ -55,7 +68,7 @@ func (paths SymbolicPaths) removeImplied() SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.impliedBy(outerPath) && !(outerPath.impliedBy(innerPath) && outerIndex < innerIndex) {
+			if innerPath.isSubset(outerPath, hints) && !(outerPath.isSubset(innerPath, hints) && outerIndex < innerIndex) {
 				addPath = false
 				break
 			}
@@ -67,15 +80,8 @@ func (paths SymbolicPaths) removeImplied() SymbolicPaths {
 	return newPaths
 }
 
-func (paths *SymbolicPaths) removeTautology() *SymbolicPaths {
-	newPaths := SymbolicPaths{}
-	for _, path := range *paths {
-		if !path.isEmpty() {
-			newPath := &SymbolicPath{Src: path.Src.removeTautology(), Dst: path.Dst.removeTautology(), Conn: path.Conn}
-			newPaths = append(newPaths, newPath)
-		}
-	}
-	return &newPaths
+func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
+	return &SymbolicPath{Src: path.Src.removeRedundant(hints), Dst: path.Dst.removeRedundant(hints), Conn: path.Conn}
 }
 
 // ComputeAllowGivenDenies converts a set of symbolic allow and deny paths (given as type SymbolicPaths)
@@ -86,15 +92,18 @@ func (paths *SymbolicPaths) removeTautology() *SymbolicPaths {
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
-func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPaths {
+// all optimizations are documented in README
+func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints) *SymbolicPaths {
 	if len(*denyPaths) == 0 {
 		return allowPaths
 	}
 	res := SymbolicPaths{}
 	for _, allowPath := range *allowPaths {
+		// if the "allow" and "deny" paths are disjoint, then the "deny" has no effect and could be ignored
+		// e.g.   allow: a to d TCP deny: e to d on UDP  - the "deny" has no effect
 		relevantDenyPaths := SymbolicPaths{}
 		for _, denyPath := range *denyPaths {
-			if !allowPath.disJointPaths(denyPath) {
+			if !allowPath.disjointPaths(denyPath, hints) {
 				relevantDenyPaths = append(relevantDenyPaths, denyPath)
 			}
 		}
@@ -108,7 +117,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
-				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath)
+				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
 			computedAllowPaths = newComputedAllowPaths
@@ -116,24 +125,24 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths) *SymbolicPath
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
 	}
-	res = res.removeImplied()
+	res = res.removeIsSubsetPath(hints)
 	return &res
 }
 
 // algorithm described in README of symbolicexpr
-func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *SymbolicPaths {
+func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
 	resAllowPaths := SymbolicPaths{}
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(&srcAtomNegate),
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
 				Dst: allowPath.Dst, Conn: allowPath.Conn})
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(&dstAtomNegate),
+			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
 				Conn: allowPath.Conn})
 		}
 	}
@@ -141,7 +150,8 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath) *Symboli
 		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
 	}
-	return resAllowPaths.removeEmpty().removeTautology()
+	// removes empty SymblicPaths; of non-empty paths removed redundant terms
+	return resAllowPaths.removeEmpty(hints).removeRedundant(hints)
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
