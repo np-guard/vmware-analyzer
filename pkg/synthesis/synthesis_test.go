@@ -83,14 +83,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	model, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
 
-	outDir := path.Join("out", synTest.name)
-	policies := ToNetworkPolicies(model)
-	policiesFileName := path.Join(outDir, "policies.yaml")
-	err = common.WriteYamlUsingJSON(policies, policiesFileName)
-	require.Nil(t, err)
-	pods := ToPods(model)
-	podsFileName := path.Join(outDir, "pods.yaml")
-	err = common.WriteYamlUsingJSON(pods, podsFileName)
+	err = createYamlFiles(model, synTest.name)
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(model.policy[0])
@@ -119,21 +112,25 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	model, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(model.policy[0]))
-
-	outDir := path.Join("out", "from_collection")
-
-	policies := ToNetworkPolicies(model)
-	policiesFileName := filepath.Join(outDir,"policies.yaml")
-	err = common.WriteYamlUsingJSON(policies, policiesFileName)
-	require.Nil(t, err)
-
-	pods := ToPods(model)
-	podsFileName := path.Join(outDir, "pods.yaml")
-	err = common.WriteYamlUsingJSON(pods, podsFileName)
+	err = createYamlFiles(model, "from_collection")
 	require.Nil(t, err)
 
 }
+func createYamlFiles(model *AbstractModelSyn, dirName string) error {
+	outDir := path.Join("out", dirName)
 
+	policies := ToNetworkPolicies(model)
+	policiesFileName := filepath.Join(outDir, "policies.yaml")
+	if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {
+		return err
+	}
+	pods := ToPods(model)
+	podsFileName := path.Join(outDir, "pods.yaml")
+	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
+		return err
+	}
+	return nil
+}
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
