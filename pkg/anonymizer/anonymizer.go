@@ -89,7 +89,7 @@ type anonInstruction struct {
 	rootPaths              []string
 }
 
-// anonInfo holds the info of one Id anonymization
+// anonInfo holds the info of one ID anonymization
 type anonInfo struct {
 	newValue       string
 	oldValue       string
