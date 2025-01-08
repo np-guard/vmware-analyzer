@@ -28574,22 +28574,22 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "frontend",
-                        "path": "frontend",
-                        "vm_members": [
-                            {
-                                "display_name": "A",
-                                "id": "A"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "backend",
                         "path": "backend",
                         "vm_members": [
                             {
                                 "display_name": "B",
                                 "id": "B"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "frontend",
+                        "path": "frontend",
+                        "vm_members": [
+                            {
+                                "display_name": "A",
+                                "id": "A"
                             }
                         ]
                     }
