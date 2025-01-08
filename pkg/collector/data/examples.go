@@ -46,14 +46,14 @@ Dumbledore {Vms: D1, D2}
 
 Macro Segmentation
 - Houses (tenants / apps) must not communicate with each other
-- each house must be able to communicate to Hogwarts (shared Services)
+- each house must be able to communicate to Hogwarts (shared services)
 - only Gryffindor house must be able to communicate to Dumbledore (ML server / other special use case server, etc )
 - Within each house (tenants/apps) tiers must be able to communicate with each other
 
 Macro Segmentation - the starting point to the land of zero trust
 
 micro segmentation
-- within each house (tenants/apps) tiers must have granular firewall Policies
+- within each house (tenants/apps) tiers must have granular firewall policies
 	- anyone can access WEB servers
 	- only Web server can access App server over a whitelisted port
 	- only App Server can access DB Server over a whitelisted port
