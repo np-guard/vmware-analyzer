@@ -133,10 +133,10 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runConvertToAbstract(t, OutputComparison, true)
+		//test.runConvertToAbstract(t, OutputComparison, true)
 		//test.runConvertToAbstract(t, OutputComparison, false)
 		//nolint:gocritic // uncomment for generating output
-		//test.runConvertToAbstract(t, OutputGeneration, true)
+		test.runConvertToAbstract(t, OutputGeneration, true)
 		//test.runConvertToAbstract(t, OutputGeneration, false)
 	}
 }
