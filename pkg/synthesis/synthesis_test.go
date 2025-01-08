@@ -9,9 +9,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 const (
@@ -73,20 +75,48 @@ func TestPreprocessing(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		// test.runPreprocessing(t, OutputComparison)
+		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		test.runPreprocessing(t, OutputGeneration)
+		//test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
-func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
+func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
 	rc := data.ExamplesGeneration(synTest.exData)
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc)
+	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	suffix := "_ConvertToAbstractNoHint.txt"
+	if withHints {
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+		suffix = "_ConvertToAbstract.txt"
+	}
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, hintsParm)
 	require.Nil(t, err)
 	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
 	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+}
+
+func TestCollectAndConvertToAbstract(t *testing.T) {
+	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
+	if (server == collector.ServerData{}) {
+		fmt.Println("didn't got any server")
+		return
+	}
+
+	rc, err := collector.CollectResources(server)
+	if err != nil {
+		t.Errorf("CollectResources() error = %v", err)
+		return
+	}
+	if rc == nil {
+		t.Errorf("didnt got resources")
+		return
+	}
+
+	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	require.Nil(t, err)
+	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
 }
 
 func TestConvertToAbsract(t *testing.T) {
@@ -94,9 +124,11 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		//test.runConvertToAbstract(t, OutputComparison)
+		test.runConvertToAbstract(t, OutputComparison, true)
+		test.runConvertToAbstract(t, OutputComparison, false)
 		//nolint:gocritic // uncomment for generating output
-		test.runConvertToAbstract(t, OutputGeneration)
+		//test.runConvertToAbstract(t, OutputGeneration, true)
+		//test.runConvertToAbstract(t, OutputGeneration, false)
 	}
 }
 
