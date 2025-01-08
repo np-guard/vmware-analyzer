@@ -71,6 +71,11 @@ var allTests = []synthesisTest{
 		exData: tests.ExampleHogwartsNoDumbledore,
 		noHint: false,
 	},
+	{
+		name:   "ExampleHogwarts",
+		exData: tests.ExampleHogwarts,
+		noHint: false,
+	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
@@ -140,15 +145,15 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		//test.runConvertToAbstract(t, OutputComparison, true)
-		//if test.noHint {
-		//	test.runConvertToAbstract(t, OutputComparison, false)
-		//}
-		//nolint:gocritic // uncomment for generating output
-		test.runConvertToAbstract(t, OutputGeneration, true)
+		test.runConvertToAbstract(t, OutputComparison, true)
 		if test.noHint {
-			test.runConvertToAbstract(t, OutputGeneration, false)
+			test.runConvertToAbstract(t, OutputComparison, false)
 		}
+		//nolint:gocritic // uncomment for generating output
+		//test.runConvertToAbstract(t, OutputGeneration, true)
+		//if test.noHint {
+		//	test.runConvertToAbstract(t, OutputGeneration, false)
+		//}
 	}
 }
 
