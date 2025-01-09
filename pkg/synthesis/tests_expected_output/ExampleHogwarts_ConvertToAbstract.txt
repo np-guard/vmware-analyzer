@@ -1,0 +1,24 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+	All Connections from (group  = Gryffindor) to (group  = Web and group  = Gryffindor)
+	All Connections from (group  = Hufflepuff) to (group  = Web and group  = Hufflepuff)
+	All Connections from (group  = Slytherin) to (group  = Web and group  = Slytherin)
+	All Connections from (group  = Dumbledore) to (group  = Web and group  = Gryffindor)
+	All Connections from (group  = Web and group  = Gryffindor) to (group  = App and group  = Gryffindor)
+	All Connections from (group  = Web and group  = Hufflepuff) to (group  = App and group  = Hufflepuff)
+	All Connections from (group  = Web and group  = Slytherin) to (group  = App and group  = Slytherin)
+	All Connections from (group  = App and group  = Gryffindor) to (group  = DB and group  = Gryffindor)
+	All Connections from (group  = App and group  = Hufflepuff) to (group  = DB and group  = Hufflepuff)
+	All Connections from (group  = App and group  = Slytherin) to (group  = DB and group  = Slytherin)
+outbound rules
+	All Connections from (group  = Gryffindor) to (group  = Web and group  = Gryffindor)
+	All Connections from (group  = Hufflepuff) to (group  = Web and group  = Hufflepuff)
+	All Connections from (group  = Slytherin) to (group  = Web and group  = Slytherin)
+	All Connections from (group  = Dumbledore) to (group  = Web and group  = Gryffindor)
+	All Connections from (group  = Web and group  = Gryffindor) to (group  = App and group  = Gryffindor)
+	All Connections from (group  = Web and group  = Hufflepuff) to (group  = App and group  = Hufflepuff)
+	All Connections from (group  = Web and group  = Slytherin) to (group  = App and group  = Slytherin)
+	All Connections from (group  = App and group  = Gryffindor) to (group  = DB and group  = Gryffindor)
+	All Connections from (group  = App and group  = Hufflepuff) to (group  = DB and group  = Hufflepuff)
+	All Connections from (group  = App and group  = Slytherin) to (group  = DB and group  = Slytherin)
