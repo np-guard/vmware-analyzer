@@ -36,7 +36,6 @@ const (
 type synthesisTest struct {
 	name   string
 	exData tests.ExampleSynthesis
-	mode   testMode
 	noHint bool // run also with no hint
 }
 
