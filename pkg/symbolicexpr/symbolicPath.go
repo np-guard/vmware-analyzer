@@ -27,11 +27,11 @@ func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
 		path.Dst.isSubset(&other.Dst, hints)
 }
 
-func (path *SymbolicPaths) add(new *SymbolicPath, hints *Hints) *SymbolicPaths {
-	if new.isEmpty(hints) {
-		return path
+func (paths *SymbolicPaths) add(newPath *SymbolicPath, hints *Hints) *SymbolicPaths {
+	if newPath.isEmpty(hints) {
+		return paths
 	}
-	res := append(*path, new)
+	res := append(*paths, newPath)
 	return &res
 }
 
@@ -44,17 +44,6 @@ func (paths *SymbolicPaths) String() string {
 		res[i] = path.String()
 	}
 	return strings.Join(res, "\n")
-}
-
-// remove empty SymbolicPaths; a path is empty if any of its components (src, dst, conn) is empty
-func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
-	newPaths := SymbolicPaths{}
-	for _, path := range *paths {
-		if !path.isEmpty(hints) {
-			newPaths = append(newPaths, path)
-		}
-	}
-	return &newPaths
 }
 
 // Given SymbolicPaths, removes redundant terms from each SymbolicPath
