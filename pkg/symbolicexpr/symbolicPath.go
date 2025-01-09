@@ -27,6 +27,14 @@ func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
 		path.Dst.isSubset(&other.Dst, hints)
 }
 
+func (path *SymbolicPaths) add(new *SymbolicPath, hints *Hints) *SymbolicPaths {
+	if new.isEmpty(hints) {
+		return path
+	}
+	res := append(*path, new)
+	return &res
+}
+
 func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet
@@ -132,27 +140,27 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 
 // algorithm described in README of symbolicexpr
 func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
-	resAllowPaths := SymbolicPaths{}
+	resAllowPaths := &SymbolicPaths{}
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
-				Dst: allowPath.Dst, Conn: allowPath.Conn})
+			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
+				Dst: allowPath.Dst, Conn: allowPath.Conn}, hints)
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
-				Conn: allowPath.Conn})
+			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
+				Conn: allowPath.Conn}, hints)
 		}
 	}
 	if !denyPath.Conn.IsAll() { // Connection of deny path is not tautology
-		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
-			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
+		resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
+			Conn: allowPath.Conn.Subtract(denyPath.Conn)}, hints)
 	}
 	// removes empty SymblicPaths; of non-empty paths removed redundant terms
-	return resAllowPaths.removeEmpty(hints).removeRedundant(hints)
+	return resAllowPaths.removeRedundant(hints)
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
