@@ -139,7 +139,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	model, err := NSXToAbstractModelSynthesis(rc,&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	model, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(model.policy[0]))
 	err = CreateK8sResources(model, path.Join("out", "from_collection"))
@@ -185,5 +185,5 @@ func getTestsDirOut() string {
 
 // comparison should be insensitive to line comparators; cleaning strings from line comparators
 func cleanStr(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, "/n", ""), carriageReturn, "")
+	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }
