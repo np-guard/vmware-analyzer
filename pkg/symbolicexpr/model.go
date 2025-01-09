@@ -28,11 +28,15 @@ type tautology struct {
 
 // atomic interface for atomic expression - implemented by atomicTerm and tautology
 type atomic interface {
-	string() string
+	name() string   // name of group/tag/...
+	string() string // full expression e.g. "group = slytherin"
 	negate() atomic
+	isNegation() bool
 	isTautology() bool
 	isNegateOf(atomic) bool
 	AsSelector() (string, bool)
+	disjoint(atomic, *Hints) bool   // based on hints
+	supersetOf(atomic, *Hints) bool // based on hints
 }
 
 // Conjunction a DNF Conjunction of Atomics
@@ -50,3 +54,7 @@ type SymbolicPaths []*SymbolicPath
 // Atomics map from Atomics string to *atomicTerm
 // todo: to use for cashing
 type Atomics map[string]atomic
+
+type Hints struct {
+	GroupsDisjoint [][]string
+}

@@ -14,6 +14,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
 
 const (
@@ -34,27 +36,50 @@ const (
 
 type synthesisTest struct {
 	name   string
-	exData data.Example
-	Mode   testMode
+	exData tests.ExampleSynthesis
+	noHint bool // run also with no hint
 }
 
 var allTests = []synthesisTest{
 	{
 		name:   "ExampleDumbeldore",
-		exData: data.ExampleDumbeldore,
+		exData: tests.ExampleDumbeldore,
+		noHint: true,
 	},
 	{
 		name:   "ExampleTwoDeniesSimple",
-		exData: data.ExampleTwoDeniesSimple,
+		exData: tests.ExampleTwoDeniesSimple,
+		noHint: true,
 	},
 	{
 		name:   "ExampleDenyPassSimple",
-		exData: data.ExampleDenyPassSimple,
+		exData: tests.ExampleDenyPassSimple,
+		noHint: true,
+	},
+	{
+		name:   "ExampleHintsDisjoint",
+		exData: tests.ExampleHintsDisjoint,
+		noHint: true,
+	},
+	{
+		name:   "ExampleHogwartsSimpler",
+		exData: tests.ExampleHogwartsSimpler,
+		noHint: true,
+	},
+	{
+		name:   "ExampleHogwartsNoDumbledore",
+		exData: tests.ExampleHogwartsNoDumbledore,
+		noHint: true,
+	},
+	{
+		name:   "ExampleHogwarts",
+		exData: tests.ExampleHogwarts,
+		noHint: true,
 	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(synTest.exData)
+	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
@@ -71,15 +96,21 @@ func TestPreprocessing(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runPreprocessing(t, OutputComparison)
+		//test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		// test.runPreprocessing(t, OutputGeneration)
+		test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
-func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(synTest.exData)
-	model, err := NSXToAbstractModelSynthesis(rc)
+func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
+	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
+	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	suffix := "_ConvertToAbstractNoHint.txt"
+	if withHints {
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+		suffix = "_ConvertToAbstract.txt"
+	}
+	model, err := NSXToAbstractModelSynthesis(rc, hintsParm)
 	require.Nil(t, err)
 
 	err = CreateK8sResources(model, path.Join("out", synTest.name))
@@ -87,7 +118,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 
 	actualOutput := strAllowOnlyPolicy(model.policy[0])
 	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_ConvertToAbstract.txt")
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
@@ -108,7 +139,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	model, err := NSXToAbstractModelSynthesis(rc)
+	model, err := NSXToAbstractModelSynthesis(rc,&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(model.policy[0]))
 	err = CreateK8sResources(model, path.Join("out", "from_collection"))
@@ -120,9 +151,15 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runConvertToAbstract(t, OutputComparison)
+		test.runConvertToAbstract(t, OutputComparison, true)
+		if test.noHint {
+			test.runConvertToAbstract(t, OutputComparison, false)
+		}
 		//nolint:gocritic // uncomment for generating output
-		// test.runConvertToAbstract(t, OutputGeneration)
+		//test.runConvertToAbstract(t, OutputGeneration, true)
+		//if test.noHint {
+		//	test.runConvertToAbstract(t, OutputGeneration, false)
+		//}
 	}
 }
 
