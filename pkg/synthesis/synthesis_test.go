@@ -12,7 +12,6 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 )
@@ -83,7 +82,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	model, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
 
-	err = createYamlFiles(model, synTest.name)
+	err = CreateK8sResources(model, path.Join("out", synTest.name))
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(model.policy[0])
@@ -112,24 +111,9 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	model, err := NSXToAbstractModelSynthesis(rc)
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(model.policy[0]))
-	err = createYamlFiles(model, "from_collection")
+	err = CreateK8sResources(model, path.Join("out", "from_collection"))
 	require.Nil(t, err)
 
-}
-func createYamlFiles(model *AbstractModelSyn, dirName string) error {
-	outDir := path.Join("out", dirName)
-
-	policies := ToNetworkPolicies(model)
-	policiesFileName := filepath.Join(outDir, "policies.yaml")
-	if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {
-		return err
-	}
-	pods := ToPods(model)
-	podsFileName := path.Join(outDir, "pods.yaml")
-	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
-		return err
-	}
-	return nil
 }
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)

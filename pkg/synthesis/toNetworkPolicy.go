@@ -2,8 +2,12 @@ package synthesis
 
 import (
 	"fmt"
+	"path"
+	"slices"
 
+	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -12,9 +16,22 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func ToNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
-	policies := []*networking.NetworkPolicy{}
+func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
+	policies := toNetworkPolicies(model)
+	policiesFileName := path.Join(outDir, "policies.yaml")
+	if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {
+		return err
+	}
+	pods := toPods(model)
+	podsFileName := path.Join(outDir, "pods.yaml")
+	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
+		return err
+	}
+	return nil
+}
 
+func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
+	policies := []*networking.NetworkPolicy{}
 	addNewPolicy := func(description string) *networking.NetworkPolicy {
 		pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies)), description)
 		policies = append(policies, pol)
@@ -82,14 +99,9 @@ func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 
 	ports := []networking.NetworkPolicyPort{}
-	if conn.IsAll() {
-		return []networking.NetworkPolicyPort{}
-	}
 	tcpUdpSet := conn.TCPUDPSet()
-	icmpSet := conn.ICMPSet()
 	if tcpUdpSet.IsAll() {
-		ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolTCP), Port: nil, EndPort: nil})
-		ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolUDP), Port: nil, EndPort: nil})
+		return nil
 	} else {
 		partitions := tcpUdpSet.Partitions()
 		for _, partition := range partitions {
@@ -98,38 +110,36 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 			for _, portRange := range portRanges.Intervals() {
 				var portPointer *intstr.IntOrString
 				var endPortPointer *int32
-
-				port := intstr.FromInt(int(portRange.Start()))
-				portPointer = &port
-				if portRange.End() != portRange.Start() {
-					endPort := int32(portRange.End())
-					endPortPointer = &endPort
+				if portRange.Start() != netp.MinPort || portRange.End() != netp.MaxPort {
+					port := intstr.FromInt(int(portRange.Start()))
+					portPointer = &port
+					if portRange.End() != portRange.Start() {
+						endPort := int32(portRange.End())
+						endPortPointer = &endPort
+					}
 				}
 				for _, protocolCode := range protocols {
 					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(codeToProtocol[int(protocolCode)]), Port: portPointer, EndPort: endPortPointer})
 				}
+				if slices.Contains(protocols, netset.TCPCode) && slices.Contains(protocols, netset.UDPCode){
+					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: portPointer, EndPort: endPortPointer})
+				}
 			}
 		}
-	}
-	if !icmpSet.IsEmpty() {
-		ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: nil, EndPort: nil})
-
 	}
 	return ports
 }
 
-func ToPods(model *AbstractModelSyn) []*core.Pod {
+// ///////////////////////////////////////////////////////////////////////////////
+func toPods(model *AbstractModelSyn) []*core.Pod {
 	pods := []*core.Pod{}
-	i := 0
 	for _, vm := range model.vms {
 		pod := &core.Pod{}
 		pod.TypeMeta.Kind = "Pod"
 		pod.TypeMeta.APIVersion = "networking.k8s.io/v1"
 		pod.ObjectMeta.Name = vm.Name()
 		pod.ObjectMeta.UID = types.UID(vm.ID())
-		pod.Status.PodIP =fmt.Sprintf("0.0.0.%d", i)
-		i++
-		if len(model.epToGroups[vm]) == 0{
+		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
 		pod.ObjectMeta.Labels = map[string]string{}
