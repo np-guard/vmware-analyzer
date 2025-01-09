@@ -118,9 +118,10 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
 				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
+				thisComputed = thisComputed.removeIsSubsetPath(hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
-			computedAllowPaths = newComputedAllowPaths
+			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
 		}
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
