@@ -88,7 +88,7 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
 // computation for each allow symbolicPath:
-// computeAllowGivenAllowHigherDeny is called iteratively for each deny path, on applied on the previous result
+// computeAllowGivenAllowHigherDeny is called iteratively for each deny path, applied on the previous result
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
