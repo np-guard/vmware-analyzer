@@ -419,6 +419,9 @@ var ExampleHogwarts = ExampleSynthesis{
 	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
 		{"Web", "App", "DB"},
+		{"Web", "Dumbledore"},
+		{"App", "Dumbledore"},
+		{"DB", "Dumbledore"},
 	},
 }
 
