@@ -68,12 +68,12 @@ var allTests = []synthesisTest{
 	{
 		name:   "ExampleHogwartsNoDumbledore",
 		exData: tests.ExampleHogwartsNoDumbledore,
-		noHint: false,
+		noHint: true,
 	},
 	{
 		name:   "ExampleHogwarts",
 		exData: tests.ExampleHogwarts,
-		noHint: false,
+		noHint: true,
 	},
 }
 
