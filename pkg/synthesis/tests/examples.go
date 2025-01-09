@@ -285,7 +285,7 @@ Dumbledore {Vms: D1, D2}
 Macro Segmentation
 - Houses (tenants / apps) must not communicate with each other
 - each house must be able to communicate to Dumbledore (shared services)
-- Dumbledore must be able to communicate only to Gryffindor house (ML server / other special use case server, etc )
+- [Dumbledore must be able to communicate only to Gryffindor house (ML server / other special use case server, etc )] removed
 - Within each house (tenants/apps) tiers must be able to communicate with each other
 
 Macro Segmentation - the starting point to the land of zero trust
@@ -358,14 +358,6 @@ var ExampleHogwarts = ExampleSynthesis{
 				Name:         "Dumbledore-connection",
 				CategoryType: "Environment",
 				Rules: []data.Rule{
-					{
-						Name:     "allow-Gryffindor-to-Dumbledore",
-						Id:       10216,
-						Source:   "ANY",
-						Dest:     "Dumbledore",
-						Services: []string{"ANY"},
-						Action:   data.JumpToApp,
-					},
 					{
 						Name:     "allow-Dumbledore-to-all",
 						Id:       10217,
