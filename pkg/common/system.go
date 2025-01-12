@@ -36,7 +36,7 @@ func WriteYamlUsingJSON[A any](content []A, file string) error {
 		}
 		outs[i] = string(buf)
 	}
-	return WriteToFile(file, strings.Join(outs,"---\n"))
+	return WriteToFile(file, strings.Join(outs, "---\n"))
 }
 
 func marshalYamlUsingJSON(content interface{}) ([]byte, error) {

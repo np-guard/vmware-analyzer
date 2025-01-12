@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path"
 	"slices"
-	"strings"
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
@@ -34,8 +33,6 @@ func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
 		if err != nil {
 			return err
 		}
-		out = strings.ReplaceAll(out, "[Pod]", "")
-		out = strings.ReplaceAll(out, "default/", "")
 		err = common.WriteToFile(path.Join(outDir, "k8s_connectivity."+format), out)
 		if err != nil {
 			return err
@@ -111,7 +108,6 @@ func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 }
 
 func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
-
 	ports := []networking.NetworkPolicyPort{}
 	tcpUdpSet := conn.TCPUDPSet()
 	if tcpUdpSet.IsAll() {
@@ -158,7 +154,8 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 		}
 		pod.ObjectMeta.Labels = map[string]string{}
 		for _, group := range model.epToGroups[vm] {
-			label := fmt.Sprintf("group__%s", group.Name())
+			label, _ := symbolicexpr.NewAtomicTerm(group, group.Name(), false).AsSelector()
+			// label := fmt.Sprintf("group__%s", group.Name())
 			pod.ObjectMeta.Labels[label] = label
 		}
 		pods = append(pods, pod)
