@@ -12,6 +12,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
@@ -110,10 +111,19 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
+	outDir := path.Join("out", synTest.name)
+	for _, format := range []string{"txt", "dot"} {
+		params := model.OutputParameters{
+			Format: format,
+		}
+		analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+		require.Nil(t, err)
+		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
+		require.Nil(t, err)
+	}
 	model, err := NSXToAbstractModelSynthesis(rc, hintsParm)
 	require.Nil(t, err)
-
-	err = CreateK8sResources(model, path.Join("out", synTest.name))
+	err = CreateK8sResources(model, outDir)
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(model.policy[0])

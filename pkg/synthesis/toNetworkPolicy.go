@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
@@ -28,7 +29,19 @@ func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
 	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
 		return err
 	}
-	return listConn(outDir)
+	for _, format := range []string{"txt", "dot"} {
+		out, err := listConn(outDir, format)
+		if err != nil {
+			return err
+		}
+		out = strings.ReplaceAll(out, "[Pod]", "")
+		out = strings.ReplaceAll(out, "default/", "")
+		err = common.WriteToFile(path.Join(outDir, "k8s_connectivity."+format), out)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
@@ -155,16 +168,12 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 
 ///////////////////////////////////////////////////////////////////////////
 
-func listConn(outDir string) error {
-	analyzer := connlist.NewConnlistAnalyzer(connlist.WithOutputFormat("dot"))
+func listConn(outDir, format string) (string, error) {
+	analyzer := connlist.NewConnlistAnalyzer(connlist.WithOutputFormat(format))
 
 	conns, _, err := analyzer.ConnlistFromDirPath(outDir)
 	if err != nil {
-		return err
+		return "", err
 	}
-	out, err := analyzer.ConnectionsListToString(conns)
-	if err != nil {
-		return err
-	}
-	return common.WriteToFile(path.Join(outDir, "connectivity_graph.dot"), out)
+	return analyzer.ConnectionsListToString(conns)
 }
