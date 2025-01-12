@@ -7,6 +7,7 @@ import (
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	core "k8s.io/api/core/v1"
@@ -27,7 +28,7 @@ func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
 	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
 		return err
 	}
-	return nil
+	return listConn(outDir)
 }
 
 func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
@@ -121,7 +122,7 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 				for _, protocolCode := range protocols {
 					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(codeToProtocol[int(protocolCode)]), Port: portPointer, EndPort: endPortPointer})
 				}
-				if slices.Contains(protocols, netset.TCPCode) && slices.Contains(protocols, netset.UDPCode){
+				if slices.Contains(protocols, netset.TCPCode) && slices.Contains(protocols, netset.UDPCode) {
 					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: portPointer, EndPort: endPortPointer})
 				}
 			}
@@ -150,4 +151,20 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 		pods = append(pods, pod)
 	}
 	return pods
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+func listConn(outDir string) error {
+	analyzer := connlist.NewConnlistAnalyzer(connlist.WithOutputFormat("dot"))
+
+	conns, _, err := analyzer.ConnlistFromDirPath(outDir)
+	if err != nil {
+		return err
+	}
+	out, err := analyzer.ConnectionsListToString(conns)
+	if err != nil {
+		return err
+	}
+	return common.WriteToFile(path.Join(outDir, "connectivity_graph.dot"), out)
 }
