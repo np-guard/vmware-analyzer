@@ -32,7 +32,7 @@ func (term atomicTerm) string() string {
 	return term.labelKey() + equalSign + term.toVal
 }
 func (term atomicTerm) AsSelector() (string, bool) {
-	return fmt.Sprintf("%s__%s",term.labelKey(),term.toVal), term.neg
+	return fmt.Sprintf("%s__%s", term.labelKey(), term.toVal), term.neg
 }
 
 func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
@@ -119,6 +119,7 @@ func (tautology) isNegateOf(atomic) bool {
 func (tautology) AsSelector() (string, bool) {
 	return "", false
 }
+
 // tautology is not disjoint to any atomic term
 func (tautology) disjoint(atomic, *Hints) bool {
 	return false

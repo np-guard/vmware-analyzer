@@ -156,6 +156,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	require.Nil(t, err)
 
 }
+
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range allTests {
