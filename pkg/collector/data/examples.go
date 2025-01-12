@@ -8,7 +8,8 @@ const (
 
 //nolint:all
 var Example1 = Example{
-	VMs: []string{"A", "B"},
+	Name: "Example1",
+	VMs:  []string{"A", "B"},
 	Groups: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
@@ -33,7 +34,8 @@ var Example1 = Example{
 }
 
 var Example1a = Example{
-	VMs: []string{"A", "B"},
+	Name: "Example1a",
+	VMs:  []string{"A", "B"},
 	Groups: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
@@ -95,6 +97,7 @@ micro segmentation
 */
 
 var Example2 = Example{
+	Name: "Example2",
 	VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
 	Groups: map[string][]string{
@@ -311,6 +314,7 @@ func example3FromExample2() Example {
 			}
 		}
 	}
+	res.Name = "Example3"
 	return res
 }
 
@@ -318,7 +322,8 @@ func example3FromExample2() Example {
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
 var ExampleDumbeldore = Example{
-	VMs: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
+	Name: "ExampleDumbeldore",
+	VMs:  []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
 	Groups: map[string][]string{
 		"Slytherin":       {"Slytherin"},
 		"Hufflepuff":      {"Hufflepuff"},

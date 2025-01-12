@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"os"
 	"slices"
 	"testing"
 
@@ -483,7 +482,9 @@ func (r *rulesTest) ruleIDFromName(ruleName string) int {
 
 func (r *rulesTest) runTest(t *testing.T) {
 	// build example from input
+	overrideJSON := false
 	example := basicExampleTopology.CopyTopology()
+	example.Name = r.testName
 	example.InitEmptyEnvAppCategories()
 	for _, rule := range r.envRulesList {
 		err := example.AddRuleToExampleInCategory(dfw.EnvironmentStr, &rule)
@@ -494,12 +495,13 @@ func (r *rulesTest) runTest(t *testing.T) {
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object
-	rc := data.ExamplesGeneration(*example)
+	rc := data.ExamplesGeneration(example)
+	example.StoreAsJSON(overrideJSON)
 
-	rcJSON, _ := rc.ToJSONString()
+	//rcJSON, _ := rc.ToJSONString()
 	// TODO: set path for JSON versions of these tests
-	err := os.WriteFile("example.json", []byte(rcJSON), 0o600)
-	require.Nil(t, err)
+	//err := os.WriteFile("example.json", []byte(rcJSON), 0o600)
+	//require.Nil(t, err)
 
 	connResStr, err := NSXConnectivityFromResourcesContainerPlainText(rc)
 	require.Nil(t, err)

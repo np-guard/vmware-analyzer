@@ -28464,63 +28464,6 @@
                         "display_name": "Environment",
                         "scope": [
                             "ANY"
-                        ],
-                        "rules": [
-                            {
-                                "action": "JUMP_TO_APPLICATION",
-                                "destination_groups": [
-                                    "backend"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "JumpToAppSMB/HTTPS",
-                                "rule_id": 1,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "/infra/services/SMB",
-                                    "/infra/services/HTTPS"
-                                ],
-                                "source_groups": [
-                                    "frontend"
-                                ]
-                            },
-                            {
-                                "action": "JUMP_TO_APPLICATION",
-                                "destination_groups": [
-                                    "backend"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "JumpToAppHTTP",
-                                "rule_id": 2,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "/infra/services/HTTP"
-                                ],
-                                "source_groups": [
-                                    "frontend"
-                                ]
-                            },
-                            {
-                                "action": "DROP",
-                                "destination_groups": [
-                                    "ANY"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "denyRuleDefaultEnv",
-                                "rule_id": 3,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "ANY"
-                                ]
-                            }
                         ]
                     },
                     {
@@ -28535,9 +28478,9 @@
                                 "destination_groups": [
                                     "backend"
                                 ],
-                                "direction": "IN_OUT",
-                                "display_name": "allowSMBHTTP",
-                                "rule_id": 4,
+                                "direction": "IN",
+                                "display_name": "allowRuleSMBIngressOnly",
+                                "rule_id": 1,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28550,13 +28493,31 @@
                                 ]
                             },
                             {
+                                "action": "ALLOW",
+                                "destination_groups": [
+                                    "backend"
+                                ],
+                                "direction": "OUT",
+                                "display_name": "allowRuleSMBEgressOnly",
+                                "rule_id": 2,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "/infra/services/SMB"
+                                ],
+                                "source_groups": [
+                                    "frontend"
+                                ]
+                            },
+                            {
                                 "action": "DROP",
                                 "destination_groups": [
                                     "ANY"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "denyRuleDefaultApp",
-                                "rule_id": 5,
+                                "display_name": "denyRuleDefault",
+                                "rule_id": 3,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28574,22 +28535,22 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "backend",
-                        "path": "backend",
-                        "vm_members": [
-                            {
-                                "display_name": "B",
-                                "id": "B"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "frontend",
                         "path": "frontend",
                         "vm_members": [
                             {
                                 "display_name": "A",
                                 "id": "A"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "backend",
+                        "path": "backend",
+                        "vm_members": [
+                            {
+                                "display_name": "B",
+                                "id": "B"
                             }
                         ]
                     }

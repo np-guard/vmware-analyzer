@@ -67,7 +67,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t", dfwCategory.Category.String(), src, dst, isIngress)
+		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t", dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
 		logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
 		logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
 		logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())

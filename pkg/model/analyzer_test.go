@@ -46,12 +46,14 @@ func (a *analyzerTest) run(t *testing.T) {
 	//nolint:gocritic // comment here should stay
 	// overrideAll = true // uncommnet to override expected output and config as JSON
 	// overrideOnlyConnOutput = true // uncommnet to override expected output
-	rc := data.ExamplesGeneration(a.exData)
+	rc := data.ExamplesGeneration(&a.exData)
 	if overrideAll {
-		rcJSON, err := rc.ToJSONString()
+		/*rcJSON, err := rc.ToJSONString()
 		require.Nil(t, err)
 		jsonPath := getJSONTestPath(a.name)
 		err = os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
+		require.Nil(t, err)*/
+		err := a.exData.StoreAsJSON(overrideAll)
 		require.Nil(t, err)
 	}
 
@@ -95,6 +97,6 @@ func getActualTestPath(name string) string {
 	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "actual_output", name)
 }
 
-func getJSONTestPath(name string) string {
+/*func getJSONTestPath(name string) string {
 	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "json", name+".json")
-}
+}*/

@@ -13,7 +13,7 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-func ExamplesGeneration(e Example) *collector.ResourcesContainerModel {
+func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
 	for _, vmName := range e.VMs {
@@ -83,9 +83,42 @@ const (
 
 // Example is in s single domain
 type Example struct {
+	// config spec fields below
 	VMs      []string
 	Groups   map[string][]string
 	Policies []Category
+
+	// JSON generation fields below
+	//JsonPath string // dir path to store the JSON for this example
+	Name string // example name for JSON file name
+}
+
+func getExamplesJSONPath(name string) string {
+	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "json", name+".json")
+}
+
+/*
+rcJSON, err := rc.ToJSONString()
+
+	require.Nil(t, err)
+	jsonPath := getJSONTestPath(a.name)
+	err = os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
+	require.Nil(t, err)
+*/
+func (e *Example) StoreAsJSON(override bool) error {
+	jsonPath := getExamplesJSONPath(e.Name)
+	if !override {
+		if _, err := os.Stat(jsonPath); err == nil {
+			// jsonPath exists
+			return nil
+		}
+	}
+	rc := ExamplesGeneration(e)
+	rcJSON, err := rc.ToJSONString()
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
 }
 
 func (e *Example) CopyTopology() *Example {
