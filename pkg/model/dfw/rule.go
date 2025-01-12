@@ -192,11 +192,8 @@ func vmsString(vms []*endpoints.VM) string {
 	return common.JoinCustomStrFuncSlice(vms, func(vm *endpoints.VM) string { return vm.Name() }, listSeparatorStr)
 }
 
-// return a String representation of a single rule
+// return a string representation of a single rule
 // groups are interpreted to VM members in this representation
-/*func (f *FwRule) String() string {
-	_, _ = f.symbolicSrc, f.symbolicDst // todo tmp for line
-}*/
 func (f *FwRule) String() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
 		f.ruleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)

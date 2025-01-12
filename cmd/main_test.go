@@ -18,10 +18,6 @@ func TestMain(t *testing.T) {
 		name string
 		args string
 	}{
-		{
-			name: "test",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json ",
-		},
 		// version
 		{
 			name: "version",

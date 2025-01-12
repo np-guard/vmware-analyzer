@@ -89,7 +89,3 @@ func getExpectedTestPath(name string) string {
 func getActualTestPath(name string) string {
 	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "actual_output", name)
 }
-
-/*func getJSONTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "json", name+".json")
-}*/
