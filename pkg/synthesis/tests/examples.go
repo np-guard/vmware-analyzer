@@ -274,9 +274,9 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 ExampleHogwarts with macro and micro segmentation
 
 Slytherin House {Vms : S1, S2, S3}
-Hufflepuff House {Vms: H1, H2, H3}
-Gryffindor House {Vms: G1, G2, G3}
-Dumbledore {Vms: D1, D2}
+Hufflepuff House {VMs: H1, H2, H3}
+Gryffindor House {VMs: G1, G2, G3}
+Dumbledore {VMs: D1, D2}
 	 Web {S1, H1, G1}
 	 APP {S2, H2, G2}
 	 DB  {S3, H3, G3}
@@ -300,7 +300,7 @@ micro segmentation
 */
 
 var ExampleHogwarts = ExampleSynthesis{
-	FromNSX: data.Example{Vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
+	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
 		Groups: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
@@ -318,7 +318,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Gryffindor-to-Gryffindor",
-						Id:       10218,
+						ID:       10218,
 						Source:   "Gryffindor",
 						Dest:     "Gryffindor",
 						Services: []string{"ANY"},
@@ -332,7 +332,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Hufflepuff-to-Hufflepuff",
-						Id:       10219,
+						ID:       10219,
 						Source:   "Hufflepuff",
 						Dest:     "Hufflepuff",
 						Services: []string{"ANY"},
@@ -346,7 +346,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Slytherin-to-Slytherin",
-						Id:       10220,
+						ID:       10220,
 						Source:   "Slytherin",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -360,7 +360,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Dumbledore-to-all",
-						Id:       10217,
+						ID:       10217,
 						Source:   "Dumbledore",
 						Dest:     "Gryffindor",
 						Services: []string{"ANY"},
@@ -368,7 +368,7 @@ var ExampleHogwarts = ExampleSynthesis{
 					},
 					{
 						Name:     "default-deny-env",
-						Id:       10218,
+						ID:       10218,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -383,7 +383,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Client-Access",
-						Id:       9195,
+						ID:       9195,
 						Source:   "ANY",
 						Dest:     "Web",
 						Services: []string{"ANY"},
@@ -391,7 +391,7 @@ var ExampleHogwarts = ExampleSynthesis{
 					},
 					{
 						Name:     "Web-To-App-Access",
-						Id:       9196,
+						ID:       9196,
 						Source:   "Web",
 						Dest:     "App",
 						Services: []string{"ANY"},
@@ -399,7 +399,7 @@ var ExampleHogwarts = ExampleSynthesis{
 					},
 					{
 						Name:     "App-To-DB-Access",
-						Id:       9197,
+						ID:       9197,
 						Source:   "App",
 						Dest:     "DB",
 						Services: []string{"ANY"},
@@ -426,7 +426,7 @@ var ExampleHogwarts = ExampleSynthesis{
 }
 
 var ExampleHogwartsSimpler = ExampleSynthesis{
-	FromNSX: data.Example{Vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB",
+	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
 		Groups: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App"},
@@ -441,7 +441,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Gryffindor-to-Gryffindor",
-						Id:       10218,
+						ID:       10218,
 						Source:   "Gryffindor",
 						Dest:     "Gryffindor",
 						Services: []string{"ANY"},
@@ -455,7 +455,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Slytherin-to-Slytherin",
-						Id:       10220,
+						ID:       10220,
 						Source:   "Slytherin",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -463,7 +463,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 					},
 					{
 						Name:     "default-deny-env",
-						Id:       10218,
+						ID:       10218,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -477,7 +477,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Client-Access",
-						Id:       9195,
+						ID:       9195,
 						Source:   "ANY",
 						Dest:     "Web",
 						Services: []string{"ANY"},
@@ -485,7 +485,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 					},
 					{
 						Name:     "Web-To-App-Access",
-						Id:       9196,
+						ID:       9196,
 						Source:   "Web",
 						Dest:     "App",
 						Services: []string{"ANY"},
@@ -509,7 +509,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 }
 
 var ExampleHogwartsNoDumbledore = ExampleSynthesis{
-	FromNSX: data.Example{Vms: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
+	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
 		Groups: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
@@ -526,7 +526,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Gryffindor-to-Gryffindor",
-						Id:       10218,
+						ID:       10218,
 						Source:   "Gryffindor",
 						Dest:     "Gryffindor",
 						Services: []string{"ANY"},
@@ -540,7 +540,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Hufflepuff-to-Hufflepuff",
-						Id:       10219,
+						ID:       10219,
 						Source:   "Hufflepuff",
 						Dest:     "Hufflepuff",
 						Services: []string{"ANY"},
@@ -554,7 +554,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Slytherin-to-Slytherin",
-						Id:       10220,
+						ID:       10220,
 						Source:   "Slytherin",
 						Dest:     "Slytherin",
 						Services: []string{"ANY"},
@@ -562,7 +562,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 					},
 					{
 						Name:     "default-deny-env",
-						Id:       10218,
+						ID:       10218,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -576,7 +576,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Client-Access",
-						Id:       9195,
+						ID:       9195,
 						Source:   "ANY",
 						Dest:     "Web",
 						Services: []string{"ANY"},
@@ -584,7 +584,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 					},
 					{
 						Name:     "Web-To-App-Access",
-						Id:       9196,
+						ID:       9196,
 						Source:   "Web",
 						Dest:     "App",
 						Services: []string{"ANY"},
@@ -592,7 +592,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 					},
 					{
 						Name:     "App-To-DB-Access",
-						Id:       9197,
+						ID:       9197,
 						Source:   "App",
 						Dest:     "DB",
 						Services: []string{"ANY"},
