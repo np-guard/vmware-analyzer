@@ -27,6 +27,14 @@ func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
 		path.Dst.isSubset(&other.Dst, hints)
 }
 
+func (paths *SymbolicPaths) add(newPath *SymbolicPath, hints *Hints) *SymbolicPaths {
+	if newPath.isEmpty(hints) {
+		return paths
+	}
+	res := append(*paths, newPath)
+	return &res
+}
+
 func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet
@@ -36,17 +44,6 @@ func (paths *SymbolicPaths) String() string {
 		res[i] = path.String()
 	}
 	return strings.Join(res, "\n")
-}
-
-// remove empty SymbolicPaths; a path is empty if any of its components (src, dst, conn) is empty
-func (paths *SymbolicPaths) removeEmpty(hints *Hints) *SymbolicPaths {
-	newPaths := SymbolicPaths{}
-	for _, path := range *paths {
-		if !path.isEmpty(hints) {
-			newPaths = append(newPaths, path)
-		}
-	}
-	return &newPaths
 }
 
 // Given SymbolicPaths, removes redundant terms from each SymbolicPath
@@ -88,7 +85,7 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // the resulting allow paths in SymbolicPaths
 // The motivation here is to unroll allow rule given higher priority deny rule
 // computation for each allow symbolicPath:
-// computeAllowGivenAllowHigherDeny is called iteratively for each deny path, on applied on the previous result
+// computeAllowGivenAllowHigherDeny is called iteratively for each deny path, applied on the previous result
 // the result is the union of the above computation for each allow path
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
@@ -118,9 +115,10 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
 				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
+				thisComputed = thisComputed.removeIsSubsetPath(hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
-			computedAllowPaths = newComputedAllowPaths
+			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
 		}
 		res = append(res, computedAllowPaths...)
 		fmt.Println()
@@ -131,27 +129,27 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 
 // algorithm described in README of symbolicexpr
 func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
-	resAllowPaths := SymbolicPaths{}
+	resAllowPaths := &SymbolicPaths{}
 	for _, srcAtom := range denyPath.Src {
 		if !srcAtom.isTautology() {
 			srcAtomNegate := srcAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
-				Dst: allowPath.Dst, Conn: allowPath.Conn})
+			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
+				Dst: allowPath.Dst, Conn: allowPath.Conn}, hints)
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
 		if !dstAtom.isTautology() {
 			dstAtomNegate := dstAtom.negate().(atomicTerm)
-			resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
-				Conn: allowPath.Conn})
+			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
+				Conn: allowPath.Conn}, hints)
 		}
 	}
 	if !denyPath.Conn.IsAll() { // Connection of deny path is not tautology
-		resAllowPaths = append(resAllowPaths, &SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
-			Conn: allowPath.Conn.Subtract(denyPath.Conn)})
+		resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
+			Conn: allowPath.Conn.Subtract(denyPath.Conn)}, hints)
 	}
 	// removes empty SymblicPaths; of non-empty paths removed redundant terms
-	return resAllowPaths.removeEmpty(hints).removeRedundant(hints)
+	return resAllowPaths.removeRedundant(hints)
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
