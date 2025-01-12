@@ -52,6 +52,8 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
+//
+//nolint:gocritic // temporarily keep commented-out code
 func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) (
 	allAllowedConns, allDeniedConns, delegatedConns *connectionsAndRules) {
 	// accumulate the following sets, from all categories - by order
@@ -67,7 +69,8 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t", dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
+		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
+			dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
 		logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
 		logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
 		logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
@@ -83,13 +86,13 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		categoryDeniedConns.removeHigherPrioConnections(allAllowedConns.accumulatedConns.Union(allDeniedConns.accumulatedConns))
 
 		// remove connections for which there was already allow/deny by  higher-prio categories, from this category's not-determined conns
-		// categoryNotDeterminedConns.accumulatedConns = categoryNotDeterminedConns.accumulatedConns.Subtract(allAllowedConns.accumulatedConns).Subtract(
-		// allDeniedConns.accumulatedConns)
+		// categoryNotDeterminedConns.accumulatedConns = categoryNotDeterminedConns.accumulatedConns.Subtract(allAllowedConns.accumulatedConns)
+		// .Subtract(allDeniedConns.accumulatedConns)
 		categoryNotDeterminedConns.removeHigherPrioConnections(allAllowedConns.accumulatedConns.Union(allDeniedConns.accumulatedConns))
 
 		// remove connections for which there was already allow/deny by  higher-prio categories, from this category's JumptToApp conns
-		// categoryJumptToAppConns.accumulatedConns = categoryJumptToAppConns.accumulatedConns.Subtract(allAllowedConns.accumulatedConns).Subtract(
-		// allDeniedConns.accumulatedConns)
+		// categoryJumptToAppConns.accumulatedConns = categoryJumptToAppConns.accumulatedConns.Subtract(allAllowedConns.accumulatedConns).
+		// Subtract(allDeniedConns.accumulatedConns)
 		categoryJumptToAppConns.removeHigherPrioConnections(allAllowedConns.accumulatedConns.Union(allDeniedConns.accumulatedConns))
 
 		////////////////////////

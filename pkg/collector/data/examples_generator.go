@@ -8,6 +8,7 @@ import (
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
@@ -89,22 +90,15 @@ type Example struct {
 	Policies []Category
 
 	// JSON generation fields below
-	//JsonPath string // dir path to store the JSON for this example
 	Name string // example name for JSON file name
 }
 
+var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")
+
 func getExamplesJSONPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "json", name+".json")
+	return filepath.Join(dataPkgPath, "json", name+".json")
 }
 
-/*
-rcJSON, err := rc.ToJSONString()
-
-	require.Nil(t, err)
-	jsonPath := getJSONTestPath(a.name)
-	err = os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
-	require.Nil(t, err)
-*/
 func (e *Example) StoreAsJSON(override bool) error {
 	jsonPath := getExamplesJSONPath(e.Name)
 	if !override {
@@ -118,7 +112,7 @@ func (e *Example) StoreAsJSON(override bool) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
+	return common.WriteToFile(jsonPath, rcJSON)
 }
 
 func (e *Example) CopyTopology() *Example {
@@ -248,7 +242,7 @@ type Category struct {
 }
 
 func getServices() []collector.Service {
-	servicesFilePath := filepath.Join(projectpath.Root, "pkg", "collector", "data", "services.json")
+	servicesFilePath := filepath.Join(dataPkgPath, "services.json")
 	inputConfigContent, err := os.ReadFile(servicesFilePath)
 	if err != nil {
 		return nil

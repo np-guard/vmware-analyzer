@@ -14,6 +14,7 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 
 	res, err := config.analyzedConnectivity.GenConnectivityOutput(params)
 
+	//nolint:gocritic // temporarily keep commented-out code
 	/*allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")
 	fmt.Println("allowed disjoint explains:")
 	for _, a := range allowed {
@@ -54,8 +55,6 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, 
 
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity(vmsFilter)
-	// config.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.NewTCPTransport(1, 65535, 445, 445))
 
-	// config.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.AllICMPTransport())
 	return config, nil
 }

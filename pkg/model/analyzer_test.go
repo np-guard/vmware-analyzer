@@ -47,15 +47,8 @@ func (a *analyzerTest) run(t *testing.T) {
 	// overrideAll = true // uncommnet to override expected output and config as JSON
 	// overrideOnlyConnOutput = true // uncommnet to override expected output
 	rc := data.ExamplesGeneration(&a.exData)
-	if overrideAll {
-		/*rcJSON, err := rc.ToJSONString()
-		require.Nil(t, err)
-		jsonPath := getJSONTestPath(a.name)
-		err = os.WriteFile(jsonPath, []byte(rcJSON), 0o600)
-		require.Nil(t, err)*/
-		err := a.exData.StoreAsJSON(overrideAll)
-		require.Nil(t, err)
-	}
+	err := a.exData.StoreAsJSON(overrideAll)
+	require.Nil(t, err)
 
 	res, err := NSXConnectivityFromResourcesContainerPlainText(rc)
 	require.Nil(t, err)

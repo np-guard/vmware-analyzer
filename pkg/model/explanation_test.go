@@ -496,12 +496,8 @@ func (r *rulesTest) runTest(t *testing.T) {
 	}
 	// get ResourcesContainerModel from Example object
 	rc := data.ExamplesGeneration(example)
-	example.StoreAsJSON(overrideJSON)
-
-	//rcJSON, _ := rc.ToJSONString()
-	// TODO: set path for JSON versions of these tests
-	//err := os.WriteFile("example.json", []byte(rcJSON), 0o600)
-	//require.Nil(t, err)
+	err := example.StoreAsJSON(overrideJSON)
+	require.Nil(t, err)
 
 	connResStr, err := NSXConnectivityFromResourcesContainerPlainText(rc)
 	require.Nil(t, err)
@@ -523,6 +519,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 	disjointConns := configWithAnalysis.analyzedConnectivity.GetDisjointConnecionSetsPerExplanationsForEndpoints("A", "B")
 	fmt.Printf("res: %s", common.JoinStringifiedSlice(disjointConns, "\n"))
 
+	//nolint:gocritic // temporarily keep commented-out code
 	/*isAllowed, ingress, egress := configWithAnalysis.analyzedConnectivity.GetExplanationPerConnection("A", "B", netset.AllICMPTransport())
 	fmt.Printf("%v %v %v", isAllowed, ingress, egress)
 
