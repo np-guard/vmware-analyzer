@@ -182,8 +182,10 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		synthesis.NSXToAbstractModelSynthesis(recourses,nil)
-
+		_, err := synthesis.NSXToAbstractModelSynthesis(recourses, args.synthesisDumpDir, nil)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

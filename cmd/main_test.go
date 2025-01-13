@@ -75,6 +75,10 @@ func TestMain(t *testing.T) {
 			name: "collect-and-analyze",
 			args: "--resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
 		},
+		{
+			name: "collect-and-synthesize",
+			args: "--synthesize-dump-dir examples/output/synthesis",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

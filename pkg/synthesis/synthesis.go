@@ -8,7 +8,9 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
-func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel,
+func NSXToAbstractModelSynthesis(
+	recourses *collector.ResourcesContainerModel,
+	outDir string,
 	hints *symbolicexpr.Hints) (*AbstractModelSyn, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
@@ -23,5 +25,5 @@ func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel,
 	abstractModel.epToGroups = parser.GetConfig().GroupsPerVM
 	abstractModel.vms = parser.VMs()
 	abstractModel.policy = append(abstractModel.policy, &allowOnlyPolicy)
-	return abstractModel, nil
+	return abstractModel, createK8sResources(abstractModel, outDir)
 }
