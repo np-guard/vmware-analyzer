@@ -55,9 +55,12 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
 			for _, p := range ob.allowOnlyRulePaths {
+				ports,empty := toPolicyPorts(p.Conn)
+				if empty{
+					continue
+				}
 				srcSelector := conjunctionToSelector(p.Src)
 				dstSelector := conjunctionToSelector(p.Dst)
-				ports := toPolicyPorts(p.Conn)
 				to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
 				rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 				pol := addNewPolicy(p.String())
@@ -68,9 +71,12 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 		}
 		for _, ib := range p.inbound {
 			for _, p := range ib.allowOnlyRulePaths {
+				ports,empty := toPolicyPorts(p.Conn)
+				if empty{
+					continue
+				}
 				srcSelector := conjunctionToSelector(p.Src)
 				dstSelector := conjunctionToSelector(p.Dst)
-				ports := toPolicyPorts(p.Conn)
 				from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
 				rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 				pol := addNewPolicy(p.String())
@@ -111,11 +117,14 @@ func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	return selector
 }
 
-func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
+func toPolicyPorts(conn *netset.TransportSet) ([]networking.NetworkPolicyPort, bool) {
 	ports := []networking.NetworkPolicyPort{}
 	tcpUDPSet := conn.TCPUDPSet()
+	if tcpUDPSet.IsEmpty() {
+		return nil, true
+	}
 	if tcpUDPSet.IsAll() {
-		return nil
+		return nil, false
 	}
 	partitions := tcpUDPSet.Partitions()
 	for _, partition := range partitions {
@@ -144,7 +153,7 @@ func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 			}
 		}
 	}
-	return ports
+	return ports, false
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
