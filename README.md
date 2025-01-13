@@ -58,6 +58,10 @@ $ nsxanalyzer --resource-input-file pkg/collector/data/json/Example2.json --outp
 ```
 ![graph](pkg/collector/data/expected_output/ex2Filter1.svg)
 
+
+## NSX Supported API versions and resources
+See documentation [here](docs/nsx_support.md).
+
 ## Build the project
 
 Make sure you have golang 1.23+ on your platform
