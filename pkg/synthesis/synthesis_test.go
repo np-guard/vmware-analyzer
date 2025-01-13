@@ -113,7 +113,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 	}
 	outDir := path.Join("out", synTest.name)
 	for _, format := range []string{"txt", "dot"} {
-		params := model.OutputParameters{
+		params := common.OutputParameters{
 			Format: format,
 		}
 		analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
