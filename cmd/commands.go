@@ -17,6 +17,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
@@ -182,7 +183,9 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, nil)
+		// todo - get hints from the user
+		hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints)
 		if err != nil {
 			return err
 		}
