@@ -80,7 +80,7 @@ var allTests = []synthesisTest{
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
@@ -104,7 +104,7 @@ func TestPreprocessing(t *testing.T) {
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
-	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	suffix := "_ConvertToAbstractNoHint.txt"
 	if withHints {

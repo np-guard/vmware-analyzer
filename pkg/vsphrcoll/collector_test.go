@@ -40,8 +40,8 @@ func TestCollectResources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.server == "no_server" {
-				if os.Getenv("NSX_HOST") == "" {
-					fmt.Println("didn't got any server")
+				if os.Getenv("VSPHERE_HOST") == "" {
+					fmt.Println(common.ErrNoHostArg)
 					return
 				}
 				tt.args = args{os.Getenv("VSPHERE_HOST"), os.Getenv("VSPHERE_USER"), os.Getenv("VSPHERE_PASSWORD")}
@@ -52,17 +52,17 @@ func TestCollectResources(t *testing.T) {
 				return
 			}
 			if got == nil {
-				t.Errorf("didnt got resources")
+				t.Errorf(common.ErrNoResources)
 				return
 			}
 			jsonOut, err := got.ToJSONString()
 			if err != nil {
-				t.Errorf("fail to convert to json error = %v", err)
+				t.Errorf("failed to convert to json error = %v", err)
 				return
 			}
 			err = common.WriteToFile(path.Join(outDir, tt.name+".json"), jsonOut)
 			if err != nil {
-				t.Errorf("fail to write to file error = %v", err)
+				t.Errorf("failed to write to file error = %v", err)
 				return
 			}
 		})

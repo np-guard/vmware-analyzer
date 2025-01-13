@@ -19,6 +19,10 @@ func (v *VM) Name() string {
 	return v.name
 }
 
+func (v *VM) String() string {
+	return v.Name()
+}
+
 func (v *VM) Kind() string {
 	return "vm"
 }
