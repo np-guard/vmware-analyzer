@@ -33,7 +33,7 @@ func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
 		return err
 	}
 	for _, format := range []string{"txt", "dot"} {
-		out, err := listConn(outDir, format)
+		out, err := k8sAnalyzer(outDir, format)
 		if err != nil {
 			return err
 		}
@@ -171,7 +171,7 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 
 ///////////////////////////////////////////////////////////////////////////
 
-func listConn(outDir, format string) (string, error) {
+func k8sAnalyzer(outDir, format string) (string, error) {
 	analyzer := connlist.NewConnlistAnalyzer(connlist.WithOutputFormat(format))
 
 	conns, _, err := analyzer.ConnlistFromDirPath(outDir)
