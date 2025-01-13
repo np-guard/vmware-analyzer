@@ -17,6 +17,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
 
@@ -29,6 +30,7 @@ const (
 	topologyDumpFileFlag   = "topology-dump-file"
 	skipAnalysisFlag       = "skip-analysis"
 	anonymizeFlag          = "anonymize"
+	synthesisDumpDirFlag   = "synthesize-dump-dir"
 	outputFileFlag         = "filename"
 	outputFormantFlag      = "output"
 	outputFileShortFlag    = "f"
@@ -47,6 +49,7 @@ const (
 	skipAnalysisHelp      = "flag to skip analysis, run only collector"
 	anonymizeHelp         = "flag to anonymize resources"
 	outputFileHelp        = "file path to store analysis results"
+	synthesisDumpDirHelp  = "directory path to store k8s synthesis results"
 	outputFormatHelp      = "output format; must be one of [txt, dot, json, svg]"
 	outputFilterFlagHelp  = "filter the analysis results, can have more than one"
 )
@@ -58,6 +61,7 @@ type inArgs struct {
 	password          string
 	resourceDumpFile  string
 	topologyDumpFile  string
+	synthesisDumpDir  string
 	skipAnalysis      bool
 	anonymise         bool
 	outputFile        string
@@ -99,6 +103,7 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().StringVar(&args.topologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.anonymise, anonymizeFlag, false, anonymizeHelp)
+	rootCmd.PersistentFlags().StringVar(&args.synthesisDumpDir, synthesisDumpDirFlag, "", synthesisDumpDirHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
@@ -175,6 +180,10 @@ func runCommand(args *inArgs) error {
 			return err
 		}
 		fmt.Println(connResStr)
+	}
+	if args.synthesisDumpDir != "" {
+		synthesis.NSXToAbstractModelSynthesis(recourses,nil)
+
 	}
 	return nil
 }
