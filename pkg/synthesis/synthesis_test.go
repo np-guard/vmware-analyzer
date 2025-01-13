@@ -121,12 +121,12 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
-	model, err := NSXToAbstractModelSynthesis(rc, hintsParm)
+	abstractModel, err := NSXToAbstractModelSynthesis(rc, hintsParm)
 	require.Nil(t, err)
-	err = CreateK8sResources(model, outDir)
+	err = CreateK8sResources(abstractModel, outDir)
 	require.Nil(t, err)
 
-	actualOutput := strAllowOnlyPolicy(model.policy[0])
+	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
@@ -149,12 +149,11 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	model, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	abstractModel, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
-	fmt.Println(strAllowOnlyPolicy(model.policy[0]))
-	err = CreateK8sResources(model, path.Join("out", "from_collection"))
+	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
+	err = CreateK8sResources(abstractModel, path.Join("out", "from_collection"))
 	require.Nil(t, err)
-
 }
 
 func TestConvertToAbsract(t *testing.T) {

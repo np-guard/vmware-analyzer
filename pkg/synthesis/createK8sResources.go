@@ -5,17 +5,21 @@ import (
 	"path"
 	"slices"
 
-	"github.com/np-guard/models/pkg/netp"
-	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/np-guard/models/pkg/netp"
+	"github.com/np-guard/models/pkg/netset"
+
+	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
+
+const k8sAPIVersion = "networking.k8s.io/v1"
 
 func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
 	policies := toNetworkPolicies(model)
@@ -82,7 +86,7 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	pol := &networking.NetworkPolicy{}
 	pol.TypeMeta.Kind = "NetworkPolicy"
-	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
+	pol.TypeMeta.APIVersion = k8sAPIVersion
 	pol.ObjectMeta.Name = name
 	pol.ObjectMeta.Labels = map[string]string{"description": description}
 	return pol
@@ -109,31 +113,34 @@ func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 
 func toPolicyPorts(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 	ports := []networking.NetworkPolicyPort{}
-	tcpUdpSet := conn.TCPUDPSet()
-	if tcpUdpSet.IsAll() {
+	tcpUDPSet := conn.TCPUDPSet()
+	if tcpUDPSet.IsAll() {
 		return nil
-	} else {
-		partitions := tcpUdpSet.Partitions()
-		for _, partition := range partitions {
-			protocols := partition.S1.Elements()
-			portRanges := partition.S3
-			for _, portRange := range portRanges.Intervals() {
-				var portPointer *intstr.IntOrString
-				var endPortPointer *int32
-				if portRange.Start() != netp.MinPort || portRange.End() != netp.MaxPort {
-					port := intstr.FromInt(int(portRange.Start()))
-					portPointer = &port
-					if portRange.End() != portRange.Start() {
-						endPort := int32(portRange.End())
-						endPortPointer = &endPort
-					}
+	}
+	partitions := tcpUDPSet.Partitions()
+	for _, partition := range partitions {
+		protocols := partition.S1.Elements()
+		portRanges := partition.S3
+		for _, portRange := range portRanges.Intervals() {
+			var portPointer *intstr.IntOrString
+			var endPortPointer *int32
+			if portRange.Start() != netp.MinPort || portRange.End() != netp.MaxPort {
+				port := intstr.FromInt(int(portRange.Start()))
+				portPointer = &port
+				if portRange.End() != portRange.Start() {
+					//nolint:gosec // port should fit int32:
+					endPort := int32(portRange.End())
+					endPortPointer = &endPort
 				}
-				for _, protocolCode := range protocols {
-					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(codeToProtocol[int(protocolCode)]), Port: portPointer, EndPort: endPortPointer})
-				}
-				if slices.Contains(protocols, netset.TCPCode) && slices.Contains(protocols, netset.UDPCode) {
-					ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: portPointer, EndPort: endPortPointer})
-				}
+			}
+			for _, protocolCode := range protocols {
+				ports = append(ports, networking.NetworkPolicyPort{
+					Protocol: pointerTo(codeToProtocol[int(protocolCode)]),
+					Port:     portPointer,
+					EndPort:  endPortPointer})
+			}
+			if slices.Contains(protocols, netset.TCPCode) && slices.Contains(protocols, netset.UDPCode) {
+				ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: portPointer, EndPort: endPortPointer})
 			}
 		}
 	}
@@ -146,7 +153,7 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 	for _, vm := range model.vms {
 		pod := &core.Pod{}
 		pod.TypeMeta.Kind = "Pod"
-		pod.TypeMeta.APIVersion = "networking.k8s.io/v1"
+		pod.TypeMeta.APIVersion = k8sAPIVersion
 		pod.ObjectMeta.Name = vm.Name()
 		pod.ObjectMeta.UID = types.UID(vm.ID())
 		if len(model.epToGroups[vm]) == 0 {
@@ -155,7 +162,6 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 		pod.ObjectMeta.Labels = map[string]string{}
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewAtomicTerm(group, group.Name(), false).AsSelector()
-			// label := fmt.Sprintf("group__%s", group.Name())
 			pod.ObjectMeta.Labels[label] = label
 		}
 		pods = append(pods, pod)
