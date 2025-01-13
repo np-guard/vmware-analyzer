@@ -182,7 +182,7 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		_, err := synthesis.NSXToAbstractModelSynthesis(recourses, args.synthesisDumpDir, nil)
+		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, nil)
 		if err != nil {
 			return err
 		}

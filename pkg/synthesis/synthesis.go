@@ -8,7 +8,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
-func NSXToAbstractModelSynthesis(
+func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
 	outDir string,
 	hints *symbolicexpr.Hints) (*AbstractModelSyn, error) {
