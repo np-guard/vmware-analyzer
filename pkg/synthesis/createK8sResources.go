@@ -94,7 +94,8 @@ func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	return pol
 }
 
-func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath) (srcSelector, dstSelector *meta.LabelSelector, ports []networking.NetworkPolicyPort, empty bool) {
+func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath) (srcSelector, dstSelector *meta.LabelSelector,
+	ports []networking.NetworkPolicyPort, empty bool) {
 	srcSelector = toSelector(p.Src)
 	dstSelector = toSelector(p.Dst)
 	ports, empty = toPolicyPorts(p.Conn)
@@ -112,7 +113,7 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	selector := &meta.LabelSelector{}
 	for _, a := range con {
 		label, notIn := a.AsSelector()
-		if label != "" { // tautology
+		if label != "" { // not tautology
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			selector.MatchExpressions = append(selector.MatchExpressions, req)
 		}
