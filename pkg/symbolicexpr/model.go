@@ -34,6 +34,7 @@ type atomic interface {
 	isNegation() bool
 	isTautology() bool
 	isNegateOf(atomic) bool
+	AsSelector() (string, bool)
 	disjoint(atomic, *Hints) bool   // based on hints
 	supersetOf(atomic, *Hints) bool // based on hints
 }

@@ -1,26 +1,26 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: jump_to_application paths: All Connections from (group  = Gryffindor) to (group  = Gryffindor)
-	1. action: jump_to_application paths: All Connections from (group  = Hufflepuff) to (group  = Hufflepuff)
-	2. action: jump_to_application paths: All Connections from (group  = Slytherin) to (group  = Slytherin)
-	3. action: jump_to_application paths: All Connections from (group  = Dumbledore) to (group  = Gryffindor)
+	0. action: jump_to_application paths: All Connections from (group = Gryffindor) to (group = Gryffindor)
+	1. action: jump_to_application paths: All Connections from (group = Hufflepuff) to (group = Hufflepuff)
+	2. action: jump_to_application paths: All Connections from (group = Slytherin) to (group = Slytherin)
+	3. action: jump_to_application paths: All Connections from (group = Dumbledore) to (group = Gryffindor)
 	4. action: deny paths: All Connections from (*) to (*)
 symbolic outbound rules:
-	0. action: jump_to_application paths: All Connections from (group  = Gryffindor) to (group  = Gryffindor)
-	1. action: jump_to_application paths: All Connections from (group  = Hufflepuff) to (group  = Hufflepuff)
-	2. action: jump_to_application paths: All Connections from (group  = Slytherin) to (group  = Slytherin)
-	3. action: jump_to_application paths: All Connections from (group  = Dumbledore) to (group  = Gryffindor)
+	0. action: jump_to_application paths: All Connections from (group = Gryffindor) to (group = Gryffindor)
+	1. action: jump_to_application paths: All Connections from (group = Hufflepuff) to (group = Hufflepuff)
+	2. action: jump_to_application paths: All Connections from (group = Slytherin) to (group = Slytherin)
+	3. action: jump_to_application paths: All Connections from (group = Dumbledore) to (group = Gryffindor)
 	4. action: deny paths: All Connections from (*) to (*)
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: allow paths: All Connections from (*) to (group  = Web)
-	1. action: allow paths: All Connections from (group  = Web) to (group  = App)
-	2. action: allow paths: All Connections from (group  = App) to (group  = DB)
+	0. action: allow paths: All Connections from (*) to (group = Web)
+	1. action: allow paths: All Connections from (group = Web) to (group = App)
+	2. action: allow paths: All Connections from (group = App) to (group = DB)
 	3. action: deny paths: All Connections from (*) to (*)
 symbolic outbound rules:
-	0. action: allow paths: All Connections from (*) to (group  = Web)
-	1. action: allow paths: All Connections from (group  = Web) to (group  = App)
-	2. action: allow paths: All Connections from (group  = App) to (group  = DB)
+	0. action: allow paths: All Connections from (*) to (group = Web)
+	1. action: allow paths: All Connections from (group = Web) to (group = App)
+	2. action: allow paths: All Connections from (group = App) to (group = DB)
 	3. action: deny paths: All Connections from (*) to (*)

@@ -9,7 +9,7 @@ import (
 )
 
 func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel,
-	hints *symbolicexpr.Hints) (*symbolicPolicy, error) {
+	hints *symbolicexpr.Hints) (*AbstractModelSyn, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
@@ -23,5 +23,5 @@ func NSXToAbstractModelSynthesis(recourses *collector.ResourcesContainerModel,
 	abstractModel.epToGroups = parser.GetConfig().GroupsPerVM
 	abstractModel.vms = parser.VMs()
 	abstractModel.policy = append(abstractModel.policy, &allowOnlyPolicy)
-	return &allowOnlyPolicy, nil
+	return abstractModel, nil
 }
