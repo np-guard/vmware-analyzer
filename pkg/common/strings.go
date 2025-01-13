@@ -11,6 +11,7 @@ const (
 
 	CommaSeparator      string = ","
 	CommaSpaceSeparator string = ", "
+	NewLine             string = "\n"
 
 	// ANSI escape codes - for colored output printed to the terminal
 	Reset   = "\033[0m"

@@ -1,8 +1,11 @@
 package model
 
 import (
+	"fmt"
 	"strings"
+	"text/tabwriter"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
@@ -12,10 +15,11 @@ import (
 
 // config captures nsx config
 type config struct {
-	vms                  []*endpoints.VM          // list of all vms
-	vmsMap               map[string]*endpoints.VM // map from uid to vm objects
-	Fw                   *dfw.DFW                 // currently assuming one DFW only (todo: rename pkg dfw)
-	analyzedConnectivity connectivity.ConnMap     // the resulting connectivity map from analyzing this configuration
+	vms                  []*endpoints.VM                      // list of all vms
+	vmsMap               map[string]*endpoints.VM             // map from uid to vm objects
+	Fw                   *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
+	GroupsPerVM          map[*endpoints.VM][]*collector.Group // map from vm to its groups
+	analyzedConnectivity connectivity.ConnMap                 // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
 
@@ -50,9 +54,12 @@ func (c *config) getConfigInfoStr() string {
 	var sb strings.Builder
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")
-	for _, vm := range c.vms {
-		sb.WriteString(vm.Name() + "\n")
-	}
+	sb.WriteString(common.JoinStringifiedSlice(c.vms, common.NewLine))
+
+	// groups
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Groups:\n")
+	sb.WriteString(c.getVMGroupsStr())
 	sb.WriteString(common.OutputSectionSep)
 
 	sb.WriteString("DFW:\n")
@@ -64,4 +71,17 @@ func (c *config) getConfigInfoStr() string {
 	sb.WriteString(common.OutputSectionSep)
 
 	return sb.String()
+}
+
+func (c *config) getVMGroupsStr() string {
+	var builder strings.Builder
+	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
+	fmt.Fprintln(writer, "VM"+"\t"+"Groups")
+	for vm, groups := range c.GroupsPerVM {
+		groupsStr := common.JoinCustomStrFuncSlice(groups, func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
+		line := vm.Name() + "\t" + groupsStr
+		fmt.Fprintln(writer, line)
+	}
+	writer.Flush()
+	return builder.String()
 }
