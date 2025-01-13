@@ -55,8 +55,8 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
 			for _, p := range ob.allowOnlyRulePaths {
-				ports,empty := toPolicyPorts(p.Conn)
-				if empty{
+				ports, empty := toPolicyPorts(p.Conn)
+				if empty {
 					continue
 				}
 				srcSelector := conjunctionToSelector(p.Src)
@@ -71,8 +71,8 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 		}
 		for _, ib := range p.inbound {
 			for _, p := range ib.allowOnlyRulePaths {
-				ports,empty := toPolicyPorts(p.Conn)
-				if empty{
+				ports, empty := toPolicyPorts(p.Conn)
+				if empty {
 					continue
 				}
 				srcSelector := conjunctionToSelector(p.Src)
