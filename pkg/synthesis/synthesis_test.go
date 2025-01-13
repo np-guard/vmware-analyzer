@@ -147,7 +147,8 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	abstractModel, err := NSXToK8sSynthesis(rc, path.Join("out", "from_collection"), &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	abstractModel, err := NSXToK8sSynthesis(rc, path.Join("out", "from_collection"),
+		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
 }

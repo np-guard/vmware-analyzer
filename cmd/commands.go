@@ -125,6 +125,7 @@ It uses REST API calls from NSX manager. `,
 	return rootCmd
 }
 
+//nolint:funlen,gocyclo // just a long function
 func runCommand(args *inArgs) error {
 	var recourses *collector.ResourcesContainerModel
 	var err error
