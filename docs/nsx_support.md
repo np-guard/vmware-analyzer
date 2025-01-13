@@ -12,6 +12,8 @@ Features not yet supported:
 
 * Category of type `Ethernet`
 * Supported protocols: `TCP`, `UDP`, `ICMP`
+* Rules fields `SourcesExcluded`, `DestinationsExcluded`
+* Rules fields `DestinationGroups`, `SourceGroups` with  IP Addresses.
 
 
 
@@ -29,7 +31,7 @@ Following resources are considered for the analysis:
 The analysis endpoints are the VMs retrieved from `GET api/v1/fabric/virtual-machines`.
 
 
-### Limitations
+### More limitations and assumptions
 
 * Currently IPv6 protocols and addresses are not supported. 
 * Assuming single NSX domain.
