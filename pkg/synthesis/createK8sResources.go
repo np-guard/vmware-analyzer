@@ -55,12 +55,10 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
 			for _, p := range ob.allowOnlyRulePaths {
-				ports, empty := toPolicyPorts(p.Conn)
+				srcSelector, dstSelector, ports, empty := toSelectorsAndPorts(p)
 				if empty {
 					continue
 				}
-				srcSelector := conjunctionToSelector(p.Src)
-				dstSelector := conjunctionToSelector(p.Dst)
 				to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
 				rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 				pol := addNewPolicy(p.String())
@@ -71,12 +69,10 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 		}
 		for _, ib := range p.inbound {
 			for _, p := range ib.allowOnlyRulePaths {
-				ports, empty := toPolicyPorts(p.Conn)
+				srcSelector, dstSelector, ports, empty := toSelectorsAndPorts(p)
 				if empty {
 					continue
 				}
-				srcSelector := conjunctionToSelector(p.Src)
-				dstSelector := conjunctionToSelector(p.Dst)
 				from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
 				rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 				pol := addNewPolicy(p.String())
@@ -98,6 +94,13 @@ func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	return pol
 }
 
+func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath) (srcSelector, dstSelector *meta.LabelSelector, ports []networking.NetworkPolicyPort, empty bool) {
+	srcSelector = toSelector(p.Src)
+	dstSelector = toSelector(p.Dst)
+	ports, empty = toPolicyPorts(p.Conn)
+	return
+}
+
 var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
 var boolToOperator = map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
@@ -105,7 +108,7 @@ func pointerTo[T any](t T) *T {
 	return &t
 }
 
-func conjunctionToSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
+func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	selector := &meta.LabelSelector{}
 	for _, a := range con {
 		label, notIn := a.AsSelector()
