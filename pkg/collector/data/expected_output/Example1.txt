@@ -1,2 +1,2 @@
-analyzed connectivity:
+Analyzed connectivity::
 A => B: TCP dst-ports: 445

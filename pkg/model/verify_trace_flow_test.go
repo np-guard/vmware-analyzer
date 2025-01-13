@@ -39,23 +39,23 @@ func Test_verifyTraceflow(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.args.nsxServer == "no_server" {
 				if os.Getenv("NSX_HOST") == "" {
-					fmt.Println("didn't got any server")
+					fmt.Println(common.ErrNoHostArg)
 					return
 				}
 				tt.args = args{os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD")}
 			}
 			server := collector.NewServerData(tt.args.nsxServer, tt.args.userName, tt.args.password)
-			got, err := collector.CollectResources(server)
+			collectedResources, err := collector.CollectResources(server)
 			if err != nil {
 				t.Errorf("CollectResources() error = %v", err)
 				return
 			}
-			if got == nil {
-				t.Errorf("didnt got resources")
+			if collectedResources == nil {
+				t.Errorf(common.ErrNoResources)
 				return
 			}
 			filter := func(vm *endpoints.VM) bool { return strings.Contains(vm.Name(), "") }
-			tfs, err := compareConfigToTraceflows(got, server, filter)
+			tfs, err := compareConfigToTraceflows(collectedResources, server, filter)
 			if err != nil {
 				t.Errorf("verifyTraceflow() error = %v", err)
 			}
@@ -70,4 +70,5 @@ func Test_verifyTraceflow(t *testing.T) {
 			fmt.Printf("traceflow results at %s\n", tfPath)
 		})
 	}
+	fmt.Printf("done")
 }
