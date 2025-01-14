@@ -9,6 +9,7 @@ import (
 )
 
 func (term atomicTerm) labelKey() string {
+	// todo - make sure that the label is allowed by open shift
 	switch term.property.(type) {
 	case *collector.Segment:
 		return "segment"

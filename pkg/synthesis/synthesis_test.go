@@ -112,6 +112,15 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		suffix = "_ConvertToAbstract.txt"
 	}
 	outDir := path.Join("out", synTest.name)
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
+	require.Nil(t, err)
+	addDebugFiles(t, rc, abstractModel, outDir)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
+	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
+	fmt.Println(actualOutput)
+	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+}
+func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
 	for _, format := range []string{"txt", "dot"} {
 		params := common.OutputParameters{
 			Format: format,
@@ -121,13 +130,9 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
-	require.Nil(t, err)
-
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
-	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+	err := common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
+	require.Nil(t, err)
 }
 
 func TestCollectAndConvertToAbstract(t *testing.T) {
@@ -146,11 +151,13 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		t.Errorf("didnt got resources")
 		return
 	}
-
-	abstractModel, err := NSXToK8sSynthesis(rc, path.Join("out", "from_collection"),
+	outDir := path.Join("out", "from_collection")
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
 		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
+	addDebugFiles(t, rc, abstractModel, outDir)
+	require.Nil(t, err)
 }
 
 func TestConvertToAbsract(t *testing.T) {
