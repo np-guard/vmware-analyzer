@@ -90,7 +90,7 @@ func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	pol.TypeMeta.Kind = "NetworkPolicy"
 	pol.TypeMeta.APIVersion = k8sAPIVersion
 	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Labels = map[string]string{"description": description}
+	pol.ObjectMeta.Annotations = map[string]string{"description": description}
 	return pol
 }
 
@@ -175,7 +175,7 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 		pod.ObjectMeta.Labels = map[string]string{}
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewAtomicTerm(group, group.Name(), false).AsSelector()
-			pod.ObjectMeta.Labels[label] = label
+			pod.ObjectMeta.Labels[label] = "true"
 		}
 		pods = append(pods, pod)
 	}

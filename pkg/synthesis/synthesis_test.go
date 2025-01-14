@@ -111,7 +111,16 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
+	abstractModel, err := NSXToAbstractModelSynthesis(rc, hintsParm)
+	require.Nil(t, err)
 	outDir := path.Join("out", synTest.name)
+	createOutDir(t, rc, abstractModel, outDir)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
+	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
+	fmt.Println(actualOutput)
+	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+}
+func createOutDir(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
 	for _, format := range []string{"txt", "dot"} {
 		params := common.OutputParameters{
 			Format: format,
@@ -121,17 +130,13 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
-	abstractModel, err := NSXToAbstractModelSynthesis(rc, hintsParm)
-	require.Nil(t, err)
-	err = CreateK8sResources(abstractModel, outDir)
+	err := CreateK8sResources(abstractModel, outDir)
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
-	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+	err = common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
+	require.Nil(t, err)
 }
-
 func TestCollectAndConvertToAbstract(t *testing.T) {
 	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
 	if (server == collector.ServerData{}) {
@@ -152,7 +157,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	abstractModel, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-	err = CreateK8sResources(abstractModel, path.Join("out", "from_collection"))
+	createOutDir(t, rc, abstractModel, path.Join("out", "from_collection"))
 	require.Nil(t, err)
 }
 
