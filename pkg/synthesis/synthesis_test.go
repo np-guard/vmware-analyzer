@@ -114,13 +114,13 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 	outDir := path.Join("out", synTest.name)
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
 	require.Nil(t, err)
-	createOutDir(t, rc, abstractModel, outDir)
+	addDebugFiles(t, rc, abstractModel, outDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
-func createOutDir(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
+func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
 	for _, format := range []string{"txt", "dot"} {
 		params := common.OutputParameters{
 			Format: format,
@@ -130,13 +130,11 @@ func createOutDir(t *testing.T, rc *collector.ResourcesContainerModel, abstractM
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
-	err := createK8sResources(abstractModel, outDir)
-	require.Nil(t, err)
-
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	err = common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
+	err := common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
 }
+
 func TestCollectAndConvertToAbstract(t *testing.T) {
 	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
 	if (server == collector.ServerData{}) {
@@ -153,12 +151,12 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		t.Errorf("didnt got resources")
 		return
 	}
-
-	abstractModel, err := NSXToK8sSynthesis(rc, path.Join("out", "from_collection"),
+	outDir := path.Join("out", "from_collection")
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
 		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-	createOutDir(t, rc, abstractModel, path.Join("out", "from_collection"))
+	addDebugFiles(t, rc, abstractModel, outDir)
 	require.Nil(t, err)
 }
 
