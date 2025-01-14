@@ -38,46 +38,46 @@ func TestMain(t *testing.T) {
 		},
 		{
 			name: "anonymize-only",
-			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon.json" +
+			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
 				" --skip-analysis --anonymize",
 		},
 		/*{
 			name: "anonymize-analyze",
-			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources.json" +
+			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon.json" +
 				" --anonymize --filename examples/output/analysis.svg -o svg",
 		},*/
 		{
 			name: "analyze-only",
-			args: "--resource-input-file examples/input/resources.json --filename examples/output/analysis.txt",
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only.txt",
 		},
 		{
 			name: "analyze-topology-dot",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
 				" examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
 		},
 		{
 			name: "analyze-topology-json",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
 				" examples/output/topology.json --filename examples/output/analysis.json -o json",
 		},
 		{
 			name: "analyze-topology-text",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
 				" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
 		},
 		/*{
 			name: "analyze-topology-svg",
-			args: "--resource-input-file examples/input/resources.json --topology-dump-file" +
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
 				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
 				` --output-filter="New Virtual Machine",New-VM-1`,
 		},*/
 		{
 			name: "collect-and-analyze",
-			args: "--resource-dump-file examples/output/resources2.json --filename examples/output/analysis2.txt",
+			args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt",
 		},
 		{
-			name: "collect-and-synthesize",
-			args: "--synthesize-dump-dir examples/output/synthesis",
+			name: "synthesize-only",
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesize-dump-dir examples/output/synthesis",
 		},
 	}
 	for _, tt := range tests {
