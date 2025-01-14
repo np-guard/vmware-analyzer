@@ -111,9 +111,9 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
-	abstractModel, err := NSXToAbstractModelSynthesis(rc, hintsParm)
-	require.Nil(t, err)
 	outDir := path.Join("out", synTest.name)
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
+	require.Nil(t, err)
 	createOutDir(t, rc, abstractModel, outDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
@@ -130,11 +130,7 @@ func createOutDir(t *testing.T, rc *collector.ResourcesContainerModel, abstractM
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
-<<<<<<< HEAD
-	err := CreateK8sResources(abstractModel, outDir)
-=======
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
->>>>>>> main
+	err := createK8sResources(abstractModel, outDir)
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
