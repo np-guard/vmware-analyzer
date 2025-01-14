@@ -21,7 +21,7 @@ import (
 
 const k8sAPIVersion = "networking.k8s.io/v1"
 
-func CreateK8sResources(model *AbstractModelSyn, outDir string) error {
+func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	policies := toNetworkPolicies(model)
 	policiesFileName := path.Join(outDir, "policies.yaml")
 	if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {

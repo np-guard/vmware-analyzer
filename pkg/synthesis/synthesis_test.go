@@ -130,7 +130,11 @@ func createOutDir(t *testing.T, rc *collector.ResourcesContainerModel, abstractM
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
+<<<<<<< HEAD
 	err := CreateK8sResources(abstractModel, outDir)
+=======
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
+>>>>>>> main
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
@@ -154,7 +158,8 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	abstractModel, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	abstractModel, err := NSXToK8sSynthesis(rc, path.Join("out", "from_collection"),
+		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
 	createOutDir(t, rc, abstractModel, path.Join("out", "from_collection"))
