@@ -121,9 +121,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
 		require.Nil(t, err)
 	}
-	abstractModel, err := NSXToAbstractModelSynthesis(rc, hintsParm)
-	require.Nil(t, err)
-	err = CreateK8sResources(abstractModel, outDir)
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
 	require.Nil(t, err)
 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
@@ -149,11 +147,10 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	abstractModel, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	abstractModel, err := NSXToK8sSynthesis(rc, path.Join("out", "from_collection"),
+		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-	err = CreateK8sResources(abstractModel, path.Join("out", "from_collection"))
-	require.Nil(t, err)
 }
 
 func TestConvertToAbsract(t *testing.T) {
