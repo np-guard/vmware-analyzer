@@ -42,7 +42,7 @@ type NSXConfigParser struct {
 	file         string
 	rc           *collector.ResourcesContainerModel
 	configRes    *config
-	groups       []*collector.Group
+	allGroups    []*collector.Group
 	allGroupsVMs []*endpoints.VM
 	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
@@ -54,22 +54,44 @@ func (p *NSXConfigParser) RunParser() error {
 	p.configRes = &config{}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
-	p.getVMs() // get vms config
+	p.getVMs()    // get vms config
+	p.getGroups() // get groups config
+	p.removeVMsWithoutGroups()
 	p.getDFW() // get distributed firewall config
 	p.AddPathsToDisplayNames()
 	return nil
+}
+
+func (p *NSXConfigParser) removeVMsWithoutGroups() {
+	toRemove := []*endpoints.VM{}
+	for vm, groups := range p.configRes.GroupsPerVM {
+		if len(groups) == 0 {
+			logging.Debugf("ignoring VM without groups: %s", vm.Name())
+			toRemove = append(toRemove, vm)
+		}
+	}
+	for _, vm := range toRemove {
+		delete(p.configRes.GroupsPerVM, vm)
+		p.configRes.vms = slices.DeleteFunc(p.configRes.vms, func(v *endpoints.VM) bool { return v.ID() == vm.ID() })
+		delete(p.configRes.vmsMap, vm.ID())
+	}
 }
 
 func (p *NSXConfigParser) GetConfig() *config {
 	return p.configRes
 }
 
-func (p *NSXConfigParser) VMsGroups() map[*endpoints.VM][]*collector.Group {
+func (p *NSXConfigParser) vMsGroups() map[*endpoints.VM][]*collector.Group {
 	groups := map[*endpoints.VM][]*collector.Group{}
-	for _, g := range p.groups {
+	for _, g := range p.allGroups {
 		vms := p.groupToVMsList(g)
 		for _, vm := range vms {
 			groups[vm] = append(groups[vm], g)
+		}
+	}
+	for _, vm := range p.VMs() {
+		if _, ok := groups[vm]; !ok {
+			groups[vm] = nil
 		}
 	}
 	return groups
@@ -88,6 +110,11 @@ func (p *NSXConfigParser) AddPathsToDisplayNames() {
 		res[sPath] = *sObj.DisplayName
 	}
 	p.configRes.Fw.SetPathsToDisplayNames(res)
+}
+
+func (p *NSXConfigParser) getGroups() {
+	p.getAllGroups()
+	p.configRes.GroupsPerVM = p.vMsGroups()
 }
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
@@ -222,11 +249,8 @@ type parsedRule struct {
 	defaultRuleObj *collector.FirewallRule
 }
 
-func (p *NSXConfigParser) allGroups() ([]*endpoints.VM, []*collector.Group) {
+func (p *NSXConfigParser) getAllGroups() {
 	// p.allGroupsVMs and p.groups are written together
-	if len(p.allGroupsVMs) > 0 {
-		return p.allGroupsVMs, p.groups
-	}
 	vms := []*endpoints.VM{}
 	groups := []*collector.Group{}
 	for i := range p.rc.DomainList {
@@ -237,14 +261,13 @@ func (p *NSXConfigParser) allGroups() ([]*endpoints.VM, []*collector.Group) {
 		}
 	}
 	p.allGroupsVMs = vms
-	p.groups = groups
-	return vms, groups
+	p.allGroups = groups
 }
 
 func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string) ([]*endpoints.VM, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
-		return p.allGroups() // all groups
+		return p.allGroupsVMs, p.allGroups // all groups
 	}
 	vms := []*endpoints.VM{}
 	groups := []*collector.Group{}

@@ -3,6 +3,7 @@ package synthesis
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
@@ -78,7 +80,7 @@ var allTests = []synthesisTest{
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
 	require.Nil(t, err1)
@@ -102,16 +104,29 @@ func TestPreprocessing(t *testing.T) {
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
-	rc := data.ExamplesGeneration(synTest.exData.FromNSX)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	suffix := "_ConvertToAbstractNoHint.txt"
 	if withHints {
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, hintsParm)
+	outDir := path.Join("out", synTest.name)
+	for _, format := range []string{"txt", "dot"} {
+		params := common.OutputParameters{
+			Format: format,
+		}
+		analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+		require.Nil(t, err)
+		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
+		require.Nil(t, err)
+	}
+	abstractModel, err := NSXToAbstractModelSynthesis(rc, hintsParm)
 	require.Nil(t, err)
-	actualOutput := strAllowOnlyPolicy(allowOnlyPolicy)
+	err = CreateK8sResources(abstractModel, outDir)
+	require.Nil(t, err)
+
+	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
@@ -134,9 +149,11 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 
-	allowOnlyPolicy, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+	abstractModel, err := NSXToAbstractModelSynthesis(rc, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
-	fmt.Println(strAllowOnlyPolicy(allowOnlyPolicy))
+	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
+	err = CreateK8sResources(abstractModel, path.Join("out", "from_collection"))
+	require.Nil(t, err)
 }
 
 func TestConvertToAbsract(t *testing.T) {
@@ -178,5 +195,5 @@ func getTestsDirOut() string {
 
 // comparison should be insensitive to line comparators; cleaning strings from line comparators
 func cleanStr(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, "/n", ""), carriageReturn, "")
+	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }

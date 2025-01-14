@@ -1,14 +1,14 @@
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: deny paths: All Connections from (*) to (group  = Dumbledore1)
-	1. action: deny paths: All Connections from (*) to (group  = Dumbledore2)
-	2. action: allow paths: All Connections from (group  = Slytherin) to (*)
-	3. action: allow paths: All Connections from (group  = Gryffindor) to (*)
+	0. action: deny paths: All Connections from (*) to (group = Dumbledore1)
+	1. action: deny paths: All Connections from (*) to (group = Dumbledore2)
+	2. action: allow paths: All Connections from (group = Slytherin) to (*)
+	3. action: allow paths: All Connections from (group = Gryffindor) to (*)
 	4. action: deny paths: All Connections from (*) to (*)
 symbolic outbound rules:
-	0. action: deny paths: All Connections from (*) to (group  = Dumbledore1)
-	1. action: deny paths: All Connections from (*) to (group  = Dumbledore2)
-	2. action: allow paths: All Connections from (group  = Slytherin) to (*)
-	3. action: allow paths: All Connections from (group  = Gryffindor) to (*)
+	0. action: deny paths: All Connections from (*) to (group = Dumbledore1)
+	1. action: deny paths: All Connections from (*) to (group = Dumbledore2)
+	2. action: allow paths: All Connections from (group = Slytherin) to (*)
+	3. action: allow paths: All Connections from (group = Gryffindor) to (*)
 	4. action: deny paths: All Connections from (*) to (*)
