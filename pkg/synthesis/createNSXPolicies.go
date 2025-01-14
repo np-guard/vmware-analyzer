@@ -16,9 +16,9 @@ func toNSXPolicies(model *AbstractModelSyn) []collector.SecurityPolicy {
 		Rules:        []data.Rule{},
 	}
 	addNewRule := func(description string) *data.Rule {
-		pol := newRule(1000+len(category.Rules), description)
-		category.Rules = append(category.Rules, pol)
-		return &pol
+		rule := newRule(1000+len(category.Rules), description)
+		category.Rules = append(category.Rules, rule)
+		return &category.Rules[len(category.Rules)-1]
 	}
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
@@ -49,7 +49,6 @@ func newRule(id int, description string) data.Rule {
 	return data.Rule{
 		Name:        fmt.Sprintf("ruleName_%d", id),
 		ID:          id,
-		Services:    []string{"ANY"},
 		Action:      data.Allow,
 		Description: description,
 	}

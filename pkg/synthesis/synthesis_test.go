@@ -111,10 +111,11 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
-	outDir := path.Join("out", synTest.name)
+	outDir := path.Join("out", synTest.name, "k8s_resources")
+	debugDir := path.Join("out", synTest.name, "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, outDir)
+	addDebugFiles(t, rc, abstractModel, debugDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
@@ -133,6 +134,38 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	err := common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
+
+	jsonOut, err := rc.ToJSONString()
+	if err != nil {
+		t.Errorf("failed in converting to json: error = %v", err)
+		return
+	}
+	err = common.WriteToFile(path.Join(outDir, "nsx_resources.json"), jsonOut)
+	if err != nil {
+		t.Errorf("failed in write to file: error = %v", err)
+		return
+	}
+
+	rc.DomainList[0].Resources.SecurityPolicyList = toNSXPolicies(abstractModel)
+	jsonOut, err = rc.ToJSONString()
+	if err != nil {
+		t.Errorf("failed in converting to json: error = %v", err)
+		return
+	}
+	err = common.WriteToFile(path.Join(outDir, "generated_nsx_resources.json"), jsonOut)
+	if err != nil {
+		t.Errorf("failed in write to file: error = %v", err)
+		return
+	}
+
+	params := common.OutputParameters{
+		Format: "txt",
+	}
+	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(outDir, "generated_nsx_connectivity.txt"), analyzed)
+	require.Nil(t, err)
+
 }
 
 func TestCollectAndConvertToAbstract(t *testing.T) {
@@ -151,12 +184,13 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		t.Errorf("didnt got resources")
 		return
 	}
-	outDir := path.Join("out", "from_collection")
+	outDir := path.Join("out", "from_collection", "k8s_resources")
+	debugDir := path.Join("out", "from_collection", "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
 		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-	addDebugFiles(t, rc, abstractModel, outDir)
+	addDebugFiles(t, rc, abstractModel, debugDir)
 	require.Nil(t, err)
 }
 
