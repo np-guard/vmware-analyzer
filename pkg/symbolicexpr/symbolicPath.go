@@ -90,22 +90,24 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
 // all optimizations are documented in README
-func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints) *SymbolicPaths {
-	if len(*denyPaths) == 0 {
-		return allowPaths
+func ComputeAllowGivenDenies(allowPaths, oldDenyPaths *SymbolicPaths, denyPaths *[]PathWithRules, hints *Hints) (oldAllows *SymbolicPaths, // todo tmp
+	allows *[]PathWithRules) {
+	if len(*oldDenyPaths) == 0 {
+		return allowPaths, nil
 	}
-	res := SymbolicPaths{}
+	oldAllows = &SymbolicPaths{}
 	for _, allowPath := range *allowPaths {
 		// if the "allow" and "deny" paths are disjoint, then the "deny" has no effect and could be ignored
 		// e.g.   allow: a to d TCP deny: e to d on UDP  - the "deny" has no effect
 		relevantDenyPaths := SymbolicPaths{}
-		for _, denyPath := range *denyPaths {
+		// todo: use denyPaths instead of oldDenyPaths
+		for _, denyPath := range *oldDenyPaths {
 			if !allowPath.disjointPaths(denyPath, hints) {
 				relevantDenyPaths = append(relevantDenyPaths, denyPath)
 			}
 		}
-		if len(relevantDenyPaths) == 0 { // the denys paths are not relevant for this allow. This allow path remains as is
-			res = append(res, allowPath)
+		if len(relevantDenyPaths) == 0 { // the denys paths are not relevant for this allow. This "allow" path remains as is
+			*oldAllows = append(*oldAllows, allowPath)
 			continue
 		}
 		var computedAllowPaths, newComputedAllowPaths SymbolicPaths
@@ -120,11 +122,12 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			}
 			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
 		}
-		res = append(res, computedAllowPaths...)
+		// todo: append to each computedPath the current relevant deny index
+		*oldAllows = append(*oldAllows, computedAllowPaths...)
 		fmt.Println()
 	}
-	res = res.removeIsSubsetPath(hints)
-	return &res
+	*oldAllows = oldAllows.removeIsSubsetPath(hints)
+	return oldAllows, allows
 }
 
 // algorithm described in README of symbolicexpr

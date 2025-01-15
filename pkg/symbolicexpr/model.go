@@ -1,6 +1,9 @@
 package symbolicexpr
 
-import "github.com/np-guard/models/pkg/netset"
+import (
+	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
+)
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
@@ -51,9 +54,10 @@ type SymbolicPath struct {
 
 type SymbolicPaths []*SymbolicPath
 
-// Atomics map from Atomics string to *atomicTerm
-// todo: to use for cashing
-type Atomics map[string]atomic
+type PathWithRules struct {
+	symbolicDeny   SymbolicPath
+	effectingRules []*dfw.FwRule // policy effecting allowOnlyRulePaths (potentially higher priority pass and deny)
+}
 
 type Hints struct {
 	GroupsDisjoint [][]string
