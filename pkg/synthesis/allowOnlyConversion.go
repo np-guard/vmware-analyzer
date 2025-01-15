@@ -65,38 +65,32 @@ func computeAllowOnlyInboundOrOutbound(originalRules []*symbolicRule, globalDeni
 //		new_allow = merge(global_denies or category_passes, allow_rule)
 //		global_allows = global_allows  or new_allows
 //	Output: global_allows
-func computeAllowSingleDirectionPerCategory(inboundOrOutbound *[]*symbolicRule, globalDeniesOld *symbolicexpr.PathsWithRules,
+func computeAllowSingleDirectionPerCategory(inboundOrOutbound *[]*symbolicRule, globalDenies *symbolicexpr.PathsWithRules,
 	hints *symbolicexpr.Hints) (allowRule []*symbolicRule, denyPaths *symbolicexpr.PathsWithRules) {
 	allowOnlyRules := []*symbolicRule{}
-	categoryPassesOld := symbolicexpr.SymbolicPaths{}
-	newGlobalDeniesOld := slices.Clone(globalDeniesOld.GetPaths())
+	categoryPasses := symbolicexpr.PathsWithRules{}
+	newGlobalDenies := slices.Clone(*globalDenies)
 	for _, rule := range *inboundOrOutbound {
 		switch rule.origRule.Action {
 		case dfw.ActionJumpToApp:
-			// todo: append to each symbolicRule in *rule.origSymbolicPaths the current index
-			//       and then append to categoryPasses
-			categoryPassesOld = append(categoryPassesOld, *rule.origSymbolicPaths...)
+			// todo: append to each symbolicPath in *rule.origSymbolicPaths the current rule index
+			newPasses := symbolicexpr.NewPathsWithRules(rule.origSymbolicPaths)
+			categoryPasses = append(categoryPasses, *newPasses...)
 		case dfw.ActionDeny:
-			// todo: newSymbolicPaths should be of type *[]PathWithRules
-			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths,
-				symbolicexpr.NewPathsWithRules(&categoryPassesOld), hints)
-			// todo: append to each symbolicRule in *rule.origSymbolicPaths the current index
-			//       and then append to newGlobalDenies
-			tempNewPaths := newSymbolicPaths.GetPaths()
-			newGlobalDeniesOld = append(newGlobalDeniesOld, tempNewPaths...)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses, hints)
+			// todo: append to each symbolicPath in *newSymbolicPaths also the current rule index
+			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
 		case dfw.ActionAllow:
-			symbolicDeniesAndPassesOld := slices.Clone(newGlobalDeniesOld)                        // todo tmp
-			symbolicDeniesAndPassesOld = append(symbolicDeniesAndPassesOld, categoryPassesOld...) // todo tmp
-			// todo: newSymbolicPaths should be of type *[]PathWithRules
-			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths,
-				symbolicexpr.NewPathsWithRules(&symbolicDeniesAndPassesOld), hints)
-			tempNewPaths := newSymbolicPaths.GetPaths()
+			symbolicDeniesAndPasses := slices.Clone(newGlobalDenies)
+			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses, hints)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
-				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: tempNewPaths}
+				// todo here take the relevant component from allowOnlyRulePaths into effectingRules
+				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: newSymbolicPaths.GetPaths()}
 			allowOnlyRules = append(allowOnlyRules, newRule)
 		}
 	}
-	return allowOnlyRules, symbolicexpr.NewPathsWithRules(&newGlobalDeniesOld)
+	return allowOnlyRules, &newGlobalDenies
 }
 
 func strAllowOnlyPolicy(policy *symbolicPolicy) string {
