@@ -55,9 +55,11 @@ type SymbolicPath struct {
 type SymbolicPaths []*SymbolicPath
 
 type PathWithRules struct {
-	symbolicDeny   SymbolicPath
-	effectingRules []*dfw.FwRule // policy effecting allowOnlyRulePaths (potentially higher priority pass and deny)
+	path  *SymbolicPath
+	rules []*dfw.FwRule // policy effecting allowOnlyRulePaths (potentially higher priority pass and deny)
 }
+
+type PathsWithRules []PathWithRules
 
 type Hints struct {
 	GroupsDisjoint [][]string
