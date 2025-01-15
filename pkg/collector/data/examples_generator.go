@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
-	"path/filepath"
+	"path"
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -93,10 +93,10 @@ type Example struct {
 	Name string // example name for JSON file name
 }
 
-var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")
+var dataPkgPath = path.Join(projectpath.Root, "pkg", "collector", "data")
 
 func getExamplesJSONPath(name string) string {
-	return filepath.Join(dataPkgPath, "json", name+".json")
+	return path.Join(dataPkgPath, "json", name+".json")
 }
 
 func (e *Example) StoreAsJSON(override bool) error {
@@ -192,6 +192,8 @@ type Rule struct {
 	Name      string
 	ID        int
 	Source    string
+	SourcesExcluded bool
+	DestinationsExcluded bool
 	Dest      string
 	Services  []string
 	Action    string
@@ -205,6 +207,8 @@ func (r *Rule) toNSXRule() *nsx.Rule {
 		Action:            (*nsx.RuleAction)(&r.Action),
 		SourceGroups:      []string{r.Source},
 		DestinationGroups: []string{r.Dest},
+		SourcesExcluded: r.SourcesExcluded,
+		DestinationsExcluded: r.DestinationsExcluded,
 		Services:          r.Services,
 		Direction:         r.directionStr(),
 		Scope:             []string{AnyStr}, // TODO: add scope as configurable
@@ -242,7 +246,7 @@ type Category struct {
 }
 
 func getServices() []collector.Service {
-	servicesFilePath := filepath.Join(dataPkgPath, "services.json")
+	servicesFilePath := path.Join(dataPkgPath, "services.json")
 	inputConfigContent, err := os.ReadFile(servicesFilePath)
 	if err != nil {
 		return nil

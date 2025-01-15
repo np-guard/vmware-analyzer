@@ -3,7 +3,7 @@ package model
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -83,9 +83,9 @@ func TestAnalyzer(t *testing.T) {
 }
 
 func getExpectedTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "expected_output", name)
+	return path.Join(projectpath.Root, "pkg", "collector", "data", "expected_output", name)
 }
 
 func getActualTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "actual_output", name)
+	return path.Join(projectpath.Root, "pkg", "collector", "data", "actual_output", name)
 }
