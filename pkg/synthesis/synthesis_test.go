@@ -135,7 +135,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 func TestCollectAndConvertToAbstract(t *testing.T) {
 	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
 	if (server == collector.ServerData{}) {
-		fmt.Println("didn't got any server")
+		fmt.Println("didn't get any server")
 		return
 	}
 

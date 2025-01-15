@@ -16,7 +16,7 @@ func NewPathsWithRules(paths *SymbolicPaths) *PathsWithRules {
 	return &newPathsRules
 }
 
-func (pathsWithRules *PathsWithRules) getPaths() SymbolicPaths {
+func (pathsWithRules *PathsWithRules) GetPaths() SymbolicPaths {
 	resPaths := make([]*SymbolicPath, len(*pathsWithRules))
 	for i, pathWithRules := range *pathsWithRules {
 		resPaths[i] = pathWithRules.path

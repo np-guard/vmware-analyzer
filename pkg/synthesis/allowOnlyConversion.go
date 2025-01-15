@@ -83,23 +83,23 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenie
 			categoryPassesOld = append(categoryPassesOld, *rule.origSymbolicPaths...)
 		case dfw.ActionDeny:
 			// todo: newSymbolicPaths should be of type *[]PathWithRules
-			newSymbolicPaths, effectingDenies := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths,
-				&categoryPassesOld, &categoryPasses, hints)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths,
+				symbolicexpr.NewPathsWithRules(&categoryPassesOld), hints)
 			// todo: append to each symbolicRule in *rule.origSymbolicPaths the current index
 			//       and then append to newGlobalDenies
-			newGlobalDeniesOld = append(newGlobalDeniesOld, *newSymbolicPaths...)
-			_ = effectingDenies // todo tmp
+			tempNewPaths := newSymbolicPaths.GetPaths()
+			newGlobalDeniesOld = append(newGlobalDeniesOld, tempNewPaths...)
 		case dfw.ActionAllow:
 			symbolicDeniesAndPassesOld := slices.Clone(newGlobalDeniesOld)                        // todo tmp
 			symbolicDeniesAndPassesOld = append(symbolicDeniesAndPassesOld, categoryPassesOld...) // todo tmp
 			symbolicDeniesAndPasses := slices.Clone(newGlobalDenies)
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			// todo: newSymbolicPaths should be of type *[]PathWithRules
-			newSymbolicPaths, effectingDenies := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths,
-				&symbolicDeniesAndPassesOld, &symbolicDeniesAndPasses, hints)
+			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths,
+				symbolicexpr.NewPathsWithRules(&symbolicDeniesAndPassesOld), hints)
+			tempNewPaths := newSymbolicPaths.GetPaths()
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
-				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths}
-			_ = effectingDenies // todo tmp
+				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: tempNewPaths}
 			allowOnlyRules = append(allowOnlyRules, newRule)
 		}
 	}
