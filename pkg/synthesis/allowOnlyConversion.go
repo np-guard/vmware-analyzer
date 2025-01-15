@@ -43,7 +43,7 @@ func computeAllowOnlyInboundOrOutbound(originalRules []*symbolicRule, globalDeni
 	if originalRules == nil {
 		return nil
 	}
-	newAllows, newDenies := computeAllowOnlyForCategory(&originalRules, globalDenies, hints)
+	newAllows, newDenies := computeAllowSingleDirectionPerCategory(&originalRules, globalDenies, hints)
 	*globalDenies = append(*globalDenies, *newDenies...)
 	return newAllows
 }
@@ -65,9 +65,9 @@ func computeAllowOnlyInboundOrOutbound(originalRules []*symbolicRule, globalDeni
 //		new_allow = merge(global_denies or category_passes, allow_rule)
 //		global_allows = global_allows  or new_allows
 //	Output: global_allows
-func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDeniesOld *symbolicexpr.SymbolicPaths,
+func computeAllowSingleDirectionPerCategory(inboundOrOutbound *[]*symbolicRule, globalDeniesOld *symbolicexpr.SymbolicPaths,
 	hints *symbolicexpr.Hints) (allowRule []*symbolicRule, denyPaths *symbolicexpr.SymbolicPaths) {
-	var globalDenies *[]symbolicexpr.PathWithRules = &[]symbolicexpr.PathWithRules{} // todo tmp should be parm
+	var globalDenies = &symbolicexpr.PathsWithRules{} // todo tmp should be parm
 	allowOnlyRules := []*symbolicRule{}
 	categoryPassesOld := symbolicexpr.SymbolicPaths{}
 	categoryPasses := []symbolicexpr.PathWithRules{}
