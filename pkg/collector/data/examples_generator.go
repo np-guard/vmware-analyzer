@@ -189,29 +189,29 @@ func DefaultDenyRule(id int) Rule {
 }
 
 type Rule struct {
-	Name      string
-	ID        int
-	Source    string
-	SourcesExcluded bool
+	Name                 string
+	ID                   int
+	Source               string
+	SourcesExcluded      bool
 	DestinationsExcluded bool
-	Dest      string
-	Services  []string
-	Action    string
-	Direction string // if not set, used as default with "IN_OUT"
+	Dest                 string
+	Services             []string
+	Action               string
+	Direction            string // if not set, used as default with "IN_OUT"
 }
 
 func (r *Rule) toNSXRule() *nsx.Rule {
 	return &nsx.Rule{
-		DisplayName:       &r.Name,
-		RuleId:            &r.ID,
-		Action:            (*nsx.RuleAction)(&r.Action),
-		SourceGroups:      []string{r.Source},
-		DestinationGroups: []string{r.Dest},
-		SourcesExcluded: r.SourcesExcluded,
+		DisplayName:          &r.Name,
+		RuleId:               &r.ID,
+		Action:               (*nsx.RuleAction)(&r.Action),
+		SourceGroups:         []string{r.Source},
+		DestinationGroups:    []string{r.Dest},
+		SourcesExcluded:      r.SourcesExcluded,
 		DestinationsExcluded: r.DestinationsExcluded,
-		Services:          r.Services,
-		Direction:         r.directionStr(),
-		Scope:             []string{AnyStr}, // TODO: add scope as configurable
+		Services:             r.Services,
+		Direction:            r.directionStr(),
+		Scope:                []string{AnyStr}, // TODO: add scope as configurable
 	}
 }
 

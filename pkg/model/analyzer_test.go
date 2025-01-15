@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )

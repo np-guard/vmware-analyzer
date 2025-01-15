@@ -202,7 +202,7 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res := &parsedRule{}
 	// scope - the list of group paths where the rules in this policy will get applied.
 	scope := secPolicy.Scope
-	vms, groups := p.getEndpointsFromGroupsPaths(scope,false)
+	vms, groups := p.getEndpointsFromGroupsPaths(scope, false)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
 	res.srcVMs = vms
 	res.dstVMs = vms
@@ -280,8 +280,8 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	}
 	vms := []*endpoints.VM{}
 	groups := []*collector.Group{}
-	if exclude{
-		groupsPaths = slices.DeleteFunc(slices.Clone( p.allGroupsPaths), func(p string) bool{return slices.Contains(groupsPaths,p)})
+	if exclude {
+		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(p string) bool { return slices.Contains(groupsPaths, p) })
 	}
 	// TODO: support IP Addresses in groupsPaths
 	for _, groupPath := range groupsPaths {
