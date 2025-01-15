@@ -32,7 +32,7 @@ func (c *Conjunction) copy() *Conjunction {
 }
 
 func (c *Conjunction) isTautology() bool {
-	if len(*c) == 1 && (*c)[0].isTautology() {
+	if len(*c) == 1 && (*c)[0].IsTautology() {
 		return true
 	}
 	return false
@@ -47,7 +47,7 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	newC := Conjunction{}
 	redundantRemoved := false
 	for _, atom := range *c {
-		if !atom.isTautology() && !atomRedundantInConj(atom, c, hints) {
+		if !atom.IsTautology() && !atomRedundantInConj(atom, c, hints) {
 			newC = append(newC, atom)
 		} else {
 			redundantRemoved = true

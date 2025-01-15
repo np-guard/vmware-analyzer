@@ -195,8 +195,6 @@ type Rule struct {
 	ID          int
 	Source      string
 	Dest        string
-	Sources     []string
-	Dests       []string
 	Services    []string
 	Action      string
 	Direction   string // if not set, used as default with "IN_OUT"
@@ -208,8 +206,8 @@ func (r *Rule) toNSXRule() *nsx.Rule {
 		DisplayName:       &r.Name,
 		RuleId:            &r.ID,
 		Action:            (*nsx.RuleAction)(&r.Action),
-		SourceGroups:      append(r.Sources, r.Source),
-		DestinationGroups: append(r.Dests, r.Dest),
+		SourceGroups:      []string{r.Source},
+		DestinationGroups: []string{r.Dest},
 		Services:          r.Services,
 		Direction:         r.directionStr(),
 		Scope:             []string{AnyStr}, // TODO: add scope as configurable

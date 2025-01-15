@@ -2,9 +2,11 @@ package synthesis
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -60,13 +62,21 @@ func toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst, service []strin
 	return srcGroups, dstGroups, []string{"ANY"}
 }
 
-// var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
-// var boolToOperator = map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
-
-// func pointerTo[T any](t T) *T {
-// 	return &t
-// }
-
+func vmLabels(model *AbstractModelSyn) (map[*endpoints.VM][]string, map[string][]*endpoints.VM) {
+	vmLabels := map[*endpoints.VM][]string{}
+	labelsVMs := map[string][]*endpoints.VM{}
+	for _, vm := range model.vms {
+		if len(model.epToGroups[vm]) == 0 {
+			continue
+		}
+		for _, group := range model.epToGroups[vm] {
+			label, _ := symbolicexpr.NewAtomicTerm(group, group.Name(), false).AsSelector()
+			vmLabels[vm] = append(vmLabels[vm], label)
+			labelsVMs[label] = append(labelsVMs[label], vm)
+		}
+	}
+	return vmLabels, labelsVMs
+}
 func toGroups(con symbolicexpr.Conjunction) []string {
 	res := make([]string, len(con))
 	for i, _ := range con {
@@ -74,6 +84,34 @@ func toGroups(con symbolicexpr.Conjunction) []string {
 	}
 	return res
 }
+
+func conjVMs(
+	con symbolicexpr.Conjunction,
+	allVMs []*endpoints.VM,
+	vmLabels map[*endpoints.VM][]string,
+	labelsVMs map[string][]*endpoints.VM,
+) []*endpoints.VM {
+	vms := slices.Clone(allVMs)
+	for _, atom := range con {
+		if atom.IsTautology() {
+			continue
+		}
+		label, not := atom.AsSelector()
+		atomVMs := labelsVMs[label]
+		if not {
+			atomVMs = endpoints.Subtract(allVMs, atomVMs)
+		}
+		vms = endpoints.Intersection(vms, atomVMs)
+	}
+	return vms
+}
+
+// var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
+// var boolToOperator = map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
+
+// func pointerTo[T any](t T) *T {
+// 	return &t
+// }
 
 // func toPolicyPorts(conn *netset.TransportSet) ([]networking.NetworkPolicyPort, bool) {
 // 	ports := []networking.NetworkPolicyPort{}
