@@ -55,16 +55,10 @@ func newRule(id int, description string) data.Rule {
 }
 
 func toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst, service []string) {
-	return []string{"ANY"}, []string{"ANY"}, []string{"ANY"}
+	srcGroups := toGroups(p.Src)
+	dstGroups := toGroups(p.Dst)
+	return srcGroups, dstGroups, []string{"ANY"}
 }
-
-// func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath) (srcSelector, dstSelector *meta.LabelSelector,
-// 	ports []networking.NetworkPolicyPort, empty bool) {
-// 	srcSelector = toSelector(p.Src)
-// 	dstSelector = toSelector(p.Dst)
-// 	ports, empty = toPolicyPorts(p.Conn)
-// 	return
-// }
 
 // var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
 // var boolToOperator = map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
@@ -73,17 +67,13 @@ func toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst, service []strin
 // 	return &t
 // }
 
-// func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
-// 	selector := &meta.LabelSelector{}
-// 	for _, a := range con {
-// 		label, notIn := a.AsSelector()
-// 		if label != "" { // not tautology
-// 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
-// 			selector.MatchExpressions = append(selector.MatchExpressions, req)
-// 		}
-// 	}
-// 	return selector
-// }
+func toGroups(con symbolicexpr.Conjunction) []string {
+	res := make([]string, len(con))
+	for i, _ := range con {
+		res[i] = con[i].AsNSXGroup()
+	}
+	return res
+}
 
 // func toPolicyPorts(conn *netset.TransportSet) ([]networking.NetworkPolicyPort, bool) {
 // 	ports := []networking.NetworkPolicyPort{}

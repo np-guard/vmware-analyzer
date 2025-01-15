@@ -35,6 +35,7 @@ type atomic interface {
 	isTautology() bool
 	isNegateOf(atomic) bool
 	AsSelector() (string, bool)
+	AsNSXGroup() string
 	disjoint(atomic, *Hints) bool   // based on hints
 	supersetOf(atomic, *Hints) bool // based on hints
 }

@@ -24,6 +24,15 @@ func (term atomicTerm) labelKey() string {
 		return term.property.Name()
 	}
 }
+func (term atomicTerm) AsNSXGroup() string {
+	// to implement - create a group to support neg
+	switch term.property.(type) {
+	case *collector.Group:
+		return *term.property.(*collector.Group).Path
+	default: // for structs used for testing
+		return "ANY"
+	}
+}
 
 func (term atomicTerm) string() string {
 	equalSign := " = "
@@ -119,6 +128,9 @@ func (tautology) isNegateOf(atomic) bool {
 }
 func (tautology) AsSelector() (string, bool) {
 	return "", false
+}
+func (tautology) AsNSXGroup() string {
+	return "ANY"
 }
 
 // tautology is not disjoint to any atomic term
