@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package projectpath
 
 import (
-	"path"
+	"path/filepath"
 	"runtime"
 )
 
@@ -17,6 +17,5 @@ var (
 	_, b, _, _ = runtime.Caller(0)
 
 	// Root folder of this project
-	// Root = path.Join(path.Dir(b), dirLevelUp, dirLevelUp, dirLevelUp)
-	Root = path.Join(".", dirLevelUp, dirLevelUp, dirLevelUp)
+	Root = filepath.Join(filepath.Dir(b), dirLevelUp, dirLevelUp, dirLevelUp)
 )

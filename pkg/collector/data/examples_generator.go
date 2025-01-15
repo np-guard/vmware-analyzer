@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
-	"path"
+	"path/filepath"
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -93,10 +93,10 @@ type Example struct {
 	Name string // example name for JSON file name
 }
 
-var dataPkgPath = path.Join(projectpath.Root, "pkg", "collector", "data")
+var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")
 
 func getExamplesJSONPath(name string) string {
-	return path.Join(dataPkgPath, "json", name+".json")
+	return filepath.Join(dataPkgPath, "json", name+".json")
 }
 
 func (e *Example) StoreAsJSON(override bool) error {
@@ -246,7 +246,7 @@ type Category struct {
 }
 
 func getServices() []collector.Service {
-	servicesFilePath := path.Join(dataPkgPath, "services.json")
+	servicesFilePath := filepath.Join(dataPkgPath, "services.json")
 	inputConfigContent, err := os.ReadFile(servicesFilePath)
 	if err != nil {
 		return nil
