@@ -272,11 +272,10 @@ func (p *NSXConfigParser) getAllGroups() {
 func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]*endpoints.VM, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
-		if !exclude {
-			return p.allGroupsVMs, p.allGroups // all groups
-		} else {
-			return []*endpoints.VM{}, []*collector.Group{}
+		if exclude {
+			return []*endpoints.VM{}, []*collector.Group{} // no group
 		}
+		return p.allGroupsVMs, p.allGroups // all groups
 	}
 	vms := []*endpoints.VM{}
 	groups := []*collector.Group{}
