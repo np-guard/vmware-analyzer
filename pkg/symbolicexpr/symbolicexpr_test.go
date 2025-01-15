@@ -445,3 +445,20 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		!path2.isSubset(path4, &Hints{GroupsDisjoint: [][]string{}}),
 		"path2 should be implied by path3 and path5, is not implied by path4")
 }
+
+func TestPathsWithRulesNoRules(t *testing.T) {
+	paths := SymbolicPaths{}
+	testSegment := initTestTag("segment")
+	for i := 0; i < 3; i++ {
+		atomicSrc := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
+		atomicDst := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
+		conjDenySrc := Conjunction{atomicSrc}
+		conjDenyDst := Conjunction{atomicDst}
+		paths = append(paths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
+	}
+	fmt.Printf("paths:%v\n", paths.String())
+	pathsWithRules := NewPathsWithRules(&paths)
+	pathsRestored := pathsWithRules.getPaths()
+	fmt.Printf("paths of pathsWithRules %v\n", pathsRestored.String())
+	require.Equal(t, paths.String(), pathsRestored.String(), "PathsWithRules basic functions not working")
+}
