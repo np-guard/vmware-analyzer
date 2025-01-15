@@ -9,7 +9,7 @@ package common
 import (
 	"encoding/json"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -20,7 +20,8 @@ const (
 )
 
 func WriteToFile(file, content string) error {
-	err := os.MkdirAll(path.Dir(file), os.ModePerm)
+	p := filepath.Dir(file)
+	err := os.MkdirAll(p, os.ModePerm)
 	if err != nil {
 		return err
 	}
