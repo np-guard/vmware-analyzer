@@ -446,6 +446,7 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		"path2 should be implied by path3 and path5, is not implied by path4")
 }
 
+// test the very basic functionality of TestPathsWithRulesNoRules
 func TestPathsWithRulesNoRules(t *testing.T) {
 	paths := SymbolicPaths{}
 	testSegment := initTestTag("segment")
