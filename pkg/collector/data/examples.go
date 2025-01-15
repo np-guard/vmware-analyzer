@@ -292,6 +292,52 @@ var Example2 = Example{
 	},
 }
 
+var ExampleExclude = Example{
+	Name: "ExampleExclude",
+	VMs: []string{"Slytherin1", "Slytherin2", "Hufflepuff1", "Hufflepuff2",
+		"Gryffindor1", "Gryffindor2", "Dumbledore1", "Dumbledore2", "Aladdin"},
+	Groups: map[string][]string{
+		"Slytherin":  {"Slytherin1", "Slytherin2"},
+		"Hufflepuff": {"Hufflepuff1", "Hufflepuff2"},
+		"Gryffindor": {"Gryffindor1", "Gryffindor2"},
+		"Dumbledore": {"Dumbledore1", "Dumbledore2"},
+		"Aladdin":    {"Aladdin", "Aladdin"},
+	},
+	Policies: []Category{
+		{
+			Name:         "AladdinTalks",
+			CategoryType: "Environment",
+			Rules: []Rule{
+				{
+					Name:                 "allow-Aladdin-to-others",
+					ID:                   10218,
+					Source:               "Aladdin",
+					Dest:                 "Aladdin",
+					DestinationsExcluded: true,
+					Services:             []string{"ANY"},
+					Action:               Allow,
+				},
+				{
+					Name:            "allow-others-to-Aladdin",
+					ID:              10219,
+					Source:          "Aladdin",
+					Dest:            "Aladdin",
+					SourcesExcluded: true,
+					Services:        []string{"ANY"},
+					Action:          Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
 var Example3 = example3FromExample2()
 
 func example3FromExample2() Example {

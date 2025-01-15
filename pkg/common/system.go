@@ -20,8 +20,7 @@ const (
 )
 
 func WriteToFile(file, content string) error {
-	p := filepath.Dir(file)
-	err := os.MkdirAll(p, os.ModePerm)
+	err := os.MkdirAll(filepath.Dir(file), os.ModePerm)
 	if err != nil {
 		return err
 	}

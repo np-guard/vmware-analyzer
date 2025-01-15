@@ -37,6 +37,10 @@ var allTests = []analyzerTest{
 		name:   "ExampleDumbeldore",
 		exData: data.ExampleDumbeldore,
 	},
+	{
+		name:   "ExampleExclude",
+		exData: data.ExampleExclude,
+	},
 }
 
 func (a *analyzerTest) file() string {
