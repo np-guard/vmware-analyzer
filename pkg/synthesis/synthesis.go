@@ -5,13 +5,14 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
 	outDir string,
-	hints *symbolicexpr.Hints) (*AbstractModelSyn, error) {
+	hints *symbolicexpr.Hints, allowOnlyFromCategory dfw.DfwCategory) (*AbstractModelSyn, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {

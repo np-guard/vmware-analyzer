@@ -12,7 +12,12 @@ type AbstractModelSyn struct {
 	vms        []*endpoints.VM
 	epToGroups map[*endpoints.VM][]*collector.Group
 	// todo: add similar maps to OS, hostname
-	policy []*symbolicPolicy // with default deny
+
+	// rules will be translated to allow only starting with category allowOnlyFromCategory; categories before
+	// that category rules' also include pass, deny and priority (default: 0 - all categories are "Allow only")
+	// todo: "JumpTaoApp" -> pass. Not correct in all scenarios, but is good enough for what we need and for POC
+	allowOnlyFromCategory dfw.DfwCategory
+	policy                []*symbolicPolicy // with default deny
 }
 
 // Tags map from tag's name to the tag
