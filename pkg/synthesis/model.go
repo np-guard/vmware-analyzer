@@ -17,7 +17,7 @@ type AbstractModelSyn struct {
 	// that category rules' also include pass, deny and priority (default: 0 - all categories are "Allow only")
 	// todo: "JumpTaoApp" -> pass. Not correct in all scenarios, but is good enough for what we need and for POC
 	allowOnlyFromCategory dfw.DfwCategory
-	policy                []*symbolicPolicy // with default deny
+	policy                []*symbolicPolicy // with default deny todo: should be *symbolicPolicy?
 }
 
 // Tags map from tag's name to the tag
@@ -35,12 +35,9 @@ type symbolicRule struct { // original rule
 	// The following refers to conversion of original allow rule to symbolic paths, as follows:
 	// Assuming there are only allow (non-prioritized, of course) policy.
 	// This is relevant only for allow policy (nil otherwise)
-	allowOnlyRulePaths      symbolicexpr.SymbolicPaths
-	allowOnlyEffectingRules []*dfw.FwRule // policy effecting allowOnlyRulePaths (potentially higher priority pass and deny)
-	// Assuming there are prioritized allow and deny policy (but no categories and pass)
-	// This is relevant for allow and deny policy (pass nil), priorities are the same as of the original policy
-	allowAndDenyRulesPaths     symbolicexpr.SymbolicPaths
-	allowAndDenyEffectingRules []*dfw.FwRule // policy effecting allowAndDenyRulesPaths (potentially higher priority pass)
+	// and only for categories greater than allowOnlyFromCategory
+	allowOnlyRulePaths symbolicexpr.SymbolicPaths
+	pathsToSynthesis   *symbolicexpr.SymbolicPaths
 }
 
 type symbolicPolicy struct {
