@@ -47,22 +47,22 @@ var allTests = []synthesisTest{
 		exData: tests.ExampleDumbeldore,
 		noHint: false,
 	},
+	{
+		name:   "ExampleTwoDeniesSimple",
+		exData: tests.ExampleTwoDeniesSimple,
+		noHint: false,
+	},
+	{
+		name:   "ExampleDenyPassSimple",
+		exData: tests.ExampleDenyPassSimple,
+		noHint: false,
+	},
+	{
+		name:   "ExampleHintsDisjoint",
+		exData: tests.ExampleHintsDisjoint,
+		noHint: false,
+	},
 	// todo: tmp to wrap up for now
-	//{
-	//	name:   "ExampleTwoDeniesSimple",
-	//	exData: tests.ExampleTwoDeniesSimple,
-	//	noHint: true,
-	//},
-	//{
-	//	name:   "ExampleDenyPassSimple",
-	//	exData: tests.ExampleDenyPassSimple,
-	//	noHint: true,
-	//},
-	//{
-	//	name:   "ExampleHintsDisjoint",
-	//	exData: tests.ExampleHintsDisjoint,
-	//	noHint: true,
-	//},
 	//{
 	//	name:   "ExampleHogwartsSimpler",
 	//	exData: tests.ExampleHogwartsSimpler,
@@ -162,12 +162,12 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		//test.runConvertToAbstract(t, OutputComparison, true)
+		test.runConvertToAbstract(t, OutputComparison, true)
 		//if test.noHint {
 		//	test.runConvertToAbstract(t, OutputComparison, false)
 		//}
 		//nolint:gocritic // uncomment for generating output
-		test.runConvertToAbstract(t, OutputGeneration, true)
+		//test.runConvertToAbstract(t, OutputGeneration, true)
 		//if test.noHint {
 		//	test.runConvertToAbstract(t, OutputGeneration, false)
 		//}
