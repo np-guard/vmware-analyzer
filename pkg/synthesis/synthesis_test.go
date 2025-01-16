@@ -86,6 +86,12 @@ var allTests = []synthesisTest{
 		allowOnlyFromCategory: 0,
 		noHint:                false,
 	},
+	{
+		name:                  "ExampleHogwarts",
+		exData:                tests.ExampleHogwarts,
+		allowOnlyFromCategory: dfw.AppCategoty,
+		noHint:                false,
+	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
@@ -97,7 +103,11 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_PreProcessing.txt")
+	suffix := "_PreProcessing"
+	if synTest.allowOnlyFromCategory > 0 {
+		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
+	}
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix+".txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
@@ -120,6 +130,10 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
+	if synTest.allowOnlyFromCategory > 0 {
+		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
+	}
+	fmt.Println("suffix:", suffix)
 	outDir := path.Join("out", synTest.name)
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	require.Nil(t, err)

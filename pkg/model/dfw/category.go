@@ -22,7 +22,7 @@ const (
 	emergencyCategory
 	infrastructureCategory
 	envCategory
-	appCategoty
+	AppCategoty
 	emptyCategory
 )
 
@@ -46,7 +46,7 @@ const (
 	case EnvironmentStr:
 		return envCategory
 	case ApplicationStr:
-		return appCategoty
+		return AppCategoty
 	case EmptyStr:
 		return emptyCategory
 	default:
@@ -64,7 +64,7 @@ func (d DfwCategory) String() string {
 		return InfrastructureStr
 	case envCategory:
 		return EnvironmentStr
-	case appCategoty:
+	case AppCategoty:
 		return ApplicationStr
 	case emptyCategory:
 		return EmptyStr
@@ -74,7 +74,7 @@ func (d DfwCategory) String() string {
 }
 
 var categoriesList = []DfwCategory{
-	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, appCategoty, emptyCategory,
+	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, AppCategoty, emptyCategory,
 }
 
 // EffectiveRules are built from original rules, split to separate Inbound & Outbound rules

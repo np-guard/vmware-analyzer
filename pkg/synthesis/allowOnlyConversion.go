@@ -13,8 +13,9 @@ import (
 /////////////////////////////////////////////////////////////////////////////////////
 
 func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy, hints *symbolicexpr.Hints) symbolicPolicy {
-	allowOnlyPolicy := symbolicPolicy{}
+	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy, allowOnlyFromCategory dfw.DfwCategory,
+	hints *symbolicexpr.Hints) symbolicPolicy {
+	computedPolicy := symbolicPolicy{}
 	globalInboundDenies, globalOutboundDenies := symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{}
 	// we go over categoriesSpecs to make sure we follow the correct order of categories
 	for _, category := range categoriesSpecs {
@@ -22,12 +23,17 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 		if thisCategoryPolicy == nil {
 			continue
 		}
+		if category.Category < allowOnlyFromCategory {
+			computedPolicy.inbound = append(computedPolicy.inbound, thisCategoryPolicy.inbound...)
+			computedPolicy.outbound = append(computedPolicy.outbound, thisCategoryPolicy.outbound...)
+			continue
+		}
 		inboundAllow, outboundAllow := computeAllowOnlyRulesForCategory(thisCategoryPolicy,
 			&globalInboundDenies, &globalOutboundDenies, hints)
-		allowOnlyPolicy.inbound = append(allowOnlyPolicy.inbound, inboundAllow...)
-		allowOnlyPolicy.outbound = append(allowOnlyPolicy.outbound, outboundAllow...)
+		computedPolicy.inbound = append(computedPolicy.inbound, inboundAllow...)
+		computedPolicy.outbound = append(computedPolicy.outbound, outboundAllow...)
 	}
-	return allowOnlyPolicy
+	return computedPolicy
 }
 
 // gets here only if policy is not nil
