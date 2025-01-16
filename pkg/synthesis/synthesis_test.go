@@ -45,12 +45,12 @@ var allTests = []synthesisTest{
 	{
 		name:   "ExampleDumbeldore",
 		exData: tests.ExampleDumbeldore,
-		noHint: false,
+		noHint: true,
 	},
 	{
 		name:   "ExampleTwoDeniesSimple",
 		exData: tests.ExampleTwoDeniesSimple,
-		noHint: false,
+		noHint: true,
 	},
 	{
 		name:   "ExampleDenyPassSimple",
@@ -67,17 +67,16 @@ var allTests = []synthesisTest{
 		exData: tests.ExampleHogwartsSimpler,
 		noHint: false,
 	},
-	// todo: tmp to wrap up for now
-	//{
-	//	name:   "ExampleHogwartsNoDumbledore",
-	//	exData: tests.ExampleHogwartsNoDumbledore,
-	//	noHint: true,
-	//},
-	//{
-	//	name:   "ExampleHogwarts",
-	//	exData: tests.ExampleHogwarts,
-	//	noHint: true,
-	//},
+	{
+		name:   "ExampleHogwartsNoDumbledore",
+		exData: tests.ExampleHogwartsNoDumbledore,
+		noHint: false,
+	},
+	{
+		name:   "ExampleHogwarts",
+		exData: tests.ExampleHogwarts,
+		noHint: false,
+	},
 }
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
