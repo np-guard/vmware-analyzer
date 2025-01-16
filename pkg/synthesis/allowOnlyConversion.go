@@ -84,8 +84,8 @@ func computeAllowSingleDirectionPerCategory(inboundOrOutbound *[]*symbolicRule, 
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses, hints)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
-				// todo here take the relevant component from allowOnlyRulePaths into effectingRules
-				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: newSymbolicPaths.GetPaths()}
+				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: newSymbolicPaths.GetPaths(),
+				allowAndDenyEffectingRules: symbolicexpr.GetRulesOfPathsWithRules(&symbolicDeniesAndPasses)}
 			allowOnlyRules = append(allowOnlyRules, newRule)
 		}
 	}

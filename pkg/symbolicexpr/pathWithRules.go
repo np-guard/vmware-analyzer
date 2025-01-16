@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -39,6 +40,21 @@ func AppendRuleToPathsWithRules(pathsWithRules *PathsWithRules, rule *dfw.FwRule
 		newPathsRules[i].rules = append(newPathsRules[i].rules, rule)
 	}
 	return &newPathsRules
+}
+
+func GetRulesOfPathsWithRules(pathsWithRules *PathsWithRules) []*dfw.FwRule {
+	res := []*dfw.FwRule{}
+	if len(*pathsWithRules) == 0 {
+		return res
+	}
+	for _, pathWithRules := range *pathsWithRules {
+		for _, rule := range pathWithRules.rules {
+			if !slices.Contains(res, rule) {
+				res = append(res, rule)
+			}
+		}
+	}
+	return res
 }
 
 func (pathsWithRules *PathsWithRules) GetPaths() SymbolicPaths {
