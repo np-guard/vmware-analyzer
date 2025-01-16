@@ -3,15 +3,40 @@ package symbolicexpr
 import (
 	"fmt"
 	"strings"
+
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 )
 
-func NewPathsWithRules(paths *SymbolicPaths) *PathsWithRules {
+func NewPathsWithRulesNoRules(paths *SymbolicPaths) *PathsWithRules {
 	if len(*paths) == 0 {
 		return &PathsWithRules{}
 	}
 	var newPathsRules PathsWithRules = make([]PathWithRules, len(*paths))
 	for i, path := range *paths {
 		newPathsRules[i] = PathWithRules{path: path, rules: nil}
+	}
+	return &newPathsRules
+}
+
+func NewPathsWithRulesSameRules(paths *SymbolicPaths, rules []*dfw.FwRule) *PathsWithRules {
+	if len(*paths) == 0 {
+		return &PathsWithRules{}
+	}
+	var newPathsRules PathsWithRules = make([]PathWithRules, len(*paths))
+	for i, path := range *paths {
+		newPathsRules[i] = PathWithRules{path: path, rules: rules}
+	}
+	return &newPathsRules
+}
+
+func AppendRuleToPathsWithRules(pathsWithRules *PathsWithRules, rule *dfw.FwRule) *PathsWithRules {
+	if len(*pathsWithRules) == 0 {
+		return &PathsWithRules{}
+	}
+	var newPathsRules PathsWithRules = make([]PathWithRules, len(*pathsWithRules))
+	for i, pathWithRules := range *pathsWithRules {
+		newPathsRules[i].path = pathWithRules.path
+		newPathsRules[i].rules = append(newPathsRules[i].rules, rule)
 	}
 	return &newPathsRules
 }

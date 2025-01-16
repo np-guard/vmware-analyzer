@@ -92,42 +92,42 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // all optimizations are documented in README
 func ComputeAllowGivenDenies(allowPaths *SymbolicPaths, denyPaths *PathsWithRules, hints *Hints) (allows *PathsWithRules) {
 	if len(*denyPaths) == 0 {
-		return NewPathsWithRules(allowPaths)
+		return NewPathsWithRulesNoRules(allowPaths)
 	}
-	oldDenyPaths := (*denyPaths).GetPaths()
-	allowsPaths := SymbolicPaths{}
+	AllAllowPathsWithRules := PathsWithRules{}
 	for _, allowPath := range *allowPaths {
 		// if the "allow" and "deny" paths are disjoint, then the "deny" has no effect and could be ignored
 		// e.g.   allow: a to d TCP deny: e to d on UDP  - the "deny" has no effect
-		relevantDenyPaths := SymbolicPaths{}
-		// todo: use denyPaths instead of oldDenyPaths
-		for _, denyPath := range oldDenyPaths {
-			if !allowPath.disjointPaths(denyPath, hints) {
-				relevantDenyPaths = append(relevantDenyPaths, denyPath)
+		relevantDenyPaths := PathsWithRules{}
+		for _, denyPathWithRules := range *denyPaths {
+			if !allowPath.disjointPaths(denyPathWithRules.path, hints) {
+				relevantDenyPaths = append(relevantDenyPaths, denyPathWithRules)
 			}
 		}
 		if len(relevantDenyPaths) == 0 { // the denys paths are not relevant for this allow. This "allow" path remains as is
-			allowsPaths = append(allowsPaths, allowPath)
+			AllAllowPathsWithRules = append(AllAllowPathsWithRules, PathWithRules{allowPath, []*dfw.FwRule{}})
 			continue
 		}
 		var computedAllowPaths, newComputedAllowPaths SymbolicPaths
 		newComputedAllowPaths = SymbolicPaths{allowPath}
+		effectingDenyRules := []*dfw.FwRule{}
 		for _, denyPath := range relevantDenyPaths {
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
-				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
+				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath.path, hints)
 				thisComputed = thisComputed.removeIsSubsetPath(hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
 			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
+			effectingDenyRules = append(effectingDenyRules, denyPath.rules...)
 		}
-		// todo: append to each computedPath the current relevant deny index
-		allowsPaths = append(allowsPaths, computedAllowPaths...)
+		currentAllowPathsWithRules := NewPathsWithRulesSameRules(&computedAllowPaths, effectingDenyRules)
+		AllAllowPathsWithRules = append(AllAllowPathsWithRules, *currentAllowPathsWithRules...)
+		// todo: AllAllowPathsWithRules need to remove is subset
 		fmt.Println()
 	}
-	allowsPaths = allowsPaths.removeIsSubsetPath(hints)
-	return NewPathsWithRules(&allowsPaths)
+	return &AllAllowPathsWithRules
 }
 
 // algorithm described in README of symbolicexpr

@@ -73,12 +73,11 @@ func computeAllowSingleDirectionPerCategory(inboundOrOutbound *[]*symbolicRule, 
 	for _, rule := range *inboundOrOutbound {
 		switch rule.origRule.Action {
 		case dfw.ActionJumpToApp:
-			// todo: append to each symbolicPath in *rule.origSymbolicPaths the current rule index
-			newPasses := symbolicexpr.NewPathsWithRules(rule.origSymbolicPaths)
+			newPasses := symbolicexpr.NewPathsWithRulesSameRules(rule.origSymbolicPaths, []*dfw.FwRule{rule.origRule})
 			categoryPasses = append(categoryPasses, *newPasses...)
 		case dfw.ActionDeny:
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &categoryPasses, hints)
-			// todo: append to each symbolicPath in *newSymbolicPaths also the current rule index
+			newSymbolicPaths = symbolicexpr.AppendRuleToPathsWithRules(newSymbolicPaths, rule.origRule)
 			newGlobalDenies = append(newGlobalDenies, *newSymbolicPaths...)
 		case dfw.ActionAllow:
 			symbolicDeniesAndPasses := slices.Clone(newGlobalDenies)

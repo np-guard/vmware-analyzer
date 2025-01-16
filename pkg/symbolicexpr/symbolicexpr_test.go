@@ -150,7 +150,7 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	require.Equal(t, "UDP from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
 		"UDP from (s1 = str1) to (d1 = str1 and d2 != str2)\nUDP from (s1 = str1) to (d1 = str1)",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
-	denyPathsRules := NewPathsWithRules(&SymbolicPaths{&denyPath})
+	denyPathsRules := NewPathsWithRulesNoRules(&SymbolicPaths{&denyPath})
 	// ComputeAllowGivenDenies optimize
 	allowGivenDenyPaths := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, denyPathsRules,
 		&Hints{GroupsDisjoint: [][]string{}})
@@ -178,7 +178,7 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.NewTCPTransport(0, 50,
 		netp.MinPort, netp.MaxPort)}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
-	denyPathsRules := NewPathsWithRules(&SymbolicPaths{&denyPath})
+	denyPathsRules := NewPathsWithRulesNoRules(&SymbolicPaths{&denyPath})
 	fmt.Printf("denyPathsRules is %v\n", denyPathsRules.GetPaths().String())
 	allowGivenDenyPaths := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, denyPathsRules,
 		&Hints{GroupsDisjoint: [][]string{}})
@@ -203,7 +203,7 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 	conjDst1 = *conjDst1.add(atomicDst1)
 	path := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", path.String(), path.String())
-	denyPathsRules := NewPathsWithRules(&SymbolicPaths{&path})
+	denyPathsRules := NewPathsWithRulesNoRules(&SymbolicPaths{&path})
 	allowGivenDenyPaths := ComputeAllowGivenDenies(&SymbolicPaths{&path}, denyPathsRules,
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.GetPaths().String())
@@ -237,7 +237,7 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTCPTransport()}
 	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllTransports()}
 	denyPathNoEffect := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllUDPTransport()}
-	denyPathsRules := NewPathsWithRules(&SymbolicPaths{&denyPath, &denyPathNoEffect})
+	denyPathsRules := NewPathsWithRulesNoRules(&SymbolicPaths{&denyPath, &denyPathNoEffect})
 	allowGivenDenyPaths := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, denyPathsRules,
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
@@ -356,7 +356,7 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		denyPaths = append(denyPaths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
 	}
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.String(), denyPaths.String())
-	denyPathsRules := NewPathsWithRules(&denyPaths)
+	denyPathsRules := NewPathsWithRulesNoRules(&denyPaths)
 	res := ComputeAllowGivenDenies(&allowPaths, denyPathsRules, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.GetPaths().String())
 	require.Equal(t,
@@ -395,7 +395,7 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjDst1 = *conjDst1.add(atomicDst1)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
-	denyPathsRules := NewPathsWithRules(&SymbolicPaths{&denyPath})
+	denyPathsRules := NewPathsWithRulesNoRules(&SymbolicPaths{&denyPath})
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, denyPathsRules, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.GetPaths().String())
@@ -464,7 +464,7 @@ func TestPathsWithRulesNoRules(t *testing.T) {
 		paths = append(paths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
 	}
 	fmt.Printf("paths:%v\n", paths.String())
-	pathsWithRules := NewPathsWithRules(&paths)
+	pathsWithRules := NewPathsWithRulesNoRules(&paths)
 	fmt.Printf("paths of pathsWithRules %v\n", pathsWithRules.GetPaths().String())
 	require.Equal(t, paths.String(), pathsWithRules.GetPaths().String(), "PathsWithRules basic functions not working")
 }
