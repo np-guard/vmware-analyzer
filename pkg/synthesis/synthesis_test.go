@@ -150,8 +150,9 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 		t.Errorf("failed in write to file: error = %v", err)
 		return
 	}
-
-	rc.DomainList[0].Resources.SecurityPolicyList = toNSXPolicies(abstractModel)
+	policies, groups := toNSXPolicies(rc, abstractModel)
+	rc.DomainList[0].Resources.SecurityPolicyList = policies
+	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...)
 	jsonOut, err = rc.ToJSONString()
 	if err != nil {
 		t.Errorf("failed in converting to json: error = %v", err)
