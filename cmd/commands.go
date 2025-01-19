@@ -184,9 +184,9 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		// todo - get hints from the user
+		// todo - get hints and "allowOnlyFromCategory dfw.DfwCategory" from the user
 		hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints)
+		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints, 0)
 		if err != nil {
 			return err
 		}
