@@ -486,12 +486,12 @@ func (r *rulesTest) runTest(t *testing.T) {
 	example := basicExampleTopology.CopyTopology()
 	example.Name = r.testName
 	example.InitEmptyEnvAppCategories()
-	for _, rule := range r.envRulesList {
-		err := example.AddRuleToExampleInCategory(dfw.EnvironmentStr, &rule)
+	for i := range r.envRulesList {
+		err := example.AddRuleToExampleInCategory(dfw.EnvironmentStr, &r.envRulesList[i])
 		require.Nil(t, err)
 	}
-	for _, rule := range r.appRulesList {
-		err := example.AddRuleToExampleInCategory(dfw.ApplicationStr, &rule)
+	for i := range r.appRulesList {
+		err := example.AddRuleToExampleInCategory(dfw.ApplicationStr, &r.appRulesList[i])
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object

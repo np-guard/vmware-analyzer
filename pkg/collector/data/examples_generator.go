@@ -57,7 +57,8 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		newPolicy.DisplayName = &policy.Name
 		newPolicy.Scope = []string{AnyStr} // TODO: add scope as configurable
 		// add policy rules
-		for _, rule := range policy.Rules {
+		for i := range policy.Rules {
+			rule := policy.Rules[i]
 			newRule := rule.toNSXRule()
 			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, *newRule)
 			collectorRule := collector.Rule{
