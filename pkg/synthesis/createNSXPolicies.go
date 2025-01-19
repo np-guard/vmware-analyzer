@@ -10,6 +10,13 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
+func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group) {
+	a := newAbsToNXS()
+	a.getVMsInfo(rc, model)
+	a.convertPolicies(model.policy)
+	return data.ToPoliciesList([]data.Category{a.category}), a.groups
+}
+
 type absToNXS struct {
 	vmLabels   map[*endpoints.VM][]string
 	labelsVMs  map[string][]*endpoints.VM
@@ -20,12 +27,20 @@ type absToNXS struct {
 	groups   []collector.Group
 }
 
-func newAbsToNXS(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) *absToNXS {
-	a := &absToNXS{}
+func newAbsToNXS() *absToNXS {
+	return &absToNXS{
+		category: data.Category{
+			Name:         "default",
+			CategoryType: "Application",
+			Rules:        []data.Rule{},
+		},
+		vmLabels:   map[*endpoints.VM][]string{},
+		labelsVMs:  map[string][]*endpoints.VM{},
+		vmResource: map[*endpoints.VM]collector.RealizedVirtualMachine{},
+	}
+}
+func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
 	a.allVMs = model.vms
-	a.vmLabels = map[*endpoints.VM][]string{}
-	a.labelsVMs = map[string][]*endpoints.VM{}
-	a.vmResource = map[*endpoints.VM]collector.RealizedVirtualMachine{}
 	for iGroup := range rc.DomainList[0].Resources.GroupList {
 		for iVM := range rc.DomainList[0].Resources.GroupList[iGroup].VMMembers {
 			vmResource := rc.DomainList[0].Resources.GroupList[iGroup].VMMembers[iVM]
@@ -36,22 +51,43 @@ func newAbsToNXS(rc *collector.ResourcesContainerModel, model *AbstractModelSyn)
 		}
 	}
 	for _, vm := range a.allVMs {
-		if len(model.epToGroups[vm]) == 0 {
-			continue
-		}
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewAtomicTerm(group, group.Name(), false).AsSelector()
 			a.vmLabels[vm] = append(a.vmLabels[vm], label)
 			a.labelsVMs[label] = append(a.labelsVMs[label], vm)
 		}
 	}
-	a.category = data.Category{
-		Name:         "default",
-		CategoryType: "Application",
-		Rules:        []data.Rule{},
-	}
+}
 
-	return a
+func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
+	for _, p := range policy {
+		for _, ob := range p.outbound {
+			for _, p := range ob.allowOnlyRulePaths {
+				a.pathToRule(p, "OUT")
+			}
+		}
+		for _, ib := range p.inbound {
+			for _, p := range ib.allowOnlyRulePaths {
+				a.pathToRule(p, "IN")
+			}
+		}
+	}
+}
+
+func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction string) {
+	srcGroup, dstGroup, services := a.toGroupsAndService(p)
+	rule := a.addNewRule(p.String())
+	rule.Source = srcGroup
+	rule.Dest = dstGroup
+	rule.Services = services
+	rule.Direction = direction
+}
+
+func (a *absToNXS) toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst string, service []string) {
+	srcVMs := a.createGroup(p.Src)
+	dstVMs := a.createGroup(p.Dst)
+	services := []string{"ANY"} // todo
+	return srcVMs, dstVMs, services
 }
 
 func (a *absToNXS) addNewRule(description string) *data.Rule {
@@ -66,43 +102,7 @@ func (a *absToNXS) addNewRule(description string) *data.Rule {
 	return &a.category.Rules[len(a.category.Rules)-1]
 }
 
-func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy,[]collector.Group)  {
-	a := newAbsToNXS(rc, model)
-	for _, p := range model.policy {
-		for _, ob := range p.outbound {
-			for _, p := range ob.allowOnlyRulePaths {
-				srcGroup, dstGroup, services := a.toGroupsAndService(p)
-				rule := a.addNewRule(p.String())
-				rule.Source = srcGroup
-				rule.Dest = dstGroup
-				rule.Services = services
-				rule.Direction = "OUT"
-			}
-		}
-		for _, ib := range p.inbound {
-			for _, p := range ib.allowOnlyRulePaths {
-				srcGroup, dstGroup, services := a.toGroupsAndService(p)
-				rule := a.addNewRule(p.String())
-				rule.Source = srcGroup
-				rule.Dest = dstGroup
-				rule.Services = services
-				rule.Direction = "IN"
-			}
-		}
-	}
-	return data.ToPoliciesList([]data.Category{a.category}), a.groups
-}
-
-func (a *absToNXS) toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst string, service []string) {
-	srcVMs := a.conjVMs(p.Src)
-	dstVMs := a.conjVMs(p.Dst)
-
-	return srcVMs,dstVMs, []string{"ANY"}
-}
-
-func (a *absToNXS) conjVMs(
-	con symbolicexpr.Conjunction,
-) string {
+func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
 		if atom.IsTautology() {
@@ -115,7 +115,7 @@ func (a *absToNXS) conjVMs(
 		}
 		vms = endpoints.Intersection(vms, atomVMs)
 	}
-	if len(vms) == len(a.allVMs){
+	if len(vms) == len(a.allVMs) {
 		return "ANY"
 	}
 	gID := 2000 + len(a.groups)
@@ -130,4 +130,3 @@ func (a *absToNXS) conjVMs(
 	a.groups = append(a.groups, group)
 	return *group.Path
 }
-
