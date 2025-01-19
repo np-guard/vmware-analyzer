@@ -61,13 +61,13 @@ func Intersection(a, b []*VM) []*VM {
 
 func Subtract(a, b []*VM) []*VM {
 	res := []*VM{}
-	aKeys := map[string]bool{}
-	for _, aVM := range a {
-		aKeys[aVM.name] = true
-	}
+	bKeys := map[string]bool{}
 	for _, bVM := range b {
-		if !aKeys[bVM.name] {
-			res = append(res, bVM)
+		bKeys[bVM.name] = true
+	}
+	for _, aVM := range a {
+		if !bKeys[aVM.name] {
+			res = append(res, aVM)
 		}
 	}
 	return res

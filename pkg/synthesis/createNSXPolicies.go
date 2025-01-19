@@ -25,20 +25,20 @@ func toNSXPolicies(model *AbstractModelSyn) []collector.SecurityPolicy {
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
 			for _, p := range ob.allowOnlyRulePaths {
-				srcGroups, dstGroups, services := toGroupsAndService(p)
+				srcGroup, dstGroup, services := toGroupsAndService(model, p)
 				rule := addNewRule(p.String())
-				rule.Sources = srcGroups
-				rule.Dests = dstGroups
+				rule.Source = srcGroup
+				rule.Dest = dstGroup
 				rule.Services = services
 				rule.Direction = "OUT"
 			}
 		}
 		for _, ib := range p.inbound {
 			for _, p := range ib.allowOnlyRulePaths {
-				srcGroups, dstGroups, services := toGroupsAndService(p)
+				srcGroup, dstGroup, services := toGroupsAndService(model, p)
 				rule := addNewRule(p.String())
-				rule.Sources = srcGroups
-				rule.Dests = dstGroups
+				rule.Source = srcGroup
+				rule.Dest = dstGroup
 				rule.Services = services
 				rule.Direction = "IN"
 			}
@@ -56,10 +56,21 @@ func newRule(id int, description string) data.Rule {
 	}
 }
 
-func toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst, service []string) {
-	srcGroups := toGroups(p.Src)
-	dstGroups := toGroups(p.Dst)
-	return srcGroups, dstGroups, []string{"ANY"}
+func toGroupsAndService(model *AbstractModelSyn, p *symbolicexpr.SymbolicPath) (src, dst string, service []string) {
+	vmLabels,labelsVMs := vmLabels(model)
+	fmt.Printf( "%s:", p.String())
+	srcVMs := conjVMs(p.Src, model.vms,vmLabels,labelsVMs)
+	dstVMs := conjVMs(p.Dst, model.vms,vmLabels,labelsVMs)
+	for _, v := range srcVMs{
+		fmt.Printf( "%s, ", v.Name())
+	}
+	fmt.Printf( " to ")
+	for _, v := range dstVMs{
+		fmt.Printf( "%s, ", v.Name())
+	}
+	fmt.Println( "")
+	// return vmLabels[srcVMs[0]][0], vmLabels[dstVMs[0]][0], []string{"ANY"}
+	return "vmLabels[srcVMs[0]][0]", "vmLabels[dstVMs[0]][0]", []string{"ANY"}
 }
 
 func vmLabels(model *AbstractModelSyn) (map[*endpoints.VM][]string, map[string][]*endpoints.VM) {
@@ -76,13 +87,6 @@ func vmLabels(model *AbstractModelSyn) (map[*endpoints.VM][]string, map[string][
 		}
 	}
 	return vmLabels, labelsVMs
-}
-func toGroups(con symbolicexpr.Conjunction) []string {
-	res := make([]string, len(con))
-	for i, _ := range con {
-		res[i] = con[i].AsNSXGroup()
-	}
-	return res
 }
 
 func conjVMs(
