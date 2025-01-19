@@ -63,7 +63,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	delegatedConns = emptyConnectionsAndRules()
 
 	for _, dfwCategory := range d.CategoriesSpecs {
-		if dfwCategory.Category == ethernetCategory {
+		if dfwCategory.Category == EthernetCategory {
 			continue // cuurently skip L2 rules
 		}
 		// get analyzed conns from this category

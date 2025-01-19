@@ -18,12 +18,12 @@ import (
 type DfwCategory int
 
 const (
-	ethernetCategory DfwCategory = iota
-	emergencyCategory
-	infrastructureCategory
-	envCategory
+	EthernetCategory DfwCategory = iota
+	EmergencyCategory
+	InfrastructureCategory
+	EnvCategory
 	AppCategoty
-	emptyCategory
+	EmptyCategory
 )
 
 const (
@@ -38,35 +38,35 @@ const (
 /*func dfwCategoryFromString(s string) DfwCategory {
 	switch s {
 	case EthernetStr:
-		return ethernetCategory
+		return EthernetCategory
 	case EmergencyStr:
-		return emergencyCategory
+		return EmergencyCategory
 	case InfrastructureStr:
-		return infrastructureCategory
+		return InfrastructureCategory
 	case EnvironmentStr:
-		return envCategory
+		return EnvCategory
 	case ApplicationStr:
 		return AppCategoty
 	case EmptyStr:
-		return emptyCategory
+		return EmptyCategory
 	default:
-		return emptyCategory
+		return EmptyCategory
 	}
 }*/
 
 func (d DfwCategory) String() string {
 	switch d {
-	case ethernetCategory:
+	case EthernetCategory:
 		return EthernetStr
-	case emergencyCategory:
+	case EmergencyCategory:
 		return EmergencyStr
-	case infrastructureCategory:
+	case InfrastructureCategory:
 		return InfrastructureStr
-	case envCategory:
+	case EnvCategory:
 		return EnvironmentStr
 	case AppCategoty:
 		return ApplicationStr
-	case emptyCategory:
+	case EmptyCategory:
 		return EmptyStr
 	default:
 		return ""
@@ -74,7 +74,7 @@ func (d DfwCategory) String() string {
 }
 
 var categoriesList = []DfwCategory{
-	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, AppCategoty, emptyCategory,
+	EthernetCategory, EmergencyCategory, InfrastructureCategory, EnvCategory, AppCategoty, EmptyCategory,
 }
 
 // EffectiveRules are built from original rules, split to separate Inbound & Outbound rules
@@ -269,7 +269,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	c.Rules = append(c.Rules, newRule)
 
 	inbound, outbound := newRule.effectiveRules()
-	if c.Category != ethernetCategory {
+	if c.Category != EthernetCategory {
 		c.ProcessedRules.addInboundRule(inbound)
 		c.ProcessedRules.addOutboundRule(outbound)
 	} else {
