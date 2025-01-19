@@ -1,0 +1,17 @@
+Analyzed connectivity::
+Aladdin => Dumbledore1: All Connections
+Aladdin => Dumbledore2: All Connections
+Aladdin => Gryffindor1: All Connections
+Aladdin => Gryffindor2: All Connections
+Aladdin => Hufflepuff1: All Connections
+Aladdin => Hufflepuff2: All Connections
+Aladdin => Slytherin1: All Connections
+Aladdin => Slytherin2: All Connections
+Dumbledore1 => Aladdin: All Connections
+Dumbledore2 => Aladdin: All Connections
+Gryffindor1 => Aladdin: All Connections
+Gryffindor2 => Aladdin: All Connections
+Hufflepuff1 => Aladdin: All Connections
+Hufflepuff2 => Aladdin: All Connections
+Slytherin1 => Aladdin: All Connections
+Slytherin2 => Aladdin: All Connections

@@ -57,7 +57,8 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		newPolicy.DisplayName = &policy.Name
 		newPolicy.Scope = []string{AnyStr} // TODO: add scope as configurable
 		// add policy rules
-		for _, rule := range policy.Rules {
+		for i := range policy.Rules {
+			rule := policy.Rules[i]
 			newRule := rule.toNSXRule()
 			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, *newRule)
 			collectorRule := collector.Rule{
@@ -189,25 +190,29 @@ func DefaultDenyRule(id int) Rule {
 }
 
 type Rule struct {
-	Name      string
-	ID        int
-	Source    string
-	Dest      string
-	Services  []string
-	Action    string
-	Direction string // if not set, used as default with "IN_OUT"
+	Name                 string
+	ID                   int
+	Source               string
+	SourcesExcluded      bool
+	Dest                 string
+	DestinationsExcluded bool
+	Services             []string
+	Action               string
+	Direction            string // if not set, used as default with "IN_OUT"
 }
 
 func (r *Rule) toNSXRule() *nsx.Rule {
 	return &nsx.Rule{
-		DisplayName:       &r.Name,
-		RuleId:            &r.ID,
-		Action:            (*nsx.RuleAction)(&r.Action),
-		SourceGroups:      []string{r.Source},
-		DestinationGroups: []string{r.Dest},
-		Services:          r.Services,
-		Direction:         r.directionStr(),
-		Scope:             []string{AnyStr}, // TODO: add scope as configurable
+		DisplayName:          &r.Name,
+		RuleId:               &r.ID,
+		Action:               (*nsx.RuleAction)(&r.Action),
+		SourceGroups:         []string{r.Source},
+		DestinationGroups:    []string{r.Dest},
+		SourcesExcluded:      r.SourcesExcluded,
+		DestinationsExcluded: r.DestinationsExcluded,
+		Services:             r.Services,
+		Direction:            r.directionStr(),
+		Scope:                []string{AnyStr}, // TODO: add scope as configurable
 	}
 }
 
