@@ -127,17 +127,19 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, 
 	// compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
+	connectivity := map [string]string{}
+	var err error
 	for _, format := range []string{"txt", "dot"} {
 		params := common.OutputParameters{
 			Format: format,
 		}
-		analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+		connectivity[format], err = model.NSXConnectivityFromResourcesContainer(rc, params)
 		require.Nil(t, err)
-		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
+		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), connectivity[format])
 		require.Nil(t, err)
 	}
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	err := common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
+	err = common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
 
 	jsonOut, err := rc.ToJSONString()
@@ -171,6 +173,10 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(outDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
+	
+	require.Equal(t, connectivity["txt"], analyzed,
+		fmt.Sprintf("nsx and vmware connectivities  of test %v are not equal", t.Name()))
+
 
 }
 
