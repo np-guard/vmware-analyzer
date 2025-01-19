@@ -301,7 +301,7 @@ var ExampleExclude = Example{
 		"Hufflepuff": {"Hufflepuff1", "Hufflepuff2"},
 		"Gryffindor": {"Gryffindor1", "Gryffindor2"},
 		"Dumbledore": {"Dumbledore1", "Dumbledore2"},
-		"Aladdin":    {"Aladdin", "Aladdin"},
+		"Aladdin":    {"Aladdin"},
 	},
 	Policies: []Category{
 		{

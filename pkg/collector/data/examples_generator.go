@@ -193,8 +193,8 @@ type Rule struct {
 	ID                   int
 	Source               string
 	SourcesExcluded      bool
-	DestinationsExcluded bool
 	Dest                 string
+	DestinationsExcluded bool
 	Services             []string
 	Action               string
 	Direction            string // if not set, used as default with "IN_OUT"

@@ -251,7 +251,7 @@ type parsedRule struct {
 }
 
 func (p *NSXConfigParser) getAllGroups() {
-	// p.allGroupsVMs and p.groups are written together
+	// p.allGroupsVMs and p.allGroups and allGroupsPaths are written together
 	vms := []*endpoints.VM{}
 	groups := []*collector.Group{}
 	groupsPaths := []string{}
