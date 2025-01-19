@@ -1,0 +1,10 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+	All Connections from (*) to (group = Web)
+	All Connections from (group = Web) to (group = App)
+	All Connections from (group = App) to (group = DB)
+outbound rules
+	All Connections from (*) to (group = Web)
+	All Connections from (group = Web) to (group = App)
+	All Connections from (group = App) to (group = DB)

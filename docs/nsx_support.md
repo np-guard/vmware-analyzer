@@ -12,7 +12,6 @@ Features not yet supported:
 
 * Category of type `Ethernet`
 * Supported protocols: `TCP`, `UDP`, `ICMP`
-* Rules fields `SourcesExcluded`, `DestinationsExcluded`
 * Rules fields `DestinationGroups`, `SourceGroups` with  IP Addresses.
 
 

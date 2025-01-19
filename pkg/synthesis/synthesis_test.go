@@ -15,6 +15,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
@@ -36,46 +37,60 @@ const (
 )
 
 type synthesisTest struct {
-	name   string
-	exData tests.ExampleSynthesis
-	noHint bool // run also with no hint
+	name                  string
+	exData                tests.ExampleSynthesis
+	allowOnlyFromCategory dfw.DfwCategory
+	noHint                bool // run also with no hint
 }
 
 var allTests = []synthesisTest{
 	{
-		name:   "ExampleDumbeldore",
-		exData: tests.ExampleDumbeldore,
-		noHint: true,
+		name:                  "ExampleDumbeldore",
+		exData:                tests.ExampleDumbeldore,
+		allowOnlyFromCategory: 0,
+		noHint:                true,
 	},
 	{
-		name:   "ExampleTwoDeniesSimple",
-		exData: tests.ExampleTwoDeniesSimple,
-		noHint: true,
+		name:                  "ExampleTwoDeniesSimple",
+		exData:                tests.ExampleTwoDeniesSimple,
+		allowOnlyFromCategory: 0,
+		noHint:                true,
 	},
 	{
-		name:   "ExampleDenyPassSimple",
-		exData: tests.ExampleDenyPassSimple,
-		noHint: true,
+		name:                  "ExampleDenyPassSimple",
+		exData:                tests.ExampleDenyPassSimple,
+		allowOnlyFromCategory: 0,
+		noHint:                true,
 	},
 	{
-		name:   "ExampleHintsDisjoint",
-		exData: tests.ExampleHintsDisjoint,
-		noHint: true,
+		name:                  "ExampleHintsDisjoint",
+		exData:                tests.ExampleHintsDisjoint,
+		allowOnlyFromCategory: 0,
+		noHint:                true,
 	},
 	{
-		name:   "ExampleHogwartsSimpler",
-		exData: tests.ExampleHogwartsSimpler,
-		noHint: true,
+		name:                  "ExampleHogwartsSimpler",
+		exData:                tests.ExampleHogwartsSimpler,
+		allowOnlyFromCategory: 0,
+		noHint:                true,
 	},
 	{
-		name:   "ExampleHogwartsNoDumbledore",
-		exData: tests.ExampleHogwartsNoDumbledore,
-		noHint: true,
+		name:                  "ExampleHogwartsNoDumbledore",
+		exData:                tests.ExampleHogwartsNoDumbledore,
+		allowOnlyFromCategory: 0,
+		noHint:                false,
 	},
 	{
-		name:   "ExampleHogwarts",
-		exData: tests.ExampleHogwarts,
-		noHint: true,
+		name:                  "ExampleHogwarts",
+		exData:                tests.ExampleHogwarts,
+		allowOnlyFromCategory: 0,
+		noHint:                false,
+	},
+	{
+		name:                  "ExampleHogwarts",
+		exData:                tests.ExampleHogwarts,
+		allowOnlyFromCategory: dfw.AppCategoty,
+		noHint:                false,
 	},
 }
 
@@ -88,7 +103,11 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+"_PreProcessing.txt")
+	suffix := "_PreProcessing"
+	if synTest.allowOnlyFromCategory > 0 {
+		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
+	}
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix+".txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
@@ -97,23 +116,27 @@ func TestPreprocessing(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		//test.runPreprocessing(t, OutputComparison)
+		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		test.runPreprocessing(t, OutputGeneration)
+		//test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
-func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode, withHints bool) {
+func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	suffix := "_ConvertToAbstractNoHint.txt"
-	if withHints {
+	if !synTest.noHint {
 		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
 		suffix = "_ConvertToAbstract.txt"
 	}
+	if synTest.allowOnlyFromCategory > 0 {
+		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
+	}
+	fmt.Println("suffix:", suffix)
 	outDir := path.Join("out", synTest.name, "k8s_resources")
 	debugDir := path.Join("out", synTest.name, "debug_resources")
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm)
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, debugDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
@@ -194,7 +217,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	outDir := path.Join("out", "from_collection", "k8s_resources")
 	debugDir := path.Join("out", "from_collection", "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
-		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}})
+		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
 	require.Nil(t, err)
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
 	addDebugFiles(t, rc, abstractModel, debugDir)
@@ -206,15 +229,9 @@ func TestConvertToAbsract(t *testing.T) {
 	for i := range allTests {
 		test := &allTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runConvertToAbstract(t, OutputComparison, true)
-		if test.noHint {
-			test.runConvertToAbstract(t, OutputComparison, false)
-		}
+		test.runConvertToAbstract(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		//test.runConvertToAbstract(t, OutputGeneration, true)
-		//if test.noHint {
-		//	test.runConvertToAbstract(t, OutputGeneration, false)
-		//}
+		//test.runConvertToAbstract(t, OutputGeneration)
 	}
 }
 

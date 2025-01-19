@@ -244,6 +244,26 @@ func (f *FwRule) getShortPathsString(paths []string) string {
 		func(p string) string { return f.pathToShortPathString(p) }, listSeparatorStr)
 }
 
+func getSrcOrDstExcludedStr(groupsStr string) string {
+	return fmt.Sprintf("exclude(%s)", groupsStr)
+}
+
+func (f *FwRule) getSrcString() string {
+	srcGroups := f.getShortPathsString(f.origRuleObj.SourceGroups)
+	if f.origRuleObj.SourcesExcluded {
+		return getSrcOrDstExcludedStr(srcGroups)
+	}
+	return srcGroups
+}
+
+func (f *FwRule) getDstString() string {
+	dstGroups := f.getShortPathsString(f.origRuleObj.DestinationGroups)
+	if f.origRuleObj.DestinationsExcluded {
+		return getSrcOrDstExcludedStr(dstGroups)
+	}
+	return dstGroups
+}
+
 func getRulesFormattedHeaderLine() string {
 	var rulePropertiesHeaderList = []string{
 		"ruleID",
@@ -303,8 +323,8 @@ func (f *FwRule) originalRuleStr() string {
 		common.Yellow,
 		f.ruleID,
 		name,
-		f.getShortPathsString(f.origRuleObj.SourceGroups),
-		f.getShortPathsString(f.origRuleObj.DestinationGroups),
+		f.getSrcString(),
+		f.getDstString(),
 		// todo: origRuleObj.Services is not always the services, can also be service_entries
 		f.getShortPathsString(f.origRuleObj.Services),
 		string(f.Action), f.direction,

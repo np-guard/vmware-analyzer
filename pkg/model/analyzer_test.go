@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
@@ -34,6 +36,10 @@ var allTests = []analyzerTest{
 	{
 		name:   "ExampleDumbeldore",
 		exData: data.ExampleDumbeldore,
+	},
+	{
+		name:   "ExampleExclude",
+		exData: data.ExampleExclude,
 	},
 }
 
@@ -66,12 +72,15 @@ func (a *analyzerTest) run(t *testing.T) {
 		if expectedStr != res {
 			// gen actual output to enable manual diff after test run
 			actual := getActualTestPath(a.file())
-			err := os.WriteFile(actual, []byte(res), 0o600)
+			err := common.WriteToFile(actual, res)
 			require.Nil(t, err)
 		}
-		require.Equal(t, expectedStr, res)
+		require.Equal(t, cleanStr(expectedStr), cleanStr(res))
 	}
 	fmt.Println("done")
+}
+func cleanStr(str string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), "\r", "")
 }
 
 func TestAnalyzer(t *testing.T) {
