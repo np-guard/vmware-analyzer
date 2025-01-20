@@ -144,7 +144,9 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
-func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string, check bool) {
+
+// todo - remove the allowOnly flag after supporting deny
+func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string, allowOnly bool) {
 	connectivity := map[string]string{}
 	var err error
 	for _, format := range []string{"txt", "dot"} {
@@ -191,8 +193,8 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(outDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
-	if check {
-		// todo - remove the if
+	if allowOnly {
+		// todo - remove the if after supporting deny
 		require.Equal(t, connectivity["txt"], analyzed,
 			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 	}

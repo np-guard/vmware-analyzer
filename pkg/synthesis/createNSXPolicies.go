@@ -64,14 +64,12 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 
 func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 	for _, p := range policy {
-		for _, ob := range p.outbound {
-			for _, p := range ob.allowOnlyRulePaths {
-				a.pathToRule(p, "OUT")
-			}
-		}
-		for _, ib := range p.inbound {
-			for _, p := range ib.allowOnlyRulePaths {
-				a.pathToRule(p, "IN")
+		rulesToDirection := map[*[]*symbolicRule]string{&p.outbound: "OUT", &p.inbound: "IN"}
+		for rules, dir := range rulesToDirection {
+			for _, rule := range *rules {
+				for _, p := range rule.allowOnlyRulePaths {
+					a.pathToRule(p, dir)
+				}
 			}
 		}
 	}
