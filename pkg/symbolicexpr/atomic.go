@@ -45,7 +45,7 @@ func (term atomicTerm) negate() atomic {
 	return atomicTerm{property: term.property, toVal: term.toVal, neg: !term.neg}
 }
 
-func (atomicTerm) isTautology() bool {
+func (atomicTerm) IsTautology() bool {
 	return false
 }
 
@@ -108,7 +108,7 @@ func (tautology) isNegation() bool {
 	return false
 }
 
-func (tautology) isTautology() bool {
+func (tautology) IsTautology() bool {
 	return true
 }
 
@@ -127,7 +127,7 @@ func (tautology) disjoint(atomic, *Hints) bool {
 }
 
 func (tautology) supersetOf(atom atomic, hints *Hints) bool {
-	return atom.isTautology()
+	return atom.IsTautology()
 }
 
 // are two given by name atomicTerms in disjoint list

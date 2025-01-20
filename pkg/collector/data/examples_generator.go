@@ -50,8 +50,14 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	res.DomainList[0].Resources.GroupList = groupList
 
 	// add dfw
+	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
+	res.ServiceList = getServices()
+	return res
+}
+
+func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
 	policiesList := []collector.SecurityPolicy{}
-	for _, policy := range e.Policies {
+	for _, policy := range policies {
 		newPolicy := collector.SecurityPolicy{}
 		newPolicy.Category = &policy.CategoryType
 		newPolicy.DisplayName = &policy.Name
@@ -68,11 +74,7 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		}
 		policiesList = append(policiesList, newPolicy)
 	}
-
-	res.DomainList[0].Resources.SecurityPolicyList = policiesList
-
-	res.ServiceList = getServices()
-	return res
+	return policiesList
 }
 
 // examples generator
@@ -199,6 +201,7 @@ type Rule struct {
 	Services             []string
 	Action               string
 	Direction            string // if not set, used as default with "IN_OUT"
+	Description          string
 }
 
 func (r *Rule) toNSXRule() *nsx.Rule {
@@ -213,6 +216,7 @@ func (r *Rule) toNSXRule() *nsx.Rule {
 		Services:             r.Services,
 		Direction:            r.directionStr(),
 		Scope:                []string{AnyStr}, // TODO: add scope as configurable
+		Description:          &r.Description,
 	}
 }
 

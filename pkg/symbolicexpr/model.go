@@ -32,7 +32,7 @@ type atomic interface {
 	string() string // full expression e.g. "group = slytherin"
 	negate() atomic
 	isNegation() bool
-	isTautology() bool
+	IsTautology() bool
 	isNegateOf(atomic) bool
 	AsSelector() (string, bool)
 	disjoint(atomic, *Hints) bool   // based on hints
