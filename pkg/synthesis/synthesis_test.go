@@ -15,7 +15,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
@@ -39,7 +38,7 @@ const (
 type synthesisTest struct {
 	name                  string
 	exData                tests.ExampleSynthesis
-	allowOnlyFromCategory dfw.DfwCategory
+	allowOnlyFromCategory collector.DfwCategory
 	noHint                bool // run also with no hint
 }
 
@@ -89,7 +88,7 @@ var allTests = []synthesisTest{
 	{
 		name:                  "ExampleHogwarts",
 		exData:                tests.ExampleHogwarts,
-		allowOnlyFromCategory: dfw.AppCategoty,
+		allowOnlyFromCategory: collector.AppCategoty,
 		noHint:                false,
 	},
 }

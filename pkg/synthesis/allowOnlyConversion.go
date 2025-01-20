@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -13,7 +14,7 @@ import (
 /////////////////////////////////////////////////////////////////////////////////////
 
 func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy, allowOnlyFromCategory dfw.DfwCategory,
+	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, allowOnlyFromCategory collector.DfwCategory,
 	hints *symbolicexpr.Hints) symbolicPolicy {
 	computedPolicy := symbolicPolicy{}
 	globalInboundDenies, globalOutboundDenies := symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{}

@@ -63,7 +63,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	delegatedConns = emptyConnectionsAndRules()
 
 	for _, dfwCategory := range d.CategoriesSpecs {
-		if dfwCategory.Category == EthernetCategory {
+		if dfwCategory.Category == collector.EthernetCategory {
 			continue // cuurently skip L2 rules
 		}
 		// get analyzed conns from this category
@@ -205,7 +205,7 @@ func NewEmptyDFW(globalDefaultAllow bool) *DFW {
 	if globalDefaultAllow {
 		res.defaultAction = ActionAllow
 	}
-	for _, c := range categoriesList {
+	for _, c := range collector.CategoriesList {
 		res.CategoriesSpecs = append(res.CategoriesSpecs, newEmptyCategory(c, res))
 	}
 	return res
