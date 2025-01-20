@@ -245,6 +245,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 }
 
 // this function runs on generated examples
+// calls to addDebugFiles  - see comments there
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for _, test := range allTests {
