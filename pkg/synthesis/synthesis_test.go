@@ -133,34 +133,92 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
 	fmt.Println("suffix:", suffix)
-	outDir := path.Join("out", synTest.name)
+	outDir := path.Join("out", synTest.name, "k8s_resources")
+	debugDir := path.Join("out", synTest.name, "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, outDir)
+	addDebugFiles(t, rc, abstractModel, debugDir, synTest.allowOnlyFromCategory == 0)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
-func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
+
+// todo - remove the allowOnly flag after supporting deny
+func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string, allowOnly bool) {
+	connectivity := map[string]string{}
+	var err error
+	// generate connectivity analysis output from the original NSX resources
 	for _, format := range []string{"txt", "dot"} {
 		params := common.OutputParameters{
 			Format: format,
 		}
-		analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+		connectivity[format], err = model.NSXConnectivityFromResourcesContainer(rc, params)
 		require.Nil(t, err)
-		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), analyzed)
+		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), connectivity[format])
 		require.Nil(t, err)
 	}
+	// write the abstract model rules into a file
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	err := common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
+	err = common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
+
+	// store the original NSX resources in JSON
+	jsonOut, err := rc.ToJSONString()
+	if err != nil {
+		t.Errorf("failed in converting to json: error = %v", err)
+		return
+	}
+	err = common.WriteToFile(path.Join(outDir, "nsx_resources.json"), jsonOut)
+	if err != nil {
+		t.Errorf("failed in write to file: error = %v", err)
+		return
+	}
+
+	// convert the abstract model to a new equiv NSX config
+	policies, groups := toNSXPolicies(rc, abstractModel)
+	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
+	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
+	jsonOut, err = rc.ToJSONString()
+	if err != nil {
+		t.Errorf("failed in converting to json: error = %v", err)
+		return
+	}
+	// store the *new* (from abstract model) NSX JSON config in a file
+	err = common.WriteToFile(path.Join(outDir, "generated_nsx_resources.json"), jsonOut)
+	if err != nil {
+		t.Errorf("failed in write to file: error = %v", err)
+		return
+	}
+
+	params := common.OutputParameters{
+		Format: "txt",
+	}
+	// run the analyzer on the new NSX config (from abstract), and store in text file
+	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(outDir, "generated_nsx_connectivity.txt"), analyzed)
+	require.Nil(t, err)
+
+	// the validation of the abstract model conversion is here:
+	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
+	if allowOnly {
+		// todo - remove the if after supporting deny
+		require.Equal(t, connectivity["txt"], analyzed,
+			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+	}
 }
 
+// to be run only on "live nsx" mode
+// no expected output is tested
+// only generates
+// (1) converted config into k8s network policies
+// (2) equiv config in NSX with allow-only DFW rules, as derived from the abstract model
+// and validates that connectivity of orign and new NSX configs are the same
 func TestCollectAndConvertToAbstract(t *testing.T) {
 	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
 	if (server == collector.ServerData{}) {
-		fmt.Println("didn't got any server")
+		fmt.Println(common.ErrNoHostArg)
 		return
 	}
 
@@ -170,26 +228,33 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 	if rc == nil {
-		t.Errorf("didnt got resources")
+		t.Errorf(common.ErrNoResources)
 		return
 	}
-	outDir := path.Join("out", "from_collection")
+	outDir := path.Join("out", "from_collection", "k8s_resources")
+	debugDir := path.Join("out", "from_collection", "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
 		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
 	require.Nil(t, err)
+	// print the conntent of the abstract model
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-	addDebugFiles(t, rc, abstractModel, outDir)
+
+	addDebugFiles(t, rc, abstractModel, debugDir, false)
 	require.Nil(t, err)
 }
 
+// this function runs on generated examples
+// calls to addDebugFiles  - see comments there
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
-		// to generate output comment the following line and uncomment the one after
-		test.runConvertToAbstract(t, OutputComparison)
-		//nolint:gocritic // uncomment for generating output
-		//test.runConvertToAbstract(t, OutputGeneration)
+	for _, test := range allTests {
+		t.Run(test.name, func(t *testing.T) {
+			// to generate output comment the following line and uncomment the one after
+			test.runConvertToAbstract(t, OutputComparison)
+			//nolint:gocritic // uncomment for generating output
+			//test.runConvertToAbstract(t, OutputGeneration)
+		},
+		)
 	}
 }
 
