@@ -2,13 +2,13 @@ package model
 
 import (
 	"fmt"
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
