@@ -1,7 +1,6 @@
 package synthesis
 
 import (
-	"fmt"
 	"path"
 
 
@@ -44,53 +43,22 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 }
 
 func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
-	policies := []*networking.NetworkPolicy{}
-	addNewPolicy := func(description string) *networking.NetworkPolicy {
-		pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies)), description)
-		policies = append(policies, pol)
-		return pol
-	}
+	policies := newK8sPolicies(false)
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
 			for _, p := range ob.allowOnlyRulePaths {
-				srcSelector, dstSelector, ports, empty := toSelectorsAndPorts(p)
-				if empty {
-					continue
-				}
-				to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
-				rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports.toNetworkPolicyPort()}}
-				pol := addNewPolicy(p.String())
-				pol.Spec.Egress = rules
-				pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
-				pol.Spec.PodSelector = *srcSelector
+				policies.addNewPolicy(p,false)
 			}
 		}
 		for _, ib := range p.inbound {
 			for _, p := range ib.allowOnlyRulePaths {
-				srcSelector, dstSelector, ports, empty := toSelectorsAndPorts(p)
-				if empty {
-					continue
-				}
-				from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
-				rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports.toNetworkPolicyPort()}}
-				pol := addNewPolicy(p.String())
-				pol.Spec.Ingress = rules
-				pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
-				pol.Spec.PodSelector = *dstSelector
+				policies.addNewPolicy(p,true)
 			}
 		}
 	}
-	return policies
+	return policies.toNetworkPolicies()
 }
 
-func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
-	pol := &networking.NetworkPolicy{}
-	pol.TypeMeta.Kind = "NetworkPolicy"
-	pol.TypeMeta.APIVersion = k8sAPIVersion
-	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Annotations = map[string]string{"description": description}
-	return pol
-}
 
 func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
 	pol := &admin.AdminNetworkPolicy{}
