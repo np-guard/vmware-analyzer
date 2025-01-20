@@ -10,6 +10,9 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
+const firstRuleID = 3984
+const firstGroupID = 4826
+
 func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group) {
 	a := newAbsToNXS()
 	a.getVMsInfo(rc, model)
@@ -76,7 +79,9 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 
 func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction string) {
 	srcGroup, dstGroup, services := a.toGroupsAndService(p)
-	rule := a.addNewRule(p.String())
+	rule := a.addNewRule()
+	rule.Action = data.Allow
+	rule.Description = p.String()
 	rule.Source = srcGroup
 	rule.Dest = dstGroup
 	rule.Services = services
@@ -90,13 +95,11 @@ func (a *absToNXS) toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst st
 	return srcVMs, dstVMs, services
 }
 
-func (a *absToNXS) addNewRule(description string) *data.Rule {
-	id := 1000 + len(a.category.Rules)
+func (a *absToNXS) addNewRule() *data.Rule {
+	id := firstRuleID + len(a.category.Rules)
 	rule := data.Rule{
-		Name:        fmt.Sprintf("ruleName_%d", id),
-		ID:          id,
-		Action:      data.Allow,
-		Description: description,
+		Name: fmt.Sprintf("ruleName_%d", id),
+		ID:   id,
 	}
 	a.category.Rules = append(a.category.Rules, rule)
 	return &a.category.Rules[len(a.category.Rules)-1]
@@ -118,7 +121,7 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	if len(vms) == len(a.allVMs) {
 		return data.AnyStr
 	}
-	gID := 2000 + len(a.groups)
+	gID := firstGroupID + len(a.groups)
 	gName := fmt.Sprintf("groupName_%d", gID)
 	group := collector.Group{}
 	group.Group.DisplayName = &gName
