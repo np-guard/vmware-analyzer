@@ -86,7 +86,7 @@ func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction string) {
 func (a *absToNXS) toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst string, service []string) {
 	srcVMs := a.createGroup(p.Src)
 	dstVMs := a.createGroup(p.Dst)
-	services := []string{"ANY"} // todo
+	services := []string{data.AnyStr} // todo
 	return srcVMs, dstVMs, services
 }
 
@@ -116,7 +116,7 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 		vms = endpoints.Intersection(vms, atomVMs)
 	}
 	if len(vms) == len(a.allVMs) {
-		return "ANY"
+		return data.AnyStr
 	}
 	gID := 2000 + len(a.groups)
 	gName := fmt.Sprintf("groupName_%d", gID)

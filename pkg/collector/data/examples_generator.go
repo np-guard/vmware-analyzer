@@ -201,7 +201,7 @@ type Rule struct {
 	Services             []string
 	Action               string
 	Direction            string // if not set, used as default with "IN_OUT"
-		Description string
+	Description          string
 }
 
 func (r *Rule) toNSXRule() *nsx.Rule {
@@ -216,7 +216,7 @@ func (r *Rule) toNSXRule() *nsx.Rule {
 		Services:             r.Services,
 		Direction:            r.directionStr(),
 		Scope:                []string{AnyStr}, // TODO: add scope as configurable
-		Description:       &r.Description,
+		Description:          &r.Description,
 	}
 }
 

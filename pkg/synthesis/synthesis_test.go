@@ -228,7 +228,6 @@ func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for _, test := range allTests {
 		t.Run(test.name, func(t *testing.T) {
-
 			// to generate output comment the following line and uncomment the one after
 			test.runConvertToAbstract(t, OutputComparison)
 			//nolint:gocritic // uncomment for generating output
