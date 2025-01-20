@@ -3,15 +3,13 @@ package synthesis
 import (
 	"fmt"
 	"path"
-	"slices"
+
 
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
+	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/intstr"
-
-	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 
 	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
@@ -60,7 +58,7 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 					continue
 				}
 				to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
-				rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
+				rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports.toNetworkPolicyPort()}}
 				pol := addNewPolicy(p.String())
 				pol.Spec.Egress = rules
 				pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
@@ -74,7 +72,7 @@ func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
 					continue
 				}
 				from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
-				rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
+				rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports.toNetworkPolicyPort()}}
 				pol := addNewPolicy(p.String())
 				pol.Spec.Ingress = rules
 				pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
@@ -94,8 +92,19 @@ func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	return pol
 }
 
+func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
+	pol := &admin.AdminNetworkPolicy{}
+	pol.TypeMeta.Kind = "AdminNetworkPolicy"
+	pol.TypeMeta.APIVersion = k8sAPIVersion
+	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Annotations = map[string]string{"description": description}
+	return pol
+}
+
+
+
 func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath) (srcSelector, dstSelector *meta.LabelSelector,
-	ports []networking.NetworkPolicyPort, empty bool) {
+	ports k8sPorts, empty bool) {
 	srcSelector = toSelector(p.Src)
 	dstSelector = toSelector(p.Dst)
 	ports, empty = toPolicyPorts(p.Conn)
@@ -121,40 +130,21 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	return selector
 }
 
-func toPolicyPorts(conn *netset.TransportSet) ([]networking.NetworkPolicyPort, bool) {
-	ports := []networking.NetworkPolicyPort{}
+func toPolicyPorts(conn *netset.TransportSet) (k8sPorts, bool) {
+	ports := newK8sPorts(false)
 	tcpUDPSet := conn.TCPUDPSet()
 	if tcpUDPSet.IsEmpty() {
 		return nil, true
 	}
 	if tcpUDPSet.IsAll() {
-		return nil, false
+		return ports, false
 	}
 	partitions := tcpUDPSet.Partitions()
 	for _, partition := range partitions {
 		protocols := partition.S1.Elements()
 		portRanges := partition.S3
 		for _, portRange := range portRanges.Intervals() {
-			var portPointer *intstr.IntOrString
-			var endPortPointer *int32
-			if portRange.Start() != netp.MinPort || portRange.End() != netp.MaxPort {
-				port := intstr.FromInt(int(portRange.Start()))
-				portPointer = &port
-				if portRange.End() != portRange.Start() {
-					//nolint:gosec // port should fit int32:
-					endPort := int32(portRange.End())
-					endPortPointer = &endPort
-				}
-			}
-			for _, protocolCode := range protocols {
-				ports = append(ports, networking.NetworkPolicyPort{
-					Protocol: pointerTo(codeToProtocol[int(protocolCode)]),
-					Port:     portPointer,
-					EndPort:  endPortPointer})
-			}
-			if slices.Contains(protocols, netset.TCPCode) && slices.Contains(protocols, netset.UDPCode) {
-				ports = append(ports, networking.NetworkPolicyPort{Protocol: pointerTo(core.ProtocolSCTP), Port: portPointer, EndPort: endPortPointer})
-			}
+			ports.addPorts(portRange.Start(),portRange.End(),protocols)
 		}
 	}
 	return ports, false
