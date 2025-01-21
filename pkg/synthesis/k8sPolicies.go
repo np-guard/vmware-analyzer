@@ -106,16 +106,18 @@ func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *met
 	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
 	portsP := pointerTo(ports.toNetworkAdminPolicyPort())
+	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector}
+	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector}
 	if inbound {
-		from := []admin.AdminNetworkPolicyIngressPeer{{Namespaces: srcSelector}}
+		from := []admin.AdminNetworkPolicyIngressPeer{{Pods:srcPodsSelector}}
 		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: portsP}}
 		pol.Spec.Ingress = rules
-		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Namespaces: dstSelector}
+		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods:dstPodsSelector}
 	} else {
-		to := []admin.AdminNetworkPolicyEgressPeer{{Namespaces: dstSelector}}
+		to := []admin.AdminNetworkPolicyEgressPeer{{Pods:dstPodsSelector}}
 		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: action, Ports: portsP}}
 		pol.Spec.Egress = rules
-		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Namespaces: srcSelector}
+		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods:srcPodsSelector}
 	}
 }
 
