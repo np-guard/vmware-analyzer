@@ -2,14 +2,14 @@ package synthesis
 
 import (
 	"path"
+	"slices"
 
-
+	"github.com/np-guard/models/pkg/netset"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
-	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
-	"github.com/np-guard/models/pkg/netset"
+	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
@@ -19,9 +19,13 @@ import (
 const k8sAPIVersion = "networking.k8s.io/v1"
 
 func createK8sResources(model *AbstractModelSyn, outDir string) error {
-	policies := toNetworkPolicies(model)
+	policies, adminPolicies := toNetworkPolicies(model)
 	policiesFileName := path.Join(outDir, "policies.yaml")
 	if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {
+		return err
+	}
+	adminPoliciesFileName := path.Join(outDir, "adminPolicies.yaml")
+	if err := common.WriteYamlUsingJSON(adminPolicies, adminPoliciesFileName); err != nil {
 		return err
 	}
 	pods := toPods(model)
@@ -42,23 +46,34 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	return nil
 }
 
-func toNetworkPolicies(model *AbstractModelSyn) []*networking.NetworkPolicy {
-	policies := newK8sPolicies(false)
+func toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
+	policies := newK8sPolicies()
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
-			for _, p := range ob.allowOnlyRulePaths {
-				policies.addNewPolicy(p,false)
+			allow := ob.origRule.Action == "allow"
+			admin := model.allowOnlyFromCategory > ob.origRuleCategory
+			paths := &ob.allowOnlyRulePaths
+			if admin{
+				paths = ob.origSymbolicPaths
+			}
+			for _, p := range *paths {
+				policies.addNewPolicy(p, false, admin, allow)
 			}
 		}
 		for _, ib := range p.inbound {
-			for _, p := range ib.allowOnlyRulePaths {
-				policies.addNewPolicy(p,true)
+			allow := ib.origRule.Action == "allow"
+			admin := model.allowOnlyFromCategory > ib.origRuleCategory
+			paths := &ib.allowOnlyRulePaths
+			if admin{
+				paths = ib.origSymbolicPaths
+			}
+			for _, p := range *paths {
+				policies.addNewPolicy(p, true, admin,allow)
 			}
 		}
 	}
-	return policies.toNetworkPolicies()
+	return policies.networkPolicies, policies.adminNetworkPolicies
 }
-
 
 func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
 	pol := &admin.AdminNetworkPolicy{}
@@ -69,17 +84,14 @@ func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
 	return pol
 }
 
-
-
-func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath) (srcSelector, dstSelector *meta.LabelSelector,
+func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath, admin bool) (srcSelector, dstSelector *meta.LabelSelector,
 	ports k8sPorts, empty bool) {
 	srcSelector = toSelector(p.Src)
 	dstSelector = toSelector(p.Dst)
-	ports, empty = toPolicyPorts(p.Conn)
+	ports, empty = toPolicyPorts(p.Conn, admin)
 	return
 }
 
-var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
 var boolToOperator = map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
 func pointerTo[T any](t T) *T {
@@ -98,8 +110,10 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	return selector
 }
 
-func toPolicyPorts(conn *netset.TransportSet) (k8sPorts, bool) {
-	ports := newK8sPorts(false)
+var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
+
+func toPolicyPorts(conn *netset.TransportSet, admin bool) (k8sPorts, bool) {
+	ports := newK8sPorts(admin)
 	tcpUDPSet := conn.TCPUDPSet()
 	if tcpUDPSet.IsEmpty() {
 		return nil, true
@@ -109,10 +123,17 @@ func toPolicyPorts(conn *netset.TransportSet) (k8sPorts, bool) {
 	}
 	partitions := tcpUDPSet.Partitions()
 	for _, partition := range partitions {
-		protocols := partition.S1.Elements()
+		protocolsCodes := partition.S1.Elements()
 		portRanges := partition.S3
+		protocols := []core.Protocol{}
+		for _, protocolCode := range protocolsCodes {
+			protocols = append(protocols, codeToProtocol[int(protocolCode)])
+		}
+		if slices.Contains(protocolsCodes, netset.TCPCode) && slices.Contains(protocolsCodes, netset.UDPCode) {
+			protocols = append(protocols, core.ProtocolSCTP)
+		}
 		for _, portRange := range portRanges.Intervals() {
-			ports.addPorts(portRange.Start(),portRange.End(),protocols)
+			ports.addPorts(portRange.Start(), portRange.End(), protocols)
 		}
 	}
 	return ports, false

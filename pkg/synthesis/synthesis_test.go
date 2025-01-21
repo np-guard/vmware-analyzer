@@ -133,9 +133,10 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
+	outBaseDir := fmt.Sprintf("%s_%t_%d", synTest.name,synTest.noHint,synTest.allowOnlyFromCategory)
 	fmt.Println("suffix:", suffix)
-	outDir := path.Join("out", synTest.name, "k8s_resources")
-	debugDir := path.Join("out", synTest.name, "debug_resources")
+	outDir := path.Join("out", outBaseDir, "k8s_resources")
+	debugDir := path.Join("out", outBaseDir, "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, debugDir, synTest.allowOnlyFromCategory == 0)
