@@ -50,25 +50,23 @@ func toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []
 	policies := newK8sPolicies()
 	for _, p := range model.policy {
 		for _, ob := range p.outbound {
-			allow := ob.origRule.Action == "allow"
 			admin := model.allowOnlyFromCategory > ob.origRuleCategory
 			paths := &ob.allowOnlyRulePaths
 			if admin{
 				paths = ob.origSymbolicPaths
 			}
 			for _, p := range *paths {
-				policies.addNewPolicy(p, false, admin, allow)
+				policies.addNewPolicy(p, false, admin, ob.origRule.Action)
 			}
 		}
 		for _, ib := range p.inbound {
-			allow := ib.origRule.Action == "allow"
 			admin := model.allowOnlyFromCategory > ib.origRuleCategory
 			paths := &ib.allowOnlyRulePaths
 			if admin{
 				paths = ib.origSymbolicPaths
 			}
 			for _, p := range *paths {
-				policies.addNewPolicy(p, true, admin,allow)
+				policies.addNewPolicy(p, true, admin,ib.origRule.Action)
 			}
 		}
 	}

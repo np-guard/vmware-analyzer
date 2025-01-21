@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/np-guard/models/pkg/netp"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -30,13 +31,13 @@ func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	return pol
 }
 
-func (policies *k8sNetworkPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, admin, allow bool) {
+func (policies *k8sNetworkPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, admin bool, action dfw.RuleAction) {
 	srcSelector, dstSelector, ports, empty := toSelectorsAndPorts(p, admin)
 	if empty {
 		return
 	}
 	if admin {
-		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,allow, p.String())
+		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound, action, p.String())
 	} else {
 		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String())
 	}
@@ -62,23 +63,25 @@ func (policies *k8sNetworkPolicies) addNetworkPolicy(srcSelector, dstSelector *m
 	}
 }
 
+var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
+	dfw.ActionAllow:     admin.AdminNetworkPolicyRuleActionAllow,
+	dfw.ActionDeny:      admin.AdminNetworkPolicyRuleActionDeny,
+	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
+}
+
 func (policies *k8sNetworkPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
-	ports k8sPorts, inbound, allow bool, description string) {
+	ports k8sPorts, inbound bool, action dfw.RuleAction, description string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.adminNetworkPolicies)), description)
 	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	pol.Spec.Priority = int32(999 - len(policies.adminNetworkPolicies))
-	action := admin.AdminNetworkPolicyRuleAction("Allow")
-	if !allow{
-		action = admin.AdminNetworkPolicyRuleAction("Deny")
-	}
 	if inbound {
 		from := []admin.AdminNetworkPolicyIngressPeer{{Namespaces: srcSelector}}
-		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: pointerTo(ports.toNetworkAdminPolicyPort())}}
+		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: abstractToAdminRuleAction[action], Ports: pointerTo(ports.toNetworkAdminPolicyPort())}}
 		pol.Spec.Ingress = rules
 		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Namespaces: dstSelector}
 	} else {
 		to := []admin.AdminNetworkPolicyEgressPeer{{Namespaces: dstSelector}}
-		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: action, Ports: pointerTo(ports.toNetworkAdminPolicyPort())}}
+		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: abstractToAdminRuleAction[action], Ports: pointerTo(ports.toNetworkAdminPolicyPort())}}
 		pol.Spec.Egress = rules
 		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Namespaces: srcSelector}
 	}
