@@ -74,7 +74,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 			for _, rule := range *rules {
 				if rule.allowOnlyRulePaths != nil {
 					for _, p := range rule.allowOnlyRulePaths {
-						a.pathToRule(p, dir, data.Allow, dfw.AppCategoty.String())
+						a.pathToRule(p, dir, data.Allow, collector.AppCategoty.String())
 					}
 				} else {
 					for _, p := range *rule.origSymbolicPaths {
