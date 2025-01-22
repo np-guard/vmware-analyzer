@@ -626,10 +626,10 @@ var exampleExprSingleScope = data.Example{
 	VMsTags: map[string][]nsx.Tag{"Slytherin": {{Tag: "Slytherin"}}, "Hufflepuff": {{Tag: "Hufflepuff"}},
 		"Gryffindor": {{Tag: "Gryffindor"}}, "Dumbledore": {{Tag: "Dumbledore"}}},
 	GroupsByExpr: map[string]data.ExampleExpr{
-		"Slytherin":  {Cond1: data.ExampleCond{Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Gryffindor": {Cond1: data.ExampleCond{Tag: "Gryffindor"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Hufflepuff": {Cond1: data.ExampleCond{Tag: "Hufflepuff"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Dumbledore": {Cond1: data.ExampleCond{Tag: "Dumbledore"}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+		"Slytherin":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: "Slytherin"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: "Gryffindor"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: "Hufflepuff"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: "Dumbledore"}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
 	Policies: []data.Category{
 		{
 			Name:         "From-Dumbledore-connection",
@@ -744,13 +744,13 @@ var exampleExprTwoScopes = data.Example{
 		"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
 		"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}},
 	GroupsByExpr: map[string]data.ExampleExpr{
-		"Slytherin":  {Cond1: data.ExampleCond{Scope: "House", Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Gryffindor": {Cond1: data.ExampleCond{Scope: "House", Tag: "Gryffindor"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Hufflepuff": {Cond1: data.ExampleCond{Scope: "House", Tag: "Hufflepuff"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Dumbledore": {Cond1: data.ExampleCond{Scope: "House", Tag: "Dumbledore"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"DB":         {Cond1: data.ExampleCond{Scope: "function", Tag: "DB"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Web":        {Cond1: data.ExampleCond{Scope: "function", Tag: "Web"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"App":        {Cond1: data.ExampleCond{Scope: "function", Tag: "App"}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+		"Slytherin":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Hufflepuff"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Dumbledore"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"DB":         {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Web":        {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "Web"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"App":        {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "App"}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
 	Policies: []data.Category{
 		{
 			Name:         "Gryffindor-to-Gryffindor-allow",
@@ -858,16 +858,16 @@ var exampleExprTwoConds = data.Example{
 		"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
 		"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}},
 	GroupsByExpr: map[string]data.ExampleExpr{
-		"Slytherin":  {Cond1: data.ExampleCond{Scope: "House", Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Gryffindor": {Cond1: data.ExampleCond{Scope: "House", Tag: "Gryffindor"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Hufflepuff": {Cond1: data.ExampleCond{Scope: "House", Tag: "Hufflepuff"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Dumbledore": {Cond1: data.ExampleCond{Scope: "House", Tag: "Dumbledore"}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Slytherin-no-DB": {Cond1: data.ExampleCond{Scope: "House", Tag: "Slytherin"}, Op: data.Nop,
-			Cond2: data.ExampleCond{Scope: "function", Tag: "DB", Equal: false}},
-		"Hufflepuff-no-DB": {Cond1: data.ExampleCond{Scope: "House", Tag: "Hufflepuff"}, Op: data.Nop,
-			Cond2: data.ExampleCond{Scope: "function", Tag: "DB", Equal: false}},
-		"Gryffindor-no-DB": {Cond1: data.ExampleCond{Scope: "House", Tag: "Gryffindor"}, Op: data.Nop,
-			Cond2: data.ExampleCond{Scope: "function", Tag: "DB", Equal: false}}},
+		"Slytherin":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Hufflepuff"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Dumbledore"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Slytherin-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Nop,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, Equal: false}},
+		"Hufflepuff-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Hufflepuff"}}, Op: data.Nop,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, Equal: false}},
+		"Gryffindor-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Nop,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, Equal: false}}},
 	Policies: []data.Category{
 		{
 			Name:         "Protect-DBs",

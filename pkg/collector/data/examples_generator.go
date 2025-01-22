@@ -102,9 +102,8 @@ const (
 )
 
 type ExampleCond struct {
-	Scope string // optional; can be empty // todo
-	Tag   string // todo
-	Equal bool   // equal (true) or not equal (false)
+	Tag   nsx.Tag
+	Equal bool // equal (true) or not equal (false)
 }
 
 // ExampleExpr equiv to example_expr described above
