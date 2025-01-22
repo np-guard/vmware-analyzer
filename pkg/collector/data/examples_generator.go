@@ -10,7 +10,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -149,12 +148,12 @@ Policies: []category{
 func (e *Example) InitEmptyEnvAppCategories() {
 	e.Policies = []Category{
 		{
-			Name:         dfw.EnvironmentStr,
-			CategoryType: dfw.EnvironmentStr,
+			Name:         collector.EnvironmentStr,
+			CategoryType: collector.EnvironmentStr,
 		},
 		{
-			Name:         dfw.ApplicationStr,
-			CategoryType: dfw.ApplicationStr,
+			Name:         collector.ApplicationStr,
+			CategoryType: collector.ApplicationStr,
 		},
 	}
 }
