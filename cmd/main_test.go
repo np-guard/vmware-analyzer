@@ -73,7 +73,8 @@ func TestMain(t *testing.T) {
 		},*/
 		{
 			name: "collect-and-analyze-and-synthesis",
-			args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
+			args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt" +
+				" --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
 		},
 		{
 			name: "synthesize-only",
