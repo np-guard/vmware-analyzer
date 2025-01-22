@@ -35,7 +35,7 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 
 	// add groups
 	groupList := []collector.Group{}
-	for group, members := range e.Groups {
+	for group, members := range e.GroupsByVMs {
 		newGroup := collector.Group{}
 		newGroup.Group.DisplayName = &group
 		newGroup.Group.Path = &group
@@ -85,12 +85,45 @@ const (
 	JumpToApp = "JUMP_TO_APPLICATION"
 )
 
+// example expr struct to ease testing
+// example_cond -> <Tag_scope> eq/new val
+// example_expr ->  example_cond | example_cond and/or example_cond
+
+type ExampleOp int
+
+const (
+	Nop ExampleOp = iota
+	And
+	Or
+)
+
+type ExampleCond struct {
+	Scope string // optional; can be empty
+	Tag   string
+	Equal bool // equal (true) or not equal (false)
+}
+
+// ExampleExpr equiv to example_expr described above
+// if op is nop then only cond1 is considered and exampleExpr is actually exampleCond; Cond2 is empty in that case
+type ExampleExpr struct {
+	Cond1 ExampleCond
+	Op    ExampleOp
+	Cond2 ExampleCond
+}
+
+type ExampleTag struct {
+	Scope string // optional
+	Tag   string // mandatory
+}
+
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
-	VMs      []string
-	Groups   map[string][]string
-	Policies []Category
+	VMs          []string
+	VMsTags      map[string][]ExampleTag
+	GroupsByVMs  map[string][]string
+	GroupsByExpr map[string]ExampleExpr
+	Policies     []Category
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
@@ -121,8 +154,8 @@ func (e *Example) StoreAsJSON(override bool) error {
 func (e *Example) CopyTopology() *Example {
 	res := &Example{}
 	res.VMs = slices.Clone(e.VMs)
-	res.Groups = map[string][]string{}
-	maps.Copy(res.Groups, e.Groups)
+	res.GroupsByVMs = map[string][]string{}
+	maps.Copy(res.GroupsByVMs, e.GroupsByVMs)
 	return res
 }
 

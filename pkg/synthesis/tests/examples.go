@@ -17,7 +17,7 @@ type ExampleSynthesis struct {
 // Dumbledore2 can communicate to all but slytherin
 var ExampleDumbeldore = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":       {"Slytherin"},
 			"Hufflepuff":      {"Hufflepuff"},
 			"Gryffindor":      {"Gryffindor"},
@@ -73,7 +73,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 // Gryffindor can talk to all but Dumbledore
 var ExampleTwoDeniesSimple = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":   {"Slytherin"},
 			"Hufflepuff":  {"Hufflepuff"},
 			"Gryffindor":  {"Gryffindor"},
@@ -138,7 +138,7 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
 var ExampleDenyPassSimple = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":   {"Slytherin"},
 			"Hufflepuff":  {"Hufflepuff"},
 			"Gryffindor":  {"Gryffindor"},
@@ -210,7 +210,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 // Dumbledore2 can talk to all but Gryffindor
 var ExampleHintsDisjoint = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":   {"Slytherin"},
 			"Hufflepuff":  {"Hufflepuff"},
 			"Gryffindor":  {"Gryffindor"},
@@ -302,7 +302,7 @@ micro segmentation
 var ExampleHogwarts = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
 			"Hufflepuff": {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 			"Gryffindor": {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
@@ -428,7 +428,7 @@ var ExampleHogwarts = ExampleSynthesis{
 var ExampleHogwartsSimpler = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App"},
 			"Gryffindor": {"Gryffindor-Web", "Gryffindor-App"},
 			"Web":        {"Slytherin-Web", "Gryffindor-Web"},
@@ -511,7 +511,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-		Groups: map[string][]string{
+		GroupsByVMs: map[string][]string{
 			"Slytherin":  {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
 			"Hufflepuff": {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 			"Gryffindor": {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
@@ -612,5 +612,296 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
 		{"Web", "App", "DB"},
+	},
+}
+
+// examples with expr instead of direct vms references
+
+var exampleExprSingleScope = data.Example{
+	Name: "ExampleExprSimple",
+	VMs:  []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
+	VMsTags: map[string][]data.ExampleTag{"Slytherin": {{Tag: "Slytherin"}}, "Hufflepuff": {{Tag: "Hufflepuff"}},
+		"Gryffindor": {{Tag: "Gryffindor"}}, "Dumbledore": {{Tag: "Dumbledore"}}},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		"Slytherin":  {Cond1: data.ExampleCond{Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Tag: "Gryffindor"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Tag: "Hufflepuff"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Tag: "Dumbledore"}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+	Policies: []data.Category{
+		{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "Dumb-No-Slytherin",
+					ID:       newRuleID,
+					Source:   "Dumbledore",
+					Dest:     "Slytherin",
+					Services: []string{"ANY"},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Dumb-All",
+					ID:       9195,
+					Source:   "DumbledoreNoSly",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Gryffindor-connections",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "Gryffindor-not-Hufflepuff",
+					ID:       newRuleID,
+					Source:   "Gryffindor",
+					Dest:     "Hufflepuff",
+					Services: []string{"ANY"},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Gryffindor-All",
+					ID:       9195,
+					Source:   "Gryffindor",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Hufflepuff-connection",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "Hufflepuff-No-Slytherin",
+					ID:       newRuleID,
+					Source:   "Hufflepuff",
+					Dest:     "Slytherin",
+					Services: []string{"ANY"},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Hufflepuff-All",
+					ID:       9195,
+					Source:   "Hufflepuff",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Slytherin-connection",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "Slytherin-no-Gryffindor",
+					ID:       newRuleID,
+					Source:   "Slytherin",
+					Dest:     "Gryffindor",
+					Services: []string{"ANY"},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Slytherin-All",
+					ID:       9195,
+					Source:   "Slytherin",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+}
+
+var exampleExprTwoScopes = data.Example{
+	Name: "ExampleExprSimple",
+	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
+		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
+		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
+	VMsTags: map[string][]data.ExampleTag{"Slytherin-DB": {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
+		"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
+		"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
+		"Hufflepuff-DB":  {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "DB"}},
+		"Hufflepuff-Web": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "Web"}},
+		"Hufflepuff-App": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "App"}},
+		"Gryffindor-DB":  {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "DB"}},
+		"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
+		"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		"Slytherin":  {Cond1: data.ExampleCond{Scope: "House", Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Scope: "House", Tag: "Gryffindor"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Scope: "House", Tag: "Hufflepuff"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Scope: "House", Tag: "Dumbledore"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"DB":         {Cond1: data.ExampleCond{Scope: "function", Tag: "DB"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Web":        {Cond1: data.ExampleCond{Scope: "function", Tag: "Web"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"App":        {Cond1: data.ExampleCond{Scope: "function", Tag: "App"}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+	Policies: []data.Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: "Environment",
+			Rules: []data.Rule{
+				{
+					Name:     "allow-Gryffindor-to-Gryffindor",
+					ID:       10218,
+					Source:   "Gryffindor",
+					Dest:     "Gryffindor",
+					Services: []string{"ANY"},
+					Action:   data.JumpToApp,
+				},
+			},
+		},
+		{
+			Name:         "Hufflepuff-to-Hufflepuff-allow",
+			CategoryType: "Environment",
+			Rules: []data.Rule{
+				{
+					Name:     "allow-Hufflepuff-to-Hufflepuff",
+					ID:       10219,
+					Source:   "Hufflepuff",
+					Dest:     "Hufflepuff",
+					Services: []string{"ANY"},
+					Action:   data.JumpToApp,
+				},
+			},
+		},
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: "Environment",
+			Rules: []data.Rule{
+				{
+					Name:     "allow-Slytherin-to-Slytherin",
+					ID:       10220,
+					Source:   "Slytherin",
+					Dest:     "Slytherin",
+					Services: []string{"ANY"},
+					Action:   data.JumpToApp,
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "ANY",
+					Services: []string{"ANY"},
+					Action:   data.Drop,
+				},
+			},
+		},
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "Client-Access",
+					ID:       9195,
+					Source:   "ANY",
+					Dest:     "Web",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "Web-To-App-Access",
+					ID:       9196,
+					Source:   "Web",
+					Dest:     "App",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "App-To-DB-Access",
+					ID:       9197,
+					Source:   "App",
+					Dest:     "DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+}
+
+var exampleExprTwoConds = data.Example{
+	Name: "ExampleExprSimple",
+	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
+		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
+		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
+	VMsTags: map[string][]data.ExampleTag{
+		"Slytherin-DB":   {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
+		"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
+		"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
+		"Hufflepuff-DB":  {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "DB"}},
+		"Hufflepuff-Web": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "Web"}},
+		"Hufflepuff-App": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "App"}},
+		"Gryffindor-DB":  {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "DB"}},
+		"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
+		"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		"Slytherin":  {Cond1: data.ExampleCond{Scope: "House", Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Scope: "House", Tag: "Gryffindor"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Scope: "House", Tag: "Hufflepuff"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Scope: "House", Tag: "Dumbledore"}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Slytherin-no-DB": {Cond1: data.ExampleCond{Scope: "House", Tag: "Slytherin"}, Op: data.Nop,
+			Cond2: data.ExampleCond{Scope: "function", Tag: "DB", Equal: false}},
+		"Hufflepuff-no-DB": {Cond1: data.ExampleCond{Scope: "House", Tag: "Hufflepuff"}, Op: data.Nop,
+			Cond2: data.ExampleCond{Scope: "function", Tag: "DB", Equal: false}},
+		"Gryffindor-no-DB": {Cond1: data.ExampleCond{Scope: "House", Tag: "Gryffindor"}, Op: data.Nop,
+			Cond2: data.ExampleCond{Scope: "function", Tag: "DB", Equal: false}}},
+	Policies: []data.Category{
+		{
+			Name:         "Protect-DBs",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "to-Slytherin",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "Slytherin-no-DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Gryffindor",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "Gryffindor-no-DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-slytherin",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "Gryffindor-no-DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
 	},
 }

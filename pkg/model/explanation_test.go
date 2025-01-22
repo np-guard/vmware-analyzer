@@ -21,7 +21,7 @@ import (
 
 var basicExampleTopology = data.Example{
 	VMs: []string{"A", "B"},
-	Groups: map[string][]string{
+	GroupsByVMs: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
