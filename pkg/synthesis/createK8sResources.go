@@ -12,7 +12,7 @@ import (
 )
 
 func createK8sResources(model *AbstractModelSyn, outDir string) error {
-	k8sPolicies := newK8sPolicies()
+	k8sPolicies := &k8sPolicies{}
 	policies, adminPolicies := k8sPolicies.toNetworkPolicies(model)
 	if len(policies) > 0 {
 		policiesFileName := path.Join(outDir, "policies.yaml")

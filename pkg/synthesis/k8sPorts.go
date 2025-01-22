@@ -12,13 +12,34 @@ import (
 )
 
 
+func connToPolicyPort(conn *netset.TransportSet) []networking.NetworkPolicyPort {
+	ports := &k8sNetworkPorts{}
+	connToPorts(ports, conn)
+	return ports.ports
+}
+
+func connToAdminPolicyPort(conn *netset.TransportSet) []admin.AdminNetworkPolicyPort {
+	ports := &k8sAdminNetworkPorts{}
+	connToPorts(ports, conn)
+	return ports.ports
+}
+
+// here we have two derived classes: k8sNetworkPorts and k8sAdminNetworkPorts.
+// the base class is k8sPorts, which has code that calls methods of the derived classes.
+// however, in golang there is no pattern in which the code of the base class can call the derived class methods.
+// the solution is:
+//   1. the base class is implemented as an interface
+//   2. the receiver of the methods of the base class are given to the method as first argument.
+//      (connToPorts() gets k8sPorts as the first argument)
 type k8sPorts interface {
+	// addPorts() adds k8s ports  
 	addPorts(start, end int64, protocols []core.Protocol)
 }
 
 var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
 
-func toPolicyPorts(ports k8sPorts, conn *netset.TransportSet, admin bool) {
+// convert the connection to ports:
+func connToPorts(ports k8sPorts, conn *netset.TransportSet) {
 	tcpUDPSet := conn.TCPUDPSet()
 	if tcpUDPSet.IsAll() {
 		return
@@ -31,6 +52,7 @@ func toPolicyPorts(ports k8sPorts, conn *netset.TransportSet, admin bool) {
 		for _, protocolCode := range protocolsCodes {
 			protocols = append(protocols, codeToProtocol[int(protocolCode)])
 		}
+		// if we have both TCP and UDP, we also adds SCTP:
 		if slices.Contains(protocolsCodes, netset.TCPCode) && slices.Contains(protocolsCodes, netset.UDPCode) {
 			protocols = append(protocols, core.ProtocolSCTP)
 		}

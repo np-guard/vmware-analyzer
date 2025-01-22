@@ -10,13 +10,15 @@ import (
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 )
 
+var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
+	dfw.ActionAllow:     admin.AdminNetworkPolicyRuleActionAllow,
+	dfw.ActionDeny:      admin.AdminNetworkPolicyRuleActionDeny,
+	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
+}
+
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
-}
-
-func newK8sPolicies() *k8sPolicies {
-	return &k8sPolicies{}
 }
 
 func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
@@ -28,56 +30,31 @@ func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*netw
 }
 
 func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rules []*symbolicRule, inbound bool) {
-	for _, ob := range rules {
-		admin := model.allowOnlyFromCategory > ob.origRuleCategory
-		paths := &ob.allowOnlyRulePaths
-		if admin {
-			paths = ob.origSymbolicPaths
+	for _, rule := range rules {
+		isAdmin := model.allowOnlyFromCategory > rule.origRuleCategory
+		paths := &rule.allowOnlyRulePaths
+		if isAdmin {
+			paths = rule.origSymbolicPaths
 		}
 		for _, p := range *paths {
-			policies.addNewPolicy(p, inbound, admin, ob.origRule.Action)
+			if !p.Conn.TCPUDPSet().IsEmpty() {
+				policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action)
+			}
 		}
 	}
 }
 
-var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
-	dfw.ActionAllow:     admin.AdminNetworkPolicyRuleActionAllow,
-	dfw.ActionDeny:      admin.AdminNetworkPolicyRuleActionDeny,
-	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
-}
-
-func isEmpty(p *symbolicexpr.SymbolicPath) bool {
-	return p.Conn.TCPUDPSet().IsEmpty()
-}
-func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, admin bool, action dfw.RuleAction) {
-	if isEmpty(p) {
-		return
-	}
+func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction) {
 	srcSelector := toSelector(p.Src)
 	dstSelector := toSelector(p.Dst)
-	if admin {
-		ports := &k8sAdminNetworkPorts{}
-		toPolicyPorts(ports, p.Conn, admin)
-		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports.ports, inbound,
+	if isAdmin {
+		ports := connToAdminPolicyPort(p.Conn)
+		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
 			abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()))
 	} else {
-		ports := &k8sNetworkPorts{}
-		toPolicyPorts(ports, p.Conn, admin)
-		policies.addNetworkPolicy(srcSelector, dstSelector, ports.ports, inbound, p.String())
+		ports := connToPolicyPort(p.Conn)
+		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String())
 	}
-}
-
-func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
-	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
-	selector := &meta.LabelSelector{}
-	for _, a := range con {
-		if !a.IsTautology() { // not tautology
-			label, notIn := a.AsSelector()
-			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
-			selector.MatchExpressions = append(selector.MatchExpressions, req)
-		}
-	}
-	return selector
 }
 
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
@@ -136,4 +113,19 @@ func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
 	pol.ObjectMeta.Name = name
 	pol.ObjectMeta.Annotations = map[string]string{"description": description}
 	return pol
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
+	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
+	selector := &meta.LabelSelector{}
+	for _, a := range con {
+		if !a.IsTautology() {
+			label, notIn := a.AsSelector()
+			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
+			selector.MatchExpressions = append(selector.MatchExpressions, req)
+		}
+	}
+	return selector
 }
