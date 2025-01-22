@@ -33,3 +33,5 @@ pkg/model/generated/nsx_sdk.go: schemas/top_level_schemas.txt
 	schemas/generate_resources.sh schemas/top_level_schemas.txt $@
 
 generate_sdk: pkg/model/generated/nsx_sdk.go
+
+.DEFAULT_GOAL := build
