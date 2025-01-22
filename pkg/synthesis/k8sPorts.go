@@ -11,7 +11,6 @@ import (
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 )
 
-
 func connToPolicyPort(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 	ports := &k8sNetworkPorts{}
 	connToPorts(ports, conn)
@@ -32,7 +31,7 @@ func connToAdminPolicyPort(conn *netset.TransportSet) []admin.AdminNetworkPolicy
 //   2. the receiver of the methods of the base class are given to the method as first argument.
 //      (connToPorts() gets k8sPorts as the first argument)
 type k8sPorts interface {
-	// addPorts() adds k8s ports  
+	// addPorts() adds k8s ports
 	addPorts(start, end int64, protocols []core.Protocol)
 }
 
