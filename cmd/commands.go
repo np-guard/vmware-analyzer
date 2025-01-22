@@ -32,7 +32,7 @@ const (
 	topologyDumpFileFlag        = "topology-dump-file"
 	skipAnalysisFlag            = "skip-analysis"
 	anonymizeFlag               = "anonymize"
-	synthesisDumpDirFlag        = "synthesize-dump-dir"
+	synthesisDumpDirFlag        = "synthesis-dump-dir"
 	synthesizeAdminPoliciesFlag = "synthesize-admin-policies"
 	outputFileFlag              = "filename"
 	outputFormantFlag           = "output"
