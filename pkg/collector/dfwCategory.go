@@ -39,6 +39,10 @@ const (
 	}
 }*/
 
+func MinCategory() DfwCategory {
+	return EthernetCategory
+}
+
 func (d DfwCategory) String() string {
 	switch d {
 	case EthernetCategory:
