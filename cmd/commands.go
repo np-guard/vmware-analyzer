@@ -17,7 +17,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
@@ -191,9 +190,9 @@ func runCommand(args *inArgs) error {
 	if args.synthesisDumpDir != "" {
 		// todo - get hints from the user
 		hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-		category := dfw.DfwCategory(0)
+		category := collector.MinCategory()
 		if args.synthesizeAdmin {
-			category = dfw.AppCategoty
+			category = collector.AppCategoty
 		}
 		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints, category)
 		if err != nil {
