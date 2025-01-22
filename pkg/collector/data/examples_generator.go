@@ -22,6 +22,10 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 			DisplayName: &vmName,
 			ExternalId:  &vmName,
 		}
+		// vm has tags?
+		if vmTags, ok := e.VMsTags[vmName]; ok {
+			newVM.Tags = vmTags
+		}
 		newVMRes := collector.VirtualMachine{
 			VirtualMachine: newVM,
 		}
@@ -98,9 +102,9 @@ const (
 )
 
 type ExampleCond struct {
-	Scope string // optional; can be empty
-	Tag   string
-	Equal bool // equal (true) or not equal (false)
+	Scope string // optional; can be empty // todo
+	Tag   string // todo
+	Equal bool   // equal (true) or not equal (false)
 }
 
 // ExampleExpr equiv to example_expr described above
@@ -111,16 +115,11 @@ type ExampleExpr struct {
 	Cond2 ExampleCond
 }
 
-type ExampleTag struct {
-	Scope string // optional
-	Tag   string // mandatory
-}
-
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
 	VMs          []string
-	VMsTags      map[string][]ExampleTag
+	VMsTags      map[string][]nsx.Tag
 	GroupsByVMs  map[string][]string
 	GroupsByExpr map[string]ExampleExpr
 	Policies     []Category

@@ -1,6 +1,9 @@
 package tests
 
-import "github.com/np-guard/vmware-analyzer/pkg/collector/data"
+import (
+	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+)
 
 const (
 	denyRuleIDEnv = 2144
@@ -620,7 +623,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 var exampleExprSingleScope = data.Example{
 	Name: "ExampleExprSimple",
 	VMs:  []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
-	VMsTags: map[string][]data.ExampleTag{"Slytherin": {{Tag: "Slytherin"}}, "Hufflepuff": {{Tag: "Hufflepuff"}},
+	VMsTags: map[string][]nsx.Tag{"Slytherin": {{Tag: "Slytherin"}}, "Hufflepuff": {{Tag: "Hufflepuff"}},
 		"Gryffindor": {{Tag: "Gryffindor"}}, "Dumbledore": {{Tag: "Dumbledore"}}},
 	GroupsByExpr: map[string]data.ExampleExpr{
 		"Slytherin":  {Cond1: data.ExampleCond{Tag: "Slytherin"}, Op: data.Nop, Cond2: data.ExampleCond{}},
@@ -731,7 +734,7 @@ var exampleExprTwoScopes = data.Example{
 	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
 		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
 		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
-	VMsTags: map[string][]data.ExampleTag{"Slytherin-DB": {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
+	VMsTags: map[string][]nsx.Tag{"Slytherin-DB": {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
 		"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
 		"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
 		"Hufflepuff-DB":  {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "DB"}},
@@ -844,7 +847,7 @@ var exampleExprTwoConds = data.Example{
 	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
 		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
 		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
-	VMsTags: map[string][]data.ExampleTag{
+	VMsTags: map[string][]nsx.Tag{
 		"Slytherin-DB":   {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
 		"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
 		"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
