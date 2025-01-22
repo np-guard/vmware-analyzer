@@ -8,7 +8,6 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
@@ -23,14 +22,14 @@ type DFW struct {
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, true)
-	logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
-	logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
-	logging.Debugf("ingressDenied: %s", ingressDenied.String())
-	logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
+	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
+	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
+	// logging.Debugf("ingressDenied: %s", ingressDenied.String())
+	// logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
 	egressAllowed, egressDenied, egressDelegated /*egressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, false)
-	logging.Debugf("egressAllowed: %s", egressAllowed.String())
-	logging.Debugf("egressDenied: %s", egressDenied.String())
-	logging.Debugf("egressDelegated: %s", egressDelegated.String())
+	// logging.Debugf("egressAllowed: %s", egressAllowed.String())
+	// logging.Debugf("egressDenied: %s", egressDenied.String())
+	// logging.Debugf("egressDelegated: %s", egressDelegated.String())
 
 	return buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied,
 		egressDenied, ingressDelegated, egressDelegated)
@@ -69,11 +68,11 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
-			dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
-		logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
-		logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
-		logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
+		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
+		// dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
+		// logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
+		// logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
+		// logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
 
 		// remove connections already denied by higher-prio categories, from this category's allowed conns
 		// categoryAllowedConns.removeHigherPrioConnections(allDeniedConns.accumulatedConns)
@@ -98,19 +97,19 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		////////////////////////
 		// update accumulated allowed, denied and not-determined conns, from current category's sets
 		// allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(categoryAllowedConns.accumulatedConns)
-		logging.Debugf("allAllowedConns before: %s", allAllowedConns.String())
+		// logging.Debugf("allAllowedConns before: %s", allAllowedConns.String())
 		allAllowedConns.union(categoryAllowedConns)
-		logging.Debugf("allAllowedConns new: %s", allAllowedConns.String())
+		// logging.Debugf("allAllowedConns new: %s", allAllowedConns.String())
 		// todo: add to allAllowedConns.partitionsByRules the relevant partitions from this category
 
 		// allDeniedConns.accumulatedConns = allDeniedConns.accumulatedConns.Union(categoryDeniedConns.accumulatedConns)
-		logging.Debugf("allDeniedConns before: %s", allDeniedConns.String())
+		// logging.Debugf("allDeniedConns before: %s", allDeniedConns.String())
 		allDeniedConns.union(categoryDeniedConns)
-		logging.Debugf("allDeniedConns new: %s", allDeniedConns.String())
+		// logging.Debugf("allDeniedConns new: %s", allDeniedConns.String())
 
-		logging.Debugf("delegatedConns before: %s", delegatedConns.String())
+		// logging.Debugf("delegatedConns before: %s", delegatedConns.String())
 		delegatedConns.union(categoryJumptToAppConns)
-		logging.Debugf("delegatedConns new: %s", delegatedConns.String())
+		// logging.Debugf("delegatedConns new: %s", delegatedConns.String())
 		// accumulated not-determined conns: remove the conns determined from this/prev categories, and add those not-determined in this category
 		allNotDeterminedConns.accumulatedConns = allNotDeterminedConns.accumulatedConns.Union(
 			categoryNotDeterminedConns.accumulatedConns).Union(categoryJumptToAppConns.accumulatedConns).Subtract(
