@@ -78,7 +78,6 @@ func (ports *k8sNetworkPorts) addPorts(start, end int64, protocols []core.Protoc
 		port := intstr.FromInt(int(start))
 		portPointer = &port
 		if end != start {
-			//nolint:gosec // port should fit int32:
 			endPort := int32(end)
 			endPortPointer = &endPort
 		}
