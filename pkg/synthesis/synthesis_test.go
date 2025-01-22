@@ -38,7 +38,7 @@ const (
 type synthesisTest struct {
 	name                  string
 	exData                tests.ExampleSynthesis
-	allowOnlyFromCategory collector.DfwCategory
+	allowOnlyFromCategory collector.DfwCategory // min category to start the "allow-only" conversion from
 	noHint                bool // run also with no hint
 }
 
