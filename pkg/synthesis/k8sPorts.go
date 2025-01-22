@@ -3,12 +3,13 @@ package synthesis
 import (
 	"slices"
 
-	"github.com/np-guard/models/pkg/netp"
-	"github.com/np-guard/models/pkg/netset"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
+
+	"github.com/np-guard/models/pkg/netp"
+	"github.com/np-guard/models/pkg/netset"
 )
 
 func connToPolicyPort(conn *netset.TransportSet) []networking.NetworkPolicyPort {
@@ -27,9 +28,9 @@ func connToAdminPolicyPort(conn *netset.TransportSet) []admin.AdminNetworkPolicy
 // the base class is k8sPorts, which has code that calls methods of the derived classes.
 // however, in golang there is no pattern in which the code of the base class can call the derived class methods.
 // the solution is:
-//   1. the base class is implemented as an interface
-//   2. the receiver of the methods of the base class are given to the method as first argument.
-//      (connToPorts() gets k8sPorts as the first argument)
+//  1. the base class is implemented as an interface
+//  2. the receiver of the methods of the base class are given to the method as first argument.
+//     (connToPorts() gets k8sPorts as the first argument)
 type k8sPorts interface {
 	// addPorts() adds k8s ports
 	addPorts(start, end int64, protocols []core.Protocol)
@@ -107,13 +108,13 @@ func (ports *k8sAdminNetworkPorts) addPorts(start, end int64, protocols []core.P
 			})
 		} else {
 			ports.ports = append(ports.ports, admin.AdminNetworkPolicyPort{
+				//nolint:gosec // port should fit int32:
 				PortRange: pointerTo(admin.PortRange{
 					Protocol: protocol,
 					Start:    int32(start),
 					End:      int32(end),
 				}),
 			})
-
 		}
 	}
 }

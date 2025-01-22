@@ -3,11 +3,12 @@ package synthesis
 import (
 	"fmt"
 
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
+
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
 var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
@@ -79,8 +80,9 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description string) {
-	pol := newAdminNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.adminNetworkPolicies)), description)
+	pol := newAdminNetworkPolicy(fmt.Sprintf("admin_policy_%d", len(policies.adminNetworkPolicies)), description)
 	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
+	//nolint:gosec // priority should fit int32:
 	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
 	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector}
 	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector}
@@ -97,12 +99,14 @@ func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *met
 	}
 }
 
+const annotationDescription = "description"
+
 func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
 	pol := &networking.NetworkPolicy{}
 	pol.TypeMeta.Kind = "NetworkPolicy"
 	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
 	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Annotations = map[string]string{"description": description}
+	pol.ObjectMeta.Annotations = map[string]string{annotationDescription: description}
 	return pol
 }
 
@@ -111,7 +115,7 @@ func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
 	pol.TypeMeta.Kind = "AdminNetworkPolicy"
 	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
 	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Annotations = map[string]string{"description": description}
+	pol.ObjectMeta.Annotations = map[string]string{annotationDescription: description}
 	return pol
 }
 
