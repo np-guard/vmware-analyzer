@@ -81,13 +81,21 @@ type FwRule struct {
 
 }
 
+func (f *FwRule) ruleDescriptionStr() string {
+	return fmt.Sprintf("rule %d in category %s", f.RuleID, f.categoryRef.Category.String())
+}
+
+func (f *FwRule) ruleWarning(warnMsg string) {
+	logging.Debugf("%s %s", f.ruleDescriptionStr(), warnMsg)
+}
+
 func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 	if len(f.scope) == 0 {
-		logging.Debugf("rule %d has no effective inbound/outbound component, since its scope component is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
 		return nil, nil
 	}
 	if f.Conn.IsEmpty() {
-		logging.Debugf("rule %d has no effective inbound/outbound component, since its traffic attributes are empty", f.RuleID)
+		f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
 		return nil, nil
 	}
 	return f.getInboundRule(), f.getOutboundRule()
@@ -96,22 +104,22 @@ func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 func (f *FwRule) getInboundRule() *FwRule {
 	// if action is OUT -> return nil
 	if f.direction == string(nsx.RuleDirectionOUT) {
-		logging.Debugf("rule %d has no effective inbound component, since its direction is OUT only", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
 		return nil
 	}
 	if len(f.dstVMs) == 0 {
-		logging.Debugf("rule %d has no effective inbound component, since its dest vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its dest-vms component is empty")
 		return nil
 	}
 	if len(f.srcVMs) == 0 {
-		logging.Debugf("rule %d has no effective inbound component, since its target src vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its target src-vms component is empty")
 		return nil
 	}
 
 	// inbound rule operates on intersection(dest, scope)
 	newDest := endpoints.Intersection(f.dstVMs, f.scope)
 	if len(newDest) == 0 {
-		logging.Debugf("rule %d has no effective inbound component, since its intersction for dest & scope is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its intersction for dest & scope is empty")
 		return nil
 	}
 	return &FwRule{
@@ -134,23 +142,23 @@ func (f *FwRule) getInboundRule() *FwRule {
 func (f *FwRule) getOutboundRule() *FwRule {
 	// if action is IN -> return nil
 	if f.direction == string(nsx.RuleDirectionIN) {
-		logging.Debugf("rule %d has no effective outbound component, since its direction is IN only", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its direction is IN only")
 		return nil
 	}
 	if len(f.srcVMs) == 0 {
-		logging.Debugf("rule %d has no effective outbound component, since its src vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its src vms component is empty")
 		return nil
 	}
 
 	if len(f.dstVMs) == 0 {
-		logging.Debugf("rule %d has no effective outbound component, since its target dst vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its target dst vms component is empty")
 		return nil
 	}
 
 	// outbound rule operates on intersection(src, scope)
 	newSrc := endpoints.Intersection(f.srcVMs, f.scope)
 	if len(newSrc) == 0 {
-		logging.Debugf("rule %d has no effective outbound component, since its intersction for src & scope is empty", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its intersction for src & scope is empty")
 		return nil
 	}
 	return &FwRule{
@@ -290,7 +298,7 @@ func (f *FwRule) originalRuleStr() string {
 	)
 
 	if f.origRuleObj == nil && f.origDefaultRuleObj == nil {
-		logging.Debugf("warning: rule %d has no origRuleObj or origDefaultRuleObj", f.RuleID)
+		f.ruleWarning("has no origRuleObj or origDefaultRuleObj")
 		return ""
 	}
 

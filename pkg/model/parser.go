@@ -39,27 +39,35 @@ func NewNSXConfigParserFromResourcesContainer(rc *collector.ResourcesContainerMo
 }
 
 type NSXConfigParser struct {
-	file           string
-	rc             *collector.ResourcesContainerModel
-	configRes      *config
-	allGroups      []*collector.Group
-	allGroupsPaths []string
-	allGroupsVMs   []*endpoints.VM
+	file                   string
+	rc                     *collector.ResourcesContainerModel
+	configRes              *config
+	allGroups              []*collector.Group
+	allGroupsPaths         []string
+	allGroupsVMs           []*endpoints.VM
+	groupToVMsListCache    map[*collector.Group][]*endpoints.VM
+	servicePathToConnCache map[string]*netset.TransportSet
 	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 }
 
-func (p *NSXConfigParser) RunParser() error {
-	logging.Debugf("started parsing the given NSX config")
+func (p *NSXConfigParser) init() {
 	p.configRes = &config{}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
+	p.groupToVMsListCache = map[*collector.Group][]*endpoints.VM{}
+	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+}
+
+func (p *NSXConfigParser) RunParser() error {
+	logging.Debugf("started parsing the given NSX config")
+	p.init()
 	p.getVMs()    // get vms config
 	p.getGroups() // get groups config
 	p.removeVMsWithoutGroups()
 	p.getDFW() // get distributed firewall config
-	p.AddPathsToDisplayNames()
+	p.addPathsToDisplayNames()
 	return nil
 }
 
@@ -102,7 +110,8 @@ func (p *NSXConfigParser) VMs() []*endpoints.VM {
 	return p.configRes.vms
 }
 
-func (p *NSXConfigParser) AddPathsToDisplayNames() {
+// update mapping from groups and services paths to their names
+func (p *NSXConfigParser) addPathsToDisplayNames() {
 	res := map[string]string{}
 	for gPath, gObj := range p.groupPathsToObjects {
 		res[gPath] = *gObj.DisplayName
@@ -129,6 +138,7 @@ func (p *NSXConfigParser) getVMs() {
 			continue
 		}
 		vmObj := endpoints.NewVM(*vm.DisplayName, *vm.ExternalId)
+		vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
 		for _, tag := range vm.Tags {
 			vmObj.AddTag(tag.Tag)
 			// currently ignoring tag scope
@@ -346,13 +356,13 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 		}
 		conn := p.connectionFromService(s, rule)
 		if conn != nil && !conn.IsEmpty() {
-			logging.Debugf("adding rule connection from Service: %s", conn.String())
+			logging.Debugf("for rule %d, adding rule connection from Service: %s", *rule.RuleId, conn.String())
 			res = res.Union(conn)
 		}
 	}
 	conn := p.connectionFromServiceEntries(rule.ServiceEntries, rule)
 	if conn != nil && !conn.IsEmpty() {
-		logging.Debugf("adding rule connection from ServiceEntries: %s", conn.String())
+		logging.Debugf("for rule %d, adding rule connection from ServiceEntries: %s", *rule.RuleId, conn.String())
 		res = res.Union(conn)
 	}
 	return res
@@ -360,6 +370,9 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 
 // connectionFromService returns the set of connections from a service config within the given rule
 func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
+	if conn, ok := p.servicePathToConnCache[servicePath]; ok {
+		return conn
+	}
 	service, ok := p.servicePathsToObjects[servicePath]
 	if !ok {
 		service = p.rc.GetService(servicePath)
@@ -367,10 +380,12 @@ func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collec
 	}
 	if service == nil {
 		logging.Debugf("GetService failed to find service %s\n", servicePath)
+		p.servicePathToConnCache[servicePath] = nil
 		return nil
 	}
 	res := p.connectionFromServiceEntries(service.ServiceEntries, rule)
 	logging.Debugf("service path: %s, conn: %s\n", servicePath, res.String())
+	p.servicePathToConnCache[servicePath] = res
 	return res
 }
 
@@ -384,7 +399,7 @@ func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.
 			res = res.Union(conn)
 		case err != nil:
 			logging.Debugf("err: %s", err.Error())
-			logging.Debugf("ignoring this service entry within rule id %d\n", *rule.RuleId)
+			logging.Debugf("ignoring service entry %s within rule id %d\n", serviceEntry.String(), *rule.RuleId)
 		case conn == nil:
 			logging.Debugf("warning: got nil connnection object for serviceEntry object")
 		}
@@ -393,11 +408,14 @@ func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.
 }
 
 func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM {
+	if vms, ok := p.groupToVMsListCache[group]; ok {
+		return vms
+	}
 	ids := map[string]bool{}
 	for i := range group.VMMembers {
 		vm := &group.VMMembers[i]
 		if vm.Id == nil { // use id instead of DisplayName, assuming matched to vm's external id
-			logging.Debugf("skipping member without id, at index %d", i)
+			logging.Debugf("in group %s - skipping VM member without id, at index %d", *group.DisplayName, i)
 			continue
 		}
 		ids[*vm.Id] = true
@@ -405,12 +423,12 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 	for i := range group.VIFMembers {
 		vif := &group.VIFMembers[i]
 		if vif.OwnerVmId == nil {
-			logging.Debugf("skipping vif member without owner vm id, at index %d", i)
+			logging.Debugf("in group %s - skipping vif member without OwnerVmId, at index %d", *group.DisplayName, i)
 			continue
 		}
 		if !ids[*vif.OwnerVmId] {
 			logging.Debugf(
-				"warning - adding to group %s an owner vm of an vif member, while the vm is not at the member list of the group, at index %d",
+				"adding to group %s an OwnerVm of a VIFMember, while the VM is not in the group's VMMembers list, at index %d",
 				*group.DisplayName, i)
 		}
 		ids[*vif.OwnerVmId] = true
@@ -418,15 +436,15 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 	for _, ip := range group.AddressMembers {
 		vif := p.rc.GetVirtualNetworkInterfaceByAddress(string(ip))
 		if vif == nil {
-			logging.Debugf("skipping ip member %s tht has no vif", ip)
+			logging.Debugf("in group %s - skipping IP member %s that has no VirtualNetworkInterface", *group.DisplayName, ip)
 			continue
 		}
 		if vif.OwnerVmId == nil {
-			logging.Debugf("skipping vif of address %s without owner vm id", ip)
+			logging.Debugf("in group %s - skipping VirtualNetworkInterface of IP address %s without OwnerVmId", *group.DisplayName, ip)
 			continue
 		}
 		if !ids[*vif.OwnerVmId] {
-			logging.Debugf("adding to group %s a vm of address %s, while the vm is not at the member list of the group", *group.DisplayName, ip)
+			logging.Debugf("adding to group %s a VM with address %s, while the VM is not in the group's VMMembers list", *group.DisplayName, ip)
 		}
 		ids[*vif.OwnerVmId] = true
 	}
@@ -436,9 +454,10 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config
-			logging.Debugf("warning: could not find VM id %s in the parsed config", vmID)
+			logging.Debugf("warning: could not find VM id %s in the parsed config, ignoring that VM for group members of group %s", vmID, *group.DisplayName)
 		}
 	}
+	p.groupToVMsListCache[group] = res
 	return res
 }
 

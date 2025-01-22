@@ -54,7 +54,7 @@ func (c *config) getConfigInfoStr() string {
 	var sb strings.Builder
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")
-	sb.WriteString(common.JoinStringifiedSlice(c.vms, common.NewLine))
+	sb.WriteString(c.getVMsInfoStr())
 
 	// groups
 	sb.WriteString(common.OutputSectionSep)
@@ -84,4 +84,17 @@ func (c *config) getVMGroupsStr() string {
 	}
 	writer.Flush()
 	return builder.String()
+}
+
+func (c *config) getVMsInfoStr() string {
+	var builder strings.Builder
+	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
+	fmt.Fprintln(writer, "VM name"+"\t"+"VM ID"+"\t"+"VM IP Addresses")
+	for _, vm := range c.vms {
+		vmStrLine := vm.Name() + "\t" + vm.ID() + "\t" + strings.Join(vm.IPAddresses(), common.CommaSeparator)
+		fmt.Fprintln(writer, vmStrLine)
+	}
+	writer.Flush()
+	return builder.String()
+
 }
