@@ -86,7 +86,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 	}
 }
 
-func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction string, action string, categoryType string) {
+func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, categoryType string) {
 	srcGroup, dstGroup, services := a.toGroupsAndService(p)
 	rule := a.addNewRule(categoryType)
 	rule.Action = action
