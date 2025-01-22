@@ -93,6 +93,24 @@ var allTests = []synthesisTest{
 	},
 }
 
+var exprTests = []synthesisTest{
+	{
+		name:   "ExampleExprSingleScope",
+		exData: tests.ExampleExprSingleScope,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprTwoConds",
+		exData: tests.ExampleExprTwoConds,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprTwoScopes",
+		exData: tests.ExampleExprTwoScopes,
+		noHint: false,
+	},
+}
+
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
@@ -121,6 +139,13 @@ func TestPreprocessing(t *testing.T) {
 	}
 }
 
+func TestTmpExpr(t *testing.T) {
+	for i := range exprTests {
+		test := &exprTests[i]
+		test.runTmpWithExpr(t, OutputComparison)
+	}
+}
+
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
@@ -142,6 +167,22 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+}
+
+func (synTest *synthesisTest) runTmpWithExpr(t *testing.T, mode testMode) {
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
+	for _, vm := range rc.VirtualMachineList {
+		fmt.Printf("vm: %v with tags:\n\t", vm.Name())
+		for _, scopeAndTag := range vm.Tags {
+			scope := "Tag"
+			if scopeAndTag.Scope != "" {
+				scope = scopeAndTag.Scope
+			}
+			fmt.Printf("\t%v:%v\n", scope, scopeAndTag.Tag)
+		}
+	}
+
 }
 
 // todo - remove the allowOnly flag after supporting deny
