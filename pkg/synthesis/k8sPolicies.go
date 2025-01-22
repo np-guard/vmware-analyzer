@@ -46,25 +46,25 @@ var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleA
 	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
 }
 
+func isEmpty(p *symbolicexpr.SymbolicPath) bool {
+	return p.Conn.TCPUDPSet().IsEmpty()
+}
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, admin bool, action dfw.RuleAction) {
-	srcSelector, dstSelector, ports, empty := toSelectorsAndPorts(p, admin)
-	if empty {
+	if isEmpty(p) {
 		return
 	}
+	srcSelector := toSelector(p.Src)
+	dstSelector := toSelector(p.Dst)
 	if admin {
-		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
+		ports := &k8sAdminNetworkPorts{}
+		toPolicyPorts(ports, p.Conn, admin)
+		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports.ports, inbound,
 			abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()))
 	} else {
-		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String())
+		ports := &k8sNetworkPorts{}
+		toPolicyPorts(ports, p.Conn, admin)
+		policies.addNetworkPolicy(srcSelector, dstSelector, ports.ports, inbound, p.String())
 	}
-}
-
-func toSelectorsAndPorts(p *symbolicexpr.SymbolicPath, admin bool) (srcSelector, dstSelector *meta.LabelSelector,
-	ports k8sPorts, empty bool) {
-	srcSelector = toSelector(p.Src)
-	dstSelector = toSelector(p.Dst)
-	ports, empty = toPolicyPorts(p.Conn, admin)
-	return
 }
 
 func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
@@ -81,19 +81,19 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 }
 
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
-	ports k8sPorts, inbound bool,
+	ports []networking.NetworkPolicyPort, inbound bool,
 	description string) {
 	pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.networkPolicies)), description)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	if inbound {
 		from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
-		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports.toNetworkPolicyPort()}}
+		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		pol.Spec.Ingress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
 		pol.Spec.PodSelector = *dstSelector
 	} else {
 		to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
-		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports.toNetworkPolicyPort()}}
+		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		pol.Spec.Egress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
 		pol.Spec.PodSelector = *srcSelector
@@ -101,23 +101,22 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
-	ports k8sPorts, inbound bool, action admin.AdminNetworkPolicyRuleAction, description string) {
+	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.adminNetworkPolicies)), description)
 	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
-	portsP := pointerTo(ports.toNetworkAdminPolicyPort())
 	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector}
 	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector}
 	if inbound {
-		from := []admin.AdminNetworkPolicyIngressPeer{{Pods:srcPodsSelector}}
-		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: portsP}}
+		from := []admin.AdminNetworkPolicyIngressPeer{{Pods: srcPodsSelector}}
+		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: pointerTo(ports)}}
 		pol.Spec.Ingress = rules
-		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods:dstPodsSelector}
+		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods: dstPodsSelector}
 	} else {
-		to := []admin.AdminNetworkPolicyEgressPeer{{Pods:dstPodsSelector}}
-		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: action, Ports: portsP}}
+		to := []admin.AdminNetworkPolicyEgressPeer{{Pods: dstPodsSelector}}
+		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: action, Ports: pointerTo(ports)}}
 		pol.Spec.Egress = rules
-		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods:srcPodsSelector}
+		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods: srcPodsSelector}
 	}
 }
 

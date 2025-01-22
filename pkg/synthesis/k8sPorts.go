@@ -13,28 +13,15 @@ import (
 
 
 type k8sPorts interface {
-	toNetworkPolicyPort() []networking.NetworkPolicyPort
-	toNetworkAdminPolicyPort() []admin.AdminNetworkPolicyPort
 	addPorts(start, end int64, protocols []core.Protocol)
-}
-
-func newK8sPorts(admin bool) k8sPorts {
-	if admin {
-		return &k8sAdminNetworkPorts{}
-	}
-	return &k8sNetworkPorts{}
 }
 
 var codeToProtocol = map[int]core.Protocol{netset.UDPCode: core.ProtocolUDP, netset.TCPCode: core.ProtocolTCP}
 
-func toPolicyPorts(conn *netset.TransportSet, admin bool) (k8sPorts, bool) {
-	ports := newK8sPorts(admin)
+func toPolicyPorts(ports k8sPorts, conn *netset.TransportSet, admin bool) {
 	tcpUDPSet := conn.TCPUDPSet()
-	if tcpUDPSet.IsEmpty() {
-		return nil, true
-	}
 	if tcpUDPSet.IsAll() {
-		return ports, false
+		return
 	}
 	partitions := tcpUDPSet.Partitions()
 	for _, partition := range partitions {
@@ -51,22 +38,15 @@ func toPolicyPorts(conn *netset.TransportSet, admin bool) (k8sPorts, bool) {
 			ports.addPorts(portRange.Start(), portRange.End(), protocols)
 		}
 	}
-	return ports, false
+}
+
+func pointerTo[T any](t T) *T {
+	return &t
 }
 
 // ////////////////////////////////////////////////////
 type k8sNetworkPorts struct {
 	ports []networking.NetworkPolicyPort
-}
-
-func (ports *k8sNetworkPorts) toNetworkAdminPolicyPort() []admin.AdminNetworkPolicyPort {
-	return nil
-}
-func (ports *k8sNetworkPorts) toNetworkPolicyPort() []networking.NetworkPolicyPort {
-	if len(ports.ports) == 0 {
-		return nil
-	}
-	return ports.ports
 }
 
 func (ports *k8sNetworkPorts) addPorts(start, end int64, protocols []core.Protocol) {
@@ -88,23 +68,10 @@ func (ports *k8sNetworkPorts) addPorts(start, end int64, protocols []core.Protoc
 			EndPort:  endPortPointer})
 	}
 }
-func pointerTo[T any](t T) *T {
-	return &t
-}
 
 // ///////////////////////////////////////////////////////////////////////////////////////////
 type k8sAdminNetworkPorts struct {
 	ports []admin.AdminNetworkPolicyPort
-}
-
-func (ports *k8sAdminNetworkPorts) toNetworkPolicyPort() []networking.NetworkPolicyPort {
-	return nil
-}
-func (ports *k8sAdminNetworkPorts) toNetworkAdminPolicyPort() []admin.AdminNetworkPolicyPort {
-	if len(ports.ports) == 0 {
-		return nil
-	}
-	return ports.ports
 }
 
 func (ports *k8sAdminNetworkPorts) addPorts(start, end int64, protocols []core.Protocol) {
