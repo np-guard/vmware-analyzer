@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -13,8 +14,8 @@ import (
 /////////////////////////////////////////////////////////////////////////////////////
 
 // preProcessing: convert policy from spec to symbolicPolicy struct
-func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) {
-	categoryToPolicy = map[dfw.DfwCategory]*symbolicPolicy{}
+func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) {
+	categoryToPolicy = map[collector.DfwCategory]*symbolicPolicy{}
 	for _, category := range categoriesSpecs {
 		categoryPolicy := symbolicPolicy{}
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
@@ -30,7 +31,7 @@ func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[df
 	return categoryToPolicy
 }
 
-func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category dfw.DfwCategory) []*symbolicRule {
+func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category collector.DfwCategory) []*symbolicRule {
 	res := make([]*symbolicRule, len(rules))
 	for i, rule := range rules {
 		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(rule)
@@ -55,7 +56,7 @@ func strSymbolicRules(rules []*symbolicRule) string {
 // prints all symbolic rules by ordered category
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
 func stringCategoryToSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[dfw.DfwCategory]*symbolicPolicy) string {
+	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) string {
 	res := []string{}
 	for _, category := range categoriesSpecs {
 		policy := categoryToPolicy[category.Category]

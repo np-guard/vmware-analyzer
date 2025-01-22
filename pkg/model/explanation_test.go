@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -487,11 +487,11 @@ func (r *rulesTest) runTest(t *testing.T) {
 	example.Name = r.testName
 	example.InitEmptyEnvAppCategories()
 	for i := range r.envRulesList {
-		err := example.AddRuleToExampleInCategory(dfw.EnvironmentStr, &r.envRulesList[i])
+		err := example.AddRuleToExampleInCategory(collector.EnvironmentStr, &r.envRulesList[i])
 		require.Nil(t, err)
 	}
 	for i := range r.appRulesList {
-		err := example.AddRuleToExampleInCategory(dfw.ApplicationStr, &r.appRulesList[i])
+		err := example.AddRuleToExampleInCategory(collector.ApplicationStr, &r.appRulesList[i])
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object

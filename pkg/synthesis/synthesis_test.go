@@ -15,7 +15,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
@@ -39,57 +38,57 @@ const (
 type synthesisTest struct {
 	name                  string
 	exData                tests.ExampleSynthesis
-	allowOnlyFromCategory dfw.DfwCategory
-	noHint                bool // run also with no hint
+	allowOnlyFromCategory collector.DfwCategory // category to start the "allow-only" conversion from
+	noHint                bool                  // run also with no hint
 }
 
 var allTests = []synthesisTest{
 	{
 		name:                  "ExampleDumbeldore",
 		exData:                tests.ExampleDumbeldore,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleTwoDeniesSimple",
 		exData:                tests.ExampleTwoDeniesSimple,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleDenyPassSimple",
 		exData:                tests.ExampleDenyPassSimple,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHintsDisjoint",
 		exData:                tests.ExampleHintsDisjoint,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHogwartsSimpler",
 		exData:                tests.ExampleHogwartsSimpler,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHogwartsNoDumbledore",
 		exData:                tests.ExampleHogwartsNoDumbledore,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                false,
 	},
 	{
 		name:                  "ExampleHogwarts",
 		exData:                tests.ExampleHogwarts,
-		allowOnlyFromCategory: 0,
+		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                false,
 	},
 	{
 		name:                  "ExampleHogwarts",
 		exData:                tests.ExampleHogwarts,
-		allowOnlyFromCategory: dfw.AppCategoty,
+		allowOnlyFromCategory: collector.AppCategoty,
 		noHint:                false,
 	},
 }
