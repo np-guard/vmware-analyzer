@@ -15,68 +15,6 @@ import (
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
 
-type DfwCategory int
-
-const (
-	ethernetCategory DfwCategory = iota
-	emergencyCategory
-	infrastructureCategory
-	envCategory
-	AppCategoty
-	emptyCategory
-)
-
-const (
-	EthernetStr       = "Ethernet"
-	EmergencyStr      = "Emergency"
-	InfrastructureStr = "Infrastructure"
-	EnvironmentStr    = "Environment"
-	ApplicationStr    = "Application"
-	EmptyStr          = "<Empty>"
-)
-
-/*func dfwCategoryFromString(s string) DfwCategory {
-	switch s {
-	case EthernetStr:
-		return ethernetCategory
-	case EmergencyStr:
-		return emergencyCategory
-	case InfrastructureStr:
-		return infrastructureCategory
-	case EnvironmentStr:
-		return envCategory
-	case ApplicationStr:
-		return AppCategoty
-	case EmptyStr:
-		return emptyCategory
-	default:
-		return emptyCategory
-	}
-}*/
-
-func (d DfwCategory) String() string {
-	switch d {
-	case ethernetCategory:
-		return EthernetStr
-	case emergencyCategory:
-		return EmergencyStr
-	case infrastructureCategory:
-		return InfrastructureStr
-	case envCategory:
-		return EnvironmentStr
-	case AppCategoty:
-		return ApplicationStr
-	case emptyCategory:
-		return EmptyStr
-	default:
-		return ""
-	}
-}
-
-var categoriesList = []DfwCategory{
-	ethernetCategory, emergencyCategory, infrastructureCategory, envCategory, AppCategoty, emptyCategory,
-}
-
 // EffectiveRules are built from original rules, split to separate Inbound & Outbound rules
 // consider already the scope from the original rules
 type EffectiveRules struct {
@@ -97,7 +35,7 @@ func (e *EffectiveRules) addOutboundRule(r *FwRule) {
 }
 
 type CategorySpec struct {
-	Category       DfwCategory
+	Category       collector.DfwCategory
 	Rules          []*FwRule // ordered list of rules
 	defaultAction  RuleAction
 	ProcessedRules *EffectiveRules // ordered list of effective rules
@@ -269,7 +207,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	c.Rules = append(c.Rules, newRule)
 
 	inbound, outbound := newRule.effectiveRules()
-	if c.Category != ethernetCategory {
+	if c.Category != collector.EthernetCategory {
 		c.ProcessedRules.addInboundRule(inbound)
 		c.ProcessedRules.addOutboundRule(outbound)
 	} else {
@@ -277,7 +215,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	}
 }
 
-func newEmptyCategory(c DfwCategory, d *DFW) *CategorySpec {
+func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
