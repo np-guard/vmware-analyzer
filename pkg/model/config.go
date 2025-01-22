@@ -1,9 +1,7 @@
 package model
 
 import (
-	"fmt"
 	"strings"
-	"text/tabwriter"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
@@ -74,27 +72,20 @@ func (c *config) getConfigInfoStr() string {
 }
 
 func (c *config) getVMGroupsStr() string {
-	var builder strings.Builder
-	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
-	fmt.Fprintln(writer, "VM"+"\t"+"Groups")
+	header := []string{"VM", "Groups"}
+	lines := [][]string{}
 	for vm, groups := range c.GroupsPerVM {
 		groupsStr := common.JoinCustomStrFuncSlice(groups, func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
-		line := vm.Name() + "\t" + groupsStr
-		fmt.Fprintln(writer, line)
+		lines = append(lines, []string{vm.Name(), groupsStr})
 	}
-	writer.Flush()
-	return builder.String()
+	return common.GenerateTableString(header, lines)
 }
 
 func (c *config) getVMsInfoStr() string {
-	var builder strings.Builder
-	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
-	fmt.Fprintln(writer, "VM name"+"\t"+"VM ID"+"\t"+"VM IP Addresses")
+	header := []string{"VM Name", "VM ID", "VM Addresses"}
+	lines := [][]string{}
 	for _, vm := range c.vms {
-		vmStrLine := vm.Name() + "\t" + vm.ID() + "\t" + strings.Join(vm.IPAddresses(), common.CommaSeparator)
-		fmt.Fprintln(writer, vmStrLine)
+		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})
 	}
-	writer.Flush()
-	return builder.String()
-
+	return common.GenerateTableString(header, lines)
 }

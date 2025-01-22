@@ -155,14 +155,13 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
-func (c *CategorySpec) originalRulesStr() []string {
-	rulesStr := make([]string, len(c.Rules))
+func (c *CategorySpec) originalRulesComponentsStr() [][]string {
+	rulesStr := make([][]string, len(c.Rules))
 	for i := range c.Rules {
-		rulesStr[i] = c.Rules[i].originalRuleStr()
+		rulesStr[i] = c.Rules[i].originalRuleComponentsStr()
 	}
 	return rulesStr
 }
-
 func (c *CategorySpec) String() string {
 	rulesStr := common.JoinStringifiedSlice(c.Rules, lineSeparatorStr)
 	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.Category.String(),

@@ -1,8 +1,10 @@
 package common
 
 import (
+	"fmt"
 	"slices"
 	"strings"
+	"text/tabwriter"
 )
 
 const (
@@ -12,17 +14,18 @@ const (
 	CommaSeparator      string = ","
 	CommaSpaceSeparator string = ", "
 	NewLine             string = "\n"
+	Tab                 string = "\t"
 
 	// ANSI escape codes - for colored output printed to the terminal
-	Reset   = "\033[0m"
-	Red     = "\033[31m"
-	Yellow  = "\033[33m"
-	Green   = "\033[32m"
-	Blue    = "\033[34m"
-	Magenta = "\033[35m"
-	Cyan    = "\033[36m"
-	Gray    = "\033[37m"
-	White   = "\033[97m"
+	reset   = "\033[0m"
+	red     = "\033[31m"
+	yellow  = "\033[33m"
+	green   = "\033[32m"
+	blue    = "\033[34m"
+	magenta = "\033[35m"
+	cyan    = "\033[36m"
+	gray    = "\033[37m"
+	white   = "\033[97m"
 )
 
 type HasString interface {
@@ -63,4 +66,34 @@ func SortedJoinCustomStrFuncSlice[S any](slice []S, f func(s S) string, separato
 	resStrSlice := CustomStrSliceToStrings(slice, f)
 	slices.Sort(resStrSlice)
 	return strings.Join(resStrSlice, separator)
+}
+
+// GenerateTableString returns a string in table format for input header and lines
+func GenerateTableString(header []string, lines [][]string) string {
+	var builder strings.Builder
+	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
+	fmt.Fprintln(writer, strings.Join(header, Tab))
+	for _, line := range lines {
+		fmt.Fprintln(writer, strings.Join(line, Tab))
+	}
+	writer.Flush()
+	return builder.String()
+}
+
+func GenerateTableStringWithColors(header []string, lines [][]string) string {
+	editLineWithColor(header, red)
+	for i := range lines {
+		editLineWithColor(lines[i], yellow)
+	}
+	return GenerateTableString(header, lines)
+}
+
+func editLineWithColor(line []string, color string) {
+	maxInd := len(line) - 1
+	if maxInd < 0 {
+		return
+	}
+	line[0] = color + line[0]
+	line[maxInd] = line[maxInd] + reset
+
 }

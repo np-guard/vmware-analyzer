@@ -84,12 +84,21 @@ type edge struct {
 }
 
 type EdgesGraph struct {
-	edges  []edge
-	header string
+	edges                 []edge
+	header                string
+	tableHeaderComponents []string
 }
 
-func NewEdgesGraph(header string) *EdgesGraph {
-	return &EdgesGraph{header: header}
+func NewEdgesGraph(header string, tableHeaderComponents []string) *EdgesGraph {
+	return &EdgesGraph{header: header, tableHeaderComponents: tableHeaderComponents}
+}
+
+func (e *edge) tableStringComponents() []string {
+	labelStr := ""
+	if e.label != nil {
+		labelStr = e.label.String()
+	}
+	return []string{e.src.Name(), e.dst.Name(), labelStr}
 }
 
 func (e *edge) string() string {
@@ -108,8 +117,14 @@ func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 }
 
 func (eg *EdgesGraph) String() string {
-	edgesStr := SortedJoinCustomStrFuncSlice(eg.edges, func(e edge) string { return e.string() }, "\n")
-	return fmt.Sprintf("%s:\n%s", eg.header, edgesStr)
+	/*edgesStr := SortedJoinCustomStrFuncSlice(eg.edges, func(e edge) string { return e.string() }, "\n")
+	return fmt.Sprintf("%s:\n%s", eg.header, edgesStr)*/
+
+	lines := [][]string{}
+	for _, e := range eg.edges {
+		lines = append(lines, e.tableStringComponents())
+	}
+	return eg.header + NewLine + GenerateTableString(eg.tableHeaderComponents, lines)
 }
 
 func (eg *EdgesGraph) JSONString() (string, error) {

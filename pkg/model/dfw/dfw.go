@@ -2,8 +2,6 @@ package dfw
 
 import (
 	"fmt"
-	"strings"
-	"text/tabwriter"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -126,20 +124,12 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 }
 
 func (d *DFW) OriginalRulesStrFormatted() string {
-	var builder strings.Builder
-	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
-	fmt.Fprintln(writer, "original rules:")
-	fmt.Fprintln(writer, getRulesFormattedHeaderLine())
+	header := getRulesHeader()
+	lines := [][]string{}
 	for _, c := range d.CategoriesSpecs {
-		for _, ruleStr := range c.originalRulesStr() {
-			if ruleStr == "" {
-				continue
-			}
-			fmt.Fprintln(writer, ruleStr)
-		}
+		lines = append(lines, c.originalRulesComponentsStr()...)
 	}
-	writer.Flush()
-	return builder.String()
+	return "original rules:\n" + common.GenerateTableStringWithColors(header, lines)
 }
 
 // return a string rep that shows the fw-rules in all categories

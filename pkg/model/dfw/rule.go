@@ -272,8 +272,8 @@ func (f *FwRule) getDstString() string {
 	return dstGroups
 }
 
-func getRulesFormattedHeaderLine() string {
-	var rulePropertiesHeaderList = []string{
+func getRulesHeader() []string {
+	return []string{
 		"ruleID",
 		"ruleName",
 		"src",
@@ -285,28 +285,22 @@ func getRulesFormattedHeaderLine() string {
 		"sec-policy",
 		"Category",
 	}
-	return fmt.Sprintf("%s%s%s",
-		common.Red,
-		strings.Join(rulePropertiesHeaderList, "\t"),
-		common.Reset)
 }
 
-// originalRuleStr returns a string representation of a single rule with original attribute values (including groups)
-func (f *FwRule) originalRuleStr() string {
+// originalRuleComponentsStr returns a string representation of a single rule with original attribute values (including groups)
+func (f *FwRule) originalRuleComponentsStr() []string {
 	const (
 		anyStr = "ANY"
 	)
-
 	if f.origRuleObj == nil && f.origDefaultRuleObj == nil {
 		f.ruleWarning("has no origRuleObj or origDefaultRuleObj")
-		return ""
+		return []string{}
 	}
 
 	// if this is a "default rule" from category with ConnectivityPreference configured,
 	// the rule object is of different type
 	if f.origRuleObj == nil && f.origDefaultRuleObj != nil {
-		return fmt.Sprintf("%s%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
-			common.Yellow,
+		return []string{
 			*f.origDefaultRuleObj.Id,
 			*f.origDefaultRuleObj.DisplayName,
 			// The default rule that gets created will be a any-any rule and applied
@@ -314,22 +308,20 @@ func (f *FwRule) originalRuleStr() string {
 			anyStr,
 			anyStr,
 			anyStr,
-			*f.origDefaultRuleObj.Action,
-			f.origDefaultRuleObj.Direction,
+			string(*f.origDefaultRuleObj.Action),
+			string(f.origDefaultRuleObj.Direction),
 			getDefaultRuleScope(f.origDefaultRuleObj),
 			f.secPolicyName,
 			f.secPolicyCategory,
-			common.Reset,
-		)
+		}
 	}
 
 	name := ""
 	if f.origRuleObj.DisplayName != nil {
 		name = *f.origRuleObj.DisplayName
 	}
-	return fmt.Sprintf("%s%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
-		common.Yellow,
-		f.RuleID,
+	return []string{
+		fmt.Sprintf("%d", f.RuleID),
 		name,
 		f.getSrcString(),
 		f.getDstString(),
@@ -339,6 +331,5 @@ func (f *FwRule) originalRuleStr() string {
 		strings.Join(f.origRuleObj.Scope, listSeparatorStr),
 		f.secPolicyName,
 		f.secPolicyCategory,
-		common.Reset,
-	)
+	}
 }
