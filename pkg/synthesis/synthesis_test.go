@@ -301,24 +301,29 @@ func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }
 
-func (synTest *synthesisTest) runTmpWithExpr(t *testing.T, mode testMode) {
+// todo tmp until expr fully supported by synthesis
+func (synTest *synthesisTest) runTmpWithExpr() {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
 	for _, vm := range rc.VirtualMachineList {
-		fmt.Printf("vm: %v with tags:\n\t", vm.Name())
-		for _, scopeAndTag := range vm.Tags {
-			scope := "Tag"
-			if scopeAndTag.Scope != "" {
-				scope = scopeAndTag.Scope
-			}
-			fmt.Printf("\t%v:%v\n", scope, scopeAndTag.Tag)
+		fmt.Printf("\tvm: %v with tags:\n\t", vm.Name())
+		for _, tag := range vm.Tags {
+			fmt.Printf("\t\ttag: %v\n", tag.Tag)
 		}
+	}
+	if len(rc.DomainList) == 0 {
+		fmt.Println("nothing in DomainList")
+		return
+	}
+	fmt.Printf("")
+	for _, group := range rc.DomainList[0].Resources.GroupList {
+		fmt.Printf("group: %v of expression %v\n", group.Name(), group.Expression.String())
 	}
 }
 
 func TestTmpExpr(t *testing.T) {
 	for i := range exprTests {
 		test := &exprTests[i]
-		test.runTmpWithExpr(t, OutputComparison)
+		test.runTmpWithExpr()
 	}
 }

@@ -52,6 +52,9 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	res.DomainList[0].Resources.GroupList = groupList
 	// groups defined by expr
 	for group, expr := range e.GroupsByExpr {
+		newGroup := newGroupByExample(group)
+		groupExpr := expr.exampleExprToExpr()
+		newGroup.Expression = *groupExpr
 		fmt.Printf("group: %v of: %v\n", group, expr.exampleExprToExpr().String())
 	}
 
