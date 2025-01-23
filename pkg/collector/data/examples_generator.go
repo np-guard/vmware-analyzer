@@ -37,11 +37,10 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	res.DomainList = append(res.DomainList, domainRsc)
 
 	// add groups
+	// defined by VMs
 	groupList := []collector.Group{}
 	for group, members := range e.GroupsByVMs {
-		newGroup := collector.Group{}
-		newGroup.Group.DisplayName = &group
-		newGroup.Group.Path = &group
+		newGroup := newGroupByExample(group)
 		for _, member := range members {
 			vmMember := collector.RealizedVirtualMachine{}
 			vmMember.RealizedVirtualMachine.DisplayName = &member
@@ -51,11 +50,22 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		groupList = append(groupList, newGroup)
 	}
 	res.DomainList[0].Resources.GroupList = groupList
+	// groups defined by expr
+	for group, expr := range e.GroupsByExpr {
+		fmt.Printf("group: %v of: %v\n", group, expr.exampleExprToExpr().String())
+	}
 
 	// add dfw
 	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
 	res.ServiceList = getServices()
 	return res
+}
+
+func newGroupByExample(name string) collector.Group {
+	newGroup := collector.Group{}
+	newGroup.Group.DisplayName = &name
+	newGroup.Group.Path = &name
+	return newGroup
 }
 
 func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
@@ -101,8 +111,8 @@ const (
 )
 
 type ExampleCond struct {
-	Tag   nsx.Tag
-	Equal bool // equal (true) or not equal (false)
+	Tag      nsx.Tag
+	NotEqual bool // equal (false) or not equal (true)
 }
 
 // ExampleExpr equiv to example_expr described above
@@ -187,6 +197,38 @@ func (e *Example) InitEmptyEnvAppCategories() {
 			CategoryType: collector.ApplicationStr,
 		},
 	}
+}
+
+func (exp *ExampleExpr) exampleExprToExpr() *collector.Expression {
+	cond1 := exp.Cond1.exampleCondToCond()
+	if exp.Op == Nop {
+		res := collector.Expression{cond1}
+		return &res
+	}
+	res := make(collector.Expression, 3)
+	res[0] = cond1
+	expOp := collector.ConjunctionOperator{}
+	conjOp := nsx.ConjunctionOperatorConjunctionOperatorAND
+	if exp.Op == Or {
+		conjOp = nsx.ConjunctionOperatorConjunctionOperatorOR
+	}
+	expOp.ConjunctionOperator.ConjunctionOperator = &conjOp
+	res[1] = &expOp
+	res[2] = exp.Cond2.exampleCondToCond()
+	return &res
+}
+
+func (cond *ExampleCond) exampleCondToCond() *collector.Condition {
+	condKey := nsx.ConditionKeyTag
+	memberType := nsx.ConditionMemberTypeVirtualMachine
+	operator := nsx.ConditionOperatorEQUALS
+	if cond.NotEqual {
+		operator = nsx.ConditionOperatorNOTEQUALS
+	}
+	res := collector.Condition{Condition: nsx.Condition{Key: &condKey, MemberType: &memberType, Operator: &operator,
+		Value: &cond.Tag.Tag}}
+	res.Condition.Value = &cond.Tag.Tag
+	return &res
 }
 
 func (e *Example) AddRuleToExampleInCategory(categoryType string, ruleToAdd *Rule) error {

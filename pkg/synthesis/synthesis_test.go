@@ -139,13 +139,6 @@ func TestPreprocessing(t *testing.T) {
 	}
 }
 
-func TestTmpExpr(t *testing.T) {
-	for i := range exprTests {
-		test := &exprTests[i]
-		test.runTmpWithExpr(t, OutputComparison)
-	}
-}
-
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
@@ -167,22 +160,6 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
-}
-
-func (synTest *synthesisTest) runTmpWithExpr(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
-	for _, vm := range rc.VirtualMachineList {
-		fmt.Printf("vm: %v with tags:\n\t", vm.Name())
-		for _, scopeAndTag := range vm.Tags {
-			scope := "Tag"
-			if scopeAndTag.Scope != "" {
-				scope = scopeAndTag.Scope
-			}
-			fmt.Printf("\t%v:%v\n", scope, scopeAndTag.Tag)
-		}
-	}
-
 }
 
 // todo - remove the allowOnly flag after supporting deny
@@ -322,4 +299,26 @@ func getTestsDirOut() string {
 // comparison should be insensitive to line comparators; cleaning strings from line comparators
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
+}
+
+func (synTest *synthesisTest) runTmpWithExpr(t *testing.T, mode testMode) {
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
+	for _, vm := range rc.VirtualMachineList {
+		fmt.Printf("vm: %v with tags:\n\t", vm.Name())
+		for _, scopeAndTag := range vm.Tags {
+			scope := "Tag"
+			if scopeAndTag.Scope != "" {
+				scope = scopeAndTag.Scope
+			}
+			fmt.Printf("\t%v:%v\n", scope, scopeAndTag.Tag)
+		}
+	}
+}
+
+func TestTmpExpr(t *testing.T) {
+	for i := range exprTests {
+		test := &exprTests[i]
+		test.runTmpWithExpr(t, OutputComparison)
+	}
 }
