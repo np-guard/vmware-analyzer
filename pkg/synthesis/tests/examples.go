@@ -511,6 +511,96 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 	},
 }
 
+var hogwartsAppToHousesPolicy = []data.Category{
+	{
+		Name:         "Gryffindor-to-Gryffindor-allow",
+		CategoryType: "Environment",
+		Rules: []data.Rule{
+			{
+				Name:     "allow-Gryffindor-to-Gryffindor",
+				ID:       10218,
+				Source:   "Gryffindor",
+				Dest:     "Gryffindor",
+				Services: []string{"ANY"},
+				Action:   data.JumpToApp,
+			},
+		},
+	},
+	{
+		Name:         "Hufflepuff-to-Hufflepuff-allow",
+		CategoryType: "Environment",
+		Rules: []data.Rule{
+			{
+				Name:     "allow-Hufflepuff-to-Hufflepuff",
+				ID:       10219,
+				Source:   "Hufflepuff",
+				Dest:     "Hufflepuff",
+				Services: []string{"ANY"},
+				Action:   data.JumpToApp,
+			},
+		},
+	},
+	{
+		Name:         "Slytherin-to-Slytherin-allow",
+		CategoryType: "Environment",
+		Rules: []data.Rule{
+			{
+				Name:     "allow-Slytherin-to-Slytherin",
+				ID:       10220,
+				Source:   "Slytherin",
+				Dest:     "Slytherin",
+				Services: []string{"ANY"},
+				Action:   data.JumpToApp,
+			},
+			{
+				Name:     "default-deny-env",
+				ID:       10218,
+				Source:   "ANY",
+				Dest:     "ANY",
+				Services: []string{"ANY"},
+				Action:   data.Drop,
+			},
+		},
+	},
+	{
+		Name:         "Intra-App-Policy",
+		CategoryType: "Application",
+		Rules: []data.Rule{
+			{
+				Name:     "Client-Access",
+				ID:       9195,
+				Source:   "ANY",
+				Dest:     "Web",
+				Services: []string{"ANY"},
+				Action:   data.Allow,
+			},
+			{
+				Name:     "Web-To-App-Access",
+				ID:       9196,
+				Source:   "Web",
+				Dest:     "App",
+				Services: []string{"ANY"},
+				Action:   data.Allow,
+			},
+			{
+				Name:     "App-To-DB-Access",
+				ID:       9197,
+				Source:   "App",
+				Dest:     "DB",
+				Services: []string{"ANY"},
+				Action:   data.Allow,
+			},
+		},
+	},
+	{
+		Name:         "Default-L3-Section",
+		CategoryType: "Application",
+		Rules: []data.Rule{
+			data.DefaultDenyRule(denyRuleIDEnv),
+		},
+	},
+}
+
 var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
@@ -522,95 +612,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 			"App":        {"Slytherin-App", "Gryffindor-App", "Hufflepuff-App"},
 			"DB":         {"Slytherin-DB", "Gryffindor-DB", "Hufflepuff-DB"},
 		},
-		Policies: []data.Category{
-			{
-				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: "Environment",
-				Rules: []data.Rule{
-					{
-						Name:     "allow-Gryffindor-to-Gryffindor",
-						ID:       10218,
-						Source:   "Gryffindor",
-						Dest:     "Gryffindor",
-						Services: []string{"ANY"},
-						Action:   data.JumpToApp,
-					},
-				},
-			},
-			{
-				Name:         "Hufflepuff-to-Hufflepuff-allow",
-				CategoryType: "Environment",
-				Rules: []data.Rule{
-					{
-						Name:     "allow-Hufflepuff-to-Hufflepuff",
-						ID:       10219,
-						Source:   "Hufflepuff",
-						Dest:     "Hufflepuff",
-						Services: []string{"ANY"},
-						Action:   data.JumpToApp,
-					},
-				},
-			},
-			{
-				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: "Environment",
-				Rules: []data.Rule{
-					{
-						Name:     "allow-Slytherin-to-Slytherin",
-						ID:       10220,
-						Source:   "Slytherin",
-						Dest:     "Slytherin",
-						Services: []string{"ANY"},
-						Action:   data.JumpToApp,
-					},
-					{
-						Name:     "default-deny-env",
-						ID:       10218,
-						Source:   "ANY",
-						Dest:     "ANY",
-						Services: []string{"ANY"},
-						Action:   data.Drop,
-					},
-				},
-			},
-			{
-				Name:         "Intra-App-Policy",
-				CategoryType: "Application",
-				Rules: []data.Rule{
-					{
-						Name:     "Client-Access",
-						ID:       9195,
-						Source:   "ANY",
-						Dest:     "Web",
-						Services: []string{"ANY"},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "Web-To-App-Access",
-						ID:       9196,
-						Source:   "Web",
-						Dest:     "App",
-						Services: []string{"ANY"},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "App-To-DB-Access",
-						ID:       9197,
-						Source:   "App",
-						Dest:     "DB",
-						Services: []string{"ANY"},
-						Action:   data.Allow,
-					},
-				},
-			},
-			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
-			},
-		},
+		Policies: hogwartsAppToHousesPolicy,
 	},
 	DisjointGroups: [][]string{
 		{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore"},
@@ -753,95 +755,7 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 		"DB":         {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
 		"Web":        {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "Web"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
 		"App":        {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "App"}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
-	Policies: []data.Category{
-		{
-			Name:         "Gryffindor-to-Gryffindor-allow",
-			CategoryType: "Environment",
-			Rules: []data.Rule{
-				{
-					Name:     "allow-Gryffindor-to-Gryffindor",
-					ID:       10218,
-					Source:   "Gryffindor",
-					Dest:     "Gryffindor",
-					Services: []string{"ANY"},
-					Action:   data.JumpToApp,
-				},
-			},
-		},
-		{
-			Name:         "Hufflepuff-to-Hufflepuff-allow",
-			CategoryType: "Environment",
-			Rules: []data.Rule{
-				{
-					Name:     "allow-Hufflepuff-to-Hufflepuff",
-					ID:       10219,
-					Source:   "Hufflepuff",
-					Dest:     "Hufflepuff",
-					Services: []string{"ANY"},
-					Action:   data.JumpToApp,
-				},
-			},
-		},
-		{
-			Name:         "Slytherin-to-Slytherin-allow",
-			CategoryType: "Environment",
-			Rules: []data.Rule{
-				{
-					Name:     "allow-Slytherin-to-Slytherin",
-					ID:       10220,
-					Source:   "Slytherin",
-					Dest:     "Slytherin",
-					Services: []string{"ANY"},
-					Action:   data.JumpToApp,
-				},
-				{
-					Name:     "default-deny-env",
-					ID:       10218,
-					Source:   "ANY",
-					Dest:     "ANY",
-					Services: []string{"ANY"},
-					Action:   data.Drop,
-				},
-			},
-		},
-		{
-			Name:         "Intra-App-Policy",
-			CategoryType: "Application",
-			Rules: []data.Rule{
-				{
-					Name:     "Client-Access",
-					ID:       9195,
-					Source:   "ANY",
-					Dest:     "Web",
-					Services: []string{"ANY"},
-					Action:   data.Allow,
-				},
-				{
-					Name:     "Web-To-App-Access",
-					ID:       9196,
-					Source:   "Web",
-					Dest:     "App",
-					Services: []string{"ANY"},
-					Action:   data.Allow,
-				},
-				{
-					Name:     "App-To-DB-Access",
-					ID:       9197,
-					Source:   "App",
-					Dest:     "DB",
-					Services: []string{"ANY"},
-					Action:   data.Allow,
-				},
-			},
-		},
-		{
-			Name:         "Default-L3-Section",
-			CategoryType: "Application",
-			Rules: []data.Rule{
-				data.DefaultDenyRule(denyRuleIDEnv),
-			},
-		},
-	},
+	Policies: hogwartsAppToHousesPolicy,
 },
 }
 
