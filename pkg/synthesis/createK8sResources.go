@@ -2,7 +2,9 @@ package synthesis
 
 import (
 	"fmt"
+	"os/exec"
 	"path"
+	"path/filepath"
 	"slices"
 
 	core "k8s.io/api/core/v1"
@@ -15,6 +17,7 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -32,11 +35,7 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 		return err
 	}
 	for _, format := range []string{"txt", "dot"} {
-		out, err := k8sAnalyzer(outDir, format)
-		if err != nil {
-			return err
-		}
-		err = common.WriteToFile(path.Join(outDir, "k8s_connectivity."+format), out)
+		err := k8sAnalyzer(outDir, path.Join(outDir, "k8s_connectivity."+format), format)
 		if err != nil {
 			return err
 		}
@@ -183,6 +182,7 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 
 ///////////////////////////////////////////////////////////////////////////
 
-func k8sAnalyzer(outDir, format string) (string, error) {
-	return "",nil
+func k8sAnalyzer(k8sDir, outfile, format string) error {
+	cmd := exec.Command(filepath.Join(projectpath.Root, "bin", "k8snetpolicy"), "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
+	return cmd.Run()
 }
