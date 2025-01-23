@@ -108,6 +108,5 @@ func editLineWithColor(line []string, color string) {
 		return
 	}
 	line[0] = color + line[0]
-	line[maxInd] = line[maxInd] + reset
-
+	line[maxInd] += reset
 }

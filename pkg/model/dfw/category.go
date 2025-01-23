@@ -210,7 +210,8 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 		c.ProcessedRules.addInboundRule(inbound)
 		c.ProcessedRules.addOutboundRule(outbound)
 	} else {
-		logging.Debugf("Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)
+		logging.Debugf(
+			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)
 	}
 }
 

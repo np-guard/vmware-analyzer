@@ -18,6 +18,8 @@ type DFW struct {
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
+//
+//nolint:gocritic // temporarily keep commented-out code
 func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())

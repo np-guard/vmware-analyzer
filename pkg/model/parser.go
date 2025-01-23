@@ -454,7 +454,9 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config
-			logging.Debugf("warning: could not find VM id %s in the parsed config, ignoring that VM for group members of group %s", vmID, *group.DisplayName)
+			logging.Debugf(
+				"warning: could not find VM id %s in the parsed config, ignoring that VM for group members of group %s",
+				vmID, *group.DisplayName)
 		}
 	}
 	p.groupToVMsListCache[group] = res

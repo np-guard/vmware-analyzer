@@ -101,6 +101,7 @@ func (e *edge) tableStringComponents() []string {
 	return []string{e.src.Name(), e.dst.Name(), labelStr}
 }
 
+//nolint: gocritic // keep  commented-out code for now
 /*func (e *edge) string() string {
 	str := fmt.Sprintf("%s => %s", e.src.Name(), e.dst.Name())
 	if e.label != nil {
@@ -117,6 +118,7 @@ func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 }
 
 func (eg *EdgesGraph) String() string {
+	//nolint: gocritic // keep  commented-out code for now
 	/*edgesStr := SortedJoinCustomStrFuncSlice(eg.edges, func(e edge) string { return e.string() }, "\n")
 	return fmt.Sprintf("%s:\n%s", eg.header, edgesStr)*/
 
