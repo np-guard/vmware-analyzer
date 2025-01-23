@@ -845,6 +845,7 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 },
 }
 
+// ExampleExprTwoConds todo: this example uses not yet supported scope
 var ExampleExprTwoConds = ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprSimple",
 	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
