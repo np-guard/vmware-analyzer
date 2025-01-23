@@ -202,13 +202,15 @@ func (e *Example) InitEmptyEnvAppCategories() {
 	}
 }
 
+const nonTrivialExprSize = 3
+
 func (exp *ExampleExpr) exampleExprToExpr() *collector.Expression {
 	cond1 := exp.Cond1.exampleCondToCond()
 	if exp.Op == Nop {
 		res := collector.Expression{cond1}
 		return &res
 	}
-	res := make(collector.Expression, 3)
+	res := make(collector.Expression, nonTrivialExprSize)
 	res[0] = cond1
 	expOp := collector.ConjunctionOperator{}
 	conjOp := nsx.ConjunctionOperatorConjunctionOperatorAND

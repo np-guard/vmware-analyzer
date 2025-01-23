@@ -305,9 +305,9 @@ func cleanStr(str string) string {
 func (synTest *synthesisTest) runTmpWithExpr() {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
-	for _, vm := range rc.VirtualMachineList {
-		fmt.Printf("\tvm: %v with tags:\n\t", vm.Name())
-		for _, tag := range vm.Tags {
+	for i := range rc.VirtualMachineList {
+		fmt.Printf("\tvm: %v with tags:\n\t", rc.VirtualMachineList[i].Name())
+		for _, tag := range rc.VirtualMachineList[i].Tags {
 			fmt.Printf("\t\ttag: %v\n", tag.Tag)
 		}
 	}
@@ -316,8 +316,9 @@ func (synTest *synthesisTest) runTmpWithExpr() {
 		return
 	}
 	fmt.Printf("")
-	for _, group := range rc.DomainList[0].Resources.GroupList {
-		fmt.Printf("group: %v of expression %v\n", group.Name(), group.Expression.String())
+	for i := range rc.DomainList[0].Resources.GroupList {
+		fmt.Printf("group: %v of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Name(),
+			rc.DomainList[0].Resources.GroupList[i].Expression.String())
 	}
 }
 
