@@ -2,6 +2,7 @@ package synthesis
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
@@ -183,6 +184,29 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 ///////////////////////////////////////////////////////////////////////////
 
 func k8sAnalyzer(k8sDir, outfile, format string) error {
-	cmd := exec.Command(filepath.Join(projectpath.Root, "bin", "k8snetpolicy"), "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
-	return cmd.Run()
+	analyzerExec := "k8snetpolicy"
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	var analyzerExecPath string
+	atPath, _ := exec.LookPath(analyzerExec)
+	potentialAnalyzerExecPaths := []string{
+		filepath.Join(exPath, analyzerExec),
+		filepath.Join(projectpath.Root, "bin", analyzerExec),
+		atPath,
+	}
+	for _, path := range potentialAnalyzerExecPaths {
+		if _, err := os.Stat(path); err == nil {
+			analyzerExecPath = path
+			break
+		}
+	}
+	if analyzerExecPath == "" {
+		return nil
+	}
+	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
+	err = cmd.Run()
+	return err
 }
