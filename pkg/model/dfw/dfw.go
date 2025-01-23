@@ -6,13 +6,14 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 type DFW struct {
 	CategoriesSpecs []*CategorySpec // ordered list of categories
-	defaultAction   RuleAction      // global default (?)
+	//defaultAction   RuleAction      // global default (?)
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
@@ -68,8 +69,8 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
-		// dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
+		//logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
+		//	dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
 		// logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
 		// logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
 		// logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
@@ -117,9 +118,13 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	}
 	// todo: add warning if there are remaining non determined connections
 
-	if d.defaultAction == ActionAllow {
+	// TODO: add test and issue warning on allNotDeterminedConns.accumulatedConns if there is no defaule rule in last category
+	/*if d.defaultAction == ActionAllow {
 		// if the last category has no default, use the "global" default (todo: check where this value is configured in the api)
 		allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(allNotDeterminedConns.accumulatedConns)
+	}*/
+	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
+		logging.Debugf("no default rule - unexpected connections for which no decision was found: %s", allNotDeterminedConns.accumulatedConns.String())
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
 	return allAllowedConns, allDeniedConns, delegatedConns
@@ -136,16 +141,16 @@ func (d *DFW) OriginalRulesStrFormatted() string {
 
 // return a string rep that shows the fw-rules in all categories
 func (d *DFW) String() string {
-	return common.JoinStringifiedSlice(d.CategoriesSpecs, lineSeparatorStr)
+	return common.JoinStringifiedSlice(d.CategoriesSpecs, common.NewLine)
 }
 
 func (d *DFW) AllEffectiveRules() string {
 	inboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
 		func(c *CategorySpec) string { return c.inboundEffectiveRules() },
-		lineSeparatorStr)
+		common.NewLine)
 	outboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
 		func(c *CategorySpec) string { return c.outboundEffectiveRules() },
-		lineSeparatorStr)
+		common.NewLine)
 
 	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, inboundResStr)
 	outbound := fmt.Sprintf("\nOutbound effective rules only:%s%s", common.ShortSep, outboundResStr)
@@ -189,22 +194,19 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 }*/
 
 // NewEmptyDFW returns new DFW with global default as from input
-func NewEmptyDFW(globalDefaultAllow bool) *DFW {
-	res := &DFW{
-		defaultAction: ActionDeny,
-	}
-	if globalDefaultAllow {
-		res.defaultAction = ActionAllow
-	}
+func NewEmptyDFW() *DFW {
+	res := &DFW{}
 	for _, c := range collector.CategoriesList {
 		res.CategoriesSpecs = append(res.CategoriesSpecs, newEmptyCategory(c, res))
 	}
 	return res
 }
 
+/*
 func (d *DFW) GlobalDefaultAllow() bool {
 	return d.defaultAction == ActionAllow
 }
+*/
 
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 	d.pathsToDisplayNames = m

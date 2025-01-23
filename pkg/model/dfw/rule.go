@@ -15,11 +15,6 @@ import (
 
 type RuleAction string
 
-const (
-	listSeparatorStr = ","
-	lineSeparatorStr = "\n"
-)
-
 /*var egressDirections = []string{"OUT", "IN_OUT"}
 var ingressDirections = []string{"IN", "IN_OUT"}*/
 
@@ -27,7 +22,7 @@ const (
 	ActionAllow     RuleAction = "allow"
 	ActionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
 	ActionJumpToApp RuleAction = "jump_to_application"
-	ActionNone      RuleAction = "none" // to mark that a default rule is not configured
+	//ActionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
 /*func actionFromString(input string) RuleAction {
@@ -51,7 +46,7 @@ func actionFromString(s string) RuleAction {
 	case string(ActionJumpToApp):
 		return ActionJumpToApp
 	default:
-		return ActionNone
+		panic("invalid input action")
 	}
 }
 
@@ -197,7 +192,7 @@ func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 }*/
 
 func vmsString(vms []*endpoints.VM) string {
-	return common.JoinCustomStrFuncSlice(vms, func(vm *endpoints.VM) string { return vm.Name() }, listSeparatorStr)
+	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }
 
 // return a string representation of a single rule
@@ -219,7 +214,7 @@ func getDefaultRuleScope(r *collector.FirewallRule) string {
 				return *r.TargetDisplayName
 			}
 			return ""
-		}, listSeparatorStr)
+		}, common.CommaSeparator)
 }
 
 func (f *FwRule) pathToShortPathString(path string) string {
@@ -249,7 +244,7 @@ func (f *FwRule) pathToShortPathString(path string) string {
 
 func (f *FwRule) getShortPathsString(paths []string) string {
 	return common.JoinCustomStrFuncSlice(paths,
-		func(p string) string { return f.pathToShortPathString(p) }, listSeparatorStr)
+		func(p string) string { return f.pathToShortPathString(p) }, common.CommaSeparator)
 }
 
 func getSrcOrDstExcludedStr(groupsStr string) string {
@@ -328,7 +323,7 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		// todo: origRuleObj.Services is not always the services, can also be service_entries
 		f.getShortPathsString(f.origRuleObj.Services),
 		string(f.Action), f.direction,
-		strings.Join(f.origRuleObj.Scope, listSeparatorStr),
+		strings.Join(f.origRuleObj.Scope, common.CommaSeparator),
 		f.secPolicyName,
 		f.secPolicyCategory,
 	}

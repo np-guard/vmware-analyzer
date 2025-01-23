@@ -35,9 +35,9 @@ func (e *EffectiveRules) addOutboundRule(r *FwRule) {
 }
 
 type CategorySpec struct {
-	Category       collector.DfwCategory
-	Rules          []*FwRule // ordered list of rules
-	defaultAction  RuleAction
+	Category collector.DfwCategory
+	Rules    []*FwRule // ordered list of rules
+	//defaultAction  RuleAction
 	ProcessedRules *EffectiveRules // ordered list of effective rules
 	dfwRef         *DFW
 }
@@ -131,7 +131,9 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 		}
 	}
 	nonDet = emptyConnectionsAndRules()
-	switch c.defaultAction {
+	nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(
+		jumpToAppConns.accumulatedConns) // connections not determined by this category
+	/*switch c.defaultAction {
 	case ActionNone: // no default configured for this category
 		nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(
 			jumpToAppConns.accumulatedConns)
@@ -151,7 +153,7 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 		}
 	default:
 		return nil, nil, nil, nil // invalid default action (todo: add err? )
-	}
+	}*/
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
@@ -163,21 +165,20 @@ func (c *CategorySpec) originalRulesComponentsStr() [][]string {
 	return rulesStr
 }
 func (c *CategorySpec) String() string {
-	rulesStr := common.JoinStringifiedSlice(c.Rules, lineSeparatorStr)
-	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.Category.String(),
-		rulesStr, string(c.defaultAction))
+	rulesStr := common.JoinStringifiedSlice(c.Rules, common.NewLine)
+	return fmt.Sprintf("category: %s\nrules:\n%s\n", c.Category.String(), rulesStr)
 }
 
 func (c *CategorySpec) inboundEffectiveRules() string {
 	return common.JoinCustomStrFuncSlice(c.ProcessedRules.Inbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
-		lineSeparatorStr)
+		common.NewLine)
 }
 
 func (c *CategorySpec) outboundEffectiveRules() string {
 	return common.JoinCustomStrFuncSlice(c.ProcessedRules.Outbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
-		lineSeparatorStr)
+		common.NewLine)
 }
 
 func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
@@ -217,9 +218,9 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 
 func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
-		Category:       c,
-		dfwRef:         d,
-		defaultAction:  ActionNone,
+		Category: c,
+		dfwRef:   d,
+		//defaultAction:  ActionNone,
 		ProcessedRules: &EffectiveRules{},
 	}
 }

@@ -152,7 +152,7 @@ func (p *NSXConfigParser) getVMs() {
 }
 
 func (p *NSXConfigParser) getDFW() {
-	p.configRes.Fw = dfw.NewEmptyDFW(false) // TODO: what is global default?
+	p.configRes.Fw = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.SecurityPolicyList {
