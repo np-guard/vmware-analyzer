@@ -101,13 +101,13 @@ func (e *edge) tableStringComponents() []string {
 	return []string{e.src.Name(), e.dst.Name(), labelStr}
 }
 
-func (e *edge) string() string {
+/*func (e *edge) string() string {
 	str := fmt.Sprintf("%s => %s", e.src.Name(), e.dst.Name())
 	if e.label != nil {
 		str += fmt.Sprintf(": %s", e.label.String())
 	}
 	return str
-}
+}*/
 
 func (eg *EdgesGraph) AddEdge(src, dst node, label label) {
 	if src == nil || dst == nil {
@@ -124,7 +124,7 @@ func (eg *EdgesGraph) String() string {
 	for _, e := range eg.edges {
 		lines = append(lines, e.tableStringComponents())
 	}
-	return eg.header + NewLine + GenerateTableString(eg.tableHeaderComponents, lines)
+	return eg.header + NewLine + GenerateTableString(eg.tableHeaderComponents, lines, &TableOptions{SortLines: true})
 }
 
 func (eg *EdgesGraph) JSONString() (string, error) {

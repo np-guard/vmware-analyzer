@@ -129,7 +129,7 @@ func (d *DFW) OriginalRulesStrFormatted() string {
 	for _, c := range d.CategoriesSpecs {
 		lines = append(lines, c.originalRulesComponentsStr()...)
 	}
-	return "original rules:\n" + common.GenerateTableStringWithColors(header, lines)
+	return "original rules:\n" + common.GenerateTableString(header, lines, &common.TableOptions{Colors: true})
 }
 
 // return a string rep that shows the fw-rules in all categories

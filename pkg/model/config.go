@@ -78,7 +78,7 @@ func (c *config) getVMGroupsStr() string {
 		groupsStr := common.JoinCustomStrFuncSlice(groups, func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{vm.Name(), groupsStr})
 	}
-	return common.GenerateTableString(header, lines)
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
 }
 
 func (c *config) getVMsInfoStr() string {
@@ -87,5 +87,5 @@ func (c *config) getVMsInfoStr() string {
 	for _, vm := range c.vms {
 		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})
 	}
-	return common.GenerateTableString(header, lines)
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
 }

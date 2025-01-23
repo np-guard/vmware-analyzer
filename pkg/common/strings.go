@@ -68,24 +68,38 @@ func SortedJoinCustomStrFuncSlice[S any](slice []S, f func(s S) string, separato
 	return strings.Join(resStrSlice, separator)
 }
 
+type TableOptions struct {
+	Colors    bool
+	SortLines bool
+}
+
 // GenerateTableString returns a string in table format for input header and lines
-func GenerateTableString(header []string, lines [][]string) string {
+func GenerateTableString(header []string, lines [][]string, opts *TableOptions) string {
 	var builder strings.Builder
 	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
-	fmt.Fprintln(writer, strings.Join(header, Tab))
-	for _, line := range lines {
-		fmt.Fprintln(writer, strings.Join(line, Tab))
+	lineFunc := func(s []string) string { return strings.Join(s, Tab) }
+
+	if opts != nil && opts.Colors {
+		editLinesWithColor(header, lines)
 	}
+
+	fmt.Fprintln(writer, lineFunc(header))
+	if opts != nil && opts.SortLines {
+		fmt.Fprintln(writer, SortedJoinCustomStrFuncSlice(lines, lineFunc, NewLine))
+	} else {
+		fmt.Fprintln(writer, JoinCustomStrFuncSlice(lines, lineFunc, NewLine))
+	}
+
+	fmt.Fprintln(writer, "")
 	writer.Flush()
 	return builder.String()
 }
 
-func GenerateTableStringWithColors(header []string, lines [][]string) string {
+func editLinesWithColor(header []string, lines [][]string) {
 	editLineWithColor(header, red)
 	for i := range lines {
 		editLineWithColor(lines[i], yellow)
 	}
-	return GenerateTableString(header, lines)
 }
 
 func editLineWithColor(line []string, color string) {
