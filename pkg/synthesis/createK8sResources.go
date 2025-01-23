@@ -14,7 +14,6 @@ import (
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 
-	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -185,11 +184,5 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 ///////////////////////////////////////////////////////////////////////////
 
 func k8sAnalyzer(outDir, format string) (string, error) {
-	analyzer := connlist.NewConnlistAnalyzer(connlist.WithOutputFormat(format))
-
-	conns, _, err := analyzer.ConnlistFromDirPath(outDir)
-	if err != nil {
-		return "", err
-	}
-	return analyzer.ConnectionsListToString(conns)
+	return "",nil
 }
