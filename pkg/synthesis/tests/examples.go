@@ -733,20 +733,22 @@ var ExampleExprSingleScope = ExampleSynthesis{
 	},
 }
 
+var vmsHousesTags = map[string][]nsx.Tag{"Slytherin-DB": {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
+	"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
+	"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
+	"Hufflepuff-DB":  {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "DB"}},
+	"Hufflepuff-Web": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "Web"}},
+	"Hufflepuff-App": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "App"}},
+	"Gryffindor-DB":  {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "DB"}},
+	"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
+	"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}}
+
 var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprSimple",
 	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
 		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
 		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
-	VMsTags: map[string][]nsx.Tag{"Slytherin-DB": {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
-		"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
-		"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
-		"Hufflepuff-DB":  {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "DB"}},
-		"Hufflepuff-Web": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "Web"}},
-		"Hufflepuff-App": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "App"}},
-		"Gryffindor-DB":  {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "DB"}},
-		"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
-		"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}},
+	VMsTags: vmsHousesTags,
 	GroupsByExpr: map[string]data.ExampleExpr{
 		"Slytherin":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
 		"Gryffindor": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
@@ -765,16 +767,7 @@ var ExampleExprTwoConds = ExampleSynthesis{FromNSX: data.Example{
 	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
 		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
 		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
-	VMsTags: map[string][]nsx.Tag{
-		"Slytherin-DB":   {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "DB"}},
-		"Slytherin-Web":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "Web"}},
-		"Slytherin-App":  {{Scope: "House", Tag: "Slytherin"}, {Scope: "function", Tag: "App"}},
-		"Hufflepuff-DB":  {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "DB"}},
-		"Hufflepuff-Web": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "Web"}},
-		"Hufflepuff-App": {{Scope: "House", Tag: "Hufflepuff"}, {Scope: "function", Tag: "App"}},
-		"Gryffindor-DB":  {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "DB"}},
-		"Gryffindor-Web": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "Web"}},
-		"Gryffindor-App": {{Scope: "House", Tag: "Gryffindor"}, {Scope: "function", Tag: "App"}}},
+	VMsTags: vmsHousesTags,
 	GroupsByExpr: map[string]data.ExampleExpr{
 		"Slytherin":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
 		"Gryffindor": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
