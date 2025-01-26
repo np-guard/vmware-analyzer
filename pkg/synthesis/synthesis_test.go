@@ -100,13 +100,18 @@ var exprTests = []synthesisTest{
 		noHint: false,
 	},
 	{
-		name:   "ExampleExprTwoConds",
-		exData: tests.ExampleExprTwoConds,
+		name:   "ExampleExprTwoScopes",
+		exData: tests.ExampleExprTwoScopes,
 		noHint: false,
 	},
 	{
-		name:   "ExampleExprTwoScopes",
-		exData: tests.ExampleExprTwoScopes,
+		name:   "ExampleExprAndConds",
+		exData: tests.ExampleExprAndConds,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprOrConds",
+		exData: tests.ExampleExprOrConds,
 		noHint: false,
 	},
 }
@@ -303,12 +308,12 @@ func cleanStr(str string) string {
 
 // todo tmp until expr fully supported by synthesis
 func (synTest *synthesisTest) runTmpWithExpr() {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	for i := range rc.VirtualMachineList {
-		fmt.Printf("\tvm: %v with tags:\n\t", rc.VirtualMachineList[i].Name())
+		fmt.Printf("\tvm: %v with tags:\n", rc.VirtualMachineList[i].Name())
 		for _, tag := range rc.VirtualMachineList[i].Tags {
-			fmt.Printf("\t\ttag: %v\n", tag.Tag)
+			fmt.Printf("\t\t%v\n", tag.Tag)
 		}
 	}
 	if len(rc.DomainList) == 0 {

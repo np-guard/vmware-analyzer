@@ -761,8 +761,8 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 },
 }
 
-// ExampleExprTwoConds todo: this example uses not yet supported scope
-var ExampleExprTwoConds = ExampleSynthesis{FromNSX: data.Example{
+// ExampleExprAndConds todo: this example uses not yet supported scope
+var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprSimple",
 	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
 		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
@@ -801,10 +801,70 @@ var ExampleExprTwoConds = ExampleSynthesis{FromNSX: data.Example{
 					Action:   data.Allow,
 				},
 				{
-					Name:     "to-slytherin",
+					Name:     "to-Hufflepuff",
 					ID:       10218,
 					Source:   "ANY",
-					Dest:     "Gryffindor-no-DB",
+					Dest:     "Hufflepuff-no-DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+},
+}
+
+// ExampleExprOrConds todo: this example uses not yet supported scope
+var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
+	Name: "ExampleOrSimple",
+	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
+		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
+		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
+	VMsTags: vmsHousesTags,
+	GroupsByExpr: map[string]data.ExampleExpr{
+		"Slytherin":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Gryffindor": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Hufflepuff": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Hufflepuff"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Dumbledore": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Dumbledore"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Slytherin-or-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Slytherin"}}, Op: data.Or,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, NotEqual: true}},
+		"Hufflepuff-or-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Hufflepuff"}}, Op: data.Or,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, NotEqual: true}},
+		"Gryffindor-or-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: "Gryffindor"}}, Op: data.Or,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, NotEqual: true}}},
+	Policies: []data.Category{
+		{
+			Name:         "Protect-DBs",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "to-Slytherin",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "Slytherin-or-no-DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Gryffindor",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "Gryffindor-or-no-DB",
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Hufflepuff",
+					ID:       10218,
+					Source:   "ANY",
+					Dest:     "Hufflepuff-or-no-DB",
 					Services: []string{"ANY"},
 					Action:   data.Allow,
 				},
