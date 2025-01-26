@@ -8,6 +8,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -60,6 +61,8 @@ func (policies *k8sPolicies) symbolicRuleToPolicies(model *AbstractModelSyn, rul
 	for _, p := range *paths {
 		if !p.Conn.TCPUDPSet().IsEmpty() {
 			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action)
+		} else {
+			logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
 		}
 	}
 }

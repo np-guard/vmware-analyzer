@@ -31,7 +31,7 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
 		return err
 	}
-	logging.Debugf("%d k8s network policies, and %d admin network policies were generated at %s\n",
+	logging.Debugf("%d k8s network policies, and %d admin network policies were generated at %s",
 		len(policies), len(adminPolicies), outDir)
 	for _, format := range []string{"txt", "dot"} {
 		out, err := k8sAnalyzer(outDir, format)
