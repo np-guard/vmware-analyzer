@@ -185,18 +185,27 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 
 func k8sAnalyzer(k8sDir, outfile, format string) error {
 	analyzerExec := "k8snetpolicy"
-	ex, err := os.Executable()
+
+	// looking for the analyzerExec in:
+	// 1. the location of the exec that currently running (the vmware-analyzer)
+	// 2. the bin/ directory of this project
+	// 3. in $PATH environment variable 
+	runningExec, err := os.Executable()
 	if err != nil {
-		panic(err)
+		return err
 	}
-	exPath := filepath.Dir(ex)
-	var analyzerExecPath string
-	atPath, _ := exec.LookPath(analyzerExec)
+	runningExecDir := filepath.Dir(runningExec)
 	potentialAnalyzerExecPaths := []string{
-		filepath.Join(exPath, analyzerExec),
+		filepath.Join(runningExecDir, analyzerExec),
 		filepath.Join(projectpath.Root, "bin", analyzerExec),
-		atPath,
 	}
+
+	atPath, err := exec.LookPath(analyzerExec)
+	if err == nil{
+		potentialAnalyzerExecPaths = append(potentialAnalyzerExecPaths, atPath)
+	}
+
+	var analyzerExecPath string
 	for _, path := range potentialAnalyzerExecPaths {
 		if _, err := os.Stat(path); err == nil {
 			analyzerExecPath = path
