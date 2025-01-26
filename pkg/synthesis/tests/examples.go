@@ -654,10 +654,10 @@ var ExampleExprSingleScope = ExampleSynthesis{
 		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
 			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
 		GroupsByExpr: map[string]data.ExampleExpr{
-			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop},
+			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop},
+			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop},
+			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}, Op: data.Nop}},
 		Policies: []data.Category{
 			{
 				Name:         "From-Dumbledore-connection",
@@ -775,13 +775,13 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
 	GroupsByExpr: map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
+		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop},
+		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop},
+		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop},
+		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop}},
 	Policies: hogwartsAppToHousesPolicy,
 },
 }
@@ -812,10 +812,10 @@ var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
 
 func andOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
 	return map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
+		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop},
 		"Slytherin-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
 			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}},
 		"Hufflepuff-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,

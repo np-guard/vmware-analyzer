@@ -116,6 +116,8 @@ var groupsByExprTests = []synthesisTest{
 	},
 }
 
+var allTests = append(groupsByVmsTests, groupsByExprTests...)
+
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
@@ -310,26 +312,20 @@ func cleanStr(str string) string {
 func (synTest *synthesisTest) runTmpWithExpr() {
 	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	for i := range rc.VirtualMachineList {
-		fmt.Printf("\tvm: %v with tags:\n", rc.VirtualMachineList[i].Name())
-		for _, tag := range rc.VirtualMachineList[i].Tags {
-			fmt.Printf("\t\t%v\n", tag.Tag)
-		}
-	}
-	if len(rc.DomainList) == 0 {
-		fmt.Println("nothing in DomainList")
-		return
-	}
-	fmt.Printf("")
 	for i := range rc.DomainList[0].Resources.GroupList {
-		fmt.Printf("group: %v of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Name(),
-			rc.DomainList[0].Resources.GroupList[i].Expression.String())
+		expr := rc.DomainList[0].Resources.GroupList[i].Expression
+		fmt.Printf("group: %v ", rc.DomainList[0].Resources.GroupList[i].Name())
+		if expr != nil {
+			fmt.Printf("of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Expression.String())
+		} else {
+			fmt.Printf("has no expression; must be defined by vms\n")
+		}
 	}
 }
 
 func TestTmpExpr(t *testing.T) {
-	for i := range groupsByExprTests {
-		test := &groupsByExprTests[i]
+	for i := range allTests {
+		test := &allTests[i]
 		test.runTmpWithExpr()
 	}
 }

@@ -49,14 +49,14 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		}
 		groupList = append(groupList, newGroup)
 	}
-	res.DomainList[0].Resources.GroupList = groupList
 	// groups defined by expr
 	for group, expr := range e.GroupsByExpr {
 		newGroup := newGroupByExample(group)
 		groupExpr := expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
-		fmt.Printf("group: %v of: %v\n", group, expr.exampleExprToExpr().String())
+		groupList = append(groupList, newGroup)
 	}
+	res.DomainList[0].Resources.GroupList = groupList
 
 	// add dfw
 	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
