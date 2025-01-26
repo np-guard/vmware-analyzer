@@ -2,6 +2,7 @@ package synthesis
 
 import (
 	"fmt"
+	"slices"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,8 +34,10 @@ func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*netw
 			prioritiesRules[i*2] = p.inbound[i]
 			prioritiesRules[i*2+1] = p.outbound[i]
 		}
-		prioritiesRules = append(prioritiesRules, p.inbound[minNumOrRuleInDirection:]...)
-		prioritiesRules = append(prioritiesRules, p.outbound[minNumOrRuleInDirection:]...)
+		prioritiesRules = slices.Concat(
+			prioritiesRules,
+			p.inbound[minNumOrRuleInDirection:],
+			p.outbound[minNumOrRuleInDirection:])
 		for _, rule := range p.inbound {
 			isInbound[rule] = true
 		}
