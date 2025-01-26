@@ -42,7 +42,7 @@ type synthesisTest struct {
 	noHint                bool                  // run also with no hint
 }
 
-var allTests = []synthesisTest{
+var groupsByVmsTests = []synthesisTest{
 	{
 		name:                  "ExampleDumbeldore",
 		exData:                tests.ExampleDumbeldore,
@@ -93,7 +93,7 @@ var allTests = []synthesisTest{
 	},
 }
 
-var exprTests = []synthesisTest{
+var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
 		exData: tests.ExampleExprSingleScope,
@@ -135,8 +135,8 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
+	for i := range groupsByVmsTests {
+		test := &groupsByVmsTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
@@ -270,7 +270,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 // calls to addDebugFiles  - see comments there
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for _, test := range allTests {
+	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
 			// to generate output comment the following line and uncomment the one after
 			test.runConvertToAbstract(t, OutputComparison)
@@ -328,8 +328,8 @@ func (synTest *synthesisTest) runTmpWithExpr() {
 }
 
 func TestTmpExpr(t *testing.T) {
-	for i := range exprTests {
-		test := &exprTests[i]
+	for i := range groupsByExprTests {
+		test := &groupsByExprTests[i]
 		test.runTmpWithExpr()
 	}
 }
