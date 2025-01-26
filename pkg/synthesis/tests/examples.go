@@ -24,13 +24,13 @@ const (
 	app   = "App"
 	web   = "Web"
 
-	slyDb  = "Slytherin-DB"
+	slyDB  = "Slytherin-DB"
 	slyApp = "Slytherin-App"
 	slyWeb = "Slytherin-Web"
-	gryDb  = "Gryffindor-DB"
+	gryDB  = "Gryffindor-DB"
 	gryApp = "Gryffindor-App"
 	gryWeb = "Gryffindor-Web"
-	hufDb  = "Hufflepuff-DB"
+	hufDB  = "Hufflepuff-DB"
 	hufApp = "Hufflepuff-App"
 	hufWeb = "Hufflepuff-Web"
 )
@@ -328,16 +328,16 @@ micro segmentation
 */
 
 var ExampleHogwarts = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDb, hufWeb, hufApp, hufDb,
-		gryWeb, gryApp, gryDb, dum1, dum2},
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+		gryWeb, gryApp, gryDB, dum1, dum2},
 		GroupsByVMs: map[string][]string{
-			sly: {slyWeb, slyApp, slyDb},
-			huf: {hufWeb, hufApp, hufDb},
-			gry: {gryWeb, gryApp, gryDb},
+			sly: {slyWeb, slyApp, slyDB},
+			huf: {hufWeb, hufApp, hufDB},
+			gry: {gryWeb, gryApp, gryDB},
 			dum: {dum1, dum2},
 			web: {slyWeb, gryWeb, hufWeb},
 			app: {slyApp, gryApp, hufApp},
-			db:  {slyDb, gryDb, hufDb},
+			db:  {slyDB, gryDB, hufDB},
 		},
 		Policies: []data.Category{
 			{
@@ -454,8 +454,8 @@ var ExampleHogwarts = ExampleSynthesis{
 }
 
 var ExampleHogwartsSimpler = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDb,
-		gryWeb, gryApp, gryDb},
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
+		gryWeb, gryApp, gryDB},
 		GroupsByVMs: map[string][]string{
 			sly: {slyWeb, slyApp},
 			gry: {gryWeb, gryApp},
@@ -627,15 +627,15 @@ var hogwartsAppToHousesPolicy = []data.Category{
 }
 
 var ExampleHogwartsNoDumbledore = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDb, hufWeb, hufApp, hufDb,
-		gryWeb, gryApp, gryDb},
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+		gryWeb, gryApp, gryDB},
 		GroupsByVMs: map[string][]string{
-			sly: {slyWeb, slyApp, slyDb},
-			huf: {hufWeb, hufApp, hufDb},
-			gry: {gryWeb, gryApp, gryDb},
+			sly: {slyWeb, slyApp, slyDB},
+			huf: {hufWeb, hufApp, hufDB},
+			gry: {gryWeb, gryApp, gryDB},
 			web: {slyWeb, gryWeb, hufWeb},
 			app: {slyApp, gryApp, hufApp},
-			db:  {slyDb, gryDb, hufDb},
+			db:  {slyDB, gryDB, hufDB},
 		},
 		Policies: hogwartsAppToHousesPolicy,
 	},
@@ -758,21 +758,21 @@ var ExampleExprSingleScope = ExampleSynthesis{
 	},
 }
 
-var vmsHousesTags = map[string][]nsx.Tag{slyDb: {{Scope: house, Tag: sly}, {Scope: funct, Tag: db}},
+var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scope: funct, Tag: db}},
 	slyWeb: {{Scope: house, Tag: sly}, {Scope: funct, Tag: web}},
 	slyApp: {{Scope: house, Tag: sly}, {Scope: funct, Tag: app}},
-	hufDb:  {{Scope: house, Tag: huf}, {Scope: funct, Tag: db}},
+	hufDB:  {{Scope: house, Tag: huf}, {Scope: funct, Tag: db}},
 	hufWeb: {{Scope: house, Tag: huf}, {Scope: funct, Tag: web}},
 	hufApp: {{Scope: house, Tag: huf}, {Scope: funct, Tag: app}},
-	gryDb:  {{Scope: house, Tag: gry}, {Scope: funct, Tag: db}},
+	gryDB:  {{Scope: house, Tag: gry}, {Scope: funct, Tag: db}},
 	gryWeb: {{Scope: house, Tag: gry}, {Scope: funct, Tag: web}},
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
 var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprSimple",
-	VMs: []string{slyDb, slyWeb, slyApp,
-		hufDb, hufWeb, hufApp,
-		gryDb, gryWeb, gryApp},
+	VMs: []string{slyDB, slyWeb, slyApp,
+		hufDB, hufWeb, hufApp,
+		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
 	GroupsByExpr: map[string]data.ExampleExpr{
 		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
@@ -786,9 +786,9 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 },
 }
 
-var vmsHouses = []string{slyDb, slyWeb, slyApp,
-	hufDb, hufWeb, hufApp,
-	gryDb, gryWeb, gryApp}
+var vmsHouses = []string{slyDB, slyWeb, slyApp,
+	hufDB, hufWeb, hufApp,
+	gryDB, gryWeb, gryApp}
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
 var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
