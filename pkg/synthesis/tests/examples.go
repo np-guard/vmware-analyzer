@@ -23,6 +23,16 @@ const (
 	db    = "DB"
 	app   = "App"
 	web   = "Web"
+
+	slyDb  = "Slytherin-DB"
+	slyApp = "Slytherin-App"
+	slyWeb = "Slytherin-Web"
+	gryDb  = "Gryffindor-DB"
+	gryApp = "Gryffindor-App"
+	gryWeb = "Gryffindor-Web"
+	hufDb  = "Hufflepuff-DB"
+	hufApp = "Hufflepuff-App"
+	hufWeb = "Hufflepuff-Web"
 )
 
 type ExampleSynthesis struct {
@@ -318,16 +328,16 @@ micro segmentation
 */
 
 var ExampleHogwarts = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
-		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", dum1, dum2},
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDb, hufWeb, hufApp, hufDb,
+		gryWeb, gryApp, gryDb, dum1, dum2},
 		GroupsByVMs: map[string][]string{
-			sly:   {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
-			huf:   {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
-			gry:   {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-			dum:   {dum1, dum2},
-			"Web": {"Slytherin-Web", "Gryffindor-Web", "Hufflepuff-Web"},
-			"App": {"Slytherin-App", "Gryffindor-App", "Hufflepuff-App"},
-			"DB":  {"Slytherin-DB", "Gryffindor-DB", "Hufflepuff-DB"},
+			sly: {slyWeb, slyApp, slyDb},
+			huf: {hufWeb, hufApp, hufDb},
+			gry: {gryWeb, gryApp, gryDb},
+			dum: {dum1, dum2},
+			web: {slyWeb, gryWeb, hufWeb},
+			app: {slyApp, gryApp, hufApp},
+			db:  {slyDb, gryDb, hufDb},
 		},
 		Policies: []data.Category{
 			{
@@ -403,23 +413,23 @@ var ExampleHogwarts = ExampleSynthesis{
 						Name:     "Client-Access",
 						ID:       9195,
 						Source:   "ANY",
-						Dest:     "Web",
+						Dest:     web,
 						Services: []string{"ANY"},
 						Action:   data.Allow,
 					},
 					{
 						Name:     "Web-To-App-Access",
 						ID:       9196,
-						Source:   "Web",
-						Dest:     "App",
+						Source:   web,
+						Dest:     app,
 						Services: []string{"ANY"},
 						Action:   data.Allow,
 					},
 					{
 						Name:     "App-To-DB-Access",
 						ID:       9197,
-						Source:   "App",
-						Dest:     "DB",
+						Source:   app,
+						Dest:     db,
 						Services: []string{"ANY"},
 						Action:   data.Allow,
 					},
@@ -436,21 +446,21 @@ var ExampleHogwarts = ExampleSynthesis{
 	},
 	DisjointGroups: [][]string{
 		{sly, huf, gry, dum},
-		{"Web", "App", "DB"},
-		{"Web", dum},
-		{"App", dum},
-		{"DB", dum},
+		{web, app, db},
+		{web, dum},
+		{app, dum},
+		{db, dum},
 	},
 }
 
 var ExampleHogwartsSimpler = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB",
-		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDb,
+		gryWeb, gryApp, gryDb},
 		GroupsByVMs: map[string][]string{
-			sly:   {"Slytherin-Web", "Slytherin-App"},
-			gry:   {"Gryffindor-Web", "Gryffindor-App"},
-			"Web": {"Slytherin-Web", "Gryffindor-Web"},
-			"App": {"Slytherin-App", "Gryffindor-App"},
+			sly: {slyWeb, slyApp},
+			gry: {gryWeb, gryApp},
+			web: {slyWeb, gryWeb},
+			app: {slyApp, gryApp},
 		},
 		Policies: []data.Category{
 			{
@@ -497,15 +507,15 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						Name:     "Client-Access",
 						ID:       9195,
 						Source:   "ANY",
-						Dest:     "Web",
+						Dest:     web,
 						Services: []string{"ANY"},
 						Action:   data.Allow,
 					},
 					{
 						Name:     "Web-To-App-Access",
 						ID:       9196,
-						Source:   "Web",
-						Dest:     "App",
+						Source:   web,
+						Dest:     app,
 						Services: []string{"ANY"},
 						Action:   data.Allow,
 					},
@@ -522,7 +532,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 	},
 	DisjointGroups: [][]string{
 		{sly, huf, gry, dum},
-		{"Web", "App", "DB"},
+		{web, app, db},
 	},
 }
 
@@ -585,23 +595,23 @@ var hogwartsAppToHousesPolicy = []data.Category{
 				Name:     "Client-Access",
 				ID:       9195,
 				Source:   "ANY",
-				Dest:     "Web",
+				Dest:     web,
 				Services: []string{"ANY"},
 				Action:   data.Allow,
 			},
 			{
 				Name:     "Web-To-App-Access",
 				ID:       9196,
-				Source:   "Web",
-				Dest:     "App",
+				Source:   web,
+				Dest:     app,
 				Services: []string{"ANY"},
 				Action:   data.Allow,
 			},
 			{
 				Name:     "App-To-DB-Access",
 				ID:       9197,
-				Source:   "App",
-				Dest:     "DB",
+				Source:   app,
+				Dest:     db,
 				Services: []string{"ANY"},
 				Action:   data.Allow,
 			},
@@ -617,21 +627,21 @@ var hogwartsAppToHousesPolicy = []data.Category{
 }
 
 var ExampleHogwartsNoDumbledore = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
-		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDb, hufWeb, hufApp, hufDb,
+		gryWeb, gryApp, gryDb},
 		GroupsByVMs: map[string][]string{
-			sly:   {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
-			huf:   {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
-			gry:   {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-			"Web": {"Slytherin-Web", "Gryffindor-Web", "Hufflepuff-Web"},
-			"App": {"Slytherin-App", "Gryffindor-App", "Hufflepuff-App"},
-			"DB":  {"Slytherin-DB", "Gryffindor-DB", "Hufflepuff-DB"},
+			sly: {slyWeb, slyApp, slyDb},
+			huf: {hufWeb, hufApp, hufDb},
+			gry: {gryWeb, gryApp, gryDb},
+			web: {slyWeb, gryWeb, hufWeb},
+			app: {slyApp, gryApp, hufApp},
+			db:  {slyDb, gryDb, hufDb},
 		},
 		Policies: hogwartsAppToHousesPolicy,
 	},
 	DisjointGroups: [][]string{
 		{sly, huf, gry, dum},
-		{"Web", "App", "DB"},
+		{web, app, db},
 	},
 }
 
@@ -748,37 +758,37 @@ var ExampleExprSingleScope = ExampleSynthesis{
 	},
 }
 
-var vmsHousesTags = map[string][]nsx.Tag{"Slytherin-DB": {{Scope: "House", Tag: sly}, {Scope: "function", Tag: "DB"}},
-	"Slytherin-Web":  {{Scope: "House", Tag: sly}, {Scope: "function", Tag: "Web"}},
-	"Slytherin-App":  {{Scope: "House", Tag: sly}, {Scope: "function", Tag: "App"}},
-	"Hufflepuff-DB":  {{Scope: "House", Tag: huf}, {Scope: "function", Tag: "DB"}},
-	"Hufflepuff-Web": {{Scope: "House", Tag: huf}, {Scope: "function", Tag: "Web"}},
-	"Hufflepuff-App": {{Scope: "House", Tag: huf}, {Scope: "function", Tag: "App"}},
-	"Gryffindor-DB":  {{Scope: "House", Tag: gry}, {Scope: "function", Tag: "DB"}},
-	"Gryffindor-Web": {{Scope: "House", Tag: gry}, {Scope: "function", Tag: "Web"}},
-	"Gryffindor-App": {{Scope: "House", Tag: gry}, {Scope: "function", Tag: "App"}}}
+var vmsHousesTags = map[string][]nsx.Tag{slyDb: {{Scope: house, Tag: sly}, {Scope: funct, Tag: db}},
+	slyWeb: {{Scope: house, Tag: sly}, {Scope: funct, Tag: web}},
+	slyApp: {{Scope: house, Tag: sly}, {Scope: funct, Tag: app}},
+	hufDb:  {{Scope: house, Tag: huf}, {Scope: funct, Tag: db}},
+	hufWeb: {{Scope: house, Tag: huf}, {Scope: funct, Tag: web}},
+	hufApp: {{Scope: house, Tag: huf}, {Scope: funct, Tag: app}},
+	gryDb:  {{Scope: house, Tag: gry}, {Scope: funct, Tag: db}},
+	gryWeb: {{Scope: house, Tag: gry}, {Scope: funct, Tag: web}},
+	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
 var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprSimple",
-	VMs: []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
-		"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
-		"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"},
+	VMs: []string{slyDb, slyWeb, slyApp,
+		hufDb, hufWeb, hufApp,
+		gryDb, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
 	GroupsByExpr: map[string]data.ExampleExpr{
-		sly:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		gry:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		huf:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		dum:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"DB":  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Web": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "Web"}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"App": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "App"}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop, Cond2: data.ExampleCond{}}},
 	Policies: hogwartsAppToHousesPolicy,
 },
 }
 
-var vmsHouses = []string{"Slytherin-DB", "Slytherin-Web", "Slytherin-App",
-	"Hufflepuff-DB", "Hufflepuff-Web", "Hufflepuff-App",
-	"Gryffindor-DB", "Gryffindor-Web", "Gryffindor-App"}
+var vmsHouses = []string{slyDb, slyWeb, slyApp,
+	hufDb, hufWeb, hufApp,
+	gryDb, gryWeb, gryApp}
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
 var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
@@ -802,16 +812,16 @@ var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
 
 func andOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
 	return map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}},
-		"Slytherin-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: sly}}, Op: op,
-			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, NotEqual: true}},
-		"Hufflepuff-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: huf}}, Op: op,
-			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, NotEqual: true}},
-		"Gryffindor-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: "House", Tag: gry}}, Op: op,
-			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: "function", Tag: "DB"}, NotEqual: true}}}
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop, Cond2: data.ExampleCond{}},
+		"Slytherin-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}},
+		"Hufflepuff-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}},
+		"Gryffindor-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
+			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}}
 }
 
 var andOrOrPolicies = []data.Category{
