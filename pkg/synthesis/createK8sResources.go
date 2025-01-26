@@ -7,6 +7,7 @@ import (
 
 	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -30,6 +31,8 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
 		return err
 	}
+	logging.Debugf("%d k8s network policies, and %d admin network policies were generated at %s\n",
+		len(policies), len(adminPolicies), outDir)
 	for _, format := range []string{"txt", "dot"} {
 		out, err := k8sAnalyzer(outDir, format)
 		if err != nil {
