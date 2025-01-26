@@ -138,15 +138,14 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	debugDir := path.Join("out", outBaseDir, "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, debugDir, synTest.allowOnlyFromCategory == 0)
+	addDebugFiles(t, rc, abstractModel, debugDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-// todo - remove the allowOnly flag after supporting deny
-func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string, allowOnly bool) {
+func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
 	connectivity := map[string]string{}
 	var err error
 	// generate connectivity analysis output from the original NSX resources
@@ -203,11 +202,8 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	if allowOnly {
-		// todo - remove the if after supporting deny
-		require.Equal(t, connectivity["txt"], analyzed,
-			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
-	}
+	require.Equal(t, connectivity["txt"], analyzed,
+		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
 
 // to be run only on "live nsx" mode
@@ -240,7 +236,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	// print the conntent of the abstract model
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
 
-	addDebugFiles(t, rc, abstractModel, debugDir, false)
+	addDebugFiles(t, rc, abstractModel, debugDir)
 	require.Nil(t, err)
 }
 

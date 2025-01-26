@@ -6,6 +6,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -17,7 +18,7 @@ func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSy
 	a := newAbsToNXS()
 	a.getVMsInfo(rc, model)
 	a.convertPolicies(model.policy)
-	return data.ToPoliciesList([]data.Category{a.category}), a.groups
+	return data.ToPoliciesList(a.categories), a.groups
 }
 
 type absToNXS struct {
@@ -26,20 +27,18 @@ type absToNXS struct {
 	allVMs     []*endpoints.VM
 	vmResource map[*endpoints.VM]collector.RealizedVirtualMachine
 
-	category data.Category
-	groups   []collector.Group
+	categories       []data.Category
+	typeToCategories map[string]*data.Category
+	groups           []collector.Group
+	ruleIDCounter    int
 }
 
 func newAbsToNXS() *absToNXS {
 	return &absToNXS{
-		category: data.Category{
-			Name:         "default",
-			CategoryType: "Application",
-			Rules:        []data.Rule{},
-		},
-		vmLabels:   map[*endpoints.VM][]string{},
-		labelsVMs:  map[string][]*endpoints.VM{},
-		vmResource: map[*endpoints.VM]collector.RealizedVirtualMachine{},
+		typeToCategories: map[string]*data.Category{},
+		vmLabels:         map[*endpoints.VM][]string{},
+		labelsVMs:        map[string][]*endpoints.VM{},
+		vmResource:       map[*endpoints.VM]collector.RealizedVirtualMachine{},
 	}
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
@@ -62,24 +61,36 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 	}
 }
 
+var fwRuleToDataRuleAction = map[dfw.RuleAction]string{
+	dfw.ActionAllow:     data.Allow,
+	dfw.ActionDeny:      data.Drop,
+	dfw.ActionJumpToApp: data.JumpToApp,
+}
+
 func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 	for _, p := range policy {
 		rulesToDirection := map[*[]*symbolicRule]string{&p.outbound: "OUT", &p.inbound: "IN"}
 		for rules, dir := range rulesToDirection {
 			for _, rule := range *rules {
-				for _, p := range rule.allowOnlyRulePaths {
-					a.pathToRule(p, dir)
+				if rule.allowOnlyRulePaths != nil {
+					for _, p := range rule.allowOnlyRulePaths {
+						a.pathToRule(p, dir, data.Allow, collector.AppCategoty.String())
+					}
+				} else {
+					for _, p := range *rule.origSymbolicPaths {
+						a.pathToRule(p, dir, fwRuleToDataRuleAction[rule.origRule.Action], rule.origRuleCategory.String())
+					}
 				}
 			}
 		}
 	}
 }
 
-func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction string) {
+func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, categoryType string) {
 	srcGroup, dstGroup, services := a.toGroupsAndService(p)
-	rule := a.addNewRule()
-	rule.Action = data.Allow
-	rule.Description = p.String()
+	rule := a.addNewRule(categoryType)
+	rule.Action = action
+	rule.Description = action + ": " + p.String()
 	rule.Source = srcGroup
 	rule.Dest = dstGroup
 	rule.Services = services
@@ -93,14 +104,24 @@ func (a *absToNXS) toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst st
 	return srcVMs, dstVMs, services
 }
 
-func (a *absToNXS) addNewRule() *data.Rule {
-	id := firstRuleID + len(a.category.Rules)
+func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
+	if _, ok := a.typeToCategories[categoryType]; !ok {
+		a.categories = append(a.categories, data.Category{
+			Name:         categoryType + "_name",
+			CategoryType: categoryType,
+			Rules:        []data.Rule{},
+		})
+		a.typeToCategories[categoryType] = &a.categories[len(a.categories)-1]
+	}
+	category := a.typeToCategories[categoryType]
+	id := firstRuleID + a.ruleIDCounter
+	a.ruleIDCounter++
 	rule := data.Rule{
 		Name: fmt.Sprintf("ruleName_%d", id),
 		ID:   id,
 	}
-	a.category.Rules = append(a.category.Rules, rule)
-	return &a.category.Rules[len(a.category.Rules)-1]
+	category.Rules = append(category.Rules, rule)
+	return &category.Rules[len(category.Rules)-1]
 }
 
 func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
