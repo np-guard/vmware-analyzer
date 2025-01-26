@@ -4,7 +4,6 @@ import (
 	"path"
 
 	core "k8s.io/api/core/v1"
-	types "k8s.io/apimachinery/pkg/types"
 
 	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
@@ -52,7 +51,6 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 		pod.TypeMeta.Kind = "Pod"
 		pod.TypeMeta.APIVersion = "v1"
 		pod.ObjectMeta.Name = vm.Name()
-		pod.ObjectMeta.UID = types.UID(vm.ID())
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
