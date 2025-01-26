@@ -60,30 +60,30 @@ func (policies *k8sPolicies) symbolicRuleToPolicies(model *AbstractModelSyn, rul
 	}
 	for _, p := range *paths {
 		if !p.Conn.TCPUDPSet().IsEmpty() {
-			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action)
+			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, fmt.Sprintf("%d", rule.origRule.RuleID))
 		} else {
 			logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
 		}
 	}
 }
 
-func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction) {
+func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
 	srcSelector := toSelector(p.Src)
 	dstSelector := toSelector(p.Dst)
 	if isAdmin {
 		ports := connToAdminPolicyPort(p.Conn)
 		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
-			abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()))
+			abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()), nsxRuleID)
 	} else {
 		ports := connToPolicyPort(p.Conn)
-		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String())
+		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
 	}
 }
 
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []networking.NetworkPolicyPort, inbound bool,
-	description string) {
-	pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.networkPolicies)), description)
+	description, nsxRuleID string) {
+	pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.networkPolicies)), description, nsxRuleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	if inbound {
 		from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
@@ -101,8 +101,8 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
-	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description string) {
-	pol := newAdminNetworkPolicy(fmt.Sprintf("admin_policy_%d", len(policies.adminNetworkPolicies)), description)
+	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
+	pol := newAdminNetworkPolicy(fmt.Sprintf("admin_policy_%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
 	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	//nolint:gosec // priority should fit int32:
 	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
@@ -122,22 +122,29 @@ func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *met
 }
 
 const annotationDescription = "description"
+const annotationUID = "nsx-id"
 
-func newNetworkPolicy(name, description string) *networking.NetworkPolicy {
+func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPolicy {
 	pol := &networking.NetworkPolicy{}
 	pol.TypeMeta.Kind = "NetworkPolicy"
 	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
 	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Annotations = map[string]string{annotationDescription: description}
+	pol.ObjectMeta.Annotations = map[string]string{
+		annotationDescription: description,
+		annotationUID:         nsxRuleID,
+	}
 	return pol
 }
 
-func newAdminNetworkPolicy(name, description string) *admin.AdminNetworkPolicy {
+func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetworkPolicy {
 	pol := &admin.AdminNetworkPolicy{}
 	pol.TypeMeta.Kind = "AdminNetworkPolicy"
 	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
 	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Annotations = map[string]string{annotationDescription: description}
+	pol.ObjectMeta.Annotations = map[string]string{
+		annotationDescription: description,
+		annotationUID:         nsxRuleID,
+	}
 	return pol
 }
 
