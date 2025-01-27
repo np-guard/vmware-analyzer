@@ -21,6 +21,8 @@ type atomicTerm struct {
 	neg      bool
 }
 
+// todo add struct for tag with scope that implements atomic
+
 // tautology represents a condition that always holds.
 // To be used as src or dst for cases where only dst or only src is restricted
 type tautology struct {

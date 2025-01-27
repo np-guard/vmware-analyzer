@@ -1,7 +1,6 @@
 package symbolicexpr
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -121,7 +120,6 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
 		}
 		res = append(res, computedAllowPaths...)
-		fmt.Println()
 	}
 	res = res.removeIsSubsetPath(hints)
 	return &res

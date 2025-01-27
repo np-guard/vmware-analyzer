@@ -346,14 +346,14 @@ type RealizedVirtualMachine struct {
 func addParentheses(s []string) string { return fmt.Sprintf("(%s)", strings.Join(s, " ")) }
 
 type ExpressionElement interface {
-	string() string
+	String() string
 }
 
 type Condition struct {
 	nsx.Condition
 }
 
-func (e *Condition) string() string {
+func (e *Condition) String() string {
 	s := []string{
 		string(*e.Key),
 		"Of",
@@ -368,7 +368,7 @@ type ConjunctionOperator struct {
 	nsx.ConjunctionOperator
 }
 
-func (e *ConjunctionOperator) string() string {
+func (e *ConjunctionOperator) String() string {
 	return string(*e.ConjunctionOperator.ConjunctionOperator)
 }
 
@@ -378,25 +378,25 @@ type NestedExpression struct {
 
 const toImplement = "to implement"
 
-func (e *NestedExpression) string() string { return toImplement } // todo
+func (e *NestedExpression) String() string { return toImplement } // todo
 
 type IPAddressExpression struct {
 	nsx.IPAddressExpression
 }
 
-func (e *IPAddressExpression) string() string { return toImplement } // todo
+func (e *IPAddressExpression) String() string { return toImplement } // todo
 
 type MACAddressExpression struct {
 	nsx.MACAddressExpression
 }
 
-func (e *MACAddressExpression) string() string { return toImplement } // todo
+func (e *MACAddressExpression) String() string { return toImplement } // todo
 
 type ExternalIDExpression struct {
 	nsx.ExternalIDExpression
 }
 
-func (e *ExternalIDExpression) string() string {
+func (e *ExternalIDExpression) String() string {
 	return addParentheses(append([]string{"( members IDs: "}, e.ExternalIds...))
 }
 
@@ -404,20 +404,20 @@ type PathExpression struct {
 	nsx.PathExpression
 }
 
-func (e *PathExpression) string() string { return toImplement } // todo
+func (e *PathExpression) String() string { return toImplement } // todo
 
 type IdentityGroupExpression struct {
 	nsx.IdentityGroupExpression
 }
 
-func (e *IdentityGroupExpression) string() string { return toImplement } // todo
+func (e *IdentityGroupExpression) String() string { return toImplement } // todo
 
 type Expression []ExpressionElement
 
-func (e *Expression) string() string {
+func (e *Expression) String() string {
 	elementsStrings := make([]string, len(*e))
 	for i, el := range *e {
-		elementsStrings[i] = el.string()
+		elementsStrings[i] = el.String()
 	}
 	return addParentheses(elementsStrings)
 }
@@ -494,7 +494,7 @@ func (group *Group) Name() string {
 func (group *Group) Description() string {
 	switch {
 	case len(group.Expression) != 0:
-		return group.Expression.string()
+		return group.Expression.String()
 	case group.Group.DisplayName != nil:
 		return *group.Group.DisplayName
 	default:

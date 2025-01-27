@@ -10,7 +10,7 @@ const (
 var Example1 = Example{
 	Name: "Example1",
 	VMs:  []string{"A", "B"},
-	Groups: map[string][]string{
+	GroupsByVMs: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
@@ -36,7 +36,7 @@ var Example1 = Example{
 var Example1a = Example{
 	Name: "Example1a",
 	VMs:  []string{"A", "B"},
-	Groups: map[string][]string{
+	GroupsByVMs: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
 	},
@@ -100,7 +100,7 @@ var Example2 = Example{
 	Name: "Example2",
 	VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
-	Groups: map[string][]string{
+	GroupsByVMs: map[string][]string{
 		"Slytherin":      {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
 		"Hufflepuff":     {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
 		"Gryffindor":     {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
@@ -296,7 +296,7 @@ var ExampleExclude = Example{
 	Name: "ExampleExclude",
 	VMs: []string{"Slytherin1", "Slytherin2", "Hufflepuff1", "Hufflepuff2",
 		"Gryffindor1", "Gryffindor2", "Dumbledore1", "Dumbledore2", "Aladdin"},
-	Groups: map[string][]string{
+	GroupsByVMs: map[string][]string{
 		"Slytherin":  {"Slytherin1", "Slytherin2"},
 		"Hufflepuff": {"Hufflepuff1", "Hufflepuff2"},
 		"Gryffindor": {"Gryffindor1", "Gryffindor2"},
@@ -370,7 +370,7 @@ func example3FromExample2() Example {
 var ExampleDumbeldore = Example{
 	Name: "ExampleDumbeldore",
 	VMs:  []string{"Slytherin", "Hufflepuff", "Gryffindor", "Dumbledore1", "Dumbledore2"},
-	Groups: map[string][]string{
+	GroupsByVMs: map[string][]string{
 		"Slytherin":       {"Slytherin"},
 		"Hufflepuff":      {"Hufflepuff"},
 		"Gryffindor":      {"Gryffindor"},

@@ -15,6 +15,8 @@ Usage:
   nsxanalyzer [flags]
 
 Flags:
+      --anonymize                    flag to anonymize resources
+  -e, --explain                      connectivity output with rules explanations per allowed/denied connections
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
       --host string                  nsx host url
@@ -23,11 +25,14 @@ Flags:
       --password string              nsx password
   -q, --quiet                        runs quietly, reports only severe errors and results
       --resource-dump-file string    file path to store collected resources in JSON format
-      --resource-input-file string   file path input JSON of NSX resources
+  -r, --resource-input-file string   file path input JSON of NSX resources
       --skip-analysis                flag to skip analysis, run only collector
+      --synthesis-dump-dir string    directory path to store k8s synthesis results
+      --synthesize-admin-policies    create admin network policies for categories lower than Application category
       --topology-dump-file string    file path to store topology
       --username string              nsx username
   -v, --verbose                      runs with more informative messages printed to log
+      --version                      version for nsxanalyzer
 ```
 
 ## Example connectivity analysis output

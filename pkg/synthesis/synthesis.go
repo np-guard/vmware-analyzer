@@ -18,8 +18,15 @@ func NSXToK8sSynthesis(
 		return nil, err
 	}
 	config := parser.GetConfig()
+	for _, groups := range config.GroupsPerVM {
+		for _, group := range groups {
+			str := group.Expression.String()
+			if str != "" {
+				fmt.Printf("\tgroup expr %v\n", group.Expression.String())
+			}
+		}
+	}
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	fmt.Println(stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy))
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, allowOnlyFromCategory, hints)
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
 		allowOnlyFromCategory: allowOnlyFromCategory, policy: []*symbolicPolicy{&allowOnlyPolicy}}

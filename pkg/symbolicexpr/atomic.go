@@ -16,6 +16,7 @@ func (term atomicTerm) labelKey() string {
 	case *endpoints.VM:
 		return "virtual machine"
 	case *collector.Tag:
+		// todo: add scope support; will need to implement tag through a different struct which includes scope
 		return "tag " + term.property.Name()
 	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
 	case *collector.Group:

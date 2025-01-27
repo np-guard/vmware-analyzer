@@ -42,7 +42,7 @@ type synthesisTest struct {
 	noHint                bool                  // run also with no hint
 }
 
-var allTests = []synthesisTest{
+var groupsByVmsTests = []synthesisTest{
 	{
 		name:                  "ExampleDumbeldore",
 		exData:                tests.ExampleDumbeldore,
@@ -93,6 +93,31 @@ var allTests = []synthesisTest{
 	},
 }
 
+var groupsByExprTests = []synthesisTest{
+	{
+		name:   "ExampleExprSingleScope",
+		exData: tests.ExampleExprSingleScope,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprTwoScopes",
+		exData: tests.ExampleExprTwoScopes,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprAndConds",
+		exData: tests.ExampleExprAndConds,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprOrConds",
+		exData: tests.ExampleExprOrConds,
+		noHint: false,
+	},
+}
+
+var allTests = append(groupsByVmsTests, groupsByExprTests...)
+
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
@@ -112,8 +137,8 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
+	for i := range groupsByVmsTests {
+		test := &groupsByVmsTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
@@ -132,20 +157,20 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
+	outBaseDir := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
 	fmt.Println("suffix:", suffix)
-	outDir := path.Join("out", synTest.name, "k8s_resources")
-	debugDir := path.Join("out", synTest.name, "debug_resources")
+	outDir := path.Join("out", outBaseDir, "k8s_resources")
+	debugDir := path.Join("out", outBaseDir, "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, debugDir, synTest.allowOnlyFromCategory == 0)
+	addDebugFiles(t, rc, abstractModel, debugDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-// todo - remove the allowOnly flag after supporting deny
-func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string, allowOnly bool) {
+func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
 	connectivity := map[string]string{}
 	var err error
 	// generate connectivity analysis output from the original NSX resources
@@ -202,11 +227,8 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	if allowOnly {
-		// todo - remove the if after supporting deny
-		require.Equal(t, connectivity["txt"], analyzed,
-			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
-	}
+	require.Equal(t, connectivity["txt"], analyzed,
+		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
 
 // to be run only on "live nsx" mode
@@ -239,7 +261,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	// print the conntent of the abstract model
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
 
-	addDebugFiles(t, rc, abstractModel, debugDir, false)
+	addDebugFiles(t, rc, abstractModel, debugDir)
 	require.Nil(t, err)
 }
 
@@ -247,7 +269,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 // calls to addDebugFiles  - see comments there
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for _, test := range allTests {
+	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
 			// to generate output comment the following line and uncomment the one after
 			test.runConvertToAbstract(t, OutputComparison)
@@ -281,4 +303,26 @@ func getTestsDirOut() string {
 // comparison should be insensitive to line comparators; cleaning strings from line comparators
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
+}
+
+// todo tmp until expr fully supported by synthesis
+func (synTest *synthesisTest) runTmpWithExpr() {
+	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+	for i := range rc.DomainList[0].Resources.GroupList {
+		expr := rc.DomainList[0].Resources.GroupList[i].Expression
+		fmt.Printf("group: %v ", rc.DomainList[0].Resources.GroupList[i].Name())
+		if expr != nil {
+			fmt.Printf("of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Expression.String())
+		} else {
+			fmt.Printf("has no expression; must be defined by vms\n")
+		}
+	}
+}
+
+func TestTmpExpr(t *testing.T) {
+	for i := range allTests {
+		test := &allTests[i]
+		test.runTmpWithExpr()
+	}
 }
