@@ -1,17 +1,26 @@
 package synthesis
 
 import (
+	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
 
 	core "k8s.io/api/core/v1"
 
-	"github.com/np-guard/netpol-analyzer/pkg/netpol/connlist"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
+const k8sResourcesDir = "k8s_resources"
+
 func createK8sResources(model *AbstractModelSyn, outDir string) error {
+	outDir = filepath.Join(outDir, k8sResourcesDir)
+	if err := os.RemoveAll(outDir); err != nil {
+		return err
+	}
 	k8sPolicies := &k8sPolicies{}
 	policies, adminPolicies := k8sPolicies.toNetworkPolicies(model)
 	if len(policies) > 0 {
@@ -33,16 +42,6 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	}
 	logging.Debugf("%d k8s network policies, and %d admin network policies were generated at %s",
 		len(policies), len(adminPolicies), outDir)
-	for _, format := range []string{"txt", "dot"} {
-		out, err := k8sAnalyzer(outDir, format)
-		if err != nil {
-			return err
-		}
-		err = common.WriteToFile(path.Join(outDir, "k8s_connectivity."+format), out)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -69,12 +68,38 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 
 ///////////////////////////////////////////////////////////////////////////
 
-func k8sAnalyzer(outDir, format string) (string, error) {
-	analyzer := connlist.NewConnlistAnalyzer(connlist.WithOutputFormat(format))
+func k8sAnalyzer(k8sDir, outfile, format string) error {
+	analyzerExec := "k8snetpolicy"
 
-	conns, _, err := analyzer.ConnlistFromDirPath(outDir)
+	// looking for the analyzerExec in:
+	// 1. the location of the exec that currently running (the vmware-analyzer)
+	// 2. the bin/ directory of this project
+	// 3. in $PATH environment variable
+	runningExec, err := os.Executable()
 	if err != nil {
-		return "", err
+		return err
 	}
-	return analyzer.ConnectionsListToString(conns)
+	runningExecDir := filepath.Dir(runningExec)
+	potentialAnalyzerExecPaths := []string{
+		filepath.Join(runningExecDir, analyzerExec),
+		filepath.Join(projectpath.Root, "bin", analyzerExec),
+	}
+
+	atPath, err := exec.LookPath(analyzerExec)
+	if err == nil {
+		potentialAnalyzerExecPaths = append(potentialAnalyzerExecPaths, atPath)
+	}
+
+	var analyzerExecPath string
+	for _, path := range potentialAnalyzerExecPaths {
+		if _, err := os.Stat(path); err == nil {
+			analyzerExecPath = path
+			break
+		}
+	}
+	if analyzerExecPath == "" {
+		return nil
+	}
+	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
+	return cmd.Run()
 }
