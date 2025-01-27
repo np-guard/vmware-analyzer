@@ -15,8 +15,8 @@ import (
 )
 
 func createK8sResources(model *AbstractModelSyn, outDir string) error {
-	
-	outDir = filepath.Join(outDir,"k8s_resources")
+
+	outDir = filepath.Join(outDir, "k8s_resources")
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
 	}

@@ -1,0 +1,125 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (*) to (group = Web)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_0
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Web
+                      operator: Exists
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (group = Web) to (group = App)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_1
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__App
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (group = App) to (group = DB)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_2
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__DB
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__App
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (*) to (group = Web)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_3
+spec:
+    ingress:
+        - from:
+            - podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (group = Web) to (group = App)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_4
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Web
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__App
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (group = App) to (group = DB)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_5
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__App
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__DB
+              operator: Exists
+    policyTypes:
+        - Ingress

@@ -157,13 +157,15 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
-	outDir := path.Join("out",fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory))
+	baseName := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
+	outDir := path.Join("out", baseName)
 	fmt.Println("suffix:", suffix)
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
-	// todo - compare resources to expected output 
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
+	expectedOutputDir := filepath.Join(getTestsDirOut(), "k8s_resources",baseName)
+	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, "k8s_resources"), expectedOutputDir, synTest.name)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, outDir)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
@@ -231,7 +233,8 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	require.Equal(t, connectivity["txt"], analyzed,
 		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 
-	// run netpol-analyzer 
+	// run netpol-analyzer
+	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
 	for _, format := range []string{"txt", "dot"} {
 		err := k8sAnalyzer(path.Join(outDir, "k8s_resources"), path.Join(debugDir, "k8s_connectivity."+format), format)
 		require.Nil(t, err)
@@ -261,8 +264,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 	outDir := path.Join("out", "from_collection")
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
-		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
+	abstractModel, err := NSXToK8sSynthesis(rc, outDir, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
 	require.Nil(t, err)
 	// print the conntent of the abstract model
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
@@ -283,6 +285,29 @@ func TestConvertToAbsract(t *testing.T) {
 			//test.runConvertToAbstract(t, OutputGeneration)
 		},
 		)
+	}
+}
+func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
+	actualFiles, err := os.ReadDir(actualDir)
+	require.Nil(t, err)
+	if mode == OutputComparison {
+		expectedFiles, err := os.ReadDir(expectedDir)
+		require.Nil(t, err)
+		require.Equal(t, len(actualFiles), len(expectedFiles),
+			fmt.Sprintf("number of output files of test %v not as expected", testName))
+		for _, file := range actualFiles {
+			expectedOutput, err := os.ReadFile(filepath.Join(expectedDir, file.Name()))
+			require.Nil(t, err)
+			actualOutput, err := os.ReadFile(filepath.Join(actualDir, file.Name()))
+			require.Nil(t, err)
+			require.Equal(t, cleanStr(string(actualOutput)), cleanStr(string(expectedOutput)),
+				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
+		}
+	} else if mode == OutputGeneration {
+		err := os.RemoveAll(expectedDir)
+		require.Nil(t, err)
+		err = os.CopyFS(expectedDir, os.DirFS(actualDir))
+		require.Nil(t, err)
 	}
 }
 
