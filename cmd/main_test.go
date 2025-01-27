@@ -72,12 +72,13 @@ func TestMain(t *testing.T) {
 				` --output-filter="New Virtual Machine",New-VM-1`,
 		},*/
 		{
-			name: "collect-and-analyze",
-			args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt",
+			name: "collect-and-analyze-and-synthesis",
+			args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt" +
+				" --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
 		},
 		{
 			name: "synthesize-only",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesize-dump-dir examples/output/synthesis",
+			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis",
 		},
 	}
 	for _, tt := range tests {

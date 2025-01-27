@@ -23,36 +23,38 @@ import (
 )
 
 const (
-	resourceInputFileFlag  = "resource-input-file"
-	hostFlag               = "host"
-	userFlag               = "username"
-	passwordFlag           = "password"
-	resourceDumpFileFlag   = "resource-dump-file"
-	topologyDumpFileFlag   = "topology-dump-file"
-	skipAnalysisFlag       = "skip-analysis"
-	anonymizeFlag          = "anonymize"
-	synthesisDumpDirFlag   = "synthesize-dump-dir"
-	outputFileFlag         = "filename"
-	outputFormantFlag      = "output"
-	outputFileShortFlag    = "f"
-	outputFormantShortFlag = "o"
-	outputFilterFlag       = "output-filter"
-	quietFlag              = "quiet"
-	verboseFlag            = "verbose"
-	explainFlag            = "explain"
+	resourceInputFileFlag       = "resource-input-file"
+	hostFlag                    = "host"
+	userFlag                    = "username"
+	passwordFlag                = "password"
+	resourceDumpFileFlag        = "resource-dump-file"
+	topologyDumpFileFlag        = "topology-dump-file"
+	skipAnalysisFlag            = "skip-analysis"
+	anonymizeFlag               = "anonymize"
+	synthesisDumpDirFlag        = "synthesis-dump-dir"
+	synthesizeAdminPoliciesFlag = "synthesize-admin-policies"
+	outputFileFlag              = "filename"
+	outputFormantFlag           = "output"
+	outputFileShortFlag         = "f"
+	outputFormantShortFlag      = "o"
+	outputFilterFlag            = "output-filter"
+	quietFlag                   = "quiet"
+	verboseFlag                 = "verbose"
+	explainFlag                 = "explain"
 
-	resourceInputFileHelp = "file path input JSON of NSX resources"
-	hostHelp              = "nsx host url"
-	userHelp              = "nsx username"
-	passwordHelp          = "nsx password"
-	resourceDumpFileHelp  = "file path to store collected resources in JSON format"
-	topologyDumpFileHelp  = "file path to store topology"
-	skipAnalysisHelp      = "flag to skip analysis, run only collector"
-	anonymizeHelp         = "flag to anonymize resources"
-	outputFileHelp        = "file path to store analysis results"
-	synthesisDumpDirHelp  = "directory path to store k8s synthesis results"
-	outputFormatHelp      = "output format; must be one of [txt, dot, json, svg]"
-	outputFilterFlagHelp  = "filter the analysis results, can have more than one"
+	resourceInputFileHelp       = "file path input JSON of NSX resources"
+	hostHelp                    = "nsx host url"
+	userHelp                    = "nsx username"
+	passwordHelp                = "nsx password"
+	resourceDumpFileHelp        = "file path to store collected resources in JSON format"
+	topologyDumpFileHelp        = "file path to store topology"
+	skipAnalysisHelp            = "flag to skip analysis, run only collector"
+	anonymizeHelp               = "flag to anonymize resources"
+	outputFileHelp              = "file path to store analysis results"
+	synthesisDumpDirHelp        = "directory path to store k8s synthesis results"
+	synthesizeAdminPoliciesHelp = "create admin network policies for categories lower than Application category"
+	outputFormatHelp            = "output format; must be one of [txt, dot, json, svg]"
+	outputFilterFlagHelp        = "filter the analysis results, can have more than one"
 )
 
 type inArgs struct {
@@ -63,6 +65,7 @@ type inArgs struct {
 	resourceDumpFile  string
 	topologyDumpFile  string
 	synthesisDumpDir  string
+	synthesizeAdmin   bool
 	skipAnalysis      bool
 	anonymise         bool
 	outputFile        string
@@ -105,6 +108,7 @@ It uses REST API calls from NSX manager. `,
 	rootCmd.PersistentFlags().BoolVar(&args.skipAnalysis, skipAnalysisFlag, false, skipAnalysisHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.anonymise, anonymizeFlag, false, anonymizeHelp)
 	rootCmd.PersistentFlags().StringVar(&args.synthesisDumpDir, synthesisDumpDirFlag, "", synthesisDumpDirHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.synthesizeAdmin, synthesizeAdminPoliciesFlag, false, synthesizeAdminPoliciesHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
 	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
@@ -184,9 +188,13 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		// todo - get hints and "allowOnlyFromCategory dfw.DfwCategory" from the user
+		// todo - get hints from the user
 		hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints, 0)
+		category := collector.MinCategory()
+		if args.synthesizeAdmin {
+			category = collector.AppCategoty
+		}
+		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints, category)
 		if err != nil {
 			return err
 		}

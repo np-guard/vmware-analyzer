@@ -106,7 +106,7 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 			switch rule.Action {
 			case ActionAllow:
 				addedAllowedConns := rule.Conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.ruleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
@@ -114,7 +114,7 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 
 			case ActionDeny:
 				addedDeniedConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.ruleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
 				deniedConns.accumulatedConns = deniedConns.accumulatedConns.Union(addedDeniedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					deniedConns.partitionsByRules = append(deniedConns.partitionsByRules, rulePartition)
@@ -122,7 +122,7 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 
 			case ActionJumpToApp:
 				addedJumpToAppConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.ruleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
 				jumpToAppConns.accumulatedConns = jumpToAppConns.accumulatedConns.Union(addedJumpToAppConns)
 				if !rulePartition.Conn.IsEmpty() {
 					jumpToAppConns.partitionsByRules = append(jumpToAppConns.partitionsByRules, rulePartition)
@@ -194,7 +194,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 		Conn:               conn,
 		Action:             actionFromString(action),
 		direction:          direction,
-		ruleID:             ruleID,
+		RuleID:             ruleID,
 		origRuleObj:        origRule,
 		origDefaultRuleObj: origDefaultRule,
 		scope:              scope,
