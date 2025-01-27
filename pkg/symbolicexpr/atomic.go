@@ -5,92 +5,75 @@ import (
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-func (term atomicTerm) labelKey() string {
-	// todo - make sure that the label is allowed by open shift
-	switch term.property.(type) {
-	case *collector.Segment:
-		return "segment"
-	case *endpoints.VM:
-		return "virtual machine"
-	case *collector.Tag:
-		// todo: add scope support; will need to implement tag through a different struct which includes scope
-		return "tag " + term.property.Name()
-	// includes atomic NSX groups; e.g., groups defined over other entities (such as tags) are not included
-	case *collector.Group:
-		return "group"
-	default: // for structs used for testing
-		return term.property.Name()
-	}
-}
+const grp = "group"
 
-func (term atomicTerm) string() string {
+func (groupTerm groupAtomicTerm) string() string {
 	equalSign := " = "
-	if term.neg {
+	if groupTerm.neg {
 		equalSign = " != "
 	}
-	return term.labelKey() + equalSign + term.toVal
+	return grp + " " + equalSign + groupTerm.name()
 }
-func (term atomicTerm) AsSelector() (string, bool) {
-	return fmt.Sprintf("%s__%s", term.labelKey(), term.toVal), term.neg
-}
-
-func NewAtomicTerm(label vmProperty, toVal string, neg bool) *atomicTerm {
-	return &atomicTerm{property: label, toVal: toVal, neg: neg}
+func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
+	return fmt.Sprintf("%s__%s", grp, groupTerm.name()), groupTerm.neg
 }
 
-// negate an atomicTerm expression
-func (term atomicTerm) negate() atomic {
-	return atomicTerm{property: term.property, toVal: term.toVal, neg: !term.neg}
+func NewGroupAtomicTerm(group *collector.Group, neg bool) *groupAtomicTerm {
+	return &groupAtomicTerm{group: group, neg: neg}
 }
 
-func (atomicTerm) IsTautology() bool {
+// negate an groupAtomicTerm expression
+func (groupTerm groupAtomicTerm) negate() atomic {
+	return groupAtomicTerm{group: groupTerm.group, neg: !groupTerm.neg}
+}
+
+func (groupAtomicTerm) IsTautology() bool {
 	return false
 }
 
-func (term atomicTerm) isNegation() bool {
-	return term.neg
+func (groupTerm groupAtomicTerm) isNegation() bool {
+	return groupTerm.neg
 }
 
-func (term atomicTerm) name() string {
-	return term.toVal
+func (groupTerm groupAtomicTerm) name() string {
+	return groupTerm.group.Name()
 }
 
-// todo: handling only "in group" in this stage
-func getAtomicTermsForGroups(groups []*collector.Group) []*atomicTerm {
-	res := make([]*atomicTerm, len(groups))
+// todo: treat negation properly
+func getAtomicTermsForGroups(groups []*collector.Group) []*groupAtomicTerm {
+	res := make([]*groupAtomicTerm, len(groups))
 	for i, group := range groups {
-		res[i] = &atomicTerm{property: group, toVal: *group.DisplayName, neg: false}
+		res[i] = &groupAtomicTerm{group: group, neg: false}
 	}
 	return res
 }
 
 // returns true iff otherAt is negation of
 // once we cache the atomic terms, we can just compare pointers
-func (term atomicTerm) isNegateOf(otherAt atomic) bool {
-	return term.string() == otherAt.negate().string()
+func (groupTerm groupAtomicTerm) isNegateOf(otherAt atomic) bool {
+	return groupTerm.string() == otherAt.negate().string()
 }
 
-// returns true iff otherAt is disjoint to atomicTerm as given by hints
+// returns true iff otherAt is disjoint to groupAtomicTerm as given by hints
 // todo: only if of the same type as by (tag/groups/.. as presented by property)?
-func (term atomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
+func (groupTerm groupAtomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
 	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if both not negated
-	if term.isNegation() || otherAt.isNegation() {
+	if groupTerm.isNegation() || otherAt.isNegation() {
 		return false
 	}
-	return hints.disjoint(term.name(), otherAt.name())
+	return hints.disjoint(groupTerm.name(), otherAt.name())
 }
 
-// returns true iff term is superset of atomic other as given by hints
-// todo: only if of the same type as by (tag/groups/.. as presented by property)?
+// returns true iff term is superset of groupTerm other as given by hints
 // in hints list of disjoint groups/tags/.. is given. Term1 is superset by term2 if they are disjoint and
 // term1 is not negated while term2 is
 // e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
 // if in the same Clause, we can rid group != Hufflepuff
-func (term atomicTerm) supersetOf(otherAt atomic, hints *Hints) bool {
-	return hints.disjoint(term.toVal, otherAt.name()) && term.isNegation() && !otherAt.isNegation()
+// todo: perhaps this can have a general implementation instead of struct specific one
+func (groupTerm groupAtomicTerm) supersetOf(otherAt atomic, hints *Hints) bool {
+	return hints.disjoint(groupTerm.name(), otherAt.name()) && groupTerm.isNegation() && !otherAt.isNegation()
 }
 
 func (tautology) string() string {
