@@ -74,7 +74,7 @@ func k8sAnalyzer(k8sDir, outfile, format string) error {
 	// looking for the analyzerExec in:
 	// 1. the location of the exec that currently running (the vmware-analyzer)
 	// 2. the bin/ directory of this project
-	// 3. in $PATH environment variable 
+	// 3. in $PATH environment variable
 	runningExec, err := os.Executable()
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func k8sAnalyzer(k8sDir, outfile, format string) error {
 	}
 
 	atPath, err := exec.LookPath(analyzerExec)
-	if err == nil{
+	if err == nil {
 		potentialAnalyzerExecPaths = append(potentialAnalyzerExecPaths, atPath)
 	}
 
