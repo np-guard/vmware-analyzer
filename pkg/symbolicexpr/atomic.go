@@ -14,7 +14,7 @@ func (groupTerm groupAtomicTerm) string() string {
 	if groupTerm.neg {
 		equalSign = " != "
 	}
-	return grp + " " + equalSign + groupTerm.name()
+	return grp + equalSign + groupTerm.name()
 }
 func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", grp, groupTerm.name()), groupTerm.neg

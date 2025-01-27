@@ -2,7 +2,6 @@ package symbolicexpr
 
 import (
 	"fmt"
-
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
@@ -80,7 +79,6 @@ func TestSymbolicPaths(t *testing.T) {
 		"redundant removal not working")
 }
 
-/*
 // Input:
 // allow symbolic path:
 // src: (s1 = str1) dst: (d1 = str1) All Connection
@@ -92,29 +90,26 @@ func TestSymbolicPaths(t *testing.T) {
 // src: (s1 = str1) dst: (d1 = str1) ICMP, TCP
 func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := groupAtomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := groupAtomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
-	testSrc2 := initTestTag("s2")
-	atomic2 := groupAtomicTerm{property: testSrc2, toVal: "str2"}
-	conjSrc2 = *conjSrc2.add(atomic2)
-	testDst2 := initTestTag("d2")
-	atomicDst2 := groupAtomicTerm{property: testDst2, toVal: "str2"}
-	conjDst2 = *conjDst2.add(atomicDst2)
+	atomic1 := newDummyGroupTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomic1)
+	atomicDst1 := newDummyGroupTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
+	atomic2 := newDummyGroupTerm("src2", false)
+	conjSrc2 = *conjSrc2.add(*atomic2)
+	atomicDst2 := newDummyGroupTerm("dst2", false)
+	conjDst2 = *conjDst2.add(*atomicDst2)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllUDPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
-	require.Equal(t, "All Connections from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
-		"All Connections from (s1 = str1) to (d1 = str1 and d2 != str2)\n"+
-		"ICMP,TCP from (s1 = str1) to (d1 = str1)",
+	require.Equal(t, "All Connections from (group = src1 and group != src2) to (group = dst1)\n"+
+		"All Connections from (group = src1) to (group = dst1 and group != dst2)\n"+
+		"ICMP,TCP from (group = src1) to (group = dst1)",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
+/*
 // Input:
 // allow symbolic path:
 // src: (s1 = str1) dst: (d1 = str1) UDP
