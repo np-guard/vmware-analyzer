@@ -21,6 +21,10 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 			DisplayName: &vmName,
 			ExternalId:  &vmName,
 		}
+		// vm has tags?
+		if vmTags, ok := e.VMsTags[vmName]; ok {
+			newVM.Tags = vmTags
+		}
 		newVMRes := collector.VirtualMachine{
 			VirtualMachine: newVM,
 		}
@@ -33,11 +37,10 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	res.DomainList = append(res.DomainList, domainRsc)
 
 	// add groups
+	// defined by VMs
 	groupList := []collector.Group{}
-	for group, members := range e.Groups {
-		newGroup := collector.Group{}
-		newGroup.Group.DisplayName = &group
-		newGroup.Group.Path = &group
+	for group, members := range e.GroupsByVMs {
+		newGroup := newGroupByExample(group)
 		for _, member := range members {
 			vmMember := collector.RealizedVirtualMachine{}
 			vmMember.RealizedVirtualMachine.DisplayName = &member
@@ -46,12 +49,26 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		}
 		groupList = append(groupList, newGroup)
 	}
+	// groups defined by expr
+	for group, expr := range e.GroupsByExpr {
+		newGroup := newGroupByExample(group)
+		groupExpr := expr.exampleExprToExpr()
+		newGroup.Expression = *groupExpr
+		groupList = append(groupList, newGroup)
+	}
 	res.DomainList[0].Resources.GroupList = groupList
 
 	// add dfw
 	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
 	res.ServiceList = getServices()
 	return res
+}
+
+func newGroupByExample(name string) collector.Group {
+	newGroup := collector.Group{}
+	newGroup.Group.DisplayName = &name
+	newGroup.Group.Path = &name
+	return newGroup
 }
 
 func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
@@ -84,12 +101,39 @@ const (
 	JumpToApp = "JUMP_TO_APPLICATION"
 )
 
+// example expr struct to ease testing
+// example_cond -> <Tag_scope> eq/new val
+// example_expr ->  example_cond | example_cond and/or example_cond
+
+type ExampleOp int
+
+const (
+	Nop ExampleOp = iota
+	And
+	Or
+)
+
+type ExampleCond struct {
+	Tag      nsx.Tag
+	NotEqual bool // equal (false) or not equal (true)
+}
+
+// ExampleExpr equiv to example_expr described above
+// if op is nop then only cond1 is considered and exampleExpr is actually exampleCond; Cond2 is empty in that case
+type ExampleExpr struct {
+	Cond1 ExampleCond
+	Op    ExampleOp
+	Cond2 ExampleCond
+}
+
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
-	VMs      []string
-	Groups   map[string][]string
-	Policies []Category
+	VMs          []string
+	VMsTags      map[string][]nsx.Tag
+	GroupsByVMs  map[string][]string
+	GroupsByExpr map[string]ExampleExpr
+	Policies     []Category
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
@@ -120,8 +164,8 @@ func (e *Example) StoreAsJSON(override bool) error {
 func (e *Example) CopyTopology() *Example {
 	res := &Example{}
 	res.VMs = slices.Clone(e.VMs)
-	res.Groups = map[string][]string{}
-	maps.Copy(res.Groups, e.Groups)
+	res.GroupsByVMs = map[string][]string{}
+	maps.Copy(res.GroupsByVMs, e.GroupsByVMs)
 	return res
 }
 
@@ -156,6 +200,40 @@ func (e *Example) InitEmptyEnvAppCategories() {
 			CategoryType: collector.ApplicationStr,
 		},
 	}
+}
+
+const nonTrivialExprSize = 3
+
+func (exp *ExampleExpr) exampleExprToExpr() *collector.Expression {
+	cond1 := exp.Cond1.exampleCondToCond()
+	if exp.Op == Nop {
+		res := collector.Expression{cond1}
+		return &res
+	}
+	res := make(collector.Expression, nonTrivialExprSize)
+	res[0] = cond1
+	expOp := collector.ConjunctionOperator{}
+	conjOp := nsx.ConjunctionOperatorConjunctionOperatorAND
+	if exp.Op == Or {
+		conjOp = nsx.ConjunctionOperatorConjunctionOperatorOR
+	}
+	expOp.ConjunctionOperator.ConjunctionOperator = &conjOp
+	res[1] = &expOp
+	res[2] = exp.Cond2.exampleCondToCond()
+	return &res
+}
+
+func (cond *ExampleCond) exampleCondToCond() *collector.Condition {
+	condKey := nsx.ConditionKeyTag
+	memberType := nsx.ConditionMemberTypeVirtualMachine
+	operator := nsx.ConditionOperatorEQUALS
+	if cond.NotEqual {
+		operator = nsx.ConditionOperatorNOTEQUALS
+	}
+	res := collector.Condition{Condition: nsx.Condition{Key: &condKey, MemberType: &memberType, Operator: &operator,
+		Value: &cond.Tag.Tag}}
+	res.Condition.Value = &cond.Tag.Tag
+	return &res
 }
 
 func (e *Example) AddRuleToExampleInCategory(categoryType string, ruleToAdd *Rule) error {
