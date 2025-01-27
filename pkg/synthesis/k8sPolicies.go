@@ -71,13 +71,13 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 		from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		pol.Spec.Ingress = rules
-		pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
 		pol.Spec.PodSelector = *dstSelector
 	} else {
 		to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		pol.Spec.Egress = rules
-		pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 		pol.Spec.PodSelector = *srcSelector
 	}
 }
@@ -85,10 +85,8 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 func (policies *k8sPolicies) addDefaultDenyNetworkPolicy() {
 	pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.networkPolicies)), "Default Deny Policy", "defaultDeny")
 	policies.networkPolicies = append(policies.networkPolicies, pol)
-		pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress", "Egress"}
-		// pol.Spec.PodSelector = meta.LabelSelector{}
+	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
 }
-
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
