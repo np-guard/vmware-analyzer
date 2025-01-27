@@ -81,13 +81,13 @@ func TestSymbolicPaths(t *testing.T) {
 
 // Input:
 // allow symbolic path:
-// src: (s1 = str1) dst: (d1 = str1) All Connection
+// src: (group = src1) dst: (group = dst1) All Connection
 // deny symbolic path:
-// src: (s2 = str2) dst: (d2 = str2) UDP
+// src: (group = src2) dst: (group = dst2) UDP
 // Output allow paths:
-// src: (s1 = str1 and s2 != str2) dst (d1 = str1) All connection
-// src: (s1 = str1) dst: (d1 = str1 and d2 != str2) All connection
-// src: (s1 = str1) dst: (d1 = str1) ICMP, TCP
+// src: (group = src1 and group != src2) dst (group = dst1) All connection
+// src: (group = src1) dst: (group = dst1 and group != dst2) All connection
+// src: (group = src1) dst: (group = dst2) ICMP, TCP
 func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	atomic1 := newDummyGroupTerm("src1", false)
@@ -109,7 +109,6 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
-/*
 // Input:
 // allow symbolic path:
 // src: (s1 = str1) dst: (d1 = str1) UDP
@@ -148,6 +147,7 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 		"ComputeAllowGivenDenies does not work as expected")
 }
 
+/*
 // Input:
 // allow symbolic path:
 // src: (s1 = str1) dst: (d1 = str1) TCP
