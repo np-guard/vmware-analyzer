@@ -371,34 +371,32 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		res.String(), "ComputeAllowGivenDenies computation not as expected")
 }
 
-/*
 // Input:
 // allow symbolic path:
-// s1 = str1 to *
+// group = src1 to *
 // deny symbolic path:
-// (s1 = str1) to (d1 = str1)
-// Output allow paths: (s1 = str1) to (d1 != str1)
+// (group = src1) to (d1 = dst1)
+// Output allow paths: (group = str1) to (d1 != dst1)
 func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := groupAtomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := groupAtomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
+	atomicSrc1 := newDummyGroupTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomicSrc1)
+	atomicDst1 := newDummyGroupTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.String())
-	require.Equal(t, "All Connections from (s1 = str1) to (d1 != str1)", allowWithDeny.String(),
+	require.Equal(t, "All Connections from (group = src1) to (group != dst1)", allowWithDeny.String(),
 		"optimized with deny not working properly")
 }
 
-// conj1: (s1 = str1)
-// conj2: (s1 = str1), (s2 = str2)
-// conj3: (s1 = str1), (s2 = str2), (s3 = str3)
+/*
+// conj1: (group = str1)
+// conj2: (group = str1), (s2 = str2)
+// conj3: (group = str1), (s2 = str2), (s3 = str3)
 // path1: conj1 to conj1 TCP
 // path1Tag: conj1 to conj1 All
 // path2: conj2 to conj2 TCP
@@ -443,5 +441,4 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		path2.isSubset(path5, &Hints{GroupsDisjoint: [][]string{}}) &&
 		!path2.isSubset(path4, &Hints{GroupsDisjoint: [][]string{}}),
 		"path2 should be implied by path3 and path5, is not implied by path4")
-}
-*/
+} */
