@@ -13,10 +13,11 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
+const k8sResourcesDir = "k8s_resources"
 
 func createK8sResources(model *AbstractModelSyn, outDir string) error {
 
-	outDir = filepath.Join(outDir, "k8s_resources")
+	outDir = filepath.Join(outDir, k8sResourcesDir)
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
 	}

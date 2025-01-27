@@ -162,8 +162,8 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	fmt.Println("suffix:", suffix)
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
-	expectedOutputDir := filepath.Join(getTestsDirOut(), "k8s_resources",baseName)
-	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, "k8s_resources"), expectedOutputDir, synTest.name)
+	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir,baseName)
+	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, outDir)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
@@ -236,7 +236,7 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	// run netpol-analyzer
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
 	for _, format := range []string{"txt", "dot"} {
-		err := k8sAnalyzer(path.Join(outDir, "k8s_resources"), path.Join(debugDir, "k8s_connectivity."+format), format)
+		err := k8sAnalyzer(path.Join(outDir, k8sResourcesDir), path.Join(debugDir, "k8s_connectivity."+format), format)
 		require.Nil(t, err)
 	}
 }
