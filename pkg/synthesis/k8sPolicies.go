@@ -28,6 +28,7 @@ func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*netw
 		policies.symbolicRulesToPolicies(model, p.outbound, false)
 		policies.symbolicRulesToPolicies(model, p.inbound, true)
 	}
+	policies.addDefaultDenyNetworkPolicy()
 	return policies.networkPolicies, policies.adminNetworkPolicies
 }
 
@@ -80,6 +81,14 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 		pol.Spec.PodSelector = *srcSelector
 	}
 }
+
+func (policies *k8sPolicies) addDefaultDenyNetworkPolicy() {
+	pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.networkPolicies)), "Default Deny Policy", "defaultDeny")
+	policies.networkPolicies = append(policies.networkPolicies, pol)
+		pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress", "Egress"}
+		// pol.Spec.PodSelector = meta.LabelSelector{}
+}
+
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
