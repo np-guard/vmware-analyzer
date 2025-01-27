@@ -42,7 +42,7 @@ type synthesisTest struct {
 	noHint                bool                  // run also with no hint
 }
 
-var allTests = []synthesisTest{
+var groupsByVmsTests = []synthesisTest{
 	{
 		name:                  "ExampleDumbeldore",
 		exData:                tests.ExampleDumbeldore,
@@ -93,6 +93,31 @@ var allTests = []synthesisTest{
 	},
 }
 
+var groupsByExprTests = []synthesisTest{
+	{
+		name:   "ExampleExprSingleScope",
+		exData: tests.ExampleExprSingleScope,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprTwoScopes",
+		exData: tests.ExampleExprTwoScopes,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprAndConds",
+		exData: tests.ExampleExprAndConds,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprOrConds",
+		exData: tests.ExampleExprOrConds,
+		noHint: false,
+	},
+}
+
+var allTests = append(groupsByVmsTests, groupsByExprTests...)
+
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
@@ -112,8 +137,8 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
+	for i := range groupsByVmsTests {
+		test := &groupsByVmsTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
@@ -243,7 +268,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 // calls to addDebugFiles  - see comments there
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
-	for _, test := range allTests {
+	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
 			// to generate output comment the following line and uncomment the one after
 			test.runConvertToAbstract(t, OutputComparison)
@@ -277,4 +302,26 @@ func getTestsDirOut() string {
 // comparison should be insensitive to line comparators; cleaning strings from line comparators
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
+}
+
+// todo tmp until expr fully supported by synthesis
+func (synTest *synthesisTest) runTmpWithExpr() {
+	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+	for i := range rc.DomainList[0].Resources.GroupList {
+		expr := rc.DomainList[0].Resources.GroupList[i].Expression
+		fmt.Printf("group: %v ", rc.DomainList[0].Resources.GroupList[i].Name())
+		if expr != nil {
+			fmt.Printf("of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Expression.String())
+		} else {
+			fmt.Printf("has no expression; must be defined by vms\n")
+		}
+	}
+}
+
+func TestTmpExpr(t *testing.T) {
+	for i := range allTests {
+		test := &allTests[i]
+		test.runTmpWithExpr()
+	}
 }
