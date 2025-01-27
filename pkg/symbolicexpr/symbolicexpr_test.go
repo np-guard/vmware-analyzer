@@ -306,46 +306,44 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 		"allowGivenDeny deny tautology computation not as expected")
 }
 
-/*
 // Input:
 // allow symbolic path:
-// src: (tag = t0) dst: (tag = t1) TCP
-// src: (tag = t2) dst: (tag = t3)
+// src: (group = t0) dst: (group = t1) TCP
+// src: (group = t2) dst: (group = t3)
 // deny symbolic path:
-// src: (segment = s0) dst: (segment = s1)
-// src: (segment = s2) dst: (segment = s3)
-// src: (segment = s4) dst: (segment = s5)
+// src: (group = s0) dst: (group = s1)
+// src: (group = s2) dst: (group = s3)
+// src: (group = s4) dst: (group = s5)
 // Output allow paths:
-// src: (tag = t0 and segment != s0 and segment != s2 and segment != s4) dst: (tag = t1) TCP
-// src: (tag = t0 and segment != s0 and segment != s2) dst: (tag = t1 and segment != s5) TCP
-// src: (tag = t0 and segment != s0 and segment != s4) dst: (tag = t1 and segment != s3) TCP
-// src: (tag = t0 and segment != s0) dst: (tag = t1 and segment != s3 and segment != s5) TCP
-// src: (tag = t0 and segment != s2 and segment != s4) dst: (tag = t1 and segment != s1) TCP
-// src: (tag = t0 and segment != s2) dst: (tag = t1 and segment != s1 and segment != s5) TCP
-// src: (tag = t0 and segment != s4) dst: (tag = t1 and segment != s1 and segment != s3) TCP
-// src: (tag = t0) dst: (tag = t1 and segment != s1 and segment != s3 and segment != s5) TCP
-// src: (tag = t2 and segment != s0 and segment != s2 and segment != s4) dst: (tag = t3)
-// src: (tag = t2 and segment != s0 and segment != s2) dst: (tag = t3 and segment != s5)
-// src: (tag = t2 and segment != s0 and segment != s4) dst: (tag = t3 and segment != s3)
-// src: (tag = t2 and segment != s0) dst: (tag = t3 and segment != s3 and segment != s5)
-// src: (tag = t2 and segment != s2 and segment != s4) dst: (tag = t3 and segment != s1)
-// src: (tag = t2 and segment != s2) dst: (tag = t3 and segment != s1 and segment != s5)
-// src: (tag = t2 and segment != s4) dst: (tag = t3 and segment != s1 and segment != s3)
-// src: (tag = t2) dst: (tag = t3 and segment != s1 and segment != s3 and segment != s5)
+// src: (group = t0 and group != s0 and group != s2 and group != s4) dst: (group = t1) TCP
+// src: (group = t0 and group != s0 and group != s2) dst: (group = t1 and group != s5) TCP
+// src: (group = t0 and group != s0 and group != s4) dst: (group = t1 and group != s3) TCP
+// src: (group = t0 and group != s0) dst: (group = t1 and group != s3 and group != s5) TCP
+// src: (group = t0 and group != s2 and group != s4) dst: (group = t1 and group != s1) TCP
+// src: (group = t0 and group != s2) dst: (group = t1 and group != s1 and group != s5) TCP
+// src: (group = t0 and group != s4) dst: (group = t1 and group != s1 and group != s3) TCP
+// src: (group = t0) dst: (group = t1 and group != s1 and group != s3 and group != s5) TCP
+// src: (group = t2 and group != s0 and group != s2 and group != s4) dst: (group = t3)
+// src: (group = t2 and group != s0 and group != s2) dst: (group = t3 and group != s5)
+// src: (group = t2 and group != s0 and group != s4) dst: (group = t3 and group != s3)
+// src: (group = t2 and group != s0) dst: (group = t3 and group != s3 and group != s5)
+// src: (group = t2 and group != s2 and group != s4) dst: (group = t3 and group != s1)
+// src: (group = t2 and group != s2) dst: (group = t3 and group != s1 and group != s5)
+// src: (group = t2 and group != s4) dst: (group = t3 and group != s1 and group != s3)
+// src: (group = t2) dst: (group = t3 and group != s1 and group != s3 and group != s5)
 func TestComputeAllowGivenDenies(t *testing.T) {
 	allowPaths, denyPaths := SymbolicPaths{}, SymbolicPaths{}
-	testTag := initTestTag("tag")
-	testSegment := initTestTag("segment")
+
 	for i := 0; i < 3; i++ {
 		if i < 2 {
-			atomicAllowSrc := &groupAtomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i)}
-			atomicAllowDst := &groupAtomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
+			atomicAllowSrc := newDummyGroupTerm(fmt.Sprintf("t%v", 2*i), false)
+			atomicAllowDst := newDummyGroupTerm(fmt.Sprintf("t%v", 2*i+1), false)
 			conjAllowSrc := Conjunction{atomicAllowSrc}
 			conjAllowDst := Conjunction{atomicAllowDst}
 			allowPaths = append(allowPaths, &SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTCPTransport()})
 		}
-		atomicDenySrc := &groupAtomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
-		atomicDenyDst := &groupAtomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
+		atomicDenySrc := newDummyGroupTerm(fmt.Sprintf("s%v", 2*i), false)
+		atomicDenyDst := newDummyGroupTerm(fmt.Sprintf("s%v", 2*i+1), false)
 		conjDenySrc := Conjunction{atomicDenySrc}
 		conjDenyDst := Conjunction{atomicDenyDst}
 		denyPaths = append(denyPaths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
@@ -354,25 +352,26 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
 	require.Equal(t,
-		"TCP from (tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1)\n"+
-			"TCP from (tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5)\n"+
-			"TCP from (tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3)\n"+
-			"TCP from (tag = t0 and segment != s0) to (tag = t1 and segment != s3 and segment != s5)\n"+
-			"TCP from (tag = t0 and segment != s2 and segment != s4) to (tag = t1 and segment != s1)\n"+
-			"TCP from (tag = t0 and segment != s2) to (tag = t1 and segment != s1 and segment != s5)\n"+
-			"TCP from (tag = t0 and segment != s4) to (tag = t1 and segment != s1 and segment != s3)\n"+
-			"TCP from (tag = t0) to (tag = t1 and segment != s1 and segment != s3 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s0 and segment != s2 and segment != s4) to (tag = t3)\n"+
-			"TCP from (tag = t2 and segment != s0 and segment != s2) to (tag = t3 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s0 and segment != s4) to (tag = t3 and segment != s3)\n"+
-			"TCP from (tag = t2 and segment != s0) to (tag = t3 and segment != s3 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s2 and segment != s4) to (tag = t3 and segment != s1)\n"+
-			"TCP from (tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3)\n"+
-			"TCP from (tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
+		"TCP from (group = t0 and group != s0 and group != s2 and group != s4) to (group = t1)\n"+
+			"TCP from (group = t0 and group != s0 and group != s2) to (group = t1 and group != s5)\n"+
+			"TCP from (group = t0 and group != s0 and group != s4) to (group = t1 and group != s3)\n"+
+			"TCP from (group = t0 and group != s0) to (group = t1 and group != s3 and group != s5)\n"+
+			"TCP from (group = t0 and group != s2 and group != s4) to (group = t1 and group != s1)\n"+
+			"TCP from (group = t0 and group != s2) to (group = t1 and group != s1 and group != s5)\n"+
+			"TCP from (group = t0 and group != s4) to (group = t1 and group != s1 and group != s3)\n"+
+			"TCP from (group = t0) to (group = t1 and group != s1 and group != s3 and group != s5)\n"+
+			"TCP from (group = t2 and group != s0 and group != s2 and group != s4) to (group = t3)\n"+
+			"TCP from (group = t2 and group != s0 and group != s2) to (group = t3 and group != s5)\n"+
+			"TCP from (group = t2 and group != s0 and group != s4) to (group = t3 and group != s3)\n"+
+			"TCP from (group = t2 and group != s0) to (group = t3 and group != s3 and group != s5)\n"+
+			"TCP from (group = t2 and group != s2 and group != s4) to (group = t3 and group != s1)\n"+
+			"TCP from (group = t2 and group != s2) to (group = t3 and group != s1 and group != s5)\n"+
+			"TCP from (group = t2 and group != s4) to (group = t3 and group != s1 and group != s3)\n"+
+			"TCP from (group = t2) to (group = t3 and group != s1 and group != s3 and group != s5)",
 		res.String(), "ComputeAllowGivenDenies computation not as expected")
 }
 
+/*
 // Input:
 // allow symbolic path:
 // s1 = str1 to *
