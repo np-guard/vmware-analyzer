@@ -15,6 +15,11 @@ import (
 )
 
 func createK8sResources(model *AbstractModelSyn, outDir string) error {
+	
+	outDir = filepath.Join(outDir,"k8s_resources")
+	if err := os.RemoveAll(outDir); err != nil {
+		return err
+	}
 	k8sPolicies := &k8sPolicies{}
 	policies, adminPolicies := k8sPolicies.toNetworkPolicies(model)
 	if len(policies) > 0 {
