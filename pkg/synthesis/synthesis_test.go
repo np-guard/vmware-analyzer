@@ -157,13 +157,12 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
-	outBaseDir := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
+	outDir := path.Join("out",fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory))
 	fmt.Println("suffix:", suffix)
-	outDir := path.Join("out", outBaseDir, "k8s_resources")
-	debugDir := path.Join("out", outBaseDir, "debug_resources")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
+	// todo - compare resources to expected output 
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, debugDir)
+	addDebugFiles(t, rc, abstractModel, outDir)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
@@ -174,18 +173,20 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	connectivity := map[string]string{}
 	var err error
 	// generate connectivity analysis output from the original NSX resources
+	debugDir := path.Join(outDir, "debug_resources")
+
 	for _, format := range []string{"txt", "dot"} {
 		params := common.OutputParameters{
 			Format: format,
 		}
 		connectivity[format], err = model.NSXConnectivityFromResourcesContainer(rc, params)
 		require.Nil(t, err)
-		err = common.WriteToFile(path.Join(outDir, "vmware_connectivity."+format), connectivity[format])
+		err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity."+format), connectivity[format])
 		require.Nil(t, err)
 	}
 	// write the abstract model rules into a file
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	err = common.WriteToFile(path.Join(outDir, "abstract_model.txt"), actualOutput)
+	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
 
 	// store the original NSX resources in JSON
@@ -194,7 +195,7 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 		t.Errorf("failed in converting to json: error = %v", err)
 		return
 	}
-	err = common.WriteToFile(path.Join(outDir, "nsx_resources.json"), jsonOut)
+	err = common.WriteToFile(path.Join(debugDir, "nsx_resources.json"), jsonOut)
 	if err != nil {
 		t.Errorf("failed in write to file: error = %v", err)
 		return
@@ -210,7 +211,7 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 		return
 	}
 	// store the *new* (from abstract model) NSX JSON config in a file
-	err = common.WriteToFile(path.Join(outDir, "generated_nsx_resources.json"), jsonOut)
+	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_resources.json"), jsonOut)
 	if err != nil {
 		t.Errorf("failed in write to file: error = %v", err)
 		return
@@ -222,13 +223,19 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 	// run the analyzer on the new NSX config (from abstract), and store in text file
 	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
 	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(outDir, "generated_nsx_connectivity.txt"), analyzed)
+	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
 	require.Equal(t, connectivity["txt"], analyzed,
 		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+
+	// run netpol-analyzer 
+	for _, format := range []string{"txt", "dot"} {
+		err := k8sAnalyzer(path.Join(outDir, "k8s_resources"), path.Join(debugDir, "k8s_connectivity."+format), format)
+		require.Nil(t, err)
+	}
 }
 
 // to be run only on "live nsx" mode
@@ -253,15 +260,14 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		t.Errorf(common.ErrNoResources)
 		return
 	}
-	outDir := path.Join("out", "from_collection", "k8s_resources")
-	debugDir := path.Join("out", "from_collection", "debug_resources")
+	outDir := path.Join("out", "from_collection")
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir,
 		&symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
 	require.Nil(t, err)
 	// print the conntent of the abstract model
 	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
 
-	addDebugFiles(t, rc, abstractModel, debugDir)
+	addDebugFiles(t, rc, abstractModel, outDir)
 	require.Nil(t, err)
 }
 

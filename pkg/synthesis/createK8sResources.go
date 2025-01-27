@@ -41,12 +41,6 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	}
 	logging.Debugf("%d k8s network policies, and %d admin network policies were generated at %s",
 		len(policies), len(adminPolicies), outDir)
-	for _, format := range []string{"txt", "dot"} {
-		err := k8sAnalyzer(outDir, path.Join(outDir, "k8s_connectivity."+format), format)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
@@ -106,6 +100,5 @@ func k8sAnalyzer(k8sDir, outfile, format string) error {
 		return nil
 	}
 	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
-	err = cmd.Run()
-	return err
+	return cmd.Run()
 }
