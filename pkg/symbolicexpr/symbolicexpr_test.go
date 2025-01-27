@@ -393,7 +393,6 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 		"optimized with deny not working properly")
 }
 
-/*
 // conj1: (group = str1)
 // conj2: (group = str1), (s2 = str2)
 // conj3: (group = str1), (s2 = str2), (s3 = str3)
@@ -411,15 +410,14 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 func TestSymbolicPathsImplied(t *testing.T) {
 	conj1, conj2, conj3 := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testAllow := initTestTag(fmt.Sprintf("s%v", i))
-		atomicAllow := groupAtomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v", i)}
+		atomicAllow := newDummyGroupTerm(fmt.Sprintf("str%v", i), false)
 		if i < 2 {
-			conj1 = *conj1.add(atomicAllow)
+			conj1 = *conj1.add(*atomicAllow)
 		}
 		if i < 3 {
-			conj2 = *conj2.add(atomicAllow)
+			conj2 = *conj2.add(*atomicAllow)
 		}
-		conj3 = *conj3.add(atomicAllow)
+		conj3 = *conj3.add(*atomicAllow)
 	}
 	path1 := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTCPTransport()}
 	path1Tag := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTransports()}
@@ -441,4 +439,4 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		path2.isSubset(path5, &Hints{GroupsDisjoint: [][]string{}}) &&
 		!path2.isSubset(path4, &Hints{GroupsDisjoint: [][]string{}}),
 		"path2 should be implied by path3 and path5, is not implied by path4")
-} */
+}
