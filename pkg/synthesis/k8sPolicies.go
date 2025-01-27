@@ -2,7 +2,6 @@ package synthesis
 
 import (
 	"fmt"
-	"slices"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,43 +25,25 @@ type k8sPolicies struct {
 
 func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
 	for _, p := range model.policy {
-		minNumOrRuleInDirection := min(len(p.inbound), len(p.inbound))
-		// we assume that an NSX rule is interpreted into two rules - one inbound, and one outbound.
-		// so here we segregate the two lists into one
-		prioritiesRules := make([]*symbolicRule, 2*minNumOrRuleInDirection)
-		isInbound := map[*symbolicRule]bool{}
-		for i := 0; i < minNumOrRuleInDirection; i++ {
-			prioritiesRules[i*2] = p.inbound[i]
-			prioritiesRules[i*2+1] = p.outbound[i]
-		}
-		prioritiesRules = slices.Concat(
-			prioritiesRules,
-			p.inbound[minNumOrRuleInDirection:],
-			p.outbound[minNumOrRuleInDirection:])
-		for _, rule := range p.inbound {
-			isInbound[rule] = true
-		}
-		for _, rule := range p.outbound {
-			isInbound[rule] = false
-		}
-		for _, rule := range prioritiesRules {
-			policies.symbolicRuleToPolicies(model, rule, isInbound[rule])
-		}
+		policies.symbolicRulesToPolicies(model, p.outbound, false)
+		policies.symbolicRulesToPolicies(model, p.inbound, true)
 	}
 	return policies.networkPolicies, policies.adminNetworkPolicies
 }
 
-func (policies *k8sPolicies) symbolicRuleToPolicies(model *AbstractModelSyn, rule *symbolicRule, inbound bool) {
-	isAdmin := model.allowOnlyFromCategory > rule.origRuleCategory
-	paths := &rule.allowOnlyRulePaths
-	if isAdmin {
-		paths = rule.origSymbolicPaths
-	}
-	for _, p := range *paths {
-		if !p.Conn.TCPUDPSet().IsEmpty() {
-			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, fmt.Sprintf("%d", rule.origRule.RuleID))
-		} else {
-			logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
+func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rules []*symbolicRule, inbound bool) {
+	for _, rule := range rules {
+		isAdmin := model.allowOnlyFromCategory > rule.origRuleCategory
+		paths := &rule.allowOnlyRulePaths
+		if isAdmin {
+			paths = rule.origSymbolicPaths
+		}
+		for _, p := range *paths {
+			if !p.Conn.TCPUDPSet().IsEmpty() {
+				policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, fmt.Sprintf("%d", rule.origRule.RuleID))
+			} else {
+				logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
+			}
 		}
 	}
 }
