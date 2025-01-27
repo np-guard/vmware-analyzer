@@ -1,6 +1,9 @@
 package symbolicexpr
 
 import (
+	"fmt"
+
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"testing"
@@ -44,29 +47,27 @@ func TestGroupTerms(t *testing.T) {
 		"Slytherin neg supersetOf Gryffindor")
 }
 
-/*
 func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testTag := initTestTag(fmt.Sprintf("t%v", i))
-		atomic := groupAtomicTerm{property: testTag, toVal: fmt.Sprintf("str%v", i)}
-		conjSrc = *conjSrc.add(atomic)
+		atomic := newDummyGroupTerm(fmt.Sprintf("str%v", i), false)
+		conjSrc = *conjSrc.add(*atomic)
 		negateAtomic := atomic.negate().(groupAtomicTerm)
 		conjDst = *conjDst.add(negateAtomic)
 	}
 	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTCPTransport()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.String())
-	require.Equal(t, "TCP from (t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
+	require.Equal(t, "TCP from (group = str1 and group = str2 and group = str3) to "+
+		"(group != str1 and group != str2 and group != str3)",
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
 	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
 	// tests removeRedundant
 	slytherin, gryffindor := "Slytherin", "Gryffindor"
-	testGroup := initTestTag("group")
-	atomicSly := groupAtomicTerm{property: testGroup, toVal: slytherin}
-	atomicNegSly := groupAtomicTerm{property: testGroup, toVal: slytherin, neg: true}
-	atomicGry := groupAtomicTerm{property: testGroup, toVal: gryffindor}
-	atomicNegGry := groupAtomicTerm{property: testGroup, toVal: gryffindor, neg: true}
+	atomicSly := newDummyGroupTerm(slytherin, false)
+	atomicNegSly := newDummyGroupTerm(slytherin, true)
+	atomicGry := newDummyGroupTerm(gryffindor, false)
+	atomicNegGry := newDummyGroupTerm(gryffindor, true)
 	src := Conjunction{atomicGry, atomicNegSly}
 	dst := Conjunction{atomicSly, atomicNegGry}
 	path := SymbolicPath{src, dst, netset.AllTCPTransport()}
@@ -79,6 +80,7 @@ func TestSymbolicPaths(t *testing.T) {
 		"redundant removal not working")
 }
 
+/*
 // Input:
 // allow symbolic path:
 // src: (s1 = str1) dst: (d1 = str1) All Connection
