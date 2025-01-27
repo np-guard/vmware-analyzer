@@ -112,41 +112,37 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 
 // Input:
 // allow symbolic path:
-// src: (s1 = str1) dst: (d1 = str1) UDP
+// src: (group = src1) dst: (group = dst1) UDP
 // deny symbolic path:
-// src: (s2 = str2) dst: (d2 = str2) TCP
+// src: (group = src2) dst: (group = dst2) TCP
 // Output allow paths:
-// src: (s1 = str1) dst: (d1 = str1) UDP
-//func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
-//	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-//	testSrc1 := initTestTag("s1")
-//	atomic1 := groupAtomicTerm{property: testSrc1, toVal: "str1"}
-//	conjSrc1 = *conjSrc1.add(atomic1)
-//	testDst1 := initTestTag("d1")
-//	atomicDst1 := groupAtomicTerm{property: testDst1, toVal: "str1"}
-//	conjDst1 = *conjDst1.add(atomicDst1)
-//	testSrc2 := initTestTag("s2")
-//	atomic2 := groupAtomicTerm{property: testSrc2, toVal: "str2"}
-//	conjSrc2 = *conjSrc2.add(atomic2)
-//	testDst2 := initTestTag("d2")
-//	atomicDst2 := groupAtomicTerm{property: testDst2, toVal: "str2"}
-//	conjDst2 = *conjDst2.add(atomicDst2)
-//	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllUDPTransport()}
-//	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
-//	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
-//	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
-//	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
-//	// computeAllowGivenAllowHigherDeny not optimized
-//	require.Equal(t, "UDP from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
-//		"UDP from (s1 = str1) to (d1 = str1 and d2 != str2)\nUDP from (s1 = str1) to (d1 = str1)",
-//		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
-//	// ComputeAllowGivenDenies optimize
-//	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
-//		&Hints{GroupsDisjoint: [][]string{}})
-//	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
-//	require.Equal(t, "UDP from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
-//		"ComputeAllowGivenDenies does not work as expected")
-//}
+// src: (group = src1) dst: (group = dst1) UDP
+func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
+	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
+	atomic1 := newDummyGroupTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomic1)
+	atomicDst1 := newDummyGroupTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
+	atomic2 := newDummyGroupTerm("src2", false)
+	conjSrc2 = *conjSrc2.add(*atomic2)
+	atomicDst2 := newDummyGroupTerm("dst2", false)
+	conjDst2 = *conjDst2.add(*atomicDst2)
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllUDPTransport()}
+	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
+	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
+	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
+	// computeAllowGivenAllowHigherDeny not optimized
+	require.Equal(t, "UDP from (group = src1 and group != src2) to (group = dst1)\n"+
+		"UDP from (group = src1) to (group = dst1 and group != dst2)\nUDP from (group = src1) to (group = dst1)",
+		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
+	// ComputeAllowGivenDenies optimize
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+		&Hints{GroupsDisjoint: [][]string{}})
+	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
+	require.Equal(t, "UDP from (group = src1) to (group = dst1)", allowGivenDenyPaths.String(),
+		"ComputeAllowGivenDenies does not work as expected")
+}
 
 // Input:
 // allow symbolic path:
