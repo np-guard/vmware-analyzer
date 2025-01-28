@@ -42,19 +42,19 @@ const (
 	verboseFlag                 = "verbose"
 	explainFlag                 = "explain"
 
-	resourceInputFileHelp       = "file path input JSON of NSX resources"
+	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp                    = "nsx host url"
 	userHelp                    = "nsx username"
 	passwordHelp                = "nsx password"
 	resourceDumpFileHelp        = "file path to store collected resources in JSON format"
 	topologyDumpFileHelp        = "file path to store topology"
-	skipAnalysisHelp            = "flag to skip analysis, run only collector"
-	anonymizeHelp               = "flag to anonymize resources"
+	skipAnalysisHelp            = "flag to skip analysis, run only collector and/or synthesis"
+	anonymizeHelp               = "flag to anonymize collected nsx resources"
 	outputFileHelp              = "file path to store analysis results"
-	synthesisDumpDirHelp        = "directory path to store k8s synthesis results"
-	synthesizeAdminPoliciesHelp = "create admin network policies for categories lower than Application category"
+	synthesisDumpDirHelp        = "apply synthesis; specify directory path to store k8s synthesis results"
+	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis"
 	outputFormatHelp            = "output format; must be one of [txt, dot, json, svg]"
-	outputFilterFlagHelp        = "filter the analysis results, can have more than one"
+	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
 )
 
 type inArgs struct {
@@ -79,10 +79,11 @@ type inArgs struct {
 func newRootCommand() *cobra.Command {
 	args := &inArgs{}
 	rootCmd := &cobra.Command{
-		Use:   "nsxanalyzer",
-		Short: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.`,
-		Long: `nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.
-It uses REST API calls from NSX manager. `,
+		Use: "nsxanalyzer",
+		Short: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
+and generation of k8s network policies`,
+		Long: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
+and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
 			verbosity := logging.MediumVerbosity
