@@ -19,13 +19,16 @@ func newDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
 	return &dummyGroupTerm
 }
 
-func TestGroupTerms(t *testing.T) {
+func TestTagTerms(t *testing.T) {
 	slytherin, gryffindor, dontCare := "Slytherin", "Gryffindor", "dontCare"
-	atomicSly := newDummyGroupTerm(slytherin, false)
-	atomicDontCare := newDummyGroupTerm(dontCare, false)
-	atomicNegSly := newDummyGroupTerm(slytherin, true)
-	atomicGry := newDummyGroupTerm(gryffindor, false)
-	atomicNegGry := newDummyGroupTerm(gryffindor, true)
+	atomicSly := newTagTerm(slytherin, false)
+	atomicDontCare := newTagTerm(dontCare, false)
+	atomicNegSly := newTagTerm(slytherin, true)
+	atomicGry := newTagTerm(gryffindor, false)
+	atomicNegGry := newTagTerm(gryffindor, true)
+	fmt.Println("atomicSly is", atomicSly.string())
+	fmt.Println("atomicNegSly is", atomicNegSly.string())
+	fmt.Println("atomicGry is", atomicGry.string())
 	disjoint := [][]string{{slytherin, gryffindor}}
 	hints := Hints{GroupsDisjoint: disjoint}
 	// test disjoint between atomics
