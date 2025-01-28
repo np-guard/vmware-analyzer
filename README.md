@@ -1,34 +1,37 @@
 # vmware-analyzer
 
 ## About vmware-analyzer
-This repo contains packages and a CLI for analyzing the network connectivity between VMs, as specified by various NSX resources.
+This repo contains packages and a CLI for NSX DFW analysis and k8s network policy synthesis.
+It includes analysis of the network connectivity between VMs, as specified by various NSX resources.
+It also includes functionality to synthesize k8s network policies, that preserve the micro-segmentation configured by NSX DFW.
+
 
 ## Usage
 Run the `nsxanalyzer` CLI tool.
 
 ```
 $ ./bin/nsxanalyzer -h
-nsxanalyzer is a CLI for collecting NSX resources, and analyzing permitted connectivity between VMs.
+nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs, and generation of k8s network policies.
 It uses REST API calls from NSX manager.
 
 Usage:
   nsxanalyzer [flags]
 
 Flags:
-      --anonymize                    flag to anonymize resources
+      --anonymize                    flag to anonymize collected nsx resources
   -e, --explain                      connectivity output with rules explanations per allowed/denied connections
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
       --host string                  nsx host url
   -o, --output string                output format; must be one of [txt, dot, json, svg] (default "txt")
-      --output-filter strings        filter the analysis results, can have more than one
+      --output-filter strings        filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")
       --password string              nsx password
   -q, --quiet                        runs quietly, reports only severe errors and results
       --resource-dump-file string    file path to store collected resources in JSON format
-  -r, --resource-input-file string   file path input JSON of NSX resources
-      --skip-analysis                flag to skip analysis, run only collector
-      --synthesis-dump-dir string    directory path to store k8s synthesis results
-      --synthesize-admin-policies    create admin network policies for categories lower than Application category
+  -r, --resource-input-file string   file path input JSON of NSX resources (instead of collecting from NSX host)
+      --skip-analysis                flag to skip analysis, run only collector and/or synthesis
+      --synthesis-dump-dir string    apply synthesis; specify directory path to store k8s synthesis results
+      --synthesize-admin-policies    include admin network policies in policy synthesis
       --topology-dump-file string    file path to store topology
       --username string              nsx username
   -v, --verbose                      runs with more informative messages printed to log
@@ -41,17 +44,19 @@ Flags:
 ```
 $ nsxanalyzer --resource-input-file pkg/collector/data/json/Example2.json 
 
-analyzed connectivity:
-Dumbledore1 => Gryffindor-Web: TCP dst-ports: 80,443
-Dumbledore1 => Hufflepuff-Web: TCP dst-ports: 80,443
-Dumbledore1 => Slytherin-Web: TCP dst-ports: 80,443
-Dumbledore2 => Gryffindor-Web: TCP dst-ports: 80,443
-Dumbledore2 => Hufflepuff-Web: TCP dst-ports: 80,443
-Dumbledore2 => Slytherin-Web: TCP dst-ports: 80,443
-Gryffindor-App => Gryffindor-DB: TCP dst-ports: 445
-Gryffindor-App => Gryffindor-Web: TCP dst-ports: 80,443
-Gryffindor-App => Hufflepuff-App: All Connections
-Gryffindor-App => Hufflepuff-Web: TCP dst-ports: 80,443
+Analyzed connectivity:
+Source         |Destination    |Permitted connections
+Dumbledore1    |Gryffindor-Web |TCP dst-ports: 80,443
+Dumbledore1    |Hufflepuff-Web |TCP dst-ports: 80,443
+Dumbledore1    |Slytherin-Web  |TCP dst-ports: 80,443
+Dumbledore2    |Gryffindor-Web |TCP dst-ports: 80,443
+Dumbledore2    |Hufflepuff-Web |TCP dst-ports: 80,443
+Dumbledore2    |Slytherin-Web  |TCP dst-ports: 80,443
+Gryffindor-App |Gryffindor-DB  |TCP dst-ports: 445
+Gryffindor-App |Gryffindor-Web |TCP dst-ports: 80,443
+Gryffindor-App |Hufflepuff-App |All Connections
+Gryffindor-App |Hufflepuff-Web |TCP dst-ports: 80,443
+Gryffindor-App |Slytherin-Web  |TCP dst-ports: 80,443
 ...
 
 ```
@@ -62,6 +67,54 @@ $ nsxanalyzer --resource-input-file pkg/collector/data/json/Example2.json --outp
 
 ```
 ![graph](pkg/collector/data/expected_output/ex2Filter1.svg)
+
+
+
+## Example k8s network policy synthesis
+
+Original NSX DFW config: (see `pkg/collector/data/json/Example1.json`)
+```
+ruleID |ruleName           |src      |dst     |conn |action |direction |scope |sec-policy |Category
+1004   |allow_smb_incoming |frontend |backend |SMB  |allow  |IN_OUT    |ANY   |app-x      |Application
+1003   |default-deny-rule  |ANY      |ANY     |ANY  |deny   |IN_OUT    |ANY   |app-x      |Application
+```
+
+Run policy synthesis:
+
+```
+$ nsxanalyzer -r pkg/collector/data/json/Example1.json --skip-analysis --synthesis-dump-dir ex1-synth/
+```
+
+Example policy generated (1 out of 3): (see `ex1-synth/k8s_resources/policies.yaml` )
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'TCP dst-ports: 445 from (group = frontend) to (group = backend)'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy_0
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__backend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__frontend
+              operator: Exists
+    policyTypes:
+        - Egress
+```
+
+
 
 
 ## NSX Supported API versions and resources
@@ -79,3 +132,22 @@ make build
 ```
 
 Test your build by running `./bin/nsxanalyzer -h`.
+
+
+## Build analyzer image
+
+Use the following to build a docker image:
+
+```commandline
+make nsx-analyzer-image
+```
+
+Test your image build by running `docker run nsx-analyzer:latest -h`.
+
+### Image build configuration
+
+| Name              | Default value | Description |
+| :---------------- | :-----------  | :---------- |
+| IMAGE_REGISTRY    |   docker.io   | The registry address to which the images should be pushed. |
+| NSX_ANALYZER_TAG  |   latest      | The image tag for nsx-analyzer image build. |
+| NSX_ANALYZER_IMAGE|   nsx-analyzer| The image name for nsx-analyzer image build. |

@@ -8,28 +8,27 @@ import (
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
-type testTag struct {
-	name string
+func newDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
+	nsxGroup := nsx.Group{DisplayName: &name}
+	group := collector.Group{Group: nsxGroup}
+	dummyGroupTerm := groupAtomicTerm{group: &group, atomicTerm: atomicTerm{neg: neg}}
+	return &dummyGroupTerm
 }
 
-func initTestTag(name string) *testTag {
-	return &testTag{name: name}
-}
-
-func (testT *testTag) Name() string {
-	return testT.name
-}
-
-func TestAtomicTerms(t *testing.T) {
+func TestTagTerms(t *testing.T) {
 	slytherin, gryffindor, dontCare := "Slytherin", "Gryffindor", "dontCare"
-	testGroup := initTestTag("group")
-	atomicSly := atomicTerm{property: testGroup, toVal: slytherin}
-	atomicDontCare := atomicTerm{property: testGroup, toVal: dontCare}
-	atomicNegSly := atomicTerm{property: testGroup, toVal: slytherin, neg: true}
-	atomicGry := atomicTerm{property: testGroup, toVal: gryffindor}
-	atomicNegGry := atomicTerm{property: testGroup, toVal: gryffindor, neg: true}
+	atomicSly := newTagTerm(slytherin, false)
+	atomicDontCare := newTagTerm(dontCare, false)
+	atomicNegSly := newTagTerm(slytherin, true)
+	atomicGry := newTagTerm(gryffindor, false)
+	atomicNegGry := newTagTerm(gryffindor, true)
+	fmt.Println("atomicSly is", atomicSly.string())
+	fmt.Println("atomicNegSly is", atomicNegSly.string())
+	fmt.Println("atomicGry is", atomicGry.string())
 	disjoint := [][]string{{slytherin, gryffindor}}
 	hints := Hints{GroupsDisjoint: disjoint}
 	// test disjoint between atomics
@@ -55,25 +54,24 @@ func TestAtomicTerms(t *testing.T) {
 func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testTag := initTestTag(fmt.Sprintf("t%v", i))
-		atomic := atomicTerm{property: testTag, toVal: fmt.Sprintf("str%v", i)}
-		conjSrc = *conjSrc.add(atomic)
-		negateAtomic := atomic.negate().(atomicTerm)
+		atomic := newDummyGroupTerm(fmt.Sprintf("str%v", i), false)
+		conjSrc = *conjSrc.add(*atomic)
+		negateAtomic := atomic.negate().(groupAtomicTerm)
 		conjDst = *conjDst.add(negateAtomic)
 	}
 	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTCPTransport()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.String())
-	require.Equal(t, "TCP from (t1 = str1 and t2 = str2 and t3 = str3) to (t1 != str1 and t2 != str2 and t3 != str3)",
+	require.Equal(t, "TCP from (group = str1 and group = str2 and group = str3) to "+
+		"(group != str1 and group != str2 and group != str3)",
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
 	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
 	// tests removeRedundant
 	slytherin, gryffindor := "Slytherin", "Gryffindor"
-	testGroup := initTestTag("group")
-	atomicSly := atomicTerm{property: testGroup, toVal: slytherin}
-	atomicNegSly := atomicTerm{property: testGroup, toVal: slytherin, neg: true}
-	atomicGry := atomicTerm{property: testGroup, toVal: gryffindor}
-	atomicNegGry := atomicTerm{property: testGroup, toVal: gryffindor, neg: true}
+	atomicSly := newDummyGroupTerm(slytherin, false)
+	atomicNegSly := newDummyGroupTerm(slytherin, true)
+	atomicGry := newDummyGroupTerm(gryffindor, false)
+	atomicNegGry := newDummyGroupTerm(gryffindor, true)
 	src := Conjunction{atomicGry, atomicNegSly}
 	dst := Conjunction{atomicSly, atomicNegGry}
 	path := SymbolicPath{src, dst, netset.AllTCPTransport()}
@@ -88,91 +86,81 @@ func TestSymbolicPaths(t *testing.T) {
 
 // Input:
 // allow symbolic path:
-// src: (s1 = str1) dst: (d1 = str1) All Connection
+// src: (tag = src1) dst: (tag = dst1) All Connection
 // deny symbolic path:
-// src: (s2 = str2) dst: (d2 = str2) UDP
+// src: (tag = src2) dst: (tag = dst2) UDP
 // Output allow paths:
-// src: (s1 = str1 and s2 != str2) dst (d1 = str1) All connection
-// src: (s1 = str1) dst: (d1 = str1 and d2 != str2) All connection
-// src: (s1 = str1) dst: (d1 = str1) ICMP, TCP
+// src: (tag = src1 and tag != src2) dst (tag = dst1) All connection
+// src: (tag = src1) dst: (tag = dst1 and tag != dst2) All connection
+// src: (tag = src1) dst: (tag = dst2) ICMP, TCP
 func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := atomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := atomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
-	testSrc2 := initTestTag("s2")
-	atomic2 := atomicTerm{property: testSrc2, toVal: "str2"}
-	conjSrc2 = *conjSrc2.add(atomic2)
-	testDst2 := initTestTag("d2")
-	atomicDst2 := atomicTerm{property: testDst2, toVal: "str2"}
-	conjDst2 = *conjDst2.add(atomicDst2)
+	atomic1 := newTagTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomic1)
+	atomicDst1 := newTagTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
+	atomic2 := newTagTerm("src2", false)
+	conjSrc2 = *conjSrc2.add(*atomic2)
+	atomicDst2 := newTagTerm("dst2", false)
+	conjDst2 = *conjDst2.add(*atomicDst2)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllUDPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
-	require.Equal(t, "All Connections from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
-		"All Connections from (s1 = str1) to (d1 = str1 and d2 != str2)\n"+
-		"ICMP,TCP from (s1 = str1) to (d1 = str1)",
+	require.Equal(t, "All Connections from (tag = src1 and tag != src2) to (tag = dst1)\n"+
+		"All Connections from (tag = src1) to (tag = dst1 and tag != dst2)\n"+
+		"ICMP,TCP from (tag = src1) to (tag = dst1)",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
 // Input:
 // allow symbolic path:
-// src: (s1 = str1) dst: (d1 = str1) UDP
+// src: (tag = src1) dst: (tag = dst1) UDP
 // deny symbolic path:
-// src: (s2 = str2) dst: (d2 = str2) TCP
+// src: (tag = src2) dst: (tag = dst2) TCP
 // Output allow paths:
-// src: (s1 = str1) dst: (d1 = str1) UDP
+// src: (tag = src1) dst: (tag = dst1) UDP
 func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := atomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := atomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
-	testSrc2 := initTestTag("s2")
-	atomic2 := atomicTerm{property: testSrc2, toVal: "str2"}
-	conjSrc2 = *conjSrc2.add(atomic2)
-	testDst2 := initTestTag("d2")
-	atomicDst2 := atomicTerm{property: testDst2, toVal: "str2"}
-	conjDst2 = *conjDst2.add(atomicDst2)
+	atomic1 := newTagTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomic1)
+	atomicDst1 := newTagTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
+	atomic2 := newTagTerm("src2", false)
+	conjSrc2 = *conjSrc2.add(*atomic2)
+	atomicDst2 := newTagTerm("dst2", false)
+	conjDst2 = *conjDst2.add(*atomicDst2)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllUDPTransport()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	// computeAllowGivenAllowHigherDeny not optimized
-	require.Equal(t, "UDP from (s1 = str1 and s2 != str2) to (d1 = str1)\n"+
-		"UDP from (s1 = str1) to (d1 = str1 and d2 != str2)\nUDP from (s1 = str1) to (d1 = str1)",
+	require.Equal(t, "UDP from (tag = src1 and tag != src2) to (tag = dst1)\n"+
+		"UDP from (tag = src1) to (tag = dst1 and tag != dst2)\nUDP from (tag = src1) to (tag = dst1)",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 	// ComputeAllowGivenDenies optimize
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
-	require.Equal(t, "UDP from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
+	require.Equal(t, "UDP from (tag = src1) to (tag = dst1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
 }
 
 // Input:
 // allow symbolic path:
-// src: (s1 = str1) dst: (d1 = str1) TCP
+// src: (group = src1) dst: (group = dst1) TCP
 // deny symbolic path:
-// src: (s1 = str1) dst: (d1 = str2) TCP src port 0-50
+// src: (group = src1) dst: (group = dst2) TCP src port 0-50
 // Output allow paths:
-// src: (s1 = str1) dst: (d1 = str1) TCP src port TCP src-ports: 51-65535
+// src: (group = src1) dst: (group = dst1) TCP src port TCP src-ports: 51-65535
 func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := atomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := atomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
+	atomic1 := newDummyGroupTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomic1)
+	atomicDst1 := newDummyGroupTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.NewTCPTransport(0, 50,
 		netp.MinPort, netp.MaxPort)}
@@ -180,24 +168,22 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
-	require.Equal(t, "TCP src-ports: 51-65535 from (s1 = str1) to (d1 = str1)", allowGivenDenyPaths.String(),
+	require.Equal(t, "TCP src-ports: 51-65535 from (group = src1) to (group = dst1)", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
 }
 
 // Input:
 // allow symbolic path:
-// src: (s1 = str1) dst: (d1 = str1) TCP
+// src: (s1 = src1) dst: (d1 = dst1) TCP
 // deny symbolic path:
-// src: (s1 = str1) dst: (d1 = str2) TCP
+// src: (s1 = src1) dst: (d1 = dst2) TCP
 // Output allow paths: empty set
 func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := atomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := atomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
+	atomic1 := newDummyGroupTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomic1)
+	atomicDst1 := newDummyGroupTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
 	path := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", path.String(), path.String())
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&path}, &SymbolicPaths{&path},
@@ -209,41 +195,57 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 
 // Input:
 // allow symbolic path:
-// (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) conn TCP
+// (s1 = src1 and s2 = src2 and s3 = src3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) conn TCP
 // deny symbolic path:
-// src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`) conn ALL
-// src: (s1 = str1 and s2 = str2 and s3 = str3)  dst: (s1 = str1 and s2 = str2 and s3 = str3) conn UDP (no effect)
+// src: (group` = src1` and group` = src2` and group` = src3`)
+// dst: (group` = src1` and group` = str2` and group` = str3`) conn ALL
+// src: (group = src1 and group = src2 and group = src3)
+// dst: (group = dst1 and group = dst2 and group = dst3) conn UDP (no effect)
 // Output allow paths:
-// src: (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
-// src: (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
-// src: (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`) dst: (s1 = str1 and s2 = str2 and s3 = str3)
-// src: (s1 = str1 and s2 = str2 and s3 = str3) dst: (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)
-// src: (s1 = str1 and s2 = str2 and s3 = str3) dst: (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)
-// src: (s1 = str1 and s2 = str2 and s3 = str3) dst: (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)
+// src: (group = src1 and group = src2 and group = src3 and group != src1`)
+// dst: (group = dst1 and group = dst2 and group = dst3)
+// src: (group = src1 and group = src2 and group = src3 and group != src2`)
+// dst: (group = dst1 and group = dst2 and group = dst3)
+// src: (group = src1 and group = src2 and group = src3 and group != src3`)
+// dst: (group = dst1 and group = dst2 and group = dst3)
+// src: (group = src1 and group = src2 and group = src3)
+// dst: (group = dst1 and group = str2 and group = dst3 and group != dst1`)
+// src: (group = src1 and group = src2 and group = src3)
+// dst: (group = dst1 and group = str2 and group = dst3 and group != dst2`)
+// src: (group = src1 and group = src2 and group = src3)
+// dst: (group = dst1 and group = str2 and group = dst3 and group != dst3`)
 func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
-	conjAllow, conjDeny := Conjunction{}, Conjunction{}
+	conjAllowSrc, conjAllowDst, conjDenySrc, conjDenyDst := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testAllow := initTestTag(fmt.Sprintf("s%v", i))
-		atomicAllow := atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v", i)}
-		conjAllow = *conjAllow.add(atomicAllow)
-		testDeny := initTestTag(fmt.Sprintf("s%v`", i))
-		atomicDeny := atomicTerm{property: testDeny, toVal: fmt.Sprintf("str%v`", i)}
-		conjDeny = *conjDeny.add(atomicDeny)
+		atomicAllowSrc := newDummyGroupTerm(fmt.Sprintf("src%v", i), false)
+		conjAllowSrc = *conjAllowSrc.add(*atomicAllowSrc)
+		atomicAllowDst := newDummyGroupTerm(fmt.Sprintf("dst%v", i), false)
+		conjAllowDst = *conjAllowDst.add(*atomicAllowDst)
+		atomicDenySrc := newDummyGroupTerm(fmt.Sprintf("src%v`", i), false)
+		conjDenySrc = *conjDenySrc.add(*atomicDenySrc)
+		atomicDenyDst := newDummyGroupTerm(fmt.Sprintf("dst%v`", i), false)
+		conjDenyDst = *conjDenyDst.add(*atomicDenyDst)
 	}
-	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTCPTransport()}
-	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllTransports()}
-	denyPathNoEffect := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllUDPTransport()}
+	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTCPTransport()}
+	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()}
+	denyPathNoEffect := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath},
 		&SymbolicPaths{&denyPath, &denyPathNoEffect}, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDenyPaths.String())
 	require.Equal(t,
-		"TCP from (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
-			"TCP from (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
-			"TCP from (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`) to (s1 = str1 and s2 = str2 and s3 = str3)\n"+
-			"TCP from (s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s1` != str1`)\n"+
-			"TCP from (s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s2` != str2`)\n"+
-			"TCP from (s1 = str1 and s2 = str2 and s3 = str3) to (s1 = str1 and s2 = str2 and s3 = str3 and s3` != str3`)",
+		"TCP from (group = src1 and group = src2 and group = src3 and group != src1`) to"+
+			" (group = dst1 and group = dst2 and group = dst3)\n"+
+			"TCP from (group = src1 and group = src2 and group = src3 and group != src2`) to "+
+			"(group = dst1 and group = dst2 and group = dst3)\n"+
+			"TCP from (group = src1 and group = src2 and group = src3 and group != src3`) to"+
+			" (group = dst1 and group = dst2 and group = dst3)\n"+
+			"TCP from (group = src1 and group = src2 and group = src3) to "+
+			"(group = dst1 and group = dst2 and group = dst3 and group != dst1`)\n"+
+			"TCP from (group = src1 and group = src2 and group = src3) to "+
+			"(group = dst1 and group = dst2 and group = dst3 and group != dst2`)\n"+
+			"TCP from (group = src1 and group = src2 and group = src3) to "+
+			"(group = dst1 and group = dst2 and group = dst3 and group != dst3`)",
 		allowGivenDenyPaths.String(), "allowGivenDeny three terms computation not as expected")
 }
 
@@ -251,54 +253,54 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 // allow symbolic path:
 // src: src: (*) dst: (*)
 // deny symbolic path:
-// src: src: (s1` = str1` and s2` = str2` and s3` = str3`) UDP
-// dst: (s1` = str1` and s2` = str2` and s3` = str3`)
+// src: src: (group = src1 and group = src2 and group = src3) UDP
+// dst: (group = dst1 and group = dst2 and group = dst3)
 // Output allow paths:
 // src: (*) dst: (*) TCP and ICMP
-// src: (s1` != str1`) dst: (*)
-// src: (s2` != str2`) dst: (*)
-// src: (s3` != str3`) dst: (*)
-// src: (*) dst: (s1` != str1`)
-// src: (*) dst: (s2` != str2`)
-// src: (*) dst: (s3` != str3`)
+// src: (group != src1`) dst: (*)
+// src: (group != src2`) dst: (*)
+// src: (group != src3`) dst: (*)
+// src: (*) dst: (group != dst1`)
+// src: (*) dst: (group != dst2`)
+// src: (*) dst: (group != dst3`)
 func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
-	conjDeny := Conjunction{}
+	conjDenySrc, conjDenyDst := Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testDeny := initTestTag(fmt.Sprintf("s%v`", i))
-		atomicDeny := atomicTerm{property: testDeny, toVal: fmt.Sprintf("str%v`", i)}
-		conjDeny = *conjDeny.add(atomicDeny)
+		atomicDenySrc := newDummyGroupTerm(fmt.Sprintf("src%v`", i), false)
+		conjDenySrc = *conjDenySrc.add(*atomicDenySrc)
+		atomicDenyDst := newDummyGroupTerm(fmt.Sprintf("dst%v`", i), false)
+		conjDenyDst = *conjDenyDst.add(*atomicDenyDst)
 	}
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
-	denyPath := SymbolicPath{Src: conjDeny, Dst: conjDeny, Conn: netset.AllUDPTransport()}
+	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
-		"All Connections from (s1` != str1`) to (*)\nAll Connections from (s2` != str2`) to (*)\n"+
-			"All Connections from (s3` != str3`) to (*)\nAll Connections from (*) to (s1` != str1`)\n"+
-			"All Connections from (*) to (s2` != str2`)\nAll Connections from (*) to (s3` != str3`)\n"+
+		"All Connections from (group != src1`) to (*)\nAll Connections from (group != src2`) to (*)\n"+
+			"All Connections from (group != src3`) to (*)\nAll Connections from (*) to (group != dst1`)\n"+
+			"All Connections from (*) to (group != dst2`)\nAll Connections from (*) to (group != dst3`)\n"+
 			"ICMP,TCP from (*) to (*)", allowGivenDeny.String(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
 // Input:
 // allow symbolic path:
-// src: (s1` = str1` and s2` = str2` and s3` = str3`) dst: (s1` = str1` and s2` = str2` and s3` = str3`)
+// src: (group = src1 and group = src2 and group = src3) dst: (group = dst1 and group = dst2 and group = dst3)
 // deny symbolic path:
 // src: * dst: *
 // Output allow paths: empty
 func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
-	conjAllow := Conjunction{}
+	conjAllowSrc, conjAllowDst := Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testAllow := initTestTag(fmt.Sprintf("s%v`", i))
-		atomicAllow := atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v`", i)}
-		conjAllow = *conjAllow.add(atomicAllow)
+		atomicAllowSrc := newDummyGroupTerm(fmt.Sprintf("src%v", i), false)
+		conjAllowSrc = *conjAllowSrc.add(*atomicAllowSrc)
+		atomicAllowDst := newDummyGroupTerm(fmt.Sprintf("dst%v", i), false)
+		conjAllowDst = *conjAllowDst.add(*atomicAllowDst)
 	}
-	fmt.Printf("conjAllow is %v\nisEmptySet%v\n\n", conjAllow.string(),
-		conjAllow.isEmptySet(&Hints{GroupsDisjoint: [][]string{}}))
 	tautologyConj := Conjunction{tautology{}}
-	allowPath := SymbolicPath{Src: conjAllow, Dst: conjAllow, Conn: netset.AllTransports()}
+	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
@@ -309,43 +311,42 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 
 // Input:
 // allow symbolic path:
-// src: (tag = t0) dst: (tag = t1) TCP
-// src: (tag = t2) dst: (tag = t3)
+// src: (group = t0) dst: (group = t1) TCP
+// src: (group = t2) dst: (group = t3)
 // deny symbolic path:
-// src: (segment = s0) dst: (segment = s1)
-// src: (segment = s2) dst: (segment = s3)
-// src: (segment = s4) dst: (segment = s5)
+// src: (group = s0) dst: (group = s1)
+// src: (group = s2) dst: (group = s3)
+// src: (group = s4) dst: (group = s5)
 // Output allow paths:
-// src: (tag = t0 and segment != s0 and segment != s2 and segment != s4) dst: (tag = t1) TCP
-// src: (tag = t0 and segment != s0 and segment != s2) dst: (tag = t1 and segment != s5) TCP
-// src: (tag = t0 and segment != s0 and segment != s4) dst: (tag = t1 and segment != s3) TCP
-// src: (tag = t0 and segment != s0) dst: (tag = t1 and segment != s3 and segment != s5) TCP
-// src: (tag = t0 and segment != s2 and segment != s4) dst: (tag = t1 and segment != s1) TCP
-// src: (tag = t0 and segment != s2) dst: (tag = t1 and segment != s1 and segment != s5) TCP
-// src: (tag = t0 and segment != s4) dst: (tag = t1 and segment != s1 and segment != s3) TCP
-// src: (tag = t0) dst: (tag = t1 and segment != s1 and segment != s3 and segment != s5) TCP
-// src: (tag = t2 and segment != s0 and segment != s2 and segment != s4) dst: (tag = t3)
-// src: (tag = t2 and segment != s0 and segment != s2) dst: (tag = t3 and segment != s5)
-// src: (tag = t2 and segment != s0 and segment != s4) dst: (tag = t3 and segment != s3)
-// src: (tag = t2 and segment != s0) dst: (tag = t3 and segment != s3 and segment != s5)
-// src: (tag = t2 and segment != s2 and segment != s4) dst: (tag = t3 and segment != s1)
-// src: (tag = t2 and segment != s2) dst: (tag = t3 and segment != s1 and segment != s5)
-// src: (tag = t2 and segment != s4) dst: (tag = t3 and segment != s1 and segment != s3)
-// src: (tag = t2) dst: (tag = t3 and segment != s1 and segment != s3 and segment != s5)
+// src: (group = t0 and group != s0 and group != s2 and group != s4) dst: (group = t1) TCP
+// src: (group = t0 and group != s0 and group != s2) dst: (group = t1 and group != s5) TCP
+// src: (group = t0 and group != s0 and group != s4) dst: (group = t1 and group != s3) TCP
+// src: (group = t0 and group != s0) dst: (group = t1 and group != s3 and group != s5) TCP
+// src: (group = t0 and group != s2 and group != s4) dst: (group = t1 and group != s1) TCP
+// src: (group = t0 and group != s2) dst: (group = t1 and group != s1 and group != s5) TCP
+// src: (group = t0 and group != s4) dst: (group = t1 and group != s1 and group != s3) TCP
+// src: (group = t0) dst: (group = t1 and group != s1 and group != s3 and group != s5) TCP
+// src: (group = t2 and group != s0 and group != s2 and group != s4) dst: (group = t3)
+// src: (group = t2 and group != s0 and group != s2) dst: (group = t3 and group != s5)
+// src: (group = t2 and group != s0 and group != s4) dst: (group = t3 and group != s3)
+// src: (group = t2 and group != s0) dst: (group = t3 and group != s3 and group != s5)
+// src: (group = t2 and group != s2 and group != s4) dst: (group = t3 and group != s1)
+// src: (group = t2 and group != s2) dst: (group = t3 and group != s1 and group != s5)
+// src: (group = t2 and group != s4) dst: (group = t3 and group != s1 and group != s3)
+// src: (group = t2) dst: (group = t3 and group != s1 and group != s3 and group != s5)
 func TestComputeAllowGivenDenies(t *testing.T) {
 	allowPaths, denyPaths := SymbolicPaths{}, SymbolicPaths{}
-	testTag := initTestTag("tag")
-	testSegment := initTestTag("segment")
+
 	for i := 0; i < 3; i++ {
 		if i < 2 {
-			atomicAllowSrc := &atomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i)}
-			atomicAllowDst := &atomicTerm{property: testTag, toVal: fmt.Sprintf("t%v", 2*i+1)}
+			atomicAllowSrc := newDummyGroupTerm(fmt.Sprintf("t%v", 2*i), false)
+			atomicAllowDst := newDummyGroupTerm(fmt.Sprintf("t%v", 2*i+1), false)
 			conjAllowSrc := Conjunction{atomicAllowSrc}
 			conjAllowDst := Conjunction{atomicAllowDst}
 			allowPaths = append(allowPaths, &SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTCPTransport()})
 		}
-		atomicDenySrc := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i)}
-		atomicDenyDst := &atomicTerm{property: testSegment, toVal: fmt.Sprintf("s%v", 2*i+1)}
+		atomicDenySrc := newDummyGroupTerm(fmt.Sprintf("s%v", 2*i), false)
+		atomicDenyDst := newDummyGroupTerm(fmt.Sprintf("s%v", 2*i+1), false)
 		conjDenySrc := Conjunction{atomicDenySrc}
 		conjDenyDst := Conjunction{atomicDenyDst}
 		denyPaths = append(denyPaths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
@@ -354,52 +355,50 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
 	require.Equal(t,
-		"TCP from (tag = t0 and segment != s0 and segment != s2 and segment != s4) to (tag = t1)\n"+
-			"TCP from (tag = t0 and segment != s0 and segment != s2) to (tag = t1 and segment != s5)\n"+
-			"TCP from (tag = t0 and segment != s0 and segment != s4) to (tag = t1 and segment != s3)\n"+
-			"TCP from (tag = t0 and segment != s0) to (tag = t1 and segment != s3 and segment != s5)\n"+
-			"TCP from (tag = t0 and segment != s2 and segment != s4) to (tag = t1 and segment != s1)\n"+
-			"TCP from (tag = t0 and segment != s2) to (tag = t1 and segment != s1 and segment != s5)\n"+
-			"TCP from (tag = t0 and segment != s4) to (tag = t1 and segment != s1 and segment != s3)\n"+
-			"TCP from (tag = t0) to (tag = t1 and segment != s1 and segment != s3 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s0 and segment != s2 and segment != s4) to (tag = t3)\n"+
-			"TCP from (tag = t2 and segment != s0 and segment != s2) to (tag = t3 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s0 and segment != s4) to (tag = t3 and segment != s3)\n"+
-			"TCP from (tag = t2 and segment != s0) to (tag = t3 and segment != s3 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s2 and segment != s4) to (tag = t3 and segment != s1)\n"+
-			"TCP from (tag = t2 and segment != s2) to (tag = t3 and segment != s1 and segment != s5)\n"+
-			"TCP from (tag = t2 and segment != s4) to (tag = t3 and segment != s1 and segment != s3)\n"+
-			"TCP from (tag = t2) to (tag = t3 and segment != s1 and segment != s3 and segment != s5)",
+		"TCP from (group = t0 and group != s0 and group != s2 and group != s4) to (group = t1)\n"+
+			"TCP from (group = t0 and group != s0 and group != s2) to (group = t1 and group != s5)\n"+
+			"TCP from (group = t0 and group != s0 and group != s4) to (group = t1 and group != s3)\n"+
+			"TCP from (group = t0 and group != s0) to (group = t1 and group != s3 and group != s5)\n"+
+			"TCP from (group = t0 and group != s2 and group != s4) to (group = t1 and group != s1)\n"+
+			"TCP from (group = t0 and group != s2) to (group = t1 and group != s1 and group != s5)\n"+
+			"TCP from (group = t0 and group != s4) to (group = t1 and group != s1 and group != s3)\n"+
+			"TCP from (group = t0) to (group = t1 and group != s1 and group != s3 and group != s5)\n"+
+			"TCP from (group = t2 and group != s0 and group != s2 and group != s4) to (group = t3)\n"+
+			"TCP from (group = t2 and group != s0 and group != s2) to (group = t3 and group != s5)\n"+
+			"TCP from (group = t2 and group != s0 and group != s4) to (group = t3 and group != s3)\n"+
+			"TCP from (group = t2 and group != s0) to (group = t3 and group != s3 and group != s5)\n"+
+			"TCP from (group = t2 and group != s2 and group != s4) to (group = t3 and group != s1)\n"+
+			"TCP from (group = t2 and group != s2) to (group = t3 and group != s1 and group != s5)\n"+
+			"TCP from (group = t2 and group != s4) to (group = t3 and group != s1 and group != s3)\n"+
+			"TCP from (group = t2) to (group = t3 and group != s1 and group != s3 and group != s5)",
 		res.String(), "ComputeAllowGivenDenies computation not as expected")
 }
 
 // Input:
 // allow symbolic path:
-// s1 = str1 to *
+// group = src1 to *
 // deny symbolic path:
-// (s1 = str1) to (d1 = str1)
-// Output allow paths: (s1 = str1) to (d1 != str1)
+// (group = src1) to (d1 = dst1)
+// Output allow paths: (group = str1) to (d1 != dst1)
 func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
-	testSrc1 := initTestTag("s1")
-	atomic1 := atomicTerm{property: testSrc1, toVal: "str1"}
-	conjSrc1 = *conjSrc1.add(atomic1)
-	testDst1 := initTestTag("d1")
-	atomicDst1 := atomicTerm{property: testDst1, toVal: "str1"}
-	conjDst1 = *conjDst1.add(atomicDst1)
+	atomicSrc1 := newDummyGroupTerm("src1", false)
+	conjSrc1 = *conjSrc1.add(*atomicSrc1)
+	atomicDst1 := newDummyGroupTerm("dst1", false)
+	conjDst1 = *conjDst1.add(*atomicDst1)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.String())
-	require.Equal(t, "All Connections from (s1 = str1) to (d1 != str1)", allowWithDeny.String(),
+	require.Equal(t, "All Connections from (group = src1) to (group != dst1)", allowWithDeny.String(),
 		"optimized with deny not working properly")
 }
 
-// conj1: (s1 = str1)
-// conj2: (s1 = str1), (s2 = str2)
-// conj3: (s1 = str1), (s2 = str2), (s3 = str3)
+// conj1: (group = str1)
+// conj2: (group = str1), (s2 = str2)
+// conj3: (group = str1), (s2 = str2), (s3 = str3)
 // path1: conj1 to conj1 TCP
 // path1Tag: conj1 to conj1 All
 // path2: conj2 to conj2 TCP
@@ -414,15 +413,14 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 func TestSymbolicPathsImplied(t *testing.T) {
 	conj1, conj2, conj3 := Conjunction{}, Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
-		testAllow := initTestTag(fmt.Sprintf("s%v", i))
-		atomicAllow := atomicTerm{property: testAllow, toVal: fmt.Sprintf("str%v", i)}
+		atomicAllow := newDummyGroupTerm(fmt.Sprintf("str%v", i), false)
 		if i < 2 {
-			conj1 = *conj1.add(atomicAllow)
+			conj1 = *conj1.add(*atomicAllow)
 		}
 		if i < 3 {
-			conj2 = *conj2.add(atomicAllow)
+			conj2 = *conj2.add(*atomicAllow)
 		}
-		conj3 = *conj3.add(atomicAllow)
+		conj3 = *conj3.add(*atomicAllow)
 	}
 	path1 := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTCPTransport()}
 	path1Tag := &SymbolicPath{Src: conj1, Dst: conj1, Conn: netset.AllTransports()}

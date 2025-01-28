@@ -17,11 +17,11 @@ func (c *Conjunction) string() string {
 	return "(" + strings.Join(resArray, " and ") + ")"
 }
 
-func (c *Conjunction) add(atomic atomicTerm) *Conjunction {
-	if c.contains(atomic) {
+func (c *Conjunction) add(atom atomic) *Conjunction {
+	if c.contains(atom) {
 		return c
 	}
-	res := append(*c, atomic)
+	res := append(*c, atom)
 	return &res
 }
 
@@ -72,7 +72,7 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	return false
 }
 
-// checks whether the conjunction is empty: either syntactically, or contains an atomicTerm and its negation
+// checks whether the conjunction is empty: either syntactically, or contains an groupAtomicTerm and its negation
 // or contains two atoms that are disjoint to each other by hints
 func (c *Conjunction) isEmptySet(hints *Hints) bool {
 	if len(*c) == 0 {

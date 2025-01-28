@@ -1,42 +1,43 @@
 package symbolicexpr
 
-import "github.com/np-guard/models/pkg/netset"
+import (
+	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+)
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
-// Virtual machines' properties used in atomic group expr, e.g. group = Gryffindor, tag = "backend"
-// Used by NSX: Tag, Segment, (VM) Name, OS_Name, Computer_Name
-// vmProperty implemented by collector.Segment, endpoints.vm, synthesis.Tag
-// todo: Support OSName and ComputerName at POC?
-type vmProperty interface {
-	Name() string
-}
-
-// atomicTerm represent a simple condition, atom of defining a group:
-// group/tag/segment/name(/computer_Name/OS_Name?) equal/not equal string
-// formally, atomicTerm -> property equal const_string, not atomicTerm
 type atomicTerm struct {
-	property vmProperty
-	toVal    string
-	neg      bool
+	neg bool // equal to group/tag/... (false) or not-equal to it (true)
 }
 
-// todo add struct for tag with scope that implements atomic
+// groupAtomicTerm represent an equal/not-equal condition over a group
+// todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
+type groupAtomicTerm struct {
+	atomicTerm
+	group *collector.Group
+}
+
+type tagAtomicTerm struct {
+	atomicTerm
+	tag *resources.Tag
+}
 
 // tautology represents a condition that always holds.
 // To be used as src or dst for cases where only dst or only src is restricted
 type tautology struct {
 }
 
-// atomic interface for atomic expression - implemented by atomicTerm and tautology
+// atomic interface for atomic expression - implemented by groupAtomicTerm and tautology
 type atomic interface {
-	name() string   // name of group/tag/...
-	string() string // full expression e.g. "group = slytherin"
-	negate() atomic
-	isNegation() bool
-	IsTautology() bool
-	isNegateOf(atomic) bool
-	AsSelector() (string, bool)
+	name() string                   // name of group/tag/...
+	string() string                 // full expression e.g. "group = slytherin"
+	negate() atomic                 // negation of the atomic term todo: once tag scope is supported will return []atomic
+	isNegation() bool               // is term not-equal
+	IsTautology() bool              // is term tautology?
+	isNegateOf(atomic) bool         // is the term negation of the other given term
+	AsSelector() (string, bool)     // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool   // based on hints
 	supersetOf(atomic, *Hints) bool // based on hints
 }
@@ -53,7 +54,7 @@ type SymbolicPath struct {
 
 type SymbolicPaths []*SymbolicPath
 
-// Atomics map from Atomics string to *atomicTerm
+// Atomics map from Atomics string to *groupAtomicTerm
 // todo: to use for cashing
 type Atomics map[string]atomic
 

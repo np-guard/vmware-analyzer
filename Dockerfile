@@ -12,10 +12,15 @@ COPY go.mod go.sum Makefile ./
 RUN make mod
 RUN make build
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:b87097994ed62fbf1de70bc75debe8dacf3ea6e00dd577d74503ef66452c59d6
-RUN microdnf --nodocs -y upgrade
+FROM scratch
 
 WORKDIR /np-guard
 COPY --from=0 /go/src/github.com/vmware-analyzer/bin/nsxanalyzer .
 
 ENTRYPOINT ["/np-guard/nsxanalyzer"]
+
+LABEL \
+        name="github.com/np-guard/vmware-analyzer" \
+        license="Apache License 2.0" \
+        description="vmware-analyzer - NSX Analysis tool" \
+        summary="vmware-analyzer - NSX Analysis tool"

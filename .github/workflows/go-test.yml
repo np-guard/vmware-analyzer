@@ -26,3 +26,18 @@ jobs:
     - name: Test
       run: make test
 
+
+  test-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build Docker image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355
+        id: build_docker
+        with:
+          context: .
+          push: false
+      - name: Check Docker image - help
+        run: docker run ${{ steps.build_docker.outputs.digest }} -h
+      - name: Check Docker image - analysis
+        run: docker run --rm -v $PWD/pkg/collector/data/:/mnt/data ${{ steps.build_docker.outputs.digest }} -r /mnt/data/json/Example1.json
