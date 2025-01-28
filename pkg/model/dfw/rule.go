@@ -15,11 +15,6 @@ import (
 
 type RuleAction string
 
-const (
-	listSeparatorStr = ","
-	lineSeparatorStr = "\n"
-)
-
 /*var egressDirections = []string{"OUT", "IN_OUT"}
 var ingressDirections = []string{"IN", "IN_OUT"}*/
 
@@ -27,7 +22,6 @@ const (
 	ActionAllow     RuleAction = "allow"
 	ActionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
 	ActionJumpToApp RuleAction = "jump_to_application"
-	ActionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
 /*func actionFromString(input string) RuleAction {
@@ -51,7 +45,7 @@ func actionFromString(s string) RuleAction {
 	case string(ActionJumpToApp):
 		return ActionJumpToApp
 	default:
-		return ActionNone
+		panic("invalid input action")
 	}
 }
 
@@ -81,13 +75,21 @@ type FwRule struct {
 
 }
 
+func (f *FwRule) ruleDescriptionStr() string {
+	return fmt.Sprintf("rule %d in category %s", f.RuleID, f.categoryRef.Category.String())
+}
+
+func (f *FwRule) ruleWarning(warnMsg string) {
+	logging.Debugf("%s %s", f.ruleDescriptionStr(), warnMsg)
+}
+
 func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 	if len(f.scope) == 0 {
-		logging.Debugf("rule %d has no effective inbound/outbound component, since its scope component is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
 		return nil, nil
 	}
 	if f.Conn.IsEmpty() {
-		logging.Debugf("rule %d has no effective inbound/outbound component, since its traffic attributes are empty", f.RuleID)
+		f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
 		return nil, nil
 	}
 	return f.getInboundRule(), f.getOutboundRule()
@@ -96,22 +98,22 @@ func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 func (f *FwRule) getInboundRule() *FwRule {
 	// if action is OUT -> return nil
 	if f.direction == string(nsx.RuleDirectionOUT) {
-		logging.Debugf("rule %d has no effective inbound component, since its direction is OUT only", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
 		return nil
 	}
 	if len(f.dstVMs) == 0 {
-		logging.Debugf("rule %d has no effective inbound component, since its dest vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its dest-vms component is empty")
 		return nil
 	}
 	if len(f.srcVMs) == 0 {
-		logging.Debugf("rule %d has no effective inbound component, since its target src vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its target src-vms component is empty")
 		return nil
 	}
 
 	// inbound rule operates on intersection(dest, scope)
 	newDest := endpoints.Intersection(f.dstVMs, f.scope)
 	if len(newDest) == 0 {
-		logging.Debugf("rule %d has no effective inbound component, since its intersction for dest & scope is empty", f.RuleID)
+		f.ruleWarning("has no effective inbound component, since its intersction for dest & scope is empty")
 		return nil
 	}
 	return &FwRule{
@@ -134,23 +136,23 @@ func (f *FwRule) getInboundRule() *FwRule {
 func (f *FwRule) getOutboundRule() *FwRule {
 	// if action is IN -> return nil
 	if f.direction == string(nsx.RuleDirectionIN) {
-		logging.Debugf("rule %d has no effective outbound component, since its direction is IN only", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its direction is IN only")
 		return nil
 	}
 	if len(f.srcVMs) == 0 {
-		logging.Debugf("rule %d has no effective outbound component, since its src vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its src vms component is empty")
 		return nil
 	}
 
 	if len(f.dstVMs) == 0 {
-		logging.Debugf("rule %d has no effective outbound component, since its target dst vms component is empty", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its target dst vms component is empty")
 		return nil
 	}
 
 	// outbound rule operates on intersection(src, scope)
 	newSrc := endpoints.Intersection(f.srcVMs, f.scope)
 	if len(newSrc) == 0 {
-		logging.Debugf("rule %d has no effective outbound component, since its intersction for src & scope is empty", f.RuleID)
+		f.ruleWarning("has no effective outbound component, since its intersction for src & scope is empty")
 		return nil
 	}
 	return &FwRule{
@@ -189,7 +191,7 @@ func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 }*/
 
 func vmsString(vms []*endpoints.VM) string {
-	return common.JoinCustomStrFuncSlice(vms, func(vm *endpoints.VM) string { return vm.Name() }, listSeparatorStr)
+	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }
 
 // return a string representation of a single rule
@@ -211,12 +213,12 @@ func getDefaultRuleScope(r *collector.FirewallRule) string {
 				return *r.TargetDisplayName
 			}
 			return ""
-		}, listSeparatorStr)
+		}, common.CommaSeparator)
 }
 
 func (f *FwRule) pathToShortPathString(path string) string {
 	const (
-		strLenLimit = 12
+		strLenLimit = 20
 		pathSep     = "/"
 		trimmedStr  = "..."
 	)
@@ -241,7 +243,7 @@ func (f *FwRule) pathToShortPathString(path string) string {
 
 func (f *FwRule) getShortPathsString(paths []string) string {
 	return common.JoinCustomStrFuncSlice(paths,
-		func(p string) string { return f.pathToShortPathString(p) }, listSeparatorStr)
+		func(p string) string { return f.pathToShortPathString(p) }, common.CommaSeparator)
 }
 
 func getSrcOrDstExcludedStr(groupsStr string) string {
@@ -264,8 +266,8 @@ func (f *FwRule) getDstString() string {
 	return dstGroups
 }
 
-func getRulesFormattedHeaderLine() string {
-	var rulePropertiesHeaderList = []string{
+func getRulesHeader() []string {
+	return []string{
 		"ruleID",
 		"ruleName",
 		"src",
@@ -277,28 +279,22 @@ func getRulesFormattedHeaderLine() string {
 		"sec-policy",
 		"Category",
 	}
-	return fmt.Sprintf("%s%s%s",
-		common.Red,
-		strings.Join(rulePropertiesHeaderList, "\t"),
-		common.Reset)
 }
 
-// originalRuleStr returns a string representation of a single rule with original attribute values (including groups)
-func (f *FwRule) originalRuleStr() string {
+// originalRuleComponentsStr returns a string representation of a single rule with original attribute values (including groups)
+func (f *FwRule) originalRuleComponentsStr() []string {
 	const (
 		anyStr = "ANY"
 	)
-
 	if f.origRuleObj == nil && f.origDefaultRuleObj == nil {
-		logging.Debugf("warning: rule %d has no origRuleObj or origDefaultRuleObj", f.RuleID)
-		return ""
+		f.ruleWarning("has no origRuleObj or origDefaultRuleObj")
+		return []string{}
 	}
 
 	// if this is a "default rule" from category with ConnectivityPreference configured,
 	// the rule object is of different type
 	if f.origRuleObj == nil && f.origDefaultRuleObj != nil {
-		return fmt.Sprintf("%s%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
-			common.Yellow,
+		return []string{
 			*f.origDefaultRuleObj.Id,
 			*f.origDefaultRuleObj.DisplayName,
 			// The default rule that gets created will be a any-any rule and applied
@@ -306,31 +302,28 @@ func (f *FwRule) originalRuleStr() string {
 			anyStr,
 			anyStr,
 			anyStr,
-			*f.origDefaultRuleObj.Action,
-			f.origDefaultRuleObj.Direction,
+			string(*f.origDefaultRuleObj.Action),
+			string(f.origDefaultRuleObj.Direction),
 			getDefaultRuleScope(f.origDefaultRuleObj),
 			f.secPolicyName,
 			f.secPolicyCategory,
-			common.Reset,
-		)
+		}
 	}
 
 	name := ""
 	if f.origRuleObj.DisplayName != nil {
 		name = *f.origRuleObj.DisplayName
 	}
-	return fmt.Sprintf("%s%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%s",
-		common.Yellow,
-		f.RuleID,
+	return []string{
+		fmt.Sprintf("%d", f.RuleID),
 		name,
 		f.getSrcString(),
 		f.getDstString(),
 		// todo: origRuleObj.Services is not always the services, can also be service_entries
 		f.getShortPathsString(f.origRuleObj.Services),
 		string(f.Action), f.direction,
-		strings.Join(f.origRuleObj.Scope, listSeparatorStr),
+		strings.Join(f.origRuleObj.Scope, common.CommaSeparator),
 		f.secPolicyName,
 		f.secPolicyCategory,
-		common.Reset,
-	)
+	}
 }

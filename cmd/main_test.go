@@ -11,6 +11,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
 func TestMain(t *testing.T) {
@@ -18,6 +20,7 @@ func TestMain(t *testing.T) {
 		name string
 		args string
 	}{
+
 		// version
 		{
 			name: "version",
@@ -49,6 +52,10 @@ func TestMain(t *testing.T) {
 		{
 			name: "analyze-only",
 			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only.txt",
+		},
+		{
+			name: "analyze-only-resources-shorthand-flag",
+			args: "-r ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
 		},
 		{
 			name: "analyze-topology-dot",
@@ -84,11 +91,11 @@ func TestMain(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			serverInfo := ""
-			if !strings.Contains(tt.args, resourceInputFileFlag) {
+			if !strings.Contains(tt.args, resourceInputFileFlag) && !strings.Contains(tt.args, "-r ") {
 				// you  can set your server info here:
 				// serverInfo = "--host host --username user --password password "
 				if serverInfo == "" && os.Getenv("NSX_HOST") == "" {
-					fmt.Println("didn't got any server")
+					fmt.Println(common.ErrNoHostArg)
 					return
 				}
 				serverInfo =
