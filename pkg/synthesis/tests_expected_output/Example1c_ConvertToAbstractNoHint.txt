@@ -1,0 +1,6 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+	TCP dst-ports: 445 from (group = frontend) to (group = backend)
+outbound rules
+	TCP dst-ports: 445 from (group = frontend) to (group = backend)
