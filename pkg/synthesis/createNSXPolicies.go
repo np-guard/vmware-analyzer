@@ -85,7 +85,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 		}
 	}
 	// add default deny rule
-	r := a.addNewRule()
+	r := a.addNewRule(collector.AppCategoty.String())
 	r.Action = data.Drop
 	r.Source = "ANY"
 	r.Dest = "ANY"
