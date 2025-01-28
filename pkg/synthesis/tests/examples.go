@@ -40,6 +40,10 @@ type ExampleSynthesis struct {
 	DisjointGroups [][]string
 }
 
+var Example1c = ExampleSynthesis{
+	FromNSX: data.Example1c,
+}
+
 // ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
