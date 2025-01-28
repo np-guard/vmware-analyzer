@@ -20,12 +20,12 @@ func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
 }
 
 func NewGroupAtomicTerm(group *collector.Group, neg bool) *groupAtomicTerm {
-	return &groupAtomicTerm{group: group, neg: neg}
+	return &groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: neg}}
 }
 
 // negate an groupAtomicTerm expression
 func (groupTerm groupAtomicTerm) negate() atomic {
-	return groupAtomicTerm{group: groupTerm.group, neg: !groupTerm.neg}
+	return groupAtomicTerm{group: groupTerm.group, atomicTerm: atomicTerm{neg: !groupTerm.neg}}
 }
 
 func (groupAtomicTerm) IsTautology() bool {
@@ -44,7 +44,7 @@ func (groupTerm groupAtomicTerm) name() string {
 func getAtomicTermsForGroups(groups []*collector.Group) []*groupAtomicTerm {
 	res := make([]*groupAtomicTerm, len(groups))
 	for i, group := range groups {
-		res[i] = &groupAtomicTerm{group: group, neg: false}
+		res[i] = &groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}
 	}
 	return res
 }

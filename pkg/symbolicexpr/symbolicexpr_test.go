@@ -15,7 +15,7 @@ import (
 func newDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
 	nsxGroup := nsx.Group{DisplayName: &name}
 	group := collector.Group{Group: nsxGroup}
-	dummyGroupTerm := groupAtomicTerm{group: &group, neg: neg}
+	dummyGroupTerm := groupAtomicTerm{group: &group, atomicTerm: atomicTerm{neg: neg}}
 	return &dummyGroupTerm
 }
 

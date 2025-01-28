@@ -7,11 +7,15 @@ import (
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
 
+type atomicTerm struct {
+	neg bool // equal to group/tag/... (false) or not-equal to it (true)
+}
+
 // groupAtomicTerm represent an equal/not-equal condition over a group
 // todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
 type groupAtomicTerm struct {
 	group *collector.Group
-	neg   bool // equal to group (false) or not-equal to group (true)
+	atomicTerm
 }
 
 // tautology represents a condition that always holds.
