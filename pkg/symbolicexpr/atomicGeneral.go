@@ -4,6 +4,8 @@ import (
 	"slices"
 )
 
+// tautology implementation
+
 func (tautology) string() string {
 	return "*"
 }
@@ -41,6 +43,8 @@ func (tautology) disjoint(atomic, *Hints) bool {
 func (tautology) supersetOf(atom atomic, hints *Hints) bool {
 	return atom.IsTautology()
 }
+
+// general atomic functionality
 
 // are two given by name atomicTerms in disjoint list
 func (hints *Hints) disjoint(name1, name2 string) bool {
