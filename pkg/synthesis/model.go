@@ -54,7 +54,7 @@ type symbolicRulePair struct {
 
 // a temporary function to get pairs of rules, each pair represent an orig rule.
 // to be remove after reorg symbolicPolicy
-func (p *symbolicPolicy) toPairs() []*symbolicRulePair {
+func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
 	res := []*symbolicRulePair{}
 	ruleIDToIndex := map[*collector.Rule]int{}
 	getRulePair := func(r *symbolicRule) *symbolicRulePair {
@@ -64,17 +64,17 @@ func (p *symbolicPolicy) toPairs() []*symbolicRulePair {
 		}
 		return res[ruleIDToIndex[r.origRule.OrigRuleObj]]
 	}
-	for _, r := range p.inbound {
+	for _, r := range policy.inbound {
 		getRulePair(r).inbound = r
 	}
-	for _, r := range p.outbound {
+	for _, r := range policy.outbound {
 		getRulePair(r).outbound = r
 	}
 	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
-		in1 := slices.Index(p.inbound, p1.inbound)
-		out1 := slices.Index(p.outbound, p1.outbound)
-		in2 := slices.Index(p.inbound, p2.inbound)
-		out2 := slices.Index(p.outbound, p2.outbound)
+		in1 := slices.Index(policy.inbound, p1.inbound)
+		out1 := slices.Index(policy.outbound, p1.outbound)
+		in2 := slices.Index(policy.inbound, p2.inbound)
+		out2 := slices.Index(policy.outbound, p2.outbound)
 		switch {
 		case in1 >= 0 && in2 >= 0:
 			return in1 - in2
