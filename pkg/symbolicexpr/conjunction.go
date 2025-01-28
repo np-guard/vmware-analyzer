@@ -17,11 +17,11 @@ func (c *Conjunction) string() string {
 	return "(" + strings.Join(resArray, " and ") + ")"
 }
 
-func (c *Conjunction) add(atomic groupAtomicTerm) *Conjunction {
-	if c.contains(atomic) {
+func (c *Conjunction) add(atom atomic) *Conjunction {
+	if c.contains(atom) {
 		return c
 	}
-	res := append(*c, atomic)
+	res := append(*c, atom)
 	return &res
 }
 

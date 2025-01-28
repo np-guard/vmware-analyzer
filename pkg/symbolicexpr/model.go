@@ -3,6 +3,7 @@ package symbolicexpr
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
@@ -14,8 +15,13 @@ type atomicTerm struct {
 // groupAtomicTerm represent an equal/not-equal condition over a group
 // todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
 type groupAtomicTerm struct {
-	group *collector.Group
 	atomicTerm
+	group *collector.Group
+}
+
+type tagAtomicTerm struct {
+	atomicTerm
+	tag *resources.Tag
 }
 
 // tautology represents a condition that always holds.
