@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -17,9 +18,9 @@ func (tagTerm tagAtomicTerm) name() string {
 }
 
 func (tagTerm tagAtomicTerm) string() string {
-	equalSign := " = "
+	equalSign := equalSignConst
 	if tagTerm.neg {
-		equalSign = " != "
+		equalSign = nonEqualSignConst
 	}
 	return tagConst + equalSign + tagTerm.name()
 }

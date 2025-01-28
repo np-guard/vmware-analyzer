@@ -7,11 +7,13 @@ import (
 )
 
 const grp = "group"
+const equalSignConst = " = "
+const nonEqualSignConst = " != "
 
 func (groupTerm groupAtomicTerm) string() string {
-	equalSign := " = "
+	equalSign := equalSignConst
 	if groupTerm.neg {
-		equalSign = " != "
+		equalSign = nonEqualSignConst
 	}
 	return grp + equalSign + groupTerm.name()
 }
