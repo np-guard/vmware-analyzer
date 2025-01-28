@@ -219,7 +219,7 @@ func getDefaultRuleScope(r *collector.FirewallRule) string {
 
 func (f *FwRule) pathToShortPathString(path string) string {
 	const (
-		strLenLimit = 12
+		strLenLimit = 20
 		pathSep     = "/"
 		trimmedStr  = "..."
 	)

@@ -22,15 +22,17 @@ type EffectiveRules struct {
 	Outbound []*FwRule
 }
 
-func (e *EffectiveRules) addInboundRule(r *FwRule) {
+func (e *EffectiveRules) addInboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Inbound = append(e.Inbound, r)
+		d.totalIngressRules += 1
 	}
 }
 
-func (e *EffectiveRules) addOutboundRule(r *FwRule) {
+func (e *EffectiveRules) addOutboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Outbound = append(e.Outbound, r)
+		d.totalEgressRules += 1
 	}
 }
 
@@ -96,11 +98,13 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	nonDet *connectionsAndRules, // notDeterminedConns are the set of connections between src to dst, for which this category
 // has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
 ) {
+	// logging.Debugf("category: %s", c.Category.String())
 	allowedConns, jumpToAppConns, deniedConns = emptyConnectionsAndRules(), emptyConnectionsAndRules(), emptyConnectionsAndRules()
 	rules := c.ProcessedRules.Inbound // inbound effective rules
 	if !isIngress {
 		rules = c.ProcessedRules.Outbound // outbound effective rules
 	}
+	// logging.Debugf("num of rules: %d", len(rules))
 	for _, rule := range rules {
 		if rule.processedRuleCapturesPair(src, dst) {
 			switch rule.Action {
@@ -208,8 +212,8 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 
 	inbound, outbound := newRule.effectiveRules()
 	if c.Category != collector.EthernetCategory {
-		c.ProcessedRules.addInboundRule(inbound)
-		c.ProcessedRules.addOutboundRule(outbound)
+		c.ProcessedRules.addInboundRule(inbound, c.dfwRef)
+		c.ProcessedRules.addOutboundRule(outbound, c.dfwRef)
 	} else {
 		logging.Debugf(
 			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)

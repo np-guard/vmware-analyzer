@@ -14,6 +14,8 @@ import (
 type DFW struct {
 	CategoriesSpecs []*CategorySpec // ordered list of categories
 	//defaultAction   RuleAction      // global default (?)
+	totalIngressRules int
+	totalEgressRules  int
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
@@ -61,15 +63,37 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	allDeniedConns = emptyConnectionsAndRules()
 	allNotDeterminedConns := emptyConnectionsAndRules()
 	delegatedConns = emptyConnectionsAndRules()
+	remainingRulesNum := d.totalEgressRules
+	if isIngress {
+		remainingRulesNum = d.totalIngressRules
+	}
 
 	for _, dfwCategory := range d.CategoriesSpecs {
 		if dfwCategory.Category == collector.EthernetCategory {
 			continue // cuurently skip L2 rules
 		}
+		// if all connections were determined so far - no need to continue to next category
+		if allNotDeterminedConns.accumulatedConns.IsEmpty() &&
+			(allAllowedConns.accumulatedConns.Union(allDeniedConns.accumulatedConns)).Equal(netset.AllTransports()) {
+			// add this message only if next categoires have rules that are skipped (redundant)
+			if remainingRulesNum > 0 {
+				logging.Debugf("skipping analysis from category %s, all onnections were determined by previous categories", dfwCategory.Category.String())
+			}
+			break
+		}
+
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		//logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
+
+		// update counter of total remaining rules to analyze
+		if isIngress {
+			remainingRulesNum -= len(dfwCategory.ProcessedRules.Inbound)
+		} else {
+			remainingRulesNum -= len(dfwCategory.ProcessedRules.Outbound)
+		}
+
+		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
 		//	dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
 		// logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
 		// logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
@@ -115,6 +139,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		allNotDeterminedConns.accumulatedConns = allNotDeterminedConns.accumulatedConns.Union(
 			categoryNotDeterminedConns.accumulatedConns).Union(categoryJumptToAppConns.accumulatedConns).Subtract(
 			allAllowedConns.accumulatedConns).Subtract(allDeniedConns.accumulatedConns)
+		// logging.Debugf("categoryNotDeterminedConns.accumulatedConns: %s", categoryNotDeterminedConns.accumulatedConns.String())
 	}
 	// todo: add warning if there are remaining non determined connections
 
@@ -124,6 +149,7 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(allNotDeterminedConns.accumulatedConns)
 	}*/
 	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
+		// logging.Debugf("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
 		logging.Debugf("no default rule - unexpected connections for which no decision was found: %s", allNotDeterminedConns.accumulatedConns.String())
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.

@@ -84,6 +84,15 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 			}
 		}
 	}
+	// add default deny rule
+	r := a.addNewRule()
+	r.Action = data.Drop
+	r.Source = "ANY"
+	r.Dest = "ANY"
+	r.Services = []string{"ANY"}
+	r.ID = 9999
+	r.Name = "default-deny"
+	r.Direction = "IN_OUT"
 }
 
 func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, categoryType string) {
