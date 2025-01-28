@@ -55,7 +55,7 @@ func TestMain(t *testing.T) {
 		},
 		{
 			name: "analyze-only-resources-shorthand-flag",
-			args: "-r ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only.txt",
+			args: "-r ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
 		},
 		{
 			name: "analyze-topology-dot",
