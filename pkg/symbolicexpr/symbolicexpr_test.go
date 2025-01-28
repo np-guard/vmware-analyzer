@@ -2,13 +2,14 @@ package symbolicexpr
 
 import (
 	"fmt"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"testing"
-
-	"github.com/stretchr/testify/require"
 )
 
 func newDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
@@ -224,9 +225,9 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	}
 	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTCPTransport()}
 	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()}
-	//denyPathNoEffect := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
+	denyPathNoEffect := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath},
-		&SymbolicPaths{&denyPath}, &Hints{GroupsDisjoint: [][]string{}})
+		&SymbolicPaths{&denyPath, &denyPathNoEffect}, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDenyPaths.String())
 	require.Equal(t,
@@ -266,7 +267,6 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 		conjDenySrc = *conjDenySrc.add(*atomicDenySrc)
 		atomicDenyDst := newDummyGroupTerm(fmt.Sprintf("dst%v`", i), false)
 		conjDenyDst = *conjDenyDst.add(*atomicDenyDst)
-
 	}
 	tautologyConj := Conjunction{tautology{}}
 	allowPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
