@@ -22,22 +22,23 @@ type EffectiveRules struct {
 	Outbound []*FwRule
 }
 
-func (e *EffectiveRules) addInboundRule(r *FwRule) {
+func (e *EffectiveRules) addInboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Inbound = append(e.Inbound, r)
+		d.totalIngressRules += 1
 	}
 }
 
-func (e *EffectiveRules) addOutboundRule(r *FwRule) {
+func (e *EffectiveRules) addOutboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Outbound = append(e.Outbound, r)
+		d.totalEgressRules += 1
 	}
 }
 
 type CategorySpec struct {
 	Category       collector.DfwCategory
-	Rules          []*FwRule // ordered list of rules
-	defaultAction  RuleAction
+	Rules          []*FwRule       // ordered list of rules
 	ProcessedRules *EffectiveRules // ordered list of effective rules
 	dfwRef         *DFW
 }
@@ -88,6 +89,8 @@ func emptyConnectionsAndRules() *connectionsAndRules {
 // analyzeCategory returns sets of connections w.r.t their determining rule action from this category rules,
 // for VM connectivity from src to dst
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
+//
+//nolint:gocritic // temporarily keep commented-out code
 func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 ) (allowedConns, // allowedConns are the set of connections between src to dst, which are allowed by this category rules.
 	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the
@@ -96,11 +99,13 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 	nonDet *connectionsAndRules, // notDeterminedConns are the set of connections between src to dst, for which this category
 // has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
 ) {
+	// logging.Debugf("category: %s", c.Category.String())
 	allowedConns, jumpToAppConns, deniedConns = emptyConnectionsAndRules(), emptyConnectionsAndRules(), emptyConnectionsAndRules()
 	rules := c.ProcessedRules.Inbound // inbound effective rules
 	if !isIngress {
 		rules = c.ProcessedRules.Outbound // outbound effective rules
 	}
+	// logging.Debugf("num of rules: %d", len(rules))
 	for _, rule := range rules {
 		if rule.processedRuleCapturesPair(src, dst) {
 			switch rule.Action {
@@ -131,54 +136,34 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 		}
 	}
 	nonDet = emptyConnectionsAndRules()
-	switch c.defaultAction {
-	case ActionNone: // no default configured for this category
-		nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(
-			jumpToAppConns.accumulatedConns)
-	case ActionAllow: // default allow
-		rulePartition := &connectivity.RuleAndConn{RuleID: 0, Conn: netset.AllTransports().Subtract(allowedConns.accumulatedConns)}
-		allowedConns.accumulatedConns = netset.AllTransports().Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-		nonDet.accumulatedConns = netset.NoTransports()
-		if !rulePartition.Conn.IsEmpty() {
-			allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
-		}
-	case ActionDeny: // default deny
-		rulePartition := &connectivity.RuleAndConn{RuleID: 0, Conn: netset.AllTransports().Subtract(deniedConns.accumulatedConns)}
-		deniedConns.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-		nonDet.accumulatedConns = netset.NoTransports()
-		if !rulePartition.Conn.IsEmpty() {
-			deniedConns.partitionsByRules = append(deniedConns.partitionsByRules, rulePartition)
-		}
-	default:
-		return nil, nil, nil, nil // invalid default action (todo: add err? )
-	}
+	nonDet.accumulatedConns = netset.AllTransports().Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns).Subtract(
+		jumpToAppConns.accumulatedConns) // connections not determined by this category
+
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
 }
 
-func (c *CategorySpec) originalRulesStr() []string {
-	rulesStr := make([]string, len(c.Rules))
+func (c *CategorySpec) originalRulesComponentsStr() [][]string {
+	rulesStr := make([][]string, len(c.Rules))
 	for i := range c.Rules {
-		rulesStr[i] = c.Rules[i].originalRuleStr()
+		rulesStr[i] = c.Rules[i].originalRuleComponentsStr()
 	}
 	return rulesStr
 }
-
 func (c *CategorySpec) String() string {
-	rulesStr := common.JoinStringifiedSlice(c.Rules, lineSeparatorStr)
-	return fmt.Sprintf("category: %s\nrules:\n%s\ndefault action: %s", c.Category.String(),
-		rulesStr, string(c.defaultAction))
+	rulesStr := common.JoinStringifiedSlice(c.Rules, common.NewLine)
+	return fmt.Sprintf("category: %s\nrules:\n%s\n", c.Category.String(), rulesStr)
 }
 
 func (c *CategorySpec) inboundEffectiveRules() string {
 	return common.JoinCustomStrFuncSlice(c.ProcessedRules.Inbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
-		lineSeparatorStr)
+		common.NewLine)
 }
 
 func (c *CategorySpec) outboundEffectiveRules() string {
 	return common.JoinCustomStrFuncSlice(c.ProcessedRules.Outbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
-		lineSeparatorStr)
+		common.NewLine)
 }
 
 func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
@@ -208,10 +193,11 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 
 	inbound, outbound := newRule.effectiveRules()
 	if c.Category != collector.EthernetCategory {
-		c.ProcessedRules.addInboundRule(inbound)
-		c.ProcessedRules.addOutboundRule(outbound)
+		c.ProcessedRules.addInboundRule(inbound, c.dfwRef)
+		c.ProcessedRules.addOutboundRule(outbound, c.dfwRef)
 	} else {
-		logging.Debugf("rule %d in ethernet Category is ignored and not added to list of effective rules", ruleID)
+		logging.Debugf(
+			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)
 	}
 }
 
@@ -219,7 +205,6 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
-		defaultAction:  ActionNone,
 		ProcessedRules: &EffectiveRules{},
 	}
 }

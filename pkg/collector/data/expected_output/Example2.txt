@@ -1,37 +1,39 @@
-Analyzed connectivity::
-Dumbledore1 => Gryffindor-Web: TCP dst-ports: 80,443
-Dumbledore1 => Hufflepuff-Web: TCP dst-ports: 80,443
-Dumbledore1 => Slytherin-Web: TCP dst-ports: 80,443
-Dumbledore2 => Gryffindor-Web: TCP dst-ports: 80,443
-Dumbledore2 => Hufflepuff-Web: TCP dst-ports: 80,443
-Dumbledore2 => Slytherin-Web: TCP dst-ports: 80,443
-Gryffindor-App => Gryffindor-DB: TCP dst-ports: 445
-Gryffindor-App => Gryffindor-Web: TCP dst-ports: 80,443
-Gryffindor-App => Hufflepuff-Web: TCP dst-ports: 80,443
-Gryffindor-App => Slytherin-Web: TCP dst-ports: 80,443
-Gryffindor-DB => Gryffindor-Web: TCP dst-ports: 80,443
-Gryffindor-DB => Hufflepuff-Web: TCP dst-ports: 80,443
-Gryffindor-DB => Slytherin-Web: TCP dst-ports: 80,443
-Gryffindor-Web => Gryffindor-App: TCP dst-ports: 8443,9443,10443
-Gryffindor-Web => Hufflepuff-Web: TCP dst-ports: 80,443
-Gryffindor-Web => Slytherin-Web: TCP dst-ports: 80,443
-Hufflepuff-App => Gryffindor-Web: TCP dst-ports: 80,443
-Hufflepuff-App => Hufflepuff-DB: TCP dst-ports: 445
-Hufflepuff-App => Hufflepuff-Web: TCP dst-ports: 80,443
-Hufflepuff-App => Slytherin-Web: TCP dst-ports: 80,443
-Hufflepuff-DB => Gryffindor-Web: TCP dst-ports: 80,443
-Hufflepuff-DB => Hufflepuff-Web: TCP dst-ports: 80,443
-Hufflepuff-DB => Slytherin-Web: TCP dst-ports: 80,443
-Hufflepuff-Web => Gryffindor-Web: TCP dst-ports: 80,443
-Hufflepuff-Web => Hufflepuff-App: TCP dst-ports: 8443,9443,10443
-Hufflepuff-Web => Slytherin-Web: TCP dst-ports: 80,443
-Slytherin-App => Gryffindor-Web: TCP dst-ports: 80,443
-Slytherin-App => Hufflepuff-Web: TCP dst-ports: 80,443
-Slytherin-App => Slytherin-DB: TCP dst-ports: 445
-Slytherin-App => Slytherin-Web: TCP dst-ports: 80,443
-Slytherin-DB => Gryffindor-Web: TCP dst-ports: 80,443
-Slytherin-DB => Hufflepuff-Web: TCP dst-ports: 80,443
-Slytherin-DB => Slytherin-Web: TCP dst-ports: 80,443
-Slytherin-Web => Gryffindor-Web: TCP dst-ports: 80,443
-Slytherin-Web => Hufflepuff-Web: TCP dst-ports: 80,443
-Slytherin-Web => Slytherin-App: TCP dst-ports: 8443,9443,10443
+Analyzed connectivity:
+Source         |Destination    |Permitted connections
+Dumbledore1    |Gryffindor-Web |TCP dst-ports: 80,443
+Dumbledore1    |Hufflepuff-Web |TCP dst-ports: 80,443
+Dumbledore1    |Slytherin-Web  |TCP dst-ports: 80,443
+Dumbledore2    |Gryffindor-Web |TCP dst-ports: 80,443
+Dumbledore2    |Hufflepuff-Web |TCP dst-ports: 80,443
+Dumbledore2    |Slytherin-Web  |TCP dst-ports: 80,443
+Gryffindor-App |Gryffindor-DB  |TCP dst-ports: 445
+Gryffindor-App |Gryffindor-Web |TCP dst-ports: 80,443
+Gryffindor-App |Hufflepuff-Web |TCP dst-ports: 80,443
+Gryffindor-App |Slytherin-Web  |TCP dst-ports: 80,443
+Gryffindor-DB  |Gryffindor-Web |TCP dst-ports: 80,443
+Gryffindor-DB  |Hufflepuff-Web |TCP dst-ports: 80,443
+Gryffindor-DB  |Slytherin-Web  |TCP dst-ports: 80,443
+Gryffindor-Web |Gryffindor-App |TCP dst-ports: 8443,9443,10443
+Gryffindor-Web |Hufflepuff-Web |TCP dst-ports: 80,443
+Gryffindor-Web |Slytherin-Web  |TCP dst-ports: 80,443
+Hufflepuff-App |Gryffindor-Web |TCP dst-ports: 80,443
+Hufflepuff-App |Hufflepuff-DB  |TCP dst-ports: 445
+Hufflepuff-App |Hufflepuff-Web |TCP dst-ports: 80,443
+Hufflepuff-App |Slytherin-Web  |TCP dst-ports: 80,443
+Hufflepuff-DB  |Gryffindor-Web |TCP dst-ports: 80,443
+Hufflepuff-DB  |Hufflepuff-Web |TCP dst-ports: 80,443
+Hufflepuff-DB  |Slytherin-Web  |TCP dst-ports: 80,443
+Hufflepuff-Web |Gryffindor-Web |TCP dst-ports: 80,443
+Hufflepuff-Web |Hufflepuff-App |TCP dst-ports: 8443,9443,10443
+Hufflepuff-Web |Slytherin-Web  |TCP dst-ports: 80,443
+Slytherin-App  |Gryffindor-Web |TCP dst-ports: 80,443
+Slytherin-App  |Hufflepuff-Web |TCP dst-ports: 80,443
+Slytherin-App  |Slytherin-DB   |TCP dst-ports: 445
+Slytherin-App  |Slytherin-Web  |TCP dst-ports: 80,443
+Slytherin-DB   |Gryffindor-Web |TCP dst-ports: 80,443
+Slytherin-DB   |Hufflepuff-Web |TCP dst-ports: 80,443
+Slytherin-DB   |Slytherin-Web  |TCP dst-ports: 80,443
+Slytherin-Web  |Gryffindor-Web |TCP dst-ports: 80,443
+Slytherin-Web  |Hufflepuff-Web |TCP dst-ports: 80,443
+Slytherin-Web  |Slytherin-App  |TCP dst-ports: 8443,9443,10443
+

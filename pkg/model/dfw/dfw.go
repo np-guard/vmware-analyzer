@@ -2,8 +2,6 @@ package dfw
 
 import (
 	"fmt"
-	"strings"
-	"text/tabwriter"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -14,23 +12,26 @@ import (
 )
 
 type DFW struct {
-	CategoriesSpecs []*CategorySpec // ordered list of categories
-	defaultAction   RuleAction      // global default (?)
+	CategoriesSpecs   []*CategorySpec // ordered list of categories
+	totalIngressRules int
+	totalEgressRules  int
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
+//
+//nolint:gocritic // temporarily keep commented-out code
 func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, true)
-	logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
-	logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
-	logging.Debugf("ingressDenied: %s", ingressDenied.String())
-	logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
+	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
+	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
+	// logging.Debugf("ingressDenied: %s", ingressDenied.String())
+	// logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
 	egressAllowed, egressDenied, egressDelegated /*egressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, false)
-	logging.Debugf("egressAllowed: %s", egressAllowed.String())
-	logging.Debugf("egressDenied: %s", egressDenied.String())
-	logging.Debugf("egressDelegated: %s", egressDelegated.String())
+	// logging.Debugf("egressAllowed: %s", egressAllowed.String())
+	// logging.Debugf("egressDenied: %s", egressDenied.String())
+	// logging.Debugf("egressDelegated: %s", egressDelegated.String())
 
 	return buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied,
 		egressDenied, ingressDelegated, egressDelegated)
@@ -61,19 +62,42 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	allDeniedConns = emptyConnectionsAndRules()
 	allNotDeterminedConns := emptyConnectionsAndRules()
 	delegatedConns = emptyConnectionsAndRules()
+	remainingRulesNum := d.totalEgressRules
+	if isIngress {
+		remainingRulesNum = d.totalIngressRules
+	}
 
 	for _, dfwCategory := range d.CategoriesSpecs {
 		if dfwCategory.Category == collector.EthernetCategory {
 			continue // cuurently skip L2 rules
 		}
+		// if all connections were determined so far - no need to continue to next category
+		if allNotDeterminedConns.accumulatedConns.IsEmpty() &&
+			(allAllowedConns.accumulatedConns.Union(allDeniedConns.accumulatedConns)).Equal(netset.AllTransports()) {
+			// add this message only if next categoires have rules that are skipped (redundant)
+			if remainingRulesNum > 0 {
+				logging.Debugf("skipping analysis from category %s, all onnections were determined by previous categories",
+					dfwCategory.Category.String())
+			}
+			break
+		}
+
 		// get analyzed conns from this category
 		categoryAllowedConns, categoryJumptToAppConns, categoryDeniedConns,
 			categoryNotDeterminedConns := dfwCategory.analyzeCategory(src, dst, isIngress)
-		logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
-			dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
-		logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
-		logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
-		logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
+
+		// update counter of total remaining rules to analyze
+		if isIngress {
+			remainingRulesNum -= len(dfwCategory.ProcessedRules.Inbound)
+		} else {
+			remainingRulesNum -= len(dfwCategory.ProcessedRules.Outbound)
+		}
+
+		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
+		//	dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
+		// logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
+		// logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
+		// logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
 
 		// remove connections already denied by higher-prio categories, from this category's allowed conns
 		// categoryAllowedConns.removeHigherPrioConnections(allDeniedConns.accumulatedConns)
@@ -98,70 +122,63 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 		////////////////////////
 		// update accumulated allowed, denied and not-determined conns, from current category's sets
 		// allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(categoryAllowedConns.accumulatedConns)
-		logging.Debugf("allAllowedConns before: %s", allAllowedConns.String())
+		// logging.Debugf("allAllowedConns before: %s", allAllowedConns.String())
 		allAllowedConns.union(categoryAllowedConns)
-		logging.Debugf("allAllowedConns new: %s", allAllowedConns.String())
+		// logging.Debugf("allAllowedConns new: %s", allAllowedConns.String())
 		// todo: add to allAllowedConns.partitionsByRules the relevant partitions from this category
 
 		// allDeniedConns.accumulatedConns = allDeniedConns.accumulatedConns.Union(categoryDeniedConns.accumulatedConns)
-		logging.Debugf("allDeniedConns before: %s", allDeniedConns.String())
+		// logging.Debugf("allDeniedConns before: %s", allDeniedConns.String())
 		allDeniedConns.union(categoryDeniedConns)
-		logging.Debugf("allDeniedConns new: %s", allDeniedConns.String())
+		// logging.Debugf("allDeniedConns new: %s", allDeniedConns.String())
 
-		logging.Debugf("delegatedConns before: %s", delegatedConns.String())
+		// logging.Debugf("delegatedConns before: %s", delegatedConns.String())
 		delegatedConns.union(categoryJumptToAppConns)
-		logging.Debugf("delegatedConns new: %s", delegatedConns.String())
+		// logging.Debugf("delegatedConns new: %s", delegatedConns.String())
 		// accumulated not-determined conns: remove the conns determined from this/prev categories, and add those not-determined in this category
 		allNotDeterminedConns.accumulatedConns = allNotDeterminedConns.accumulatedConns.Union(
 			categoryNotDeterminedConns.accumulatedConns).Union(categoryJumptToAppConns.accumulatedConns).Subtract(
 			allAllowedConns.accumulatedConns).Subtract(allDeniedConns.accumulatedConns)
+		// logging.Debugf("categoryNotDeterminedConns.accumulatedConns: %s", categoryNotDeterminedConns.accumulatedConns.String())
 	}
 	// todo: add warning if there are remaining non determined connections
 
-	if d.defaultAction == ActionAllow {
-		// if the last category has no default, use the "global" default (todo: check where this value is configured in the api)
-		allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(allNotDeterminedConns.accumulatedConns)
+	// TODO: add test and issue warning on allNotDeterminedConns.accumulatedConns if there is no defaule rule in last category
+	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
+		// logging.Debugf("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
+		logging.Debugf("no default rule - unexpected connections for which no decision was found: %s",
+			allNotDeterminedConns.accumulatedConns.String())
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
 	return allAllowedConns, allDeniedConns, delegatedConns
 }
 
 func (d *DFW) OriginalRulesStrFormatted() string {
-	var builder strings.Builder
-	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
-	fmt.Fprintln(writer, "original rules:")
-	fmt.Fprintln(writer, getRulesFormattedHeaderLine())
+	header := getRulesHeader()
+	lines := [][]string{}
 	for _, c := range d.CategoriesSpecs {
-		for _, ruleStr := range c.originalRulesStr() {
-			if ruleStr == "" {
-				continue
-			}
-			fmt.Fprintln(writer, ruleStr)
-		}
+		lines = append(lines, c.originalRulesComponentsStr()...)
 	}
-	writer.Flush()
-	return builder.String()
+	return "original rules:\n" + common.GenerateTableString(header, lines, &common.TableOptions{Colors: true})
 }
 
 // return a string rep that shows the fw-rules in all categories
 func (d *DFW) String() string {
-	return common.JoinStringifiedSlice(d.CategoriesSpecs, lineSeparatorStr)
+	return common.JoinStringifiedSlice(d.CategoriesSpecs, common.NewLine)
 }
 
 func (d *DFW) AllEffectiveRules() string {
 	inboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
 		func(c *CategorySpec) string { return c.inboundEffectiveRules() },
-		lineSeparatorStr)
+		common.NewLine)
 	outboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
 		func(c *CategorySpec) string { return c.outboundEffectiveRules() },
-		lineSeparatorStr)
+		common.NewLine)
 
 	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, inboundResStr)
 	outbound := fmt.Sprintf("\nOutbound effective rules only:%s%s", common.ShortSep, outboundResStr)
 	return inbound + outbound
 }
-
-// AddRule func for testing purposes
 
 func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
@@ -174,45 +191,13 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 	}
 }
 
-/*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr string, actionStr string) {
-	var categoryObj *CategorySpec
-	for _, c := range d.CategoriesSpecs {
-		if c.Category.string() == categoryStr {
-			categoryObj = c
-		}
-	}
-	if categoryObj == nil { // create new Category if missing
-		categoryObj = &CategorySpec{
-			Category: dfwCategoryFromString(categoryStr),
-		}
-		d.CategoriesSpecs = append(d.CategoriesSpecs, categoryObj)
-	}
-
-	newRule := &FwRule{
-		srcVMs: src,
-		dstVMs: dst,
-		Conn:   netset.All(), // todo: change
-		Action: actionFromString(actionStr),
-	}
-	categoryObj.rules = append(categoryObj.rules, newRule)
-}*/
-
 // NewEmptyDFW returns new DFW with global default as from input
-func NewEmptyDFW(globalDefaultAllow bool) *DFW {
-	res := &DFW{
-		defaultAction: ActionDeny,
-	}
-	if globalDefaultAllow {
-		res.defaultAction = ActionAllow
-	}
+func NewEmptyDFW() *DFW {
+	res := &DFW{}
 	for _, c := range collector.CategoriesList {
 		res.CategoriesSpecs = append(res.CategoriesSpecs, newEmptyCategory(c, res))
 	}
 	return res
-}
-
-func (d *DFW) GlobalDefaultAllow() bool {
-	return d.defaultAction == ActionAllow
 }
 
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {

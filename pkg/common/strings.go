@@ -1,8 +1,10 @@
 package common
 
 import (
+	"fmt"
 	"slices"
 	"strings"
+	"text/tabwriter"
 )
 
 const (
@@ -12,17 +14,18 @@ const (
 	CommaSeparator      string = ","
 	CommaSpaceSeparator string = ", "
 	NewLine             string = "\n"
+	Tab                 string = "\t"
 
 	// ANSI escape codes - for colored output printed to the terminal
-	Reset   = "\033[0m"
-	Red     = "\033[31m"
-	Yellow  = "\033[33m"
-	Green   = "\033[32m"
-	Blue    = "\033[34m"
-	Magenta = "\033[35m"
-	Cyan    = "\033[36m"
-	Gray    = "\033[37m"
-	White   = "\033[97m"
+	reset   = "\033[0m"
+	red     = "\033[31m"
+	yellow  = "\033[33m"
+	green   = "\033[32m"
+	blue    = "\033[34m"
+	magenta = "\033[35m"
+	cyan    = "\033[36m"
+	gray    = "\033[37m"
+	white   = "\033[97m"
 )
 
 type HasString interface {
@@ -63,4 +66,47 @@ func SortedJoinCustomStrFuncSlice[S any](slice []S, f func(s S) string, separato
 	resStrSlice := CustomStrSliceToStrings(slice, f)
 	slices.Sort(resStrSlice)
 	return strings.Join(resStrSlice, separator)
+}
+
+type TableOptions struct {
+	Colors    bool
+	SortLines bool
+}
+
+// GenerateTableString returns a string in table format for input header and lines
+func GenerateTableString(header []string, lines [][]string, opts *TableOptions) string {
+	var builder strings.Builder
+	writer := tabwriter.NewWriter(&builder, 1, 1, 1, ' ', tabwriter.Debug)
+	lineFunc := func(s []string) string { return strings.Join(s, Tab) }
+
+	if opts != nil && opts.Colors {
+		editLinesWithColor(header, lines)
+	}
+
+	fmt.Fprintln(writer, lineFunc(header))
+	if opts != nil && opts.SortLines {
+		fmt.Fprintln(writer, SortedJoinCustomStrFuncSlice(lines, lineFunc, NewLine))
+	} else {
+		fmt.Fprintln(writer, JoinCustomStrFuncSlice(lines, lineFunc, NewLine))
+	}
+
+	fmt.Fprintln(writer, "")
+	writer.Flush()
+	return builder.String()
+}
+
+func editLinesWithColor(header []string, lines [][]string) {
+	editLineWithColor(header, red)
+	for i := range lines {
+		editLineWithColor(lines[i], yellow)
+	}
+}
+
+func editLineWithColor(line []string, color string) {
+	maxInd := len(line) - 1
+	if maxInd < 0 {
+		return
+	}
+	line[0] = color + line[0]
+	line[maxInd] += reset
 }

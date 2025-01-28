@@ -4,9 +4,10 @@ import "slices"
 
 // VM intenal modeling for vmware endpoints
 type VM struct {
-	name string
-	uid  string
-	tags []string //todo: implement
+	name        string
+	uid         string
+	tags        []string //todo: implement
+	ipAddresses []string
 	// address string
 }
 
@@ -25,6 +26,14 @@ func (v *VM) String() string {
 
 func (v *VM) Kind() string {
 	return "vm"
+}
+
+func (v *VM) SetIPAddresses(ips []string) {
+	v.ipAddresses = ips
+}
+
+func (v *VM) IPAddresses() []string {
+	return v.ipAddresses
 }
 
 func (v *VM) AddTag(t string) {

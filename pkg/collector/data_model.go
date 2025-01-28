@@ -100,6 +100,10 @@ type IPProtocolServiceEntry struct {
 
 const creatingConnectionError = "fail to create a connection from service %v"
 
+func (e *IPProtocolServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeIPProtocolServiceEntry, *e.DisplayName)
+}
+
 func (e *IPProtocolServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
@@ -108,12 +112,20 @@ type IGMPTypeServiceEntry struct {
 	nsx.IGMPTypeServiceEntry
 }
 
+func (e *IGMPTypeServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeIGMPTypeServiceEntry, *e.DisplayName)
+}
+
 func (e *IGMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type ICMPTypeServiceEntry struct {
 	nsx.ICMPTypeServiceEntry
+}
+
+func (e *ICMPTypeServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeICMPTypeServiceEntry, *e.DisplayName)
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
@@ -137,12 +149,24 @@ type ALGTypeServiceEntry struct {
 	nsx.ALGTypeServiceEntry
 }
 
+func (e *ALGTypeServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeALGTypeServiceEntry, *e.DisplayName)
+}
+
 func (e *ALGTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type L4PortSetServiceEntry struct {
 	nsx.L4PortSetServiceEntry
+}
+
+func serviceEntryStr(kind nsx.IPProtocolServiceEntryResourceType, name string) string {
+	return fmt.Sprintf("[%s]%s", kind, name)
+}
+
+func (e *L4PortSetServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeL4PortSetServiceEntry, *e.DisplayName)
 }
 
 func (e *L4PortSetServiceEntry) ToConnection() (*netset.TransportSet, error) {
@@ -191,6 +215,10 @@ type EtherTypeServiceEntry struct {
 	nsx.EtherTypeServiceEntry
 }
 
+func (e *EtherTypeServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeEtherTypeServiceEntry, *e.DisplayName)
+}
+
 func (e *EtherTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
@@ -199,12 +227,17 @@ type NestedServiceServiceEntry struct {
 	nsx.NestedServiceServiceEntry
 }
 
+func (e *NestedServiceServiceEntry) String() string {
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeNestedServiceServiceEntry, *e.DisplayName)
+}
+
 func (e *NestedServiceServiceEntry) ToConnection() (*netset.TransportSet, error) {
 	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
 }
 
 type ServiceEntry interface {
 	ToConnection() (*netset.TransportSet, error)
+	String() string
 }
 
 type ServiceEntries []ServiceEntry
