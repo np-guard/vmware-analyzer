@@ -64,7 +64,7 @@ type FwRule struct {
 	Conn               *netset.TransportSet
 	Action             RuleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
-	origRuleObj        *collector.Rule
+	OrigRuleObj        *collector.Rule
 	origDefaultRuleObj *collector.FirewallRule
 	RuleID             int
 	secPolicyName      string
@@ -127,7 +127,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		Conn:           f.Conn,
 		Action:         f.Action,
 		direction:      string(nsx.RuleDirectionIN),
-		origRuleObj:    f.origRuleObj,
+		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
 	}
@@ -166,7 +166,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		Conn:           f.Conn,
 		Action:         f.Action,
 		direction:      string(nsx.RuleDirectionOUT),
-		origRuleObj:    f.origRuleObj,
+		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
 	}
@@ -251,16 +251,16 @@ func getSrcOrDstExcludedStr(groupsStr string) string {
 }
 
 func (f *FwRule) getSrcString() string {
-	srcGroups := f.getShortPathsString(f.origRuleObj.SourceGroups)
-	if f.origRuleObj.SourcesExcluded {
+	srcGroups := f.getShortPathsString(f.OrigRuleObj.SourceGroups)
+	if f.OrigRuleObj.SourcesExcluded {
 		return getSrcOrDstExcludedStr(srcGroups)
 	}
 	return srcGroups
 }
 
 func (f *FwRule) getDstString() string {
-	dstGroups := f.getShortPathsString(f.origRuleObj.DestinationGroups)
-	if f.origRuleObj.DestinationsExcluded {
+	dstGroups := f.getShortPathsString(f.OrigRuleObj.DestinationGroups)
+	if f.OrigRuleObj.DestinationsExcluded {
 		return getSrcOrDstExcludedStr(dstGroups)
 	}
 	return dstGroups
@@ -286,14 +286,14 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 	const (
 		anyStr = "ANY"
 	)
-	if f.origRuleObj == nil && f.origDefaultRuleObj == nil {
+	if f.OrigRuleObj == nil && f.origDefaultRuleObj == nil {
 		f.ruleWarning("has no origRuleObj or origDefaultRuleObj")
 		return []string{}
 	}
 
 	// if this is a "default rule" from category with ConnectivityPreference configured,
 	// the rule object is of different type
-	if f.origRuleObj == nil && f.origDefaultRuleObj != nil {
+	if f.OrigRuleObj == nil && f.origDefaultRuleObj != nil {
 		return []string{
 			*f.origDefaultRuleObj.Id,
 			*f.origDefaultRuleObj.DisplayName,
@@ -311,8 +311,8 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 	}
 
 	name := ""
-	if f.origRuleObj.DisplayName != nil {
-		name = *f.origRuleObj.DisplayName
+	if f.OrigRuleObj.DisplayName != nil {
+		name = *f.OrigRuleObj.DisplayName
 	}
 	return []string{
 		fmt.Sprintf("%d", f.RuleID),
@@ -320,9 +320,9 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		f.getSrcString(),
 		f.getDstString(),
 		// todo: origRuleObj.Services is not always the services, can also be service_entries
-		f.getShortPathsString(f.origRuleObj.Services),
+		f.getShortPathsString(f.OrigRuleObj.Services),
 		string(f.Action), f.direction,
-		strings.Join(f.origRuleObj.Scope, common.CommaSeparator),
+		strings.Join(f.OrigRuleObj.Scope, common.CommaSeparator),
 		f.secPolicyName,
 		f.secPolicyCategory,
 	}
