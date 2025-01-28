@@ -44,6 +44,12 @@ type synthesisTest struct {
 
 var groupsByVmsTests = []synthesisTest{
 	{
+		name:                  "Example1c",
+		exData:                tests.Example1c,
+		allowOnlyFromCategory: collector.MinCategory(),
+		noHint:                true,
+	},
+	{
 		name:                  "ExampleDumbeldore",
 		exData:                tests.ExampleDumbeldore,
 		allowOnlyFromCategory: collector.MinCategory(),
@@ -282,7 +288,7 @@ func TestConvertToAbsract(t *testing.T) {
 			// to generate output comment the following line and uncomment the one after
 			test.runConvertToAbstract(t, OutputComparison)
 			//nolint:gocritic // uncomment for generating output
-			//test.runConvertToAbstract(t, OutputGeneration)
+			// test.runConvertToAbstract(t, OutputGeneration)
 		},
 		)
 	}
