@@ -28,14 +28,6 @@ func (groupTerm groupAtomicTerm) negate() atomic {
 	return groupAtomicTerm{group: groupTerm.group, atomicTerm: atomicTerm{neg: !groupTerm.neg}}
 }
 
-func (groupAtomicTerm) IsTautology() bool {
-	return false
-}
-
-func (groupTerm groupAtomicTerm) isNegation() bool {
-	return groupTerm.neg
-}
-
 func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
@@ -56,21 +48,11 @@ func (groupTerm groupAtomicTerm) isNegateOf(otherAtom atomic) bool {
 }
 
 // returns true iff otherAt is disjoint to groupAtomicTerm as given by hints
-// todo: only if of the same type as by (tag/groups/.. as presented by property)?
-func (groupTerm groupAtomicTerm) disjoint(otherAt atomic, hints *Hints) bool {
-	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if both not negated
-	if groupTerm.isNegation() || otherAt.isNegation() {
-		return false
-	}
-	return hints.disjoint(groupTerm.name(), otherAt.name())
+func (groupTerm groupAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+	return disjoint(groupTerm, otherAtom, hints)
 }
 
 // returns true iff term is superset of groupTerm other as given by hints
-// in hints list of disjoint groups/tags/.. is given. Term1 is superset by term2 if they are disjoint and
-// term1 is not negated while term2 is
-// e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
-// if in the same Clause, we can rid group != Hufflepuff
-// todo: perhaps this can have a general implementation instead of struct specific one
-func (groupTerm groupAtomicTerm) supersetOf(otherAt atomic, hints *Hints) bool {
-	return hints.disjoint(groupTerm.name(), otherAt.name()) && groupTerm.isNegation() && !otherAt.isNegation()
+func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+	return supersetOf(groupTerm, otherAtom, hints)
 }
