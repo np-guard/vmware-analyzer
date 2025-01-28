@@ -58,3 +58,12 @@ func (hints *Hints) disjoint(name1, name2 string) bool {
 	}
 	return false
 }
+
+// there are several derive classes - groupTerm, atomicTerm, of "atomic" base class
+// however, in golang there is no pattern in which the code of the base class can call the derived class methods.
+// thus each derive member function calls the common code
+//  1. the base class is implemented as an interface
+//  2. the receiver of the methods of the base class are given to the method as first argument.
+func isNegateOf(atom, otherAtom atomic) bool {
+	return atom.string() == otherAtom.negate().string()
+}

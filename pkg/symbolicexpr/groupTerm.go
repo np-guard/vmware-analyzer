@@ -51,8 +51,8 @@ func getAtomicTermsForGroups(groups []*collector.Group) []*groupAtomicTerm {
 
 // returns true iff otherAt is negation of
 // once we cache the atomic terms, we can just compare pointers
-func (groupTerm groupAtomicTerm) isNegateOf(otherAt atomic) bool {
-	return groupTerm.string() == otherAt.negate().string()
+func (groupTerm groupAtomicTerm) isNegateOf(otherAtom atomic) bool {
+	return isNegateOf(groupTerm, otherAtom)
 }
 
 // returns true iff otherAt is disjoint to groupAtomicTerm as given by hints
