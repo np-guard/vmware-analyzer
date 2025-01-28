@@ -28,6 +28,7 @@ func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*netw
 		policies.symbolicRulesToPolicies(model, p.outbound, false)
 		policies.symbolicRulesToPolicies(model, p.inbound, true)
 	}
+	policies.addDefaultDenyNetworkPolicy()
 	return policies.networkPolicies, policies.adminNetworkPolicies
 }
 
@@ -70,15 +71,21 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 		from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		pol.Spec.Ingress = rules
-		pol.Spec.PolicyTypes = []networking.PolicyType{"Ingress"}
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
 		pol.Spec.PodSelector = *dstSelector
 	} else {
 		to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		pol.Spec.Egress = rules
-		pol.Spec.PolicyTypes = []networking.PolicyType{"Egress"}
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 		pol.Spec.PodSelector = *srcSelector
 	}
+}
+
+func (policies *k8sPolicies) addDefaultDenyNetworkPolicy() {
+	pol := newNetworkPolicy("defaultDeny", "Default Deny Network Policy", "noNsxID")
+	policies.networkPolicies = append(policies.networkPolicies, pol)
+	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
