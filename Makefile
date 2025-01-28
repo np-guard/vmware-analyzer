@@ -2,6 +2,14 @@ REPOSITORY := github.com/np-guard/vmware-analyzer
 EXE:= nsxanalyzer
 COVERAGE:=nsxanalyzer.coverprofile
 
+
+# TODO: update NSX_ANALYZER_IMAGE to the actual image name
+NSX_ANALYZER_IMAGE = nsx-analyzer
+
+# TODO: update IMAGE_REGISTRY to the actual image registry
+IMAGE_REGISTRY      ?= docker.io
+NSX_ANALYZER_TAG	?= latest
+
 mod: go.mod
 	@echo -- $@ --
 	go mod tidy
@@ -33,5 +41,9 @@ pkg/model/generated/nsx_sdk.go: schemas/top_level_schemas.txt
 	schemas/generate_resources.sh schemas/top_level_schemas.txt $@
 
 generate_sdk: pkg/model/generated/nsx_sdk.go
+
+
+nsx-analyzer-image:
+	docker build -t $(IMAGE_REGISTRY)/$(NSX_ANALYZER_IMAGE):$(NSX_ANALYZER_TAG) .
 
 .DEFAULT_GOAL := build
