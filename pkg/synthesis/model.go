@@ -1,6 +1,8 @@
 package synthesis
 
 import (
+	"slices"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
@@ -55,7 +57,7 @@ type symbolicRulePair struct {
 func (p *symbolicPolicy) toPairs() []*symbolicRulePair {
 	res := []*symbolicRulePair{}
 	ruleIDToIndex := map[*collector.Rule]int{}
-	rulePair := func(r *symbolicRule) *symbolicRulePair {
+	getRulePair := func(r *symbolicRule) *symbolicRulePair {
 		if _, ok := ruleIDToIndex[r.origRule.OrigRuleObj]; !ok {
 			ruleIDToIndex[r.origRule.OrigRuleObj] = len(res)
 			res = append(res, &symbolicRulePair{})
@@ -63,11 +65,25 @@ func (p *symbolicPolicy) toPairs() []*symbolicRulePair {
 		return res[ruleIDToIndex[r.origRule.OrigRuleObj]]
 	}
 	for _, r := range p.inbound {
-		rulePair(r).inbound = r
+		getRulePair(r).inbound = r
 	}
 	for _, r := range p.outbound {
-		rulePair(r).outbound = r
+		getRulePair(r).outbound = r
 	}
+	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
+		in1 := slices.Index(p.inbound, p1.inbound)
+		out1 := slices.Index(p.outbound, p1.outbound)
+		in2 := slices.Index(p.inbound, p2.inbound)
+		out2 := slices.Index(p.outbound, p2.outbound)
+		switch {
+		case in1 >= 0 && in2 >= 0:
+			return in1 - in2
+		case out1 >= 0 && out2 >= 0:
+			return out1 - out2
+		default:
+			return 0
+		}
+	})
 	return res
 }
 
