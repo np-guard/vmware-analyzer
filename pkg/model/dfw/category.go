@@ -203,9 +203,8 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 
 func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
-		Category: c,
-		dfwRef:   d,
-		//defaultAction:  ActionNone,
+		Category:       c,
+		dfwRef:         d,
 		ProcessedRules: &EffectiveRules{},
 	}
 }

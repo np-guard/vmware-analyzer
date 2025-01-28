@@ -144,10 +144,6 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	// todo: add warning if there are remaining non determined connections
 
 	// TODO: add test and issue warning on allNotDeterminedConns.accumulatedConns if there is no defaule rule in last category
-	/*if d.defaultAction == ActionAllow {
-		// if the last category has no default, use the "global" default (todo: check where this value is configured in the api)
-		allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(allNotDeterminedConns.accumulatedConns)
-	}*/
 	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
 		// logging.Debugf("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
 		logging.Debugf("no default rule - unexpected connections for which no decision was found: %s",
@@ -184,8 +180,6 @@ func (d *DFW) AllEffectiveRules() string {
 	return inbound + outbound
 }
 
-// AddRule func for testing purposes
-
 func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
@@ -197,29 +191,6 @@ func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroup
 	}
 }
 
-/*func (d *DFW) AddRule(src, dst []*endpoints.VM, conn *netset.TransportSet, categoryStr string, actionStr string) {
-	var categoryObj *CategorySpec
-	for _, c := range d.CategoriesSpecs {
-		if c.Category.string() == categoryStr {
-			categoryObj = c
-		}
-	}
-	if categoryObj == nil { // create new Category if missing
-		categoryObj = &CategorySpec{
-			Category: dfwCategoryFromString(categoryStr),
-		}
-		d.CategoriesSpecs = append(d.CategoriesSpecs, categoryObj)
-	}
-
-	newRule := &FwRule{
-		srcVMs: src,
-		dstVMs: dst,
-		Conn:   netset.All(), // todo: change
-		Action: actionFromString(actionStr),
-	}
-	categoryObj.rules = append(categoryObj.rules, newRule)
-}*/
-
 // NewEmptyDFW returns new DFW with global default as from input
 func NewEmptyDFW() *DFW {
 	res := &DFW{}
@@ -228,12 +199,6 @@ func NewEmptyDFW() *DFW {
 	}
 	return res
 }
-
-/*
-func (d *DFW) GlobalDefaultAllow() bool {
-	return d.defaultAction == ActionAllow
-}
-*/
 
 func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 	d.pathsToDisplayNames = m
