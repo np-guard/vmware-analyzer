@@ -85,14 +85,15 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 		}
 	}
 	// add default deny rule
+	const defaultDenyID = 9999
 	r := a.addNewRule(collector.AppCategoty.String())
 	r.Action = data.Drop
-	r.Source = "ANY"
-	r.Dest = "ANY"
-	r.Services = []string{"ANY"}
-	r.ID = 9999
+	r.Source = data.AnyStr
+	r.Dest = data.AnyStr
+	r.Services = []string{data.AnyStr}
+	r.ID = defaultDenyID
 	r.Name = "default-deny"
-	r.Direction = "IN_OUT"
+	// default direction is IN_OUT in rule generation, no need to assign direction here
 }
 
 func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, categoryType string) {

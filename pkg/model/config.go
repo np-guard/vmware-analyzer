@@ -21,13 +21,6 @@ type config struct {
 	analysisDone         bool
 }
 
-func (c *config) getConnectivity() connectivity.ConnMap {
-	if !c.analysisDone {
-		c.ComputeConnectivity(nil)
-	}
-	return c.analyzedConnectivity
-}
-
 func (c *config) ComputeConnectivity(vmsFilter []string) {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connectivity.ConnMap{}

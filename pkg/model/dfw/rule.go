@@ -22,7 +22,6 @@ const (
 	ActionAllow     RuleAction = "allow"
 	ActionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
 	ActionJumpToApp RuleAction = "jump_to_application"
-	//ActionNone      RuleAction = "none" // to mark that a default rule is not configured
 )
 
 /*func actionFromString(input string) RuleAction {
