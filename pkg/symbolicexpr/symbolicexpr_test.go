@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"testing"
 
 	"github.com/stretchr/testify/require"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
-	"testing"
 )
 
 func newDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
