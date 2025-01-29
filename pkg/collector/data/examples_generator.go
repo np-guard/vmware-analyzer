@@ -306,9 +306,6 @@ var codeToProtocol = map[int]nsx.L4PortSetServiceEntryL4Protocol{
 	netset.TCPCode: nsx.L4PortSetServiceEntryL4ProtocolTCP,
 }
 
-func pointerTo[T any](t T) *T {
-	return &t
-}
 func serviceEntries(services []string, conn *netset.TransportSet) ([]string, collector.ServiceEntries) {
 	if conn == nil {
 		return services, nil
@@ -322,7 +319,7 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 		portRanges := partition.S3.Intervals()
 		for _, protocolCode := range protocolsCodes {
 			entry := &collector.L4PortSetServiceEntry{}
-			entry.L4Protocol = pointerTo(codeToProtocol[int(protocolCode)])
+			entry.L4Protocol = common.PointerTo(codeToProtocol[int(protocolCode)])
 			for _, portRange := range portRanges {
 				var ports nsx.PortElement
 				if portRange.Start() == portRange.End() {
@@ -345,13 +342,13 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 			if !typesSet.Equal(netset.AllICMPTypes()) {
 				types = make([]*int, len(typesSet.Elements()))
 				for i, typeNumber := range typesSet.Elements() {
-					types[i] = pointerTo(int(typeNumber))
+					types[i] = common.PointerTo(int(typeNumber))
 				}
 			}
 			if !codesSet.Equal(netset.AllICMPCodes()) {
 				codes = make([]*int, len(codesSet.Elements()))
 				for i, code := range codesSet.Elements() {
-					codes[i] = pointerTo(int(code))
+					codes[i] = common.PointerTo(int(code))
 				}
 			}
 			for _, t := range types {
