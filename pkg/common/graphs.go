@@ -87,10 +87,11 @@ type EdgesGraph struct {
 	edges                 []edge
 	header                string
 	tableHeaderComponents []string
+	color                 bool
 }
 
-func NewEdgesGraph(header string, tableHeaderComponents []string) *EdgesGraph {
-	return &EdgesGraph{header: header, tableHeaderComponents: tableHeaderComponents}
+func NewEdgesGraph(header string, tableHeaderComponents []string, color bool) *EdgesGraph {
+	return &EdgesGraph{header: header, tableHeaderComponents: tableHeaderComponents, color: color}
 }
 
 func (e *edge) tableStringComponents() []string {
@@ -126,7 +127,7 @@ func (eg *EdgesGraph) String() string {
 	for _, e := range eg.edges {
 		lines = append(lines, e.tableStringComponents())
 	}
-	return eg.header + NewLine + GenerateTableString(eg.tableHeaderComponents, lines, &TableOptions{SortLines: true})
+	return eg.header + NewLine + GenerateTableString(eg.tableHeaderComponents, lines, &TableOptions{SortLines: true, Colors: eg.color})
 }
 
 func (eg *EdgesGraph) JSONString() (string, error) {

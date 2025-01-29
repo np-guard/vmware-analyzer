@@ -5,4 +5,5 @@ type OutputParameters struct {
 	FileName string
 	VMs      []string
 	Explain  bool
+	Color    bool
 }

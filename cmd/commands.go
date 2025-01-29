@@ -41,6 +41,7 @@ const (
 	quietFlag                   = "quiet"
 	verboseFlag                 = "verbose"
 	explainFlag                 = "explain"
+	colorFlag                   = "color"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp                    = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
@@ -58,6 +59,7 @@ const (
 	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
+	colorHelp                   = "flag to enable color output (default false)"
 )
 
 type inArgs struct {
@@ -77,6 +79,7 @@ type inArgs struct {
 	verbose           bool
 	explain           bool
 	outputFilter      []string
+	color             bool
 }
 
 func newRootCommand() *cobra.Command {
@@ -119,6 +122,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, quietHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, verboseHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
@@ -195,6 +199,7 @@ func runCommand(args *inArgs) error {
 			FileName: args.outputFile,
 			VMs:      args.outputFilter,
 			Explain:  args.explain,
+			Color:    args.color,
 		}
 		logging.Infof("starting connectivity analysis")
 		connResStr, err := model.NSXConnectivityFromResourcesContainer(resources, params)

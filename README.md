@@ -19,6 +19,7 @@ Usage:
 
 Flags:
       --anonymize                    flag to anonymize collected NSX resources (default false)
+      --color                        flag to enable color output (default false)
   -e, --explain                      flag to explain connectivity output with rules explanations per allowed/denied connections (default false)
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
