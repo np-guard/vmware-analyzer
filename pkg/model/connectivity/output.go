@@ -13,7 +13,7 @@ func (c ConnMap) GenConnectivityOutput(params common.OutputParameters) (res stri
 	case common.JSONFormat:
 		g = common.NewEdgesGraph("", []string{})
 	case common.TextFormat:
-		g = common.NewEdgesGraph("Analyzed connectivity:", []string{"Source", "Destination", "Permitted connections"})
+		g = common.NewEdgesGraph(common.AnalyzedConnectivityHeader, []string{"Source", "Destination", "Permitted connections"})
 	case common.DotFormat, common.SvgFormat:
 		g = common.NewDotGraph(false)
 	}

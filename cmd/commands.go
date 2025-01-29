@@ -34,7 +34,7 @@ const (
 	synthesisDumpDirFlag        = "synthesis-dump-dir"
 	synthesizeAdminPoliciesFlag = "synthesize-admin-policies"
 	outputFileFlag              = "filename"
-	outputFormantFlag           = "output"
+	outputFormatFlag            = "output"
 	outputFileShortFlag         = "f"
 	outputFormantShortFlag      = "o"
 	outputFilterFlag            = "output-filter"
@@ -43,18 +43,21 @@ const (
 	explainFlag                 = "explain"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
-	hostHelp                    = "nsx host url"
-	userHelp                    = "nsx username"
-	passwordHelp                = "nsx password"
+	hostHelp                    = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
+	userHelp                    = "NSX username. Alternatively, set the username via the NSX_USER environment variable"
+	passwordHelp                = "NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable" // #nosec G101
 	resourceDumpFileHelp        = "file path to store collected resources in JSON format"
 	topologyDumpFileHelp        = "file path to store topology"
-	skipAnalysisHelp            = "flag to skip analysis, run only collector and/or synthesis"
-	anonymizeHelp               = "flag to anonymize collected nsx resources"
+	skipAnalysisHelp            = "flag to skip analysis, run only collector and/or synthesis (default false)"
+	anonymizeHelp               = "flag to anonymize collected NSX resources (default false)"
 	outputFileHelp              = "file path to store analysis results"
+	explainHelp                 = "flag to explain connectivity output with rules explanations per allowed/denied connections (default false)"
 	synthesisDumpDirHelp        = "apply synthesis; specify directory path to store k8s synthesis results"
-	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis"
+	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis (default false)"
 	outputFormatHelp            = "output format; must be one of [txt, dot, json, svg]"
 	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
+	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
+	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 )
 
 type inArgs struct {
@@ -112,53 +115,65 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVar(&args.synthesizeAdmin, synthesizeAdminPoliciesFlag, false, synthesizeAdminPoliciesHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
 	// todo - check if the format is valid
-	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormantFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
-	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, "runs quietly, reports only severe errors and results")
-	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, "runs with more informative messages printed to log")
-	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false,
-		"connectivity output with rules explanations per allowed/denied connections")
+	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormatFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, quietHelp)
+	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, verboseHelp)
+	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 
-	rootCmd.MarkFlagsOneRequired(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, passwordFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFileFlag)
-	rootCmd.MarkFlagsRequiredTogether(userFlag, passwordFlag)
-	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFormantFlag)
+	rootCmd.MarkFlagsMutuallyExclusive(skipAnalysisFlag, outputFormatFlag)
 
 	return rootCmd
 }
 
-//nolint:gocyclo // just a long function
-func runCommand(args *inArgs) error {
-	var recourses *collector.ResourcesContainerModel
-	var err error
-	if args.host != "" {
-		logging.Infof("collecting NSX resources from given host %s", args.host)
-		server := collector.NewServerData(args.host, args.user, args.password)
-		recourses, err = collector.CollectResources(server)
-		if err != nil {
-			return err
-		}
-	} else {
-		logging.Infof("reading input NSX config file %s", args.resourceInputFile)
-		b, err := os.ReadFile(args.resourceInputFile)
-		if err != nil {
-			return err
-		}
-		recourses, err = collector.FromJSONString(b)
-		if err != nil {
-			return err
-		}
+func resourcesFromInputFile(inputFile string) (*collector.ResourcesContainerModel, error) {
+	logging.Infof("reading input NSX config file %s", inputFile)
+	b, err := os.ReadFile(inputFile)
+	if err != nil {
+		return nil, err
 	}
+	resources, err := collector.FromJSONString(b)
+	if err != nil {
+		return nil, err
+	}
+	return resources, nil
+}
+
+func resourcesFromNSXEnv(args *inArgs) (*collector.ResourcesContainerModel, error) {
+	server, err := collector.GetNSXServerDate(args.host, args.user, args.password)
+	if err != nil {
+		return nil, err
+	}
+	resources, err := collector.CollectResources(server)
+	if err != nil {
+		return nil, err
+	}
+	return resources, nil
+}
+
+func runCommand(args *inArgs) error {
+	var resources *collector.ResourcesContainerModel
+	var err error
+	if args.resourceInputFile != "" {
+		resources, err = resourcesFromInputFile(args.resourceInputFile)
+	} else {
+		resources, err = resourcesFromNSXEnv(args)
+	}
+	if err != nil {
+		return err
+	}
+
 	if args.anonymise {
-		if err := anonymizer.AnonymizeNsx(recourses); err != nil {
+		if err := anonymizer.AnonymizeNsx(resources); err != nil {
 			return err
 		}
 	}
 	if args.resourceDumpFile != "" {
-		jsonString, err := recourses.ToJSONString()
+		jsonString, err := resources.ToJSONString()
 		if err != nil {
 			return err
 		}
@@ -168,7 +183,7 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if args.topologyDumpFile != "" {
-		topology, err := recourses.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat)
+		topology, err := resources.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat)
 		if err != nil {
 			return err
 		}
@@ -182,7 +197,7 @@ func runCommand(args *inArgs) error {
 			Explain:  args.explain,
 		}
 		logging.Infof("starting connectivity analysis")
-		connResStr, err := model.NSXConnectivityFromResourcesContainer(recourses, params)
+		connResStr, err := model.NSXConnectivityFromResourcesContainer(resources, params)
 		if err != nil {
 			return err
 		}
@@ -195,7 +210,7 @@ func runCommand(args *inArgs) error {
 		if args.synthesizeAdmin {
 			category = collector.AppCategoty
 		}
-		_, err := synthesis.NSXToK8sSynthesis(recourses, args.synthesisDumpDir, hints, category)
+		_, err := synthesis.NSXToK8sSynthesis(resources, args.synthesisDumpDir, hints, category)
 		if err != nil {
 			return err
 		}

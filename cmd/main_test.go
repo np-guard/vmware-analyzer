@@ -7,124 +7,216 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"fmt"
+	"io"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func TestMain(t *testing.T) {
-	tests := []struct {
-		name string
-		args string
-	}{
+var (
+	stdoutFile *os.File
+	testOutR   *os.File
+	testOutW   *os.File
+)
 
+// redirect command's execute stdout to a pipe
+func preTestRun() {
+	stdoutFile = os.Stdout
+	testOutR, testOutW, _ = os.Pipe()
+	os.Stdout = testOutW
+}
+
+// finalize test's command execute and get its output
+func postTestRun() string {
+	testOutW.Close()
+	out, _ := io.ReadAll(testOutR)
+	os.Stdout = stdoutFile
+	return string(out)
+}
+
+// build a new command with args list and execute it, returns the actual output from stdout and the execute err if exists
+func buildAndExecuteCommand(args []string) (string, error) {
+	preTestRun()
+	err := _main(args)
+	actualOut := postTestRun()
+	return actualOut, err
+}
+
+type cliTest struct {
+	name                    string
+	args                    string   // cli args for this test
+	possibleErr             string   // possibleErr to consider depending on env constraints
+	expectedOutputSubstring string   // output of successful run
+	expectedOutFile         []string // generated output files of successful run
+	expectedErr             string   // expectedErr if assigned, should be returned
+}
+
+const (
+	noDotExecErr = "exec: \"dot\": executable file not found"
+)
+
+var staticTests = []*cliTest{
+	{
 		// version
-		{
-			name: "version",
-			args: "--version",
-		},
+		name:                    "version",
+		args:                    "--version",
+		expectedOutputSubstring: "nsxanalyzer version",
+	},
+	{
 		// help
-		{
-			name: "help",
-			args: "-h",
-		},
-		{
-			name: "collect-only",
-			args: "--resource-dump-file examples/output/resources.json --skip-analysis",
-		},
-		{
-			name: "collect-anonymize",
-			args: "--resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
-		},
-		{
-			name: "anonymize-only",
-			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
-				" --skip-analysis --anonymize",
-		},
-		/*{
-			name: "anonymize-analyze",
-			args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon.json" +
-				" --anonymize --filename examples/output/analysis.svg -o svg",
-		},*/
-		{
-			name: "analyze-only",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only.txt",
-		},
-		{
-			name: "analyze-only-resources-shorthand-flag",
-			args: "-r ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
-		},
-		{
-			name: "analyze-topology-dot",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
-				" examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
-		},
-		{
-			name: "analyze-topology-json",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
-				" examples/output/topology.json --filename examples/output/analysis.json -o json",
-		},
-		{
-			name: "analyze-topology-text",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
-				" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
-		},
-		/*{
-			name: "analyze-topology-svg",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
-				" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
-				` --output-filter="New Virtual Machine",New-VM-1`,
-		},*/
-		{
-			name: "collect-and-analyze-and-synthesis",
-			args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt" +
-				" --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
-		},
-		{
-			name: "synthesize-only",
-			args: "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis",
-		},
-	}
-	for _, tt := range tests {
+		name:                    "help",
+		args:                    "-h",
+		expectedOutputSubstring: "Usage:",
+	},
+
+	{
+		// invalid nsx connections
+		name:        "invalid_nsx_conn_1",
+		args:        "--host https://1.1.1.1 --username username --password password",
+		expectedErr: "remote error: tls: handshake failure",
+	},
+	{
+		// invalid nsx connections
+		name:        "invalid_nsx_conn_2",
+		args:        "--host 123 --username username --password password",
+		expectedErr: "unsupported protocol scheme",
+	},
+	{
+		// analysis from nsx resources input file
+		name:            "analyze-only",
+		args:            "--resource-input-file ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only.txt",
+		expectedOutFile: []string{"examples/output/analysis-only.txt"},
+	},
+	{
+		name:            "analyze-only-resources-shorthand-flag",
+		args:            "-r ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
+		expectedOutFile: []string{"examples/output/analysis-only-new.txt"},
+	},
+	{
+		name: "analyze-topology-dot",
+		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+			" examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
+		expectedOutFile: []string{"examples/output/topology.dot", "examples/output/analysis.dot"},
+	},
+	{
+		name: "analyze-topology-json",
+		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+			" examples/output/topology.json --filename examples/output/analysis.json -o json",
+		expectedOutFile: []string{"examples/output/topology.json", "examples/output/analysis.json"},
+	},
+	{
+		name: "analyze-topology-text",
+		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+			" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
+		expectedOutFile: []string{"examples/output/topology.txt", "examples/output/analysis.txt"},
+	},
+	{
+		name:            "synthesize-only",
+		args:            "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis",
+		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
+	},
+	{
+		name: "anonymize-only",
+		args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
+			" --skip-analysis --anonymize",
+		expectedOutFile: []string{"examples/output/resources_anon_only.json"},
+	},
+	// tests with possible errors if are not run on env with dot executable
+	{
+		name: "anonymize-analyze",
+		args: "--resource-input-file examples/input/resources.json  --resource-dump-file examples/output/resources_anon.json" +
+			" --anonymize --filename examples/output/analysis.svg -o svg",
+		possibleErr:     noDotExecErr,
+		expectedOutFile: []string{"examples/output/resources_anon.json", "examples/output/analysis.svg"},
+	},
+	{
+		name: "analyze-topology-svg",
+		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+			" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
+			` --output-filter="New-VM-2",New-VM-1`,
+		possibleErr:     noDotExecErr,
+		expectedOutFile: []string{"examples/output/topology.svg", "examples/output/analysis.svg"},
+	},
+}
+
+func TestMainStatic(t *testing.T) {
+	for _, tt := range staticTests {
 		t.Run(tt.name, func(t *testing.T) {
-			serverInfo := ""
-			if !strings.Contains(tt.args, resourceInputFileFlag) && !strings.Contains(tt.args, "-r ") {
-				// you  can set your server info here:
-				// serverInfo = "--host host --username user --password password "
-				if serverInfo == "" && os.Getenv("NSX_HOST") == "" {
-					fmt.Println(common.ErrNoHostArg)
-					return
-				}
-				serverInfo =
-					fmt.Sprintf("--host %s --username %s --password %s ", os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
-			}
-			if err := _main(splitArgs(serverInfo + tt.args)); err != nil {
-				t.Errorf("_main() error = %v,", err)
-			}
+			tt.runTest(t)
 		})
 	}
 }
 
-func splitArgs(s string) []string {
-	res := []string{}
-	w := ""
-	inQ := false
-	for _, c := range s {
-		switch {
-		case c == '"':
-			inQ = !inQ
-		case c == ' ' && !inQ:
-			res = append(res, w)
-			w = ""
-		default:
-			w += string(c)
+func (st *cliTest) runTest(t *testing.T) {
+	output, err := buildAndExecuteCommand(strings.Split(st.args, " "))
+	switch {
+	case st.expectedErr != "":
+		require.ErrorContains(t, err, st.expectedErr)
+
+	case err != nil && st.possibleErr != "":
+		// expected err due to env constraints
+		require.ErrorContains(t, err, st.possibleErr)
+		logging.Debugf("found possibleErr: %s", st.possibleErr)
+
+	default:
+		// expecting successful run
+		require.Nil(t, err)
+		require.Contains(t, output, st.expectedOutputSubstring)
+		if len(st.expectedOutFile) > 0 {
+			for _, outFile := range st.expectedOutFile {
+				_, err := os.Stat(outFile)
+				require.Nilf(t, err, "output file %s should exist", st.expectedOutFile)
+				// todo: support validation of expected file content
+			}
 		}
 	}
-	if w != "" {
-		res = append(res, w)
+	logging.Debugf("done test %s", st.name)
+}
+
+// tests with possible errors if are not run on env with access to nsx manager.
+// include collection of nsx resources from API
+var nsxEnvTests = []*cliTest{
+	{
+		name:                    "verbose_analysis_with_no_cli_args",
+		args:                    "-v",
+		possibleErr:             common.ErrMissingRquiredArg,       // no env vars provided for NSX connection
+		expectedOutputSubstring: common.AnalyzedConnectivityHeader, // expecting successful connectivity analysis
+	},
+	{
+		name:            "collect-only",
+		args:            "--resource-dump-file examples/output/resources.json --skip-analysis",
+		possibleErr:     common.ErrMissingRquiredArg,
+		expectedOutFile: []string{"examples/output/resources.json"},
+	},
+	{
+		name:            "collect-anonymize",
+		args:            "--resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
+		possibleErr:     common.ErrMissingRquiredArg,
+		expectedOutFile: []string{"examples/output/resources_anon.json"},
+	},
+	{
+		name: "collect-and-analyze-and-synthesis",
+		args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt" +
+			" --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
+		possibleErr: common.ErrMissingRquiredArg,
+		expectedOutFile: []string{"examples/output/collected-resources.json", "examples/output/collected-analysis.txt",
+			"examples/output/collected-synthesis/k8s_resources/policies.yaml"},
+	},
+
+	// TODO: add error checks for cases such as partial nsx details in args, partial in env vars..
+
+}
+
+func TestMainNSXEnv(t *testing.T) {
+	for _, tt := range nsxEnvTests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.runTest(t)
+		})
 	}
-	return res
+	logging.Debugf("done all nsxEnvTests")
 }
