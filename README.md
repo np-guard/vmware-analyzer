@@ -11,30 +11,31 @@ Run the `nsxanalyzer` CLI tool.
 
 ```
 $ ./bin/nsxanalyzer -h
-nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs, and generation of k8s network policies.
-It uses REST API calls from NSX manager.
+nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
+and generation of k8s network policies. It uses REST API calls from NSX manager.
 
 Usage:
   nsxanalyzer [flags]
 
 Flags:
-      --anonymize                    flag to anonymize collected nsx resources
-  -e, --explain                      connectivity output with rules explanations per allowed/denied connections
+      --anonymize                    flag to anonymize collected NSX resources (default false)
+      --color                        flag to enable color output (default false)
+  -e, --explain                      flag to explain connectivity output with rules explanations per allowed/denied connections (default false)
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
-      --host string                  nsx host url
+      --host string                  NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
   -o, --output string                output format; must be one of [txt, dot, json, svg] (default "txt")
       --output-filter strings        filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")
-      --password string              nsx password
-  -q, --quiet                        runs quietly, reports only severe errors and results
+      --password string              NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable
+  -q, --quiet                        flag to run quietly, report only severe errors and result (default false)
       --resource-dump-file string    file path to store collected resources in JSON format
   -r, --resource-input-file string   file path input JSON of NSX resources (instead of collecting from NSX host)
-      --skip-analysis                flag to skip analysis, run only collector and/or synthesis
+      --skip-analysis                flag to skip analysis, run only collector and/or synthesis (default false)
       --synthesis-dump-dir string    apply synthesis; specify directory path to store k8s synthesis results
-      --synthesize-admin-policies    include admin network policies in policy synthesis
+      --synthesize-admin-policies    include admin network policies in policy synthesis (default false)
       --topology-dump-file string    file path to store topology
-      --username string              nsx username
-  -v, --verbose                      runs with more informative messages printed to log
+      --username string              NSX username. Alternatively, set the username via the NSX_USER environment variable
+  -v, --verbose                      flag to run with more informative messages printed to log (default false)
       --version                      version for nsxanalyzer
 ```
 
