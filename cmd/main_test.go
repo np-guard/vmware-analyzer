@@ -53,7 +53,7 @@ type cliTest struct {
 	possibleErr             string   // possibleErr to consider depending on env constraints
 	expectedOutputSubstring string   // output of successful run
 	expectedOutFile         []string // generated output files of successful run
-	expectedErr             string   // expectedErr if assigned, should be returned
+	expectedErr             []string // expectedErr if assigned, should be returned (at least one of the given options)
 }
 
 const (
@@ -76,15 +76,16 @@ var staticTests = []*cliTest{
 
 	{
 		// invalid nsx connections
-		name:        "invalid_nsx_conn_1",
-		args:        "--host https://1.1.1.1 --username username --password password",
-		expectedErr: "remote error: tls: handshake failure",
+		name: "invalid_nsx_conn_1",
+		args: "--host https://1.1.1.1 --username username --password password",
+		expectedErr: []string{"remote error: tls: handshake failure",
+			"invalid character" /*indicates that the server did not return a valid JSON response*/},
 	},
 	{
 		// invalid nsx connections
 		name:        "invalid_nsx_conn_2",
 		args:        "--host 123 --username username --password password",
-		expectedErr: "unsupported protocol scheme",
+		expectedErr: []string{"unsupported protocol scheme"},
 	},
 	{
 		// analysis from nsx resources input file
@@ -155,8 +156,14 @@ func TestMainStatic(t *testing.T) {
 func (st *cliTest) runTest(t *testing.T) {
 	output, err := buildAndExecuteCommand(strings.Split(st.args, " "))
 	switch {
-	case st.expectedErr != "":
-		require.ErrorContains(t, err, st.expectedErr)
+	case len(st.expectedErr) > 0:
+		countMatch := 0
+		for _, errStr := range st.expectedErr {
+			if strings.Contains(err.Error(), errStr) {
+				countMatch += 1
+			}
+		}
+		require.Greater(t, countMatch, 0)
 
 	case err != nil && st.possibleErr != "":
 		// expected err due to env constraints
