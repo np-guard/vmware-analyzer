@@ -319,11 +319,11 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 	entries := collector.ServiceEntries{}
 	for _, partition := range conn.TCPUDPSet().Partitions() {
 		protocolsCodes := partition.S1.Elements()
-		portRanges := partition.S3
+		portRanges := partition.S3.Intervals()
 		for _, protocolCode := range protocolsCodes {
 			entry := &collector.L4PortSetServiceEntry{}
 			entry.L4Protocol = pointerTo(codeToProtocol[int(protocolCode)])
-			for _, portRange := range portRanges.Intervals() {
+			for _, portRange := range portRanges {
 				var ports nsx.PortElement
 				if portRange.Start() == portRange.End() {
 					ports = nsx.PortElement(fmt.Sprintf("%d", portRange.Start()))
@@ -337,9 +337,32 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 	}
 	icmpSet := conn.ICMPSet()
 	if !icmpSet.IsEmpty() {
-		// todo - handle code/type
-		entry := &collector.ICMPTypeServiceEntry{}
-		entries = append(entries, entry)
+		for _, partition := range icmpSet.Partitions() {
+			types := []*int{nil}
+			codes := []*int{nil}
+			typesSet := partition.Left
+			codesSet := partition.Right
+			if !typesSet.Equal(netset.AllICMPTypes()) {
+				types = make([]*int, len(typesSet.Elements()))
+				for i, typeNumber := range typesSet.Elements() {
+					types[i] = pointerTo(int(typeNumber))
+				}
+			}
+			if !codesSet.Equal(netset.AllICMPCodes()) {
+				codes = make([]*int, len(codesSet.Elements()))
+				for i, code := range codesSet.Elements() {
+					codes[i] = pointerTo(int(code))
+				}
+			}
+			for _, t := range types {
+				for _, c := range codes {
+					entry := &collector.ICMPTypeServiceEntry{}
+					entry.IcmpCode = c
+					entry.IcmpType = t
+					entries = append(entries, entry)
+				}
+			}
+		}
 	}
 	return services, entries
 }
