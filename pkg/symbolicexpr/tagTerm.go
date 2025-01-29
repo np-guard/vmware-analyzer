@@ -59,7 +59,7 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 	if cond.Condition.MemberType == nil || *cond.Condition.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Condition.Key == nil || *cond.Condition.Key != resources.ConditionKeyTag ||
 		cond.Condition.Operator == nil {
-		logging.Errorf("supported nsx condition with type VM, key tag and non empty operator."+
+		logging.Infof("supported nsx condition with type VM, key tag and non empty operator."+
 			"\n\t %+v not supported", *cond)
 		return nil
 	}
@@ -76,27 +76,27 @@ const supportErrMsg = "Supported expression: cond \"And\" or \"Or\" cond"
 // returns nil if neither
 func getConjunctionOperator(elem collector.ExpressionElement) *resources.ConjunctionOperatorConjunctionOperator {
 	if elem == nil {
-		logging.Errorf("%v\n; operator must not be nil\n", supportErrMsg)
+		logging.Infof("%v\n; operator must not be nil\n", supportErrMsg)
 	}
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Errorf("%v\n\t%+v %v is not a operator\n", supportErrMsg, elem)
+		logging.Infof("%v\n\t%+v %v is not a operator\n", supportErrMsg, elem)
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
 		*conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorOR {
-		logging.Errorf("supported nsx ConjunctionOperator: and, or\n\t%+v not supported", *conj)
+		logging.Infof("supported nsx ConjunctionOperator: and, or\n\t%+v not supported", *conj)
 		return nil
 	}
 	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
 	return conjunctionOperatorConjunctionOperator
 }
 
-// GetTagTermForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
+// GetTagConjunctionForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
-func GetTagTermForExpr(expr *collector.Expression) []*Conjunction {
+func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
 	if expr == nil || len(*expr) == 0 {
-		logging.Errorf("Expression must not be nil and must be of size at least 1")
+		logging.Infof("Expression must not be nil and must be of size at least 1")
 	}
 	exprVal := *expr
 	condTag1 := getTagTermExprElement(exprVal[0], true)
@@ -117,7 +117,7 @@ func GetTagTermForExpr(expr *collector.Expression) []*Conjunction {
 			return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 		}
 	} else { // len not 1 neither 3
-		logging.Errorf("%v\n\t%+v is neither\n", supportErrMsg, expr)
+		logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
 		return nil
 	}
 }
@@ -129,7 +129,7 @@ func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagA
 		if !isFirst {
 			firstOrSec = "second"
 		}
-		logging.Errorf("Supported expression: cond \"And\" or \"Or\" cond; the %v element must be a condition", firstOrSec+
+		logging.Infof("Supported expression: cond \"And\" or \"Or\" cond; the %v element must be a condition", firstOrSec+
 			"\n\t%+v is not\n", elem)
 		return nil
 	}
