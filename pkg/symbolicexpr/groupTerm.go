@@ -36,10 +36,10 @@ func (groupTerm groupAtomicTerm) name() string {
 }
 
 // todo: treat negation properly
-func getAtomicTermsForGroups(groups []*collector.Group) []*groupAtomicTerm {
-	res := make([]*groupAtomicTerm, len(groups))
+func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
+	res := make([]*Conjunction, len(groups))
 	for i, group := range groups {
-		res[i] = &groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}
+		res[i] = &Conjunction{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}
 	}
 	return res
 }
