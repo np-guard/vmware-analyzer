@@ -242,9 +242,8 @@ type ServiceEntry interface {
 type ServiceEntries []ServiceEntry
 
 func (s *ServiceEntries) MarshalJSON() ([]byte, error) {
-	type ServiceEntries_plain ServiceEntries
+	type ServiceEntriesPlain ServiceEntries
 	for _, e := range *s {
-
 		switch v := e.(type) {
 		case *ALGTypeServiceEntry:
 			v.ResourceType = common.PointerTo(nsx.ALGTypeServiceEntryResourceTypeALGTypeServiceEntry)
@@ -262,7 +261,7 @@ func (s *ServiceEntries) MarshalJSON() ([]byte, error) {
 			v.ResourceType = common.PointerTo(nsx.NestedServiceServiceEntryResourceTypeNestedServiceServiceEntry)
 		}
 	}
-	sp := ServiceEntries_plain(*s)
+	sp := ServiceEntriesPlain(*s)
 	return json.Marshal(sp)
 }
 

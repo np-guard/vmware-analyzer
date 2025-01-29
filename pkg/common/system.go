@@ -58,4 +58,3 @@ func marshalYamlUsingJSON(content interface{}) ([]byte, error) {
 func PointerTo[T any](t T) *T {
 	return &t
 }
-
