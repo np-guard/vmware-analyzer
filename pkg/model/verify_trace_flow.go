@@ -16,7 +16,7 @@ func compareConfigToTraceflows(
 	resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
 	vmFilter vmFilter) (*collector.TraceFlows, error) {
-	config, err := configFromResourcesContainer(resources, nil)
+	config, err := configFromResourcesContainer(resources, common.OutputParameters{})
 	if err != nil {
 		return nil, err
 	}

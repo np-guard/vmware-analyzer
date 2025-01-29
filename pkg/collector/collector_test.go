@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 const (
@@ -33,23 +34,19 @@ func TestCollectResources(t *testing.T) {
 		{
 			"simple",
 			args{
-				// you can set your server info here:
-				"no_server",
-				"no_user",
-				"no_password",
+				// you can set your server info here, or specify through env vars
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.args.nsxServer == "no_server" {
-				if os.Getenv("NSX_HOST") == "" {
-					fmt.Println(common.ErrNoHostArg)
-					return
-				}
-				tt.args = args{os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD")}
+			logging.Init(logging.HighVerbosity)
+			server, err := GetNSXServerDate(tt.args.nsxServer, tt.args.userName, tt.args.password)
+			if err != nil {
+				// do not fail on env without access to nsx host
+				fmt.Println(err.Error())
+				return
 			}
-			server := NewServerData(tt.args.nsxServer, tt.args.userName, tt.args.password)
 			collectedResources, err := CollectResources(server)
 			if err != nil {
 				t.Errorf("CollectResources() error = %v", err)
@@ -152,6 +149,8 @@ func TestCollectResources(t *testing.T) {
 				t.Errorf("conversion from json returns another object")
 				return
 			}
+
+			logging.Debugf("done")
 		})
 	}
 }

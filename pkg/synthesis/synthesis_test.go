@@ -254,9 +254,10 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 // (2) equiv config in NSX with allow-only DFW rules, as derived from the abstract model
 // and validates that connectivity of orign and new NSX configs are the same
 func TestCollectAndConvertToAbstract(t *testing.T) {
-	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
-	if (server == collector.ServerData{}) {
-		fmt.Println(common.ErrNoHostArg)
+	logging.Init(logging.HighVerbosity)
+	server, err := collector.GetNSXServerDate("", "", "")
+	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 
