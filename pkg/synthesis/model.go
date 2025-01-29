@@ -1,6 +1,7 @@
 package synthesis
 
 import (
+	"maps"
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -55,14 +56,12 @@ type symbolicRulePair struct {
 // a temporary function to get pairs of rules, each pair represent an orig rule.
 // to be remove after reorg symbolicPolicy
 func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
-	res := []*symbolicRulePair{}
-	ruleIDToIndex := map[*collector.Rule]int{}
+	ruleToPair := map[*collector.Rule]*symbolicRulePair{}
 	getRulePair := func(r *symbolicRule) *symbolicRulePair {
-		if _, ok := ruleIDToIndex[r.origRule.OrigRuleObj]; !ok {
-			ruleIDToIndex[r.origRule.OrigRuleObj] = len(res)
-			res = append(res, &symbolicRulePair{})
+		if _, ok := ruleToPair[r.origRule.OrigRuleObj]; !ok {
+			ruleToPair[r.origRule.OrigRuleObj] = &symbolicRulePair{}
 		}
-		return res[ruleIDToIndex[r.origRule.OrigRuleObj]]
+		return ruleToPair[r.origRule.OrigRuleObj]
 	}
 	for _, r := range policy.inbound {
 		getRulePair(r).inbound = r
@@ -70,10 +69,11 @@ func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
 	for _, r := range policy.outbound {
 		getRulePair(r).outbound = r
 	}
+	res := slices.Collect(maps.Values(ruleToPair))
 	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
 		in1 := slices.Index(policy.inbound, p1.inbound)
-		out1 := slices.Index(policy.outbound, p1.outbound)
 		in2 := slices.Index(policy.inbound, p2.inbound)
+		out1 := slices.Index(policy.outbound, p1.outbound)
 		out2 := slices.Index(policy.outbound, p2.outbound)
 		switch {
 		case in1 >= 0 && in2 >= 0:
