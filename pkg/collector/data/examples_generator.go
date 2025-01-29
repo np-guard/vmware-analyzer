@@ -341,7 +341,7 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 		entry := &collector.ICMPTypeServiceEntry{}
 		entries = append(entries, entry)
 	}
-	return nil, entries
+	return services, entries
 }
 
 /*

@@ -94,11 +94,15 @@ func (rule *RedirectionRule) UnmarshalJSON(b []byte) error {
 }
 
 // /////////////////////////////////////////////////////////////////////////////////////
-type IPProtocolServiceEntry struct {
-	nsx.IPProtocolServiceEntry
+func pointerTo[T any](t T) *T {
+	return &t
 }
 
 const creatingConnectionError = "fail to create a connection from service %v"
+
+type IPProtocolServiceEntry struct {
+	nsx.IPProtocolServiceEntry
+}
 
 func (e *IPProtocolServiceEntry) String() string {
 	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeIPProtocolServiceEntry, *e.DisplayName)
@@ -241,6 +245,31 @@ type ServiceEntry interface {
 }
 
 type ServiceEntries []ServiceEntry
+
+func (s *ServiceEntries) MarshalJSON() ([]byte, error) {
+	type ServiceEntries_plain ServiceEntries
+	for _, e := range *s {
+
+		switch v := e.(type) {
+		case *ALGTypeServiceEntry:
+			v.ResourceType = pointerTo(nsx.ALGTypeServiceEntryResourceTypeALGTypeServiceEntry)
+		case *EtherTypeServiceEntry:
+			v.ResourceType = pointerTo(nsx.EtherTypeServiceEntryResourceTypeEtherTypeServiceEntry)
+		case *ICMPTypeServiceEntry:
+			v.ResourceType = pointerTo(nsx.ICMPTypeServiceEntryResourceTypeICMPTypeServiceEntry)
+		case *IGMPTypeServiceEntry:
+			v.ResourceType = pointerTo(nsx.IGMPTypeServiceEntryResourceTypeIGMPTypeServiceEntry)
+		case *IPProtocolServiceEntry:
+			v.ResourceType = pointerTo(nsx.IPProtocolServiceEntryResourceTypeIPProtocolServiceEntry)
+		case *L4PortSetServiceEntry:
+			v.ResourceType = pointerTo(nsx.L4PortSetServiceEntryResourceTypeL4PortSetServiceEntry)
+		case *NestedServiceServiceEntry:
+			v.ResourceType = pointerTo(nsx.NestedServiceServiceEntryResourceTypeNestedServiceServiceEntry)
+		}
+	}
+	sp := ServiceEntries_plain(*s)
+	return json.Marshal(sp)
+}
 
 func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 	var raws []json.RawMessage
