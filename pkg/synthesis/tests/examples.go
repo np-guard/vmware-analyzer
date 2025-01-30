@@ -682,7 +682,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					{
 						Name:     "Dumb-All",
 						ID:       newRuleID + 1,
-						Source:   "DumbledoreNoSly",
+						Source:   dum,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
 						Action:   data.Allow,
