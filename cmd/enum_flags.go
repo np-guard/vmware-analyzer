@@ -6,6 +6,9 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
+// outFormat is a custom flag type.
+// Cobra allows to define custom value types to be used as flags through the pflag.(*FlagSet).Var() method.
+// defining a new type that implements the pflag.Value interface.
 type outFormat string
 
 var (
