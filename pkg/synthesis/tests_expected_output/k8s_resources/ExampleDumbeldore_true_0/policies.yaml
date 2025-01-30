@@ -21,10 +21,29 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
+        description: All Connections from (group = DumbledoreAll) to (*)
+        nsx-id: "1925"
+    creationTimestamp: null
+    name: policy_1
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__DumbledoreAll
+                      operator: Exists
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
         description: All Connections from (group = DumbledoreNoSly) to (group != Slytherin)
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy_1
+    name: policy_2
 spec:
     egress:
         - to:
@@ -38,25 +57,6 @@ spec:
               operator: Exists
     policyTypes:
         - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: All Connections from (group = DumbledoreAll) to (*)
-        nsx-id: "1925"
-    creationTimestamp: null
-    name: policy_2
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: group__DumbledoreAll
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
