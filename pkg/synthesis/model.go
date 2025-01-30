@@ -1,6 +1,9 @@
 package synthesis
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
@@ -43,6 +46,45 @@ type symbolicRule struct { // original rule
 type symbolicPolicy struct {
 	inbound  []*symbolicRule // ordered list inbound symbolicRule
 	outbound []*symbolicRule // ordered list outbound symbolicRule
+}
+
+type symbolicRulePair struct {
+	inbound  *symbolicRule // inbound symbolicRule
+	outbound *symbolicRule // outbound symbolicRule
+}
+
+// a temporary function to get pairs of rules, each pair represent an orig rule.
+// to be remove after reorg symbolicPolicy
+func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
+	ruleToPair := map[*collector.Rule]*symbolicRulePair{}
+	getRulePair := func(r *symbolicRule) *symbolicRulePair {
+		if _, ok := ruleToPair[r.origRule.OrigRuleObj]; !ok {
+			ruleToPair[r.origRule.OrigRuleObj] = &symbolicRulePair{}
+		}
+		return ruleToPair[r.origRule.OrigRuleObj]
+	}
+	for _, r := range policy.inbound {
+		getRulePair(r).inbound = r
+	}
+	for _, r := range policy.outbound {
+		getRulePair(r).outbound = r
+	}
+	res := slices.Collect(maps.Values(ruleToPair))
+	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
+		in1 := slices.Index(policy.inbound, p1.inbound)
+		in2 := slices.Index(policy.inbound, p2.inbound)
+		out1 := slices.Index(policy.outbound, p1.outbound)
+		out2 := slices.Index(policy.outbound, p2.outbound)
+		switch {
+		case in1 >= 0 && in2 >= 0:
+			return in1 - in2
+		case out1 >= 0 && out2 >= 0:
+			return out1 - out2
+		default:
+			return 0
+		}
+	})
+	return res
 }
 
 // maps used by AbstractModelSyn
