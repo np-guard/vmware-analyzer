@@ -1,0 +1,24 @@
+category: Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+	0. action: jump_to_application paths: All Connections from (tag = Gryffindor) to (tag = Gryffindor)
+	1. action: jump_to_application paths: All Connections from (tag = Hufflepuff) to (tag = Hufflepuff)
+	2. action: jump_to_application paths: All Connections from (tag = Slytherin) to (tag = Slytherin)
+	3. action: deny paths: All Connections from (*) to (*)
+symbolic outbound rules:
+	0. action: jump_to_application paths: All Connections from (tag = Gryffindor) to (tag = Gryffindor)
+	1. action: jump_to_application paths: All Connections from (tag = Hufflepuff) to (tag = Hufflepuff)
+	2. action: jump_to_application paths: All Connections from (tag = Slytherin) to (tag = Slytherin)
+	3. action: deny paths: All Connections from (*) to (*)
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+	0. action: allow paths: All Connections from (*) to (tag = Web)
+	1. action: allow paths: All Connections from (tag = Web) to (tag = App)
+	2. action: allow paths: All Connections from (tag = App) to (tag = DB)
+	3. action: deny paths: All Connections from (*) to (*)
+symbolic outbound rules:
+	0. action: allow paths: All Connections from (*) to (tag = Web)
+	1. action: allow paths: All Connections from (tag = Web) to (tag = App)
+	2. action: allow paths: All Connections from (tag = App) to (tag = DB)
+	3. action: deny paths: All Connections from (*) to (*)
