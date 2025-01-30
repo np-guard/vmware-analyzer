@@ -55,7 +55,7 @@ const (
 	explainHelp                 = "flag to explain connectivity output with rules explanations per allowed/denied connections (default false)"
 	synthesisDumpDirHelp        = "apply synthesis; specify directory path to store k8s synthesis results"
 	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis (default false)"
-	outputFormatHelp            = "output format; must be one of [txt, dot, json, svg]"
+	outputFormatHelp            = "output format; must be one of "
 	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
@@ -74,7 +74,7 @@ type inArgs struct {
 	skipAnalysis      bool
 	anonymise         bool
 	outputFile        string
-	outputFormat      string
+	outputFormat      outFormat
 	quiet             bool
 	verbose           bool
 	explain           bool
@@ -82,8 +82,12 @@ type inArgs struct {
 	color             bool
 }
 
+func newInArgs() *inArgs {
+	return &inArgs{outputFormat: outFormatText} // init with default val for outputFormat
+}
+
 func newRootCommand() *cobra.Command {
-	args := &inArgs{}
+	args := newInArgs()
 	rootCmd := &cobra.Command{
 		Use: "nsxanalyzer",
 		Short: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
@@ -117,8 +121,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().StringVar(&args.synthesisDumpDir, synthesisDumpDirFlag, "", synthesisDumpDirHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.synthesizeAdmin, synthesizeAdminPoliciesFlag, false, synthesizeAdminPoliciesHelp)
 	rootCmd.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
-	// todo - check if the format is valid
-	rootCmd.PersistentFlags().StringVarP(&args.outputFormat, outputFormatFlag, outputFormantShortFlag, common.TextFormat, outputFormatHelp)
+	rootCmd.PersistentFlags().VarP(&args.outputFormat, outputFormatFlag, outputFormantShortFlag, outputFormatHelp+allFormatsStr)
 	rootCmd.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, quietHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, verboseHelp)
 	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
@@ -187,7 +190,7 @@ func runCommand(args *inArgs) error {
 		}
 	}
 	if args.topologyDumpFile != "" {
-		topology, err := resources.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat)
+		topology, err := resources.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat.String())
 		if err != nil {
 			return err
 		}
@@ -195,7 +198,7 @@ func runCommand(args *inArgs) error {
 	}
 	if !args.skipAnalysis {
 		params := common.OutputParameters{
-			Format:   args.outputFormat,
+			Format:   args.outputFormat.String(),
 			FileName: args.outputFile,
 			VMs:      args.outputFilter,
 			Explain:  args.explain,
