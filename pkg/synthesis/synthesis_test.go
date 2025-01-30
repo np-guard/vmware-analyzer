@@ -100,7 +100,7 @@ var groupsByVmsTests = []synthesisTest{
 }
 
 var groupsByExprTests = []synthesisTest{
-	/*{
+	{
 		name:   "ExampleExprSingleScope",
 		exData: tests.ExampleExprSingleScope,
 		noHint: false,
@@ -119,7 +119,7 @@ var groupsByExprTests = []synthesisTest{
 		name:   "ExampleExprOrConds",
 		exData: tests.ExampleExprOrConds,
 		noHint: false,
-	},*/
+	},
 }
 
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
