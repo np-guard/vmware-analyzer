@@ -6,6 +6,11 @@ import (
 
 const emptySet = "empty set "
 
+// todo tmp
+func (c *Conjunction) String() string {
+	return c.string()
+}
+
 func (c *Conjunction) string() string {
 	resArray := make([]string, len(*c))
 	for i, atomic := range *c {
