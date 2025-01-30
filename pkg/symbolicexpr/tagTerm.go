@@ -76,11 +76,11 @@ const supportErrMsg = "Supported expression: cond \"And\" or \"Or\" cond"
 // returns nil if neither
 func getConjunctionOperator(elem collector.ExpressionElement) *resources.ConjunctionOperatorConjunctionOperator {
 	if elem == nil {
-		logging.Infof("%v\n; operator must not be nil\n", supportErrMsg)
+		logging.Infof(supportErrMsg + "\n; operator must not be nil\n")
 	}
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Infof("%v\n\t%+v %v is not a operator\n", supportErrMsg, elem)
+		logging.Infof(supportErrMsg + fmt.Sprintf("\n\t%+v is not a operator\n", elem))
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
@@ -129,8 +129,8 @@ func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagA
 		if !isFirst {
 			firstOrSec = "second"
 		}
-		logging.Infof("Supported expression: cond \"And\" or \"Or\" cond; the %v element must be a condition", firstOrSec+
-			"\n\t%+v is not\n", elem)
+		logging.Infof(supportErrMsg+"; the %v element must be a condition", firstOrSec+
+			fmt.Sprintf("\n\t%+v is not\n", elem))
 		return nil
 	}
 	return getTagTermsForCondition(cond)
