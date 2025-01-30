@@ -681,7 +681,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb-All",
-						ID:       9195,
+						ID:       newRuleID + 1,
 						Source:   "DumbledoreNoSly",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -695,7 +695,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Gryffindor-not-Hufflepuff",
-						ID:       newRuleID,
+						ID:       newRuleID + 2,
 						Source:   gry,
 						Dest:     huf,
 						Services: []string{"ANY"},
@@ -703,7 +703,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Gryffindor-All",
-						ID:       9195,
+						ID:       newRuleID + 3,
 						Source:   gry,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -717,7 +717,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Hufflepuff-No-Slytherin",
-						ID:       newRuleID,
+						ID:       newRuleID + 4,
 						Source:   huf,
 						Dest:     sly,
 						Services: []string{"ANY"},
@@ -725,7 +725,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Hufflepuff-All",
-						ID:       9195,
+						ID:       newRuleID + 5,
 						Source:   huf,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -739,7 +739,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Slytherin-no-Gryffindor",
-						ID:       newRuleID,
+						ID:       newRuleID + 6,
 						Source:   sly,
 						Dest:     gry,
 						Services: []string{"ANY"},
@@ -747,7 +747,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Slytherin-All",
-						ID:       9195,
+						ID:       newRuleID + 7,
 						Source:   sly,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -777,24 +777,24 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
 var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
-	Name: "ExampleExprSimple",
+	Name: "ExampleExprTwoScopes",
 	VMs: []string{slyDB, slyWeb, slyApp,
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
 	GroupsByExprAndVMs: map[string]data.ExprAndVMs{
 		sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-			VMs: []string{"slyDB", "slyWeb", "slyApp"}},
+			VMs: []string{slyDB, slyWeb, slyApp}},
 		gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-			VMs: []string{"gryDB", "gryWeb", "gryApp"}},
+			VMs: []string{gryDB, gryWeb, gryApp}},
 		huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
-			VMs: []string{"hufDB", "hufWeb", "hufApp"}},
+			VMs: []string{hufDB, hufWeb, hufApp}},
 		db: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop},
-			VMs: []string{"slyDB", "gryDB", "hufDB"}},
+			VMs: []string{slyDB, gryDB, hufDB}},
 		web: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop},
-			VMs: []string{"slyWeb", "gryWeb", "hufWeb"}},
+			VMs: []string{slyWeb, gryWeb, hufWeb}},
 		app: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop},
-			VMs: []string{"slyApp", "gryApp", "hufApp"}}},
+			VMs: []string{slyApp, gryApp, hufApp}}},
 	Policies: hogwartsAppToHousesPolicy,
 },
 }
@@ -863,7 +863,7 @@ var andOrOrPolicies = []data.Category{
 		Rules: []data.Rule{
 			{
 				Name:     "to-Slytherin",
-				ID:       10218,
+				ID:       newRuleID,
 				Source:   "ANY",
 				Dest:     "Slytherin-orOrAnd-no-DB",
 				Services: []string{"ANY"},
@@ -871,7 +871,7 @@ var andOrOrPolicies = []data.Category{
 			},
 			{
 				Name:     "to-Gryffindor",
-				ID:       10218,
+				ID:       newRuleID + 1,
 				Source:   "ANY",
 				Dest:     "Gryffindor-orOrAnd-no-DB",
 				Services: []string{"ANY"},
@@ -879,7 +879,7 @@ var andOrOrPolicies = []data.Category{
 			},
 			{
 				Name:     "to-Hufflepuff",
-				ID:       10218,
+				ID:       newRuleID + 2,
 				Source:   "ANY",
 				Dest:     "Hufflepuff-orOrAnd-no-DB",
 				Services: []string{"ANY"},
