@@ -503,7 +503,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 	require.Nil(t, err)
 	fmt.Println(connResStr)
 
-	configWithAnalysis, err := configFromResourcesContainer(rc, nil)
+	configWithAnalysis, err := configFromResourcesContainer(rc, common.OutputParameters{})
 	require.Nil(t, err)
 
 	// test explanations by comparison to expectedExplanation objects

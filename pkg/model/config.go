@@ -41,20 +41,20 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 }
 
 // getConfigInfoStr returns string describing the captured configuration content
-func (c *config) getConfigInfoStr() string {
+func (c *config) getConfigInfoStr(color bool) string {
 	var sb strings.Builder
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")
-	sb.WriteString(c.getVMsInfoStr())
+	sb.WriteString(c.getVMsInfoStr(color))
 
 	// groups
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Groups:\n")
-	sb.WriteString(c.getVMGroupsStr())
+	sb.WriteString(c.getVMGroupsStr(color))
 	sb.WriteString(common.OutputSectionSep)
 
 	sb.WriteString("DFW:\n")
-	sb.WriteString(c.Fw.OriginalRulesStrFormatted())
+	sb.WriteString(c.Fw.OriginalRulesStrFormatted(color))
 	sb.WriteString(common.ShortSep)
 	sb.WriteString(c.Fw.String())
 	sb.WriteString(common.ShortSep)
@@ -64,21 +64,21 @@ func (c *config) getConfigInfoStr() string {
 	return sb.String()
 }
 
-func (c *config) getVMGroupsStr() string {
+func (c *config) getVMGroupsStr(color bool) string {
 	header := []string{"VM", "Groups"}
 	lines := [][]string{}
 	for vm, groups := range c.GroupsPerVM {
 		groupsStr := common.JoinCustomStrFuncSlice(groups, func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{vm.Name(), groupsStr})
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-func (c *config) getVMsInfoStr() string {
+func (c *config) getVMsInfoStr(color bool) string {
 	header := []string{"VM Name", "VM ID", "VM Addresses"}
 	lines := [][]string{}
 	for _, vm := range c.vms {
 		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

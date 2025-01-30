@@ -153,13 +153,13 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	return allAllowedConns, allDeniedConns, delegatedConns
 }
 
-func (d *DFW) OriginalRulesStrFormatted() string {
+func (d *DFW) OriginalRulesStrFormatted(color bool) string {
 	header := getRulesHeader()
 	lines := [][]string{}
 	for _, c := range d.CategoriesSpecs {
 		lines = append(lines, c.originalRulesComponentsStr()...)
 	}
-	return "original rules:\n" + common.GenerateTableString(header, lines, &common.TableOptions{Colors: true})
+	return "original rules:\n" + common.GenerateTableString(header, lines, &common.TableOptions{Colors: color})
 }
 
 // return a string rep that shows the fw-rules in all categories
