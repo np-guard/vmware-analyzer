@@ -169,12 +169,12 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir, baseName)
-	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, outDir)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
 }
 
 func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
