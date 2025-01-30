@@ -2,6 +2,7 @@ package tests
 
 import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -649,18 +650,22 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 }
 
 // examples with expr instead of direct vms references
-/*
+
 var ExampleExprSingleScope = ExampleSynthesis{
 	FromNSX: data.Example{
-		Name: "ExampleExprSimple",
+		Name: "ExampleExprSingleScope",
 		VMs:  []string{sly, huf, gry, dum},
 		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
 			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
-		GroupsByExprAndVMs: map[string]data.ExampleExpr{
-			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop},
-			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop},
-			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop},
-			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}, Op: data.Nop}},
+		GroupsByExprAndVMs: map[string]data.ExprAndVMs{
+			sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop},
+				VMs: []string{sly}},
+			gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop},
+				VMs: []string{gry}},
+			huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop},
+				VMs: []string{huf}},
+			dum: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}, Op: data.Nop},
+				VMs: []string{dum}}},
 		Policies: []data.Category{
 			{
 				Name:         "From-Dumbledore-connection",
@@ -777,14 +782,19 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
-	GroupsByExprAndVMs: map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
-		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop},
-		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop},
-		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop},
-		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop}},
+	GroupsByExprAndVMs: map[string]data.ExprAndVMs{
+		sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
+			VMs: []string{"slyDB", "slyWeb", "slyApp"}},
+		gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
+			VMs: []string{"gryDB", "gryWeb", "gryApp"}},
+		huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
+			VMs: []string{"hufDB", "hufWeb", "hufApp"}},
+		db: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop},
+			VMs: []string{"slyDB", "gryDB", "hufDB"}},
+		web: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop},
+			VMs: []string{"slyWeb", "gryWeb", "hufWeb"}},
+		app: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop},
+			VMs: []string{"slyApp", "gryApp", "hufApp"}}},
 	Policies: hogwartsAppToHousesPolicy,
 },
 }
@@ -813,18 +823,37 @@ var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
 },
 }
 
-func andOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
-	return map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
-		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: dum}}, Op: data.Nop},
-		"Slytherin-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
-			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}},
-		"Hufflepuff-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
-			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}},
-		"Gryffindor-orOrAnd-no-DB": {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
-			Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}}
+func andOrOrExpr(op data.ExampleOp) map[string]data.ExprAndVMs {
+	const (
+		slyAndOrNoDB = "Slytherin-orOrAnd-no-DB"
+		hufAndOrNoDB = "Hufflepuff-orOrAnd-no-DB"
+		gryAndOrNoDB = "Gryffindor-orOrAnd-no-DB"
+	)
+	slyAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
+		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	hufAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
+		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	gryAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
+		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	res := map[string]data.ExprAndVMs{
+		sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
+			VMs: []string{"slyDB", "slyWeb", "slyApp"}},
+		gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
+			VMs: []string{"gryDB", "gryWeb", "gryApp"}},
+		huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
+			VMs: []string{"hufDB", "hufWeb", "hufApp"}}}
+	if op == data.And {
+		res[slyAndOrNoDB] = data.ExprAndVMs{Expr: slyAndOrDBExpr, VMs: []string{slyApp, slyWeb}}
+		res[hufAndOrNoDB] = data.ExprAndVMs{Expr: hufAndOrDBExpr, VMs: []string{hufApp, hufWeb}}
+		res[gryAndOrNoDB] = data.ExprAndVMs{Expr: gryAndOrDBExpr, VMs: []string{gryApp, gryWeb}}
+	} else { // op == data.Or
+		res[slyAndOrNoDB] = data.ExprAndVMs{Expr: slyAndOrDBExpr, VMs: []string{slyDB, slyWeb, slyApp,
+			hufApp, hufWeb, gryApp, gryWeb}}
+		res[hufAndOrNoDB] = data.ExprAndVMs{Expr: hufAndOrDBExpr, VMs: []string{slyWeb, slyApp, hufDB, hufWeb, hufApp,
+			gryApp, gryWeb}}
+		res[gryAndOrNoDB] = data.ExprAndVMs{Expr: gryAndOrDBExpr, VMs: []string{slyWeb, slyApp, hufDB, gryDB, gryWeb, gryApp}}
+	}
+	return res
 }
 
 var andOrOrPolicies = []data.Category{
@@ -866,4 +895,3 @@ var andOrOrPolicies = []data.Category{
 		},
 	},
 }
-*/
