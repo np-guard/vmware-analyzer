@@ -15,15 +15,12 @@ import (
 
 // preProcessing: convert policy from spec to symbolicPolicy struct
 func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) {
-	fmt.Printf("preProcessing\n")
 	categoryToPolicy = map[collector.DfwCategory]*symbolicPolicy{}
 	for _, category := range categoriesSpecs {
 		categoryPolicy := symbolicPolicy{}
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
-			fmt.Printf("no rules for category %v\n", category.String())
 			continue
 		}
-		fmt.Printf("category %v has rules\n", category.String())
 		categoryPolicy.inbound = append(categoryPolicy.inbound, convertRulesToSymbolicPaths(category.ProcessedRules.Inbound,
 			category.Category)...)
 		categoryPolicy.outbound = append(categoryPolicy.outbound, convertRulesToSymbolicPaths(category.ProcessedRules.Outbound,
