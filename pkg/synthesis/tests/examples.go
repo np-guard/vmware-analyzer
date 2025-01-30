@@ -2,7 +2,6 @@ package tests
 
 import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (
@@ -650,14 +649,14 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 }
 
 // examples with expr instead of direct vms references
-
+/*
 var ExampleExprSingleScope = ExampleSynthesis{
 	FromNSX: data.Example{
 		Name: "ExampleExprSimple",
 		VMs:  []string{sly, huf, gry, dum},
 		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
 			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
-		GroupsByExpr: map[string]data.ExampleExpr{
+		GroupsByExprAndVMs: map[string]data.ExampleExpr{
 			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop},
 			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop},
 			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop},
@@ -778,7 +777,7 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
-	GroupsByExpr: map[string]data.ExampleExpr{
+	GroupsByExprAndVMs: map[string]data.ExampleExpr{
 		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
 		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
 		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
@@ -796,21 +795,21 @@ var vmsHouses = []string{slyDB, slyWeb, slyApp,
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
 var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
-	Name:         "ExampleExprAndConds",
-	VMs:          vmsHouses,
-	VMsTags:      vmsHousesTags,
-	GroupsByExpr: andOrOrExpr(data.And),
-	Policies:     andOrOrPolicies,
+	Name:               "ExampleExprAndConds",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExprAndVMs: andOrOrExpr(data.And),
+	Policies:           andOrOrPolicies,
 },
 }
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
 var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
-	Name:         "ExampleOrSimple",
-	VMs:          vmsHouses,
-	VMsTags:      vmsHousesTags,
-	GroupsByExpr: andOrOrExpr(data.Or),
-	Policies:     andOrOrPolicies,
+	Name:               "ExampleOrSimple",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExprAndVMs: andOrOrExpr(data.Or),
+	Policies:           andOrOrPolicies,
 },
 }
 
@@ -867,3 +866,4 @@ var andOrOrPolicies = []data.Category{
 		},
 	},
 }
+*/

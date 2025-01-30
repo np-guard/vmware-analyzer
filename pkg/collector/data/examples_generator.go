@@ -38,22 +38,19 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 
 	// add groups
 	// defined by VMs
+	// todo: remove once all examples uses GroupsByExprAndVMs
 	groupList := []collector.Group{}
 	for group, members := range e.GroupsByVMs {
 		newGroup := newGroupByExample(group)
-		for _, member := range members {
-			vmMember := collector.RealizedVirtualMachine{}
-			vmMember.RealizedVirtualMachine.DisplayName = &member
-			vmMember.RealizedVirtualMachine.Id = &member
-			newGroup.VMMembers = append(newGroup.VMMembers, vmMember)
-		}
+		newGroup.VMMembers = addVMsToGroup(members)
 		groupList = append(groupList, newGroup)
 	}
-	// groups defined by expr
-	for group, expr := range e.GroupsByExpr {
+	// groups defined by expr and VMs
+	for group, exprAndVms := range e.GroupsByExprAndVMs {
 		newGroup := newGroupByExample(group)
-		groupExpr := expr.exampleExprToExpr()
+		groupExpr := exprAndVms.Expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
+		newGroup.VMMembers = addVMsToGroup(exprAndVms.VMs)
 		groupList = append(groupList, newGroup)
 	}
 	res.DomainList[0].Resources.GroupList = groupList
@@ -61,6 +58,17 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	// add dfw
 	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
 	res.ServiceList = getServices()
+	return res
+}
+
+func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
+	res := make([]collector.RealizedVirtualMachine, len(members))
+	for i, member := range members {
+		vmMember := collector.RealizedVirtualMachine{}
+		vmMember.RealizedVirtualMachine.DisplayName = &member
+		vmMember.RealizedVirtualMachine.Id = &member
+		res[i] = vmMember
+	}
 	return res
 }
 
@@ -129,14 +137,19 @@ type ExampleExpr struct {
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
-	VMs          []string
-	VMsTags      map[string][]nsx.Tag
-	GroupsByVMs  map[string][]string
-	GroupsByExpr map[string]ExampleExpr
-	Policies     []Category
+	VMs                []string
+	VMsTags            map[string][]nsx.Tag
+	GroupsByVMs        map[string][]string // todo: refactor to GroupsByExprAndVMs
+	GroupsByExprAndVMs map[string]ExprAndVMs
+	Policies           []Category
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
+}
+
+type ExprAndVMs struct {
+	VMs  []string
+	Expr ExampleExpr
 }
 
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")

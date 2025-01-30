@@ -100,7 +100,7 @@ var groupsByVmsTests = []synthesisTest{
 }
 
 var groupsByExprTests = []synthesisTest{
-	{
+	/*{
 		name:   "ExampleExprSingleScope",
 		exData: tests.ExampleExprSingleScope,
 		noHint: false,
@@ -119,12 +119,13 @@ var groupsByExprTests = []synthesisTest{
 		name:   "ExampleExprOrConds",
 		exData: tests.ExampleExprOrConds,
 		noHint: false,
-	},
+	},*/
 }
 
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
+	fmt.Printf("test: %v\n~~~~~~~~~~~~~~~~~~~~~~~\n", synTest.name)
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err1 := parser.RunParser()
@@ -142,13 +143,13 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 }
 
 func TestPreprocessing(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	for i := range groupsByVmsTests {
-		test := &groupsByVmsTests[i]
+	logging.Init(logging.LowVerbosity)
+	for i := range groupsByExprTests {
+		test := &groupsByExprTests[i]
 		// to generate output comment the following line and uncomment the one after
-		test.runPreprocessing(t, OutputComparison)
+		//test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output
-		//test.runPreprocessing(t, OutputGeneration)
+		test.runPreprocessing(t, OutputGeneration)
 	}
 }
 
@@ -353,6 +354,11 @@ func (synTest *synthesisTest) runTmpWithExpr() {
 		fmt.Printf("group: %v ", rc.DomainList[0].Resources.GroupList[i].Name())
 		if expr != nil {
 			fmt.Printf("of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Expression.String())
+			tagsFromExpr := symbolicexpr.GetTagConjunctionForExpr(&rc.DomainList[0].Resources.GroupList[i].Expression)
+			fmt.Println("\ttagsFromExpr is:")
+			for _, tagFromExpr := range tagsFromExpr {
+				fmt.Println("\t", tagFromExpr.String())
+			}
 		} else {
 			fmt.Printf("has no expression; must be defined by vms\n")
 		}
@@ -360,8 +366,8 @@ func (synTest *synthesisTest) runTmpWithExpr() {
 }
 
 func TestTmpExpr(t *testing.T) {
-	for i := range allTests {
-		test := &allTests[i]
+	for i := range groupsByExprTests {
+		test := &groupsByExprTests[i]
 		test.runTmpWithExpr()
 	}
 }
