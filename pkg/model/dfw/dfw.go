@@ -76,8 +76,8 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 			(allAllowedConns.accumulatedConns.Union(allDeniedConns.accumulatedConns)).Equal(netset.AllTransports()) {
 			// add this message only if next categoires have rules that are skipped (redundant)
 			if remainingRulesNum > 0 {
-				logging.Debugf("skipping analysis from category %s, all onnections were determined by previous categories",
-					dfwCategory.Category.String())
+				logging.Debugf("for src=%s, dst=%s, isIngress=%t, skipping analysis from category %s, all connections were determined by previous categories",
+					src.Name(), dst.Name(), isIngress, dfwCategory.Category.String())
 			}
 			break
 		}
