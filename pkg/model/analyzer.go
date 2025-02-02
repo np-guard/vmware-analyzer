@@ -6,13 +6,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func NSXConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
-	config, err := configFromResourcesContainer(recourses, params)
-	if err != nil {
-		return "", err
-	}
-	return config.getConfigInfoStr(false), nil
-}
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
 	config, err := configFromResourcesContainer(recourses, params)
 	if err != nil {
@@ -47,6 +40,14 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 
 func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.ResourcesContainerModel) (string, error) {
 	return NSXConnectivityFromResourcesContainer(recourses, common.OutputParameters{Format: common.TextFormat})
+}
+
+func NSXConfigStrFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
+	config, err := configFromResourcesContainer(recourses, params)
+	if err != nil {
+		return "", err
+	}
+	return config.getConfigInfoStr(false), nil
 }
 
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
