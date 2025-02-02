@@ -332,32 +332,29 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 			entries = append(entries, entry)
 		}
 	}
-	icmpSet := conn.ICMPSet()
-	if !icmpSet.IsEmpty() {
-		for _, partition := range icmpSet.Partitions() {
-			types := []*int{nil}
-			codes := []*int{nil}
-			typesSet := partition.Left
-			codesSet := partition.Right
-			if !typesSet.Equal(netset.AllICMPTypes()) {
-				types = make([]*int, len(typesSet.Elements()))
-				for i, typeNumber := range typesSet.Elements() {
-					types[i] = common.PointerTo(int(typeNumber))
-				}
+	for _, partition := range conn.ICMPSet().Partitions() {
+		types := []*int{nil}
+		codes := []*int{nil}
+		typesSet := partition.Left
+		codesSet := partition.Right
+		if !typesSet.Equal(netset.AllICMPTypes()) {
+			types = make([]*int, len(typesSet.Elements()))
+			for i, typeNumber := range typesSet.Elements() {
+				types[i] = common.PointerTo(int(typeNumber))
 			}
-			if !codesSet.Equal(netset.AllICMPCodes()) {
-				codes = make([]*int, len(codesSet.Elements()))
-				for i, code := range codesSet.Elements() {
-					codes[i] = common.PointerTo(int(code))
-				}
+		}
+		if !codesSet.Equal(netset.AllICMPCodes()) {
+			codes = make([]*int, len(codesSet.Elements()))
+			for i, code := range codesSet.Elements() {
+				codes[i] = common.PointerTo(int(code))
 			}
-			for _, t := range types {
-				for _, c := range codes {
-					entry := &collector.ICMPTypeServiceEntry{}
-					entry.IcmpCode = c
-					entry.IcmpType = t
-					entries = append(entries, entry)
-				}
+		}
+		for _, t := range types {
+			for _, c := range codes {
+				entry := &collector.ICMPTypeServiceEntry{}
+				entry.IcmpCode = c
+				entry.IcmpType = t
+				entries = append(entries, entry)
 			}
 		}
 	}
