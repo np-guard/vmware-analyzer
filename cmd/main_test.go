@@ -62,6 +62,11 @@ const (
 
 var staticTests = []*cliTest{
 	{
+		name:        "unsupported_format_check",
+		args:        "-r ../pkg/collector/data/json/Example1.json -v -o svg -o ex1.svg ",
+		expectedErr: []string{"invalid argument"},
+	},
+	{
 		// version
 		name:                    "version",
 		args:                    "--version",

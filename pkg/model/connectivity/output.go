@@ -1,6 +1,10 @@
 package connectivity
 
-import "github.com/np-guard/vmware-analyzer/pkg/common"
+import (
+	"fmt"
+
+	"github.com/np-guard/vmware-analyzer/pkg/common"
+)
 
 func (c ConnMap) GenTextualConnectivityOutput() (res string, err error) {
 	return c.GenConnectivityOutput(common.OutputParameters{Format: common.TextFormat})
@@ -16,6 +20,8 @@ func (c ConnMap) GenConnectivityOutput(params common.OutputParameters) (res stri
 		g = common.NewEdgesGraph(common.AnalyzedConnectivityHeader, []string{"Source", "Destination", "Permitted connections"}, params.Color)
 	case common.DotFormat, common.SvgFormat:
 		g = common.NewDotGraph(false)
+	default:
+		return "", fmt.Errorf("unsupported format %s", params.Format)
 	}
 	for _, e := range filteredConn.toSlice() {
 		if !e.DetailedConn.Conn.IsEmpty() {
