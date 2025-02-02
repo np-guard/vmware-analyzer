@@ -272,6 +272,7 @@ func getRulesHeader() []string {
 		"ruleName",
 		"src",
 		"dst",
+		"services",
 		"conn",
 		"action",
 		"direction",
@@ -321,6 +322,7 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		f.getDstString(),
 		// todo: origRuleObj.Services is not always the services, can also be service_entries
 		f.getShortPathsString(f.OrigRuleObj.Services),
+		f.Conn.String(),
 		string(f.Action), f.direction,
 		strings.Join(f.OrigRuleObj.Scope, common.CommaSeparator),
 		f.secPolicyName,
