@@ -10,7 +10,6 @@ import (
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
 func connToPolicyPort(conn *netset.TransportSet) []networking.NetworkPolicyPort {
@@ -81,7 +80,7 @@ func (ports *k8sNetworkPorts) addPorts(start, end int64, protocols []core.Protoc
 	}
 	for _, protocol := range protocols {
 		ports.ports = append(ports.ports, networking.NetworkPolicyPort{
-			Protocol: common.PointerTo(protocol),
+			Protocol: &protocol,
 			Port:     portPointer,
 			EndPort:  endPortPointer})
 	}
@@ -97,7 +96,7 @@ func (ports *k8sAdminNetworkPorts) addPorts(start, end int64, protocols []core.P
 		if end == start {
 			//nolint:gosec // port should fit int32:
 			ports.ports = append(ports.ports, admin.AdminNetworkPolicyPort{
-				PortNumber: common.PointerTo(admin.Port{
+				PortNumber: &(admin.Port{
 					Protocol: protocol,
 					Port:     int32(start),
 				}),
@@ -105,7 +104,7 @@ func (ports *k8sAdminNetworkPorts) addPorts(start, end int64, protocols []core.P
 		} else {
 			ports.ports = append(ports.ports, admin.AdminNetworkPolicyPort{
 				//nolint:gosec // port should fit int32:
-				PortRange: common.PointerTo(admin.PortRange{
+				PortRange: &(admin.PortRange{
 					Protocol: protocol,
 					Start:    int32(start),
 					End:      int32(end),
