@@ -282,7 +282,7 @@ type Rule struct {
 }
 
 func (r *Rule) toCollectorRule() collector.Rule {
-	services, entries := serviceEntries(r.Services, r.Conn)
+	services, entries := calcServiceAndEntries(r.Services, r.Conn)
 	return collector.Rule{
 		Rule: nsx.Rule{
 			DisplayName:          &r.Name,
@@ -306,13 +306,19 @@ var codeToProtocol = map[int]nsx.L4PortSetServiceEntryL4Protocol{
 	netset.TCPCode: nsx.L4PortSetServiceEntryL4ProtocolTCP,
 }
 
-func serviceEntries(services []string, conn *netset.TransportSet) ([]string, collector.ServiceEntries) {
+// calcServiceAndEntries() take a list of services, and the connection,
+// and translate it to a list of services and a list of service entries,
+// which represent the union of the services and the connection.
+func calcServiceAndEntries(services []string, conn *netset.TransportSet) ([]string, collector.ServiceEntries) {
 	if conn == nil {
+		// we have only services
 		return services, nil
 	}
-	if conn.IsAll() {
+	if conn.IsAll() || slices.Contains(services, AnyStr) {
+		// the ANY string will do here:
 		return []string{AnyStr}, nil
 	}
+	// creating entries from the conn:
 	entries := collector.ServiceEntries{}
 	for _, partition := range conn.TCPUDPSet().Partitions() {
 		protocolsCodes := partition.S1.Elements()
@@ -338,17 +344,20 @@ func serviceEntries(services []string, conn *netset.TransportSet) ([]string, col
 		typesSet := partition.Left
 		codesSet := partition.Right
 		if !typesSet.Equal(netset.AllICMPTypes()) {
+			// in this case each type will have an entry per code:
 			types = make([]*int, len(typesSet.Elements()))
 			for i, typeNumber := range typesSet.Elements() {
 				types[i] = common.PointerTo(int(typeNumber))
 			}
 		}
 		if !codesSet.Equal(netset.AllICMPCodes()) {
+			// in this case each code will have an entry per type:
 			codes = make([]*int, len(codesSet.Elements()))
 			for i, code := range codesSet.Elements() {
 				codes[i] = common.PointerTo(int(code))
 			}
 		}
+		// creating len(types) x len(codes) entries:
 		for _, t := range types {
 			for _, c := range codes {
 				entry := &collector.ICMPTypeServiceEntry{}
