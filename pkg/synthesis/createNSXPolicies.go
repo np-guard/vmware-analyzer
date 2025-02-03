@@ -84,7 +84,10 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 			}
 		}
 	}
-	// add default deny rule
+	a.addDefaultDenyRule()
+}
+
+func (a *absToNXS) addDefaultDenyRule() {
 	const defaultDenyID = 9999
 	r := a.addNewRule(collector.AppCategoty.String())
 	r.Action = data.Drop
@@ -97,21 +100,13 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 }
 
 func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, categoryType string) {
-	srcGroup, dstGroup, services := a.toGroupsAndService(p)
 	rule := a.addNewRule(categoryType)
 	rule.Action = action
 	rule.Description = action + ": " + p.String()
-	rule.Source = srcGroup
-	rule.Dest = dstGroup
-	rule.Services = services
+	rule.Source = a.createGroup(p.Src)
+	rule.Dest = a.createGroup(p.Dst)
+	rule.Conn = p.Conn
 	rule.Direction = direction
-}
-
-func (a *absToNXS) toGroupsAndService(p *symbolicexpr.SymbolicPath) (src, dst string, service []string) {
-	srcVMs := a.createGroup(p.Src)
-	dstVMs := a.createGroup(p.Dst)
-	services := []string{data.AnyStr} // todo
-	return srcVMs, dstVMs, services
 }
 
 func (a *absToNXS) addNewRule(categoryType string) *data.Rule {

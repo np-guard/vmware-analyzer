@@ -54,3 +54,7 @@ func marshalYamlUsingJSON(content interface{}) ([]byte, error) {
 	}
 	return yaml.Marshal(contentFromJSON)
 }
+
+func PointerTo[T any](t T) *T {
+	return &t
+}

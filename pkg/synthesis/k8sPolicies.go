@@ -7,6 +7,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
@@ -106,12 +107,12 @@ func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *met
 	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector}
 	if inbound {
 		from := []admin.AdminNetworkPolicyIngressPeer{{Pods: srcPodsSelector}}
-		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: pointerTo(ports)}}
+		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: common.PointerTo(ports)}}
 		pol.Spec.Ingress = rules
 		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods: dstPodsSelector}
 	} else {
 		to := []admin.AdminNetworkPolicyEgressPeer{{Pods: dstPodsSelector}}
-		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: action, Ports: pointerTo(ports)}}
+		rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: action, Ports: common.PointerTo(ports)}}
 		pol.Spec.Egress = rules
 		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods: srcPodsSelector}
 	}
