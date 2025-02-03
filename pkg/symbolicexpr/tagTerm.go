@@ -99,6 +99,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
 	const nonTrivialExprLength = 3
 	if expr == nil || len(*expr) == 0 {
 		logging.Infof("Expression must not be nil and must be of size at least 1")
+		return nil
 	}
 	exprVal := *expr
 	condTag1 := getTagTermExprElement(exprVal[0], true)
