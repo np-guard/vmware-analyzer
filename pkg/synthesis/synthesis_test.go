@@ -122,6 +122,25 @@ var groupsByExprTests = []synthesisTest{
 	},
 }
 
+func TestDoNotAllowSameName(t *testing.T) {
+	names := map[string]bool{}
+	for _, test := range allTests{
+		require.False(t, names[test.name], "There are two tests with the same name %s", names[test.name])
+		names[test.name] = true		
+	}
+}
+
+func uniqName(synTest *synthesisTest, tName string) string{
+	name := fmt.Sprintf("%s_%s",synTest.name, tName)
+	if synTest.noHint {
+		name += "NoHint"
+	}
+	if synTest.allowOnlyFromCategory > 0 {
+		name = fmt.Sprintf("%v_%s", name, synTest.allowOnlyFromCategory)
+	}
+	return name
+}
+
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
@@ -155,19 +174,11 @@ func TestPreprocessing(t *testing.T) {
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	suffix := "_ConvertToAbstractNoHint.txt"
-	if !synTest.noHint {
-		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
-		suffix = "_ConvertToAbstract.txt"
-	}
-	if synTest.allowOnlyFromCategory > 0 {
-		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
-	}
+	fileName :=uniqName(synTest,"ConvertToAbstract") + ".txt"
 	baseName := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
 	outDir := path.Join("out", baseName)
-	fmt.Println("suffix:", suffix)
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), fileName)
 	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir, baseName)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, outDir)
