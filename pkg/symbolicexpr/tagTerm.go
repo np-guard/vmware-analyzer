@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"

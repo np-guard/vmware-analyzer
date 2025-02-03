@@ -356,30 +356,3 @@ func getTestsDirOut() string {
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }
-
-// todo tmp until expr fully supported by synthesis
-func (synTest *synthesisTest) runTmpWithExpr() {
-	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	for i := range rc.DomainList[0].Resources.GroupList {
-		expr := rc.DomainList[0].Resources.GroupList[i].Expression
-		fmt.Printf("group: %v ", rc.DomainList[0].Resources.GroupList[i].Name())
-		if expr != nil {
-			fmt.Printf("of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Expression.String())
-			tagsFromExpr := symbolicexpr.GetTagConjunctionForExpr(&rc.DomainList[0].Resources.GroupList[i].Expression)
-			fmt.Println("\ttagsFromExpr is:")
-			for _, tagFromExpr := range tagsFromExpr {
-				fmt.Println("\t", tagFromExpr.String())
-			}
-		} else {
-			fmt.Printf("has no expression; must be defined by vms\n")
-		}
-	}
-}
-
-func TestTmpExpr(t *testing.T) {
-	for i := range groupsByExprTests {
-		test := &groupsByExprTests[i]
-		test.runTmpWithExpr()
-	}
-}
