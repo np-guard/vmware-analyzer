@@ -169,7 +169,7 @@ func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format s
 	case common.JSONFormat:
 		g = common.NewTreeGraph()
 	case common.TextFormat:
-		g = common.NewEdgesGraph("topology", []string{})
+		g = common.NewEdgesGraph("topology", []string{}, false)
 	case common.DotFormat, common.SvgFormat:
 		g = common.NewDotGraph(true)
 	}

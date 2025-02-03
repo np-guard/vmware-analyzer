@@ -16,6 +16,8 @@ const (
 	NewLine             string = "\n"
 	Tab                 string = "\t"
 
+	AnalyzedConnectivityHeader = "Analyzed connectivity:"
+
 	// ANSI escape codes - for colored output printed to the terminal
 	reset   = "\033[0m"
 	red     = "\033[31m"

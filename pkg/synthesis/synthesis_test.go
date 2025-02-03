@@ -170,12 +170,12 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
 	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir, baseName)
-	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, outDir)
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
 }
 
 func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
@@ -257,9 +257,10 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 // (2) equiv config in NSX with allow-only DFW rules, as derived from the abstract model
 // and validates that connectivity of orign and new NSX configs are the same
 func TestCollectAndConvertToAbstract(t *testing.T) {
-	server := collector.NewServerData(os.Getenv("NSX_HOST"), os.Getenv("NSX_USER"), os.Getenv("NSX_PASSWORD"))
-	if (server == collector.ServerData{}) {
-		fmt.Println(common.ErrNoHostArg)
+	logging.Init(logging.HighVerbosity)
+	server, err := collector.GetNSXServerDate("", "", "")
+	if err != nil {
+		fmt.Println(err.Error())
 		return
 	}
 

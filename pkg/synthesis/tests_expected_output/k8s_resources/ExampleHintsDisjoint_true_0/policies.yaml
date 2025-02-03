@@ -50,58 +50,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore2 and group != Dumbledore1) to (group != Gryffindor)
-        nsx-id: "9196"
-    creationTimestamp: null
-    name: policy_2
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__Gryffindor
-                      operator: DoesNotExist
-    podSelector:
-        matchExpressions:
-            - key: group__Dumbledore2
-              operator: Exists
-            - key: group__Dumbledore1
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: All Connections from (group = Dumbledore2) to (group != Slytherin and group != Gryffindor)
-        nsx-id: "9196"
-    creationTimestamp: null
-    name: policy_3
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__Slytherin
-                      operator: DoesNotExist
-                    - key: group__Gryffindor
-                      operator: DoesNotExist
-    podSelector:
-        matchExpressions:
-            - key: group__Dumbledore2
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: All Connections from (group = Dumbledore1 and group != Dumbledore2) to (group != Slytherin)
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy_4
+    name: policy_2
 spec:
     ingress:
         - from:
@@ -125,7 +77,7 @@ metadata:
         description: All Connections from (group = Dumbledore1) to (group != Slytherin and group != Gryffindor)
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy_5
+    name: policy_3
 spec:
     ingress:
         - from:
@@ -141,6 +93,54 @@ spec:
               operator: DoesNotExist
     policyTypes:
         - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (group = Dumbledore2 and group != Dumbledore1) to (group != Gryffindor)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_4
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Gryffindor
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore2
+              operator: Exists
+            - key: group__Dumbledore1
+              operator: DoesNotExist
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (group = Dumbledore2) to (group != Slytherin and group != Gryffindor)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_5
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Slytherin
+                      operator: DoesNotExist
+                    - key: group__Gryffindor
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore2
+              operator: Exists
+    policyTypes:
+        - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
