@@ -1,0 +1,22 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+	All Connections from (tag = Gryffindor) to (tag = Web and tag = Gryffindor)
+	All Connections from (tag = Hufflepuff) to (tag = Web and tag = Hufflepuff)
+	All Connections from (tag = Slytherin) to (tag = Web and tag = Slytherin)
+	All Connections from (tag = Web and tag = Gryffindor) to (tag = App and tag = Gryffindor)
+	All Connections from (tag = Web and tag = Hufflepuff) to (tag = App and tag = Hufflepuff)
+	All Connections from (tag = Web and tag = Slytherin) to (tag = App and tag = Slytherin)
+	All Connections from (tag = App and tag = Gryffindor) to (tag = DB and tag = Gryffindor)
+	All Connections from (tag = App and tag = Hufflepuff) to (tag = DB and tag = Hufflepuff)
+	All Connections from (tag = App and tag = Slytherin) to (tag = DB and tag = Slytherin)
+outbound rules
+	All Connections from (tag = Gryffindor) to (tag = Web and tag = Gryffindor)
+	All Connections from (tag = Hufflepuff) to (tag = Web and tag = Hufflepuff)
+	All Connections from (tag = Slytherin) to (tag = Web and tag = Slytherin)
+	All Connections from (tag = Web and tag = Gryffindor) to (tag = App and tag = Gryffindor)
+	All Connections from (tag = Web and tag = Hufflepuff) to (tag = App and tag = Hufflepuff)
+	All Connections from (tag = Web and tag = Slytherin) to (tag = App and tag = Slytherin)
+	All Connections from (tag = App and tag = Gryffindor) to (tag = DB and tag = Gryffindor)
+	All Connections from (tag = App and tag = Hufflepuff) to (tag = DB and tag = Hufflepuff)
+	All Connections from (tag = App and tag = Slytherin) to (tag = DB and tag = Slytherin)
