@@ -1,0 +1,5 @@
+Analyzed connectivity:
+Source |Destination |Permitted connections
+A      |B           |TCP dst-ports: 445
+B      |C           |TCP dst-ports: 443
+
