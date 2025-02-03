@@ -1,0 +1,10 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+	All Connections from (*) to (tag = Slytherin and tag != DB)
+	All Connections from (*) to (tag = Gryffindor and tag != DB)
+	All Connections from (*) to (tag = Gryffindor and tag != DB)
+outbound rules
+	All Connections from (*) to (tag = Slytherin and tag != DB)
+	All Connections from (*) to (tag = Gryffindor and tag != DB)
+	All Connections from (*) to (tag = Gryffindor and tag != DB)
