@@ -121,7 +121,6 @@ func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
 	// len not 1 neither 3
 	logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
 	return nil
-
 }
 
 func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagAtomicTerm {
