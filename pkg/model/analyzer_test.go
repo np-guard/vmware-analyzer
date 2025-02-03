@@ -26,6 +26,10 @@ var allTests = []analyzerTest{
 		exData: data.Example1,
 	},
 	{
+		name:   "Example1d",
+		exData: data.Example1d,
+	},
+	{
 		name:   "Example2",
 		exData: data.Example2,
 	},
@@ -61,7 +65,11 @@ func (a *analyzerTest) run(t *testing.T) {
 	fmt.Println(res)
 
 	expectedFile := getExpectedTestPath(a.file())
-	if overrideAll || overrideOnlyConnOutput {
+	expectedFileExists := true
+	if _, err := os.Stat(expectedFile); err != nil {
+		expectedFileExists = false
+	}
+	if overrideAll || overrideOnlyConnOutput || !expectedFileExists {
 		err := os.WriteFile(expectedFile, []byte(res), 0o600)
 		require.Nil(t, err)
 	} else {
