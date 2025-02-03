@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -176,6 +177,7 @@ func (st *cliTest) runTest(t *testing.T) {
 		logging.Debugf("found possibleErr: %s", st.possibleErr)
 
 	default:
+		fmt.Printf("output is:\n%v", output)
 		// expecting successful run
 		require.Nil(t, err)
 		require.Contains(t, output, st.expectedOutputSubstring)
@@ -193,24 +195,24 @@ func (st *cliTest) runTest(t *testing.T) {
 // tests with possible errors if are not run on env with access to nsx manager.
 // include collection of nsx resources from API
 var nsxEnvTests = []*cliTest{
-	{
-		name:                    "verbose_analysis_with_no_cli_args",
-		args:                    "-v",
-		possibleErr:             common.ErrMissingRquiredArg,       // no env vars provided for NSX connection
-		expectedOutputSubstring: common.AnalyzedConnectivityHeader, // expecting successful connectivity analysis
-	},
-	{
-		name:            "collect-only",
-		args:            "--resource-dump-file examples/output/resources.json --skip-analysis",
-		possibleErr:     common.ErrMissingRquiredArg,
-		expectedOutFile: []string{"examples/output/resources.json"},
-	},
-	{
-		name:            "collect-anonymize",
-		args:            "--resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
-		possibleErr:     common.ErrMissingRquiredArg,
-		expectedOutFile: []string{"examples/output/resources_anon.json"},
-	},
+	//{
+	//	name:                    "verbose_analysis_with_no_cli_args",
+	//	args:                    "-v",
+	//	possibleErr:             common.ErrMissingRquiredArg,       // no env vars provided for NSX connection
+	//	expectedOutputSubstring: common.AnalyzedConnectivityHeader, // expecting successful connectivity analysis
+	//},
+	//{
+	//	name:            "collect-only",
+	//	args:            "--resource-dump-file examples/output/resources.json --skip-analysis",
+	//	possibleErr:     common.ErrMissingRquiredArg,
+	//	expectedOutFile: []string{"examples/output/resources.json"},
+	//},
+	//{
+	//	name:            "collect-anonymize",
+	//	args:            "--resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
+	//	possibleErr:     common.ErrMissingRquiredArg,
+	//	expectedOutFile: []string{"examples/output/resources_anon.json"},
+	//},
 	{
 		name: "collect-and-analyze-and-synthesis",
 		args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt" +

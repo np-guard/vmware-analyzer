@@ -197,8 +197,16 @@ func vmsString(vms []*endpoints.VM) string {
 // return a string representation of a single rule
 // groups are interpreted to VM members in this representation
 func (f *FwRule) String() string {
-	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
+	return fmt.Sprintf("ruleID: %d, srcGroups: %s, srcVMs: %s, dstGroups: %s, dstVMs: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
+		f.RuleID, stringGroups(f.SrcGroups), vmsString(f.srcVMs), stringGroups(f.DstGroups), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
+}
+
+func stringGroups(groups []*collector.Group) string {
+	groupsSlice := []string{}
+	for _, srcGroup := range groups {
+		groupsSlice = append(groupsSlice, srcGroup.Name())
+	}
+	return strings.Join(groupsSlice, ",")
 }
 
 func (f *FwRule) effectiveRuleStr() string {
