@@ -92,7 +92,7 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:                false,
 	},
 	{
-		name:                  "ExampleHogwarts",
+		name:                  "ExampleHogwartsAppCategory",
 		exData:                tests.ExampleHogwarts,
 		allowOnlyFromCategory: collector.AppCategoty,
 		noHint:                false,
@@ -174,11 +174,13 @@ func TestPreprocessing(t *testing.T) {
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	fileName :=uniqName(synTest,"ConvertToAbstract") + ".txt"
+	if !synTest.noHint {
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+	}
 	baseName := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
 	outDir := path.Join("out", baseName)
 	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), fileName)
+	expectedOutputFileName := filepath.Join(getTestsDirOut(), uniqName(synTest,"ConvertToAbstract") + ".txt")
 	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir, baseName)
 	require.Nil(t, err)
 	addDebugFiles(t, rc, abstractModel, outDir)
