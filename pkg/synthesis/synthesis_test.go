@@ -158,7 +158,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	suffix := "_ConvertToAbstractNoHint.txt"
 	if !synTest.noHint {
-		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroupsTags
 		suffix = "_ConvertToAbstract.txt"
 	}
 	if synTest.allowOnlyFromCategory > 0 {
@@ -282,9 +282,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	require.Nil(t, err)
 }
 
-// this function runs on generated examples
-// calls to addDebugFiles  - see comments there
-func TestConvertToAbsract(t *testing.T) {
+func TestConvertToAbsractGroupsByVMs(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
@@ -296,6 +294,20 @@ func TestConvertToAbsract(t *testing.T) {
 		)
 	}
 }
+
+func TestConvertToAbsractGroupsByExprs(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	for _, test := range groupsByExprTests {
+		t.Run(test.name, func(t *testing.T) {
+			// to generate output comment the following line and uncomment the one after
+			test.runConvertToAbstract(t, OutputComparison)
+			//nolint:gocritic // uncomment for generating output
+			//test.runConvertToAbstract(t, OutputGeneration)
+		},
+		)
+	}
+}
+
 func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
