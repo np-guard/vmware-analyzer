@@ -115,9 +115,8 @@ func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
 		}
 		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
 			return []*Conjunction{{condTag1, condTag2}} // And: single Conjunction
-		} else {
-			return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 		}
+		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 	}
 	// len not 1 neither 3
 	logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
