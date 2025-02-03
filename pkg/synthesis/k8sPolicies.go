@@ -25,26 +25,34 @@ type k8sPolicies struct {
 
 func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
 	for _, p := range model.policy {
-		policies.symbolicRulesToPolicies(model, p.outbound, false)
-		policies.symbolicRulesToPolicies(model, p.inbound, true)
+		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
 	policies.addDefaultDenyNetworkPolicy()
 	return policies.networkPolicies, policies.adminNetworkPolicies
 }
 
-func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rules []*symbolicRule, inbound bool) {
-	for _, rule := range rules {
-		isAdmin := model.allowOnlyFromCategory > rule.origRuleCategory
-		paths := &rule.allowOnlyRulePaths
-		if isAdmin {
-			paths = rule.origSymbolicPaths
+func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn, rulePairs []*symbolicRulePair) {
+	for _, rulePair := range rulePairs {
+		if rulePair.outbound != nil {
+			policies.symbolicRulesToPolicies(model, rulePair.outbound, false)
 		}
-		for _, p := range *paths {
-			if !p.Conn.TCPUDPSet().IsEmpty() {
-				policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, fmt.Sprintf("%d", rule.origRule.RuleID))
-			} else {
-				logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
-			}
+		if rulePair.inbound != nil {
+			policies.symbolicRulesToPolicies(model, rulePair.inbound, true)
+		}
+	}
+}
+
+func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rule *symbolicRule, inbound bool) {
+	isAdmin := model.allowOnlyFromCategory > rule.origRuleCategory
+	paths := &rule.allowOnlyRulePaths
+	if isAdmin {
+		paths = rule.origSymbolicPaths
+	}
+	for _, p := range *paths {
+		if !p.Conn.TCPUDPSet().IsEmpty() {
+			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, fmt.Sprintf("%d", rule.origRule.RuleID))
+		} else {
+			logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
 		}
 	}
 }

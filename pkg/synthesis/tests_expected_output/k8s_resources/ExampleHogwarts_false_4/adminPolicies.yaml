@@ -32,10 +32,40 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
+        description: '(jump_to_application: (All Connections from (group = Gryffindor) to (group = Gryffindor))'
+        nsx-id: "10218"
+    creationTimestamp: null
+    name: admin_policy_1
+spec:
+    ingress:
+        - action: Pass
+          from:
+            - pods:
+                namespaceSelector: {}
+                podSelector:
+                    matchExpressions:
+                        - key: group__Gryffindor
+                          operator: Exists
+          ports: null
+    priority: 2
+    subject:
+        pods:
+            namespaceSelector: {}
+            podSelector:
+                matchExpressions:
+                    - key: group__Gryffindor
+                      operator: Exists
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
         description: '(jump_to_application: (All Connections from (group = Hufflepuff) to (group = Hufflepuff))'
         nsx-id: "10219"
     creationTimestamp: null
-    name: admin_policy_1
+    name: admin_policy_2
 spec:
     egress:
         - action: Pass
@@ -47,7 +77,37 @@ spec:
                     matchExpressions:
                         - key: group__Hufflepuff
                           operator: Exists
-    priority: 2
+    priority: 3
+    subject:
+        pods:
+            namespaceSelector: {}
+            podSelector:
+                matchExpressions:
+                    - key: group__Hufflepuff
+                      operator: Exists
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
+        description: '(jump_to_application: (All Connections from (group = Hufflepuff) to (group = Hufflepuff))'
+        nsx-id: "10219"
+    creationTimestamp: null
+    name: admin_policy_3
+spec:
+    ingress:
+        - action: Pass
+          from:
+            - pods:
+                namespaceSelector: {}
+                podSelector:
+                    matchExpressions:
+                        - key: group__Hufflepuff
+                          operator: Exists
+          ports: null
+    priority: 4
     subject:
         pods:
             namespaceSelector: {}
@@ -65,7 +125,7 @@ metadata:
         description: '(jump_to_application: (All Connections from (group = Slytherin) to (group = Slytherin))'
         nsx-id: "10220"
     creationTimestamp: null
-    name: admin_policy_2
+    name: admin_policy_4
 spec:
     egress:
         - action: Pass
@@ -77,7 +137,37 @@ spec:
                     matchExpressions:
                         - key: group__Slytherin
                           operator: Exists
-    priority: 3
+    priority: 5
+    subject:
+        pods:
+            namespaceSelector: {}
+            podSelector:
+                matchExpressions:
+                    - key: group__Slytherin
+                      operator: Exists
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
+        description: '(jump_to_application: (All Connections from (group = Slytherin) to (group = Slytherin))'
+        nsx-id: "10220"
+    creationTimestamp: null
+    name: admin_policy_5
+spec:
+    ingress:
+        - action: Pass
+          from:
+            - pods:
+                namespaceSelector: {}
+                podSelector:
+                    matchExpressions:
+                        - key: group__Slytherin
+                          operator: Exists
+          ports: null
+    priority: 6
     subject:
         pods:
             namespaceSelector: {}
@@ -95,7 +185,7 @@ metadata:
         description: '(jump_to_application: (All Connections from (group = Dumbledore) to (group = Gryffindor))'
         nsx-id: "10217"
     creationTimestamp: null
-    name: admin_policy_3
+    name: admin_policy_6
 spec:
     egress:
         - action: Pass
@@ -107,7 +197,7 @@ spec:
                     matchExpressions:
                         - key: group__Gryffindor
                           operator: Exists
-    priority: 4
+    priority: 7
     subject:
         pods:
             namespaceSelector: {}
@@ -122,124 +212,10 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(deny: (All Connections from (*) to (*))'
-        nsx-id: "10218"
-    creationTimestamp: null
-    name: admin_policy_4
-spec:
-    egress:
-        - action: Deny
-          ports: null
-          to:
-            - pods:
-                namespaceSelector: {}
-                podSelector: {}
-    priority: 5
-    subject:
-        pods:
-            namespaceSelector: {}
-            podSelector: {}
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
-        description: '(jump_to_application: (All Connections from (group = Gryffindor) to (group = Gryffindor))'
-        nsx-id: "10218"
-    creationTimestamp: null
-    name: admin_policy_5
-spec:
-    ingress:
-        - action: Pass
-          from:
-            - pods:
-                namespaceSelector: {}
-                podSelector:
-                    matchExpressions:
-                        - key: group__Gryffindor
-                          operator: Exists
-          ports: null
-    priority: 6
-    subject:
-        pods:
-            namespaceSelector: {}
-            podSelector:
-                matchExpressions:
-                    - key: group__Gryffindor
-                      operator: Exists
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
-        description: '(jump_to_application: (All Connections from (group = Hufflepuff) to (group = Hufflepuff))'
-        nsx-id: "10219"
-    creationTimestamp: null
-    name: admin_policy_6
-spec:
-    ingress:
-        - action: Pass
-          from:
-            - pods:
-                namespaceSelector: {}
-                podSelector:
-                    matchExpressions:
-                        - key: group__Hufflepuff
-                          operator: Exists
-          ports: null
-    priority: 7
-    subject:
-        pods:
-            namespaceSelector: {}
-            podSelector:
-                matchExpressions:
-                    - key: group__Hufflepuff
-                      operator: Exists
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
-        description: '(jump_to_application: (All Connections from (group = Slytherin) to (group = Slytherin))'
-        nsx-id: "10220"
-    creationTimestamp: null
-    name: admin_policy_7
-spec:
-    ingress:
-        - action: Pass
-          from:
-            - pods:
-                namespaceSelector: {}
-                podSelector:
-                    matchExpressions:
-                        - key: group__Slytherin
-                          operator: Exists
-          ports: null
-    priority: 8
-    subject:
-        pods:
-            namespaceSelector: {}
-            podSelector:
-                matchExpressions:
-                    - key: group__Slytherin
-                      operator: Exists
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
         description: '(jump_to_application: (All Connections from (group = Dumbledore) to (group = Gryffindor))'
         nsx-id: "10217"
     creationTimestamp: null
-    name: admin_policy_8
+    name: admin_policy_7
 spec:
     ingress:
         - action: Pass
@@ -251,7 +227,7 @@ spec:
                         - key: group__Dumbledore
                           operator: Exists
           ports: null
-    priority: 9
+    priority: 8
     subject:
         pods:
             namespaceSelector: {}
@@ -259,6 +235,30 @@ spec:
                 matchExpressions:
                     - key: group__Gryffindor
                       operator: Exists
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
+        description: '(deny: (All Connections from (*) to (*))'
+        nsx-id: "10218"
+    creationTimestamp: null
+    name: admin_policy_8
+spec:
+    egress:
+        - action: Deny
+          ports: null
+          to:
+            - pods:
+                namespaceSelector: {}
+                podSelector: {}
+    priority: 9
+    subject:
+        pods:
+            namespaceSelector: {}
+            podSelector: {}
 status:
     conditions: null
 ---
