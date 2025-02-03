@@ -81,7 +81,7 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 	}
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Infof(supportErrMsg + fmt.Sprintf("\n\t%+v is not a operator\n", elem))
+		logging.Infof(supportErrMsg + "\n\tillegal operator\n")
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
@@ -96,6 +96,7 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 // GetTagConjunctionForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
+	const nonTrivialExprLength = 3
 	if expr == nil || len(*expr) == 0 {
 		logging.Infof("Expression must not be nil and must be of size at least 1")
 	}
@@ -106,7 +107,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
 		return []*Conjunction{{condTag1}}
-	} else if len(*expr) == 3 {
+	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(exprVal[1])
 		condTag2 := getTagTermExprElement(exprVal[2], true)
 		if orOrAnd == nil || condTag2 == nil {
@@ -117,10 +118,11 @@ func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
 		} else {
 			return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 		}
-	} else { // len not 1 neither 3
-		logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
-		return nil
 	}
+	// len not 1 neither 3
+	logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
+	return nil
+
 }
 
 func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagAtomicTerm {
