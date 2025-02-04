@@ -156,8 +156,11 @@ func getTestsDirActualOut() string {
 	return filepath.Join(currentDir, actualOutput)
 }
 
+func (synTest *synthesisTest) outDir() string {
+	return path.Join(getTestsDirActualOut(), synTest.ID(""))
+}
 func (synTest *synthesisTest) debugDir() string {
-	return path.Join(getTestsDirActualOut(), synTest.ID(""), "debug_files")
+	return path.Join(synTest.outDir(), "debug_files")
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -207,14 +210,16 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	testID := synTest.ID("K8S")
-	outDir := path.Join(getTestsDirActualOut(), testID)
-	err := NSXToK8sSynthesis(rc, outDir, synTest.hints(), synTest.allowOnlyFromCategory)
+	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
+	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
 	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
-	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
+	compareOrRegenerateOutputDirPerTest(t, mode, k8sDir, expectedOutputDir, synTest.name)
 	// run netpol-analyzer
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
-	err = k8sAnalyzer(path.Join(outDir, k8sResourcesDir), path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
+	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
+	require.Nil(t, err)
+	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)
 }
 
@@ -256,6 +261,8 @@ func (synTest *synthesisTest) runCompareNSXConnectivity(t *testing.T) {
 	require.Equal(t, connectivity, analyzed,
 		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // to be run only on "live nsx" mode
 // no expected output is tested
