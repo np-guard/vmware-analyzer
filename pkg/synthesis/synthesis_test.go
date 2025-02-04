@@ -21,7 +21,7 @@ import (
 
 const (
 	expectedOutput = "tests_expected_output"
-	actualOutput = "tests_actual_output"
+	actualOutput   = "tests_actual_output"
 	carriageReturn = "\r"
 )
 
@@ -37,6 +37,7 @@ const (
 )
 
 const runTestMode = OutputComparison
+
 type synthesisTest struct {
 	name                  string
 	exData                tests.ExampleSynthesis
@@ -151,6 +152,7 @@ func getTestsDirActualOut() string {
 	currentDir, _ := os.Getwd()
 	return filepath.Join(currentDir, actualOutput)
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func TestDoNotAllowSameName(t *testing.T) {
@@ -192,7 +194,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	testID := synTest.uniqName("ConvertToAbstract")
 	model, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
-	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), testID+".txt")
+	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", testID+".txt")
 	require.Nil(t, err)
 	actualOutput := strAllowOnlyPolicy(model.policy[0])
 	fmt.Println(actualOutput)
@@ -202,7 +204,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	testID := synTest.uniqName("K8S")
-	outDir := path.Join("tests_actual_output", testID)
+	outDir := path.Join(getTestsDirActualOut(), testID)
 	err := NSXToK8sSynthesis(rc, outDir, synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
 	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
@@ -332,7 +334,6 @@ func TestK8SSynthesis(t *testing.T) {
 		)
 	}
 }
-
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
