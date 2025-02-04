@@ -21,9 +21,9 @@ func (path *SymbolicPath) disjointPaths(other *SymbolicPath, hints *Hints) bool 
 		path.Dst.disjoint(&other.Dst, hints)
 }
 
-func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
-	return path.Conn.IsSubset(other.Conn) && path.Src.isSubset(&other.Src, hints) &&
-		path.Dst.isSubset(&other.Dst, hints)
+func (path *SymbolicPath) isSuperset(other *SymbolicPath, hints *Hints) bool {
+	return path.Conn.IsSubset(other.Conn) && path.Src.isSuperset(&other.Src, hints) &&
+		path.Dst.isSuperset(&other.Dst, hints)
 }
 
 func (paths *SymbolicPaths) add(newPath *SymbolicPath, hints *Hints) *SymbolicPaths {
@@ -64,7 +64,7 @@ func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.isSubset(outerPath, hints) && !(outerPath.isSubset(innerPath, hints) && outerIndex < innerIndex) {
+			if innerPath.isSuperset(outerPath, hints) && !(outerPath.isSuperset(innerPath, hints) && outerIndex < innerIndex) {
 				addPath = false
 				break
 			}
@@ -114,7 +114,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
 				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
-				thisComputed = thisComputed.removeIsSubsetPath(hints)
+				//thisComputed = thisComputed.removeIsSubsetPath(hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
 			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
