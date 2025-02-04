@@ -21,11 +21,11 @@ func newDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
 
 func TestTagTerms(t *testing.T) {
 	slytherin, gryffindor, dontCare := "Slytherin", "Gryffindor", "dontCare"
-	atomicSly := newTagTerm(slytherin, false)
-	atomicDontCare := newTagTerm(dontCare, false)
-	atomicNegSly := newTagTerm(slytherin, true)
-	atomicGry := newTagTerm(gryffindor, false)
-	atomicNegGry := newTagTerm(gryffindor, true)
+	atomicSly := NewTagTerm(slytherin, false)
+	atomicDontCare := NewTagTerm(dontCare, false)
+	atomicNegSly := NewTagTerm(slytherin, true)
+	atomicGry := NewTagTerm(gryffindor, false)
+	atomicNegGry := NewTagTerm(gryffindor, true)
 	fmt.Println("atomicSly is", atomicSly.string())
 	fmt.Println("atomicNegSly is", atomicNegSly.string())
 	fmt.Println("atomicGry is", atomicGry.string())
@@ -95,13 +95,13 @@ func TestSymbolicPaths(t *testing.T) {
 // src: (tag = src1) dst: (tag = dst2) ICMP, TCP
 func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	atomic1 := newTagTerm("src1", false)
+	atomic1 := NewTagTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomic1)
-	atomicDst1 := newTagTerm("dst1", false)
+	atomicDst1 := NewTagTerm("dst1", false)
 	conjDst1 = *conjDst1.add(*atomicDst1)
-	atomic2 := newTagTerm("src2", false)
+	atomic2 := NewTagTerm("src2", false)
 	conjSrc2 = *conjSrc2.add(*atomic2)
-	atomicDst2 := newTagTerm("dst2", false)
+	atomicDst2 := NewTagTerm("dst2", false)
 	conjDst2 = *conjDst2.add(*atomicDst2)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllUDPTransport()}
@@ -123,13 +123,13 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 // src: (tag = src1) dst: (tag = dst1) UDP
 func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
-	atomic1 := newTagTerm("src1", false)
+	atomic1 := NewTagTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomic1)
-	atomicDst1 := newTagTerm("dst1", false)
+	atomicDst1 := NewTagTerm("dst1", false)
 	conjDst1 = *conjDst1.add(*atomicDst1)
-	atomic2 := newTagTerm("src2", false)
+	atomic2 := NewTagTerm("src2", false)
 	conjSrc2 = *conjSrc2.add(*atomic2)
-	atomicDst2 := newTagTerm("dst2", false)
+	atomicDst2 := NewTagTerm("dst2", false)
 	conjDst2 = *conjDst2.add(*atomicDst2)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllUDPTransport()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
