@@ -1,7 +1,6 @@
 package symbolicexpr
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -132,15 +131,11 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
 	}
-	fmt.Printf("isSuperset\n")
 	for _, atom := range *c {
-		fmt.Printf("\tatom: %v, other: %v\n", atom.string(), other.string())
 		if !other.contains(atom) && !atomSupersetOfConj(atom, other, hints) {
 			return false
 		}
-		fmt.Printf("\t\tatom %v is not contained or subset of other %v\n", atom.string(), other.string())
 	}
-	fmt.Printf("Conjunction %s is subset of %s\n", c.string(), other.string())
 	return true
 }
 
