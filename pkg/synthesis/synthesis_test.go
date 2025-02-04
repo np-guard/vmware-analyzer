@@ -52,7 +52,7 @@ func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
 	}
 	return hintsParm
 }
-func (synTest *synthesisTest) uniqName(tName string) string {
+func (synTest *synthesisTest) ID(tName string) string {
 	name := fmt.Sprintf("%s_%s", synTest.name, tName)
 	if synTest.noHint {
 		name += "NoHint"
@@ -142,6 +142,9 @@ var groupsByExprTests = []synthesisTest{
 		noHint: false,
 	},
 }
+var allTests = append(groupsByVmsTests, groupsByExprTests...)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // getTestsDirExpectedOut returns the path to the dir where test output files are located
 func getTestsDirExpectedOut() string {
@@ -163,28 +166,23 @@ func TestDoNotAllowSameName(t *testing.T) {
 	}
 }
 
-var allTests = append(groupsByVmsTests, groupsByExprTests...)
-
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
-	err1 := parser.RunParser()
-	require.Nil(t, err1)
+	err := parser.RunParser()
+	require.Nil(t, err)
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
-	suffix := "_PreProcessing"
-	if synTest.allowOnlyFromCategory > 0 {
-		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
-	}
-	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", synTest.name+suffix+".txt")
+	testID := synTest.ID("PreProcessing")
+	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", testID+".txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	testID := synTest.uniqName("ConvertToAbstract")
+	testID := synTest.ID("ConvertToAbstract")
 	model, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", testID+".txt")
 	require.Nil(t, err)
@@ -195,7 +193,7 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 
 func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	testID := synTest.uniqName("K8S")
+	testID := synTest.ID("K8S")
 	outDir := path.Join(getTestsDirActualOut(), testID)
 	err := NSXToK8sSynthesis(rc, outDir, synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
