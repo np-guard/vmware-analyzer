@@ -20,7 +20,8 @@ import (
 )
 
 const (
-	expectedOutput = "tests_expected_output/"
+	expectedOutput = "tests_expected_output"
+	actualOutput = "tests_actual_output"
 	carriageReturn = "\r"
 )
 
@@ -35,11 +36,30 @@ const (
 	OutputGeneration                 // generate expected output
 )
 
+const runTestMode = OutputComparison
 type synthesisTest struct {
 	name                  string
 	exData                tests.ExampleSynthesis
 	allowOnlyFromCategory collector.DfwCategory // category to start the "allow-only" conversion from
 	noHint                bool                  // run also with no hint
+}
+
+func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
+	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	if !synTest.noHint {
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+	}
+	return hintsParm
+}
+func (synTest *synthesisTest) uniqName(tName string) string {
+	name := fmt.Sprintf("%s_%s", synTest.name, tName)
+	if synTest.noHint {
+		name += "NoHint"
+	}
+	if synTest.allowOnlyFromCategory > 0 {
+		name = fmt.Sprintf("%v_%s", name, synTest.allowOnlyFromCategory)
+	}
+	return name
 }
 
 var groupsByVmsTests = []synthesisTest{
@@ -122,23 +142,23 @@ var groupsByExprTests = []synthesisTest{
 	},
 }
 
+// getTestsDirExpectedOut returns the path to the dir where test output files are located
+func getTestsDirExpectedOut() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, expectedOutput)
+}
+func getTestsDirActualOut() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, actualOutput)
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 func TestDoNotAllowSameName(t *testing.T) {
 	names := map[string]bool{}
-	for _, test := range allTests{
+	for _, test := range allTests {
 		require.False(t, names[test.name], "There are two tests with the same name %s", names[test.name])
-		names[test.name] = true		
+		names[test.name] = true
 	}
-}
-
-func uniqName(synTest *synthesisTest, tName string) string{
-	name := fmt.Sprintf("%s_%s",synTest.name, tName)
-	if synTest.noHint {
-		name += "NoHint"
-	}
-	if synTest.allowOnlyFromCategory > 0 {
-		name = fmt.Sprintf("%v_%s", name, synTest.allowOnlyFromCategory)
-	}
-	return name
 }
 
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
@@ -156,7 +176,7 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix+".txt")
+	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), synTest.name+suffix+".txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
@@ -164,29 +184,28 @@ func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for i := range groupsByVmsTests {
 		test := &groupsByVmsTests[i]
-		// to generate output comment the following line and uncomment the one after
-		test.runPreprocessing(t, OutputComparison)
-		//nolint:gocritic // uncomment for generating output
-		//test.runPreprocessing(t, OutputGeneration)
+		test.runPreprocessing(t, runTestMode)
 	}
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	if !synTest.noHint {
-		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
-	}
-	baseName := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
-	outDir := path.Join("out", baseName)
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), uniqName(synTest,"ConvertToAbstract") + ".txt")
-	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir, baseName)
+	testID := synTest.uniqName("ConvertToAbstract")
+	model, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), testID+".txt")
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, outDir)
-	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
+	actualOutput := strAllowOnlyPolicy(model.policy[0])
 	fmt.Println(actualOutput)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+}
+
+func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+	testID := synTest.uniqName("K8S")
+	outDir := path.Join("tests_actual_output", testID)
+	err := NSXToK8sSynthesis(rc, outDir, synTest.hints(), synTest.allowOnlyFromCategory)
+	require.Nil(t, err)
+	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
 	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
 }
 
@@ -289,29 +308,32 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 		return
 	}
 	outDir := path.Join("out", "from_collection")
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
+	err = NSXToK8sSynthesis(rc, outDir, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
 	require.Nil(t, err)
-	// print the conntent of the abstract model
-	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-
-	addDebugFiles(t, rc, abstractModel, outDir)
+	// addDebugFiles(t, rc, abstractModel, outDir)
 	require.Nil(t, err)
 }
 
-// this function runs on generated examples
-// calls to addDebugFiles  - see comments there
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
-			// to generate output comment the following line and uncomment the one after
-			test.runConvertToAbstract(t, OutputComparison)
-			//nolint:gocritic // uncomment for generating output
-			// test.runConvertToAbstract(t, OutputGeneration)
+			test.runConvertToAbstract(t, runTestMode)
 		},
 		)
 	}
 }
+func TestK8SSynthesis(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	for _, test := range groupsByVmsTests {
+		t.Run(test.name, func(t *testing.T) {
+			test.runK8SSynthesis(t, runTestMode)
+		},
+		)
+	}
+}
+
+
 func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
@@ -348,12 +370,6 @@ func compareOrRegenerateOutputPerTest(t *testing.T, mode testMode, actualOutput,
 		err := os.WriteFile(expectedOutputFileName, []byte(actualOutput), writeFileMde)
 		require.Nil(t, err)
 	}
-}
-
-// getTestsDirOut returns the path to the dir where test output files are located
-func getTestsDirOut() string {
-	currentDir, _ := os.Getwd()
-	return filepath.Join(currentDir, expectedOutput)
 }
 
 // comparison should be insensitive to line comparators; cleaning strings from line comparators

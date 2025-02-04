@@ -27,6 +27,7 @@ schemas/*.json
 # For tests output
 pkg/*/out/*
 pkg/*/*/actual_output/*
+pkg/*/tests_actual_output/*
 cmd/examples/output/*
 
 # For temporary examples and pkgs
