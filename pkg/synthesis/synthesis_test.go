@@ -25,19 +25,6 @@ const (
 	carriageReturn = "\r"
 )
 
-const (
-	writeFileMde = 0o600
-)
-
-type testMode int
-
-const (
-	OutputComparison testMode = iota // compare actual output to expected output
-	OutputGeneration                 // generate expected output
-)
-
-const runTestMode = OutputComparison
-
 type synthesisTest struct {
 	name                  string
 	exData                tests.ExampleSynthesis
@@ -173,21 +160,25 @@ func TestDoNotAllowSameName(t *testing.T) {
 	}
 }
 
-func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
+func runPreprocessing(synTest *synthesisTest, t *testing.T) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err := parser.RunParser()
 	require.Nil(t, err)
 	config := parser.GetConfig()
+	// write the config summery into a file, for debugging:
+	configStr := config.GetConfigInfoStr(false)
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
+	require.Nil(t, err)
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
 	testID := synTest.ID("PreProcessing")
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", testID+".txt")
-	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+	compareOrRegenerateOutputPerTest(t, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
+func runConvertToAbstract(synTest *synthesisTest, t *testing.T) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	testID := synTest.ID("ConvertToAbstract")
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
@@ -196,26 +187,21 @@ func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) 
 	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
 
-	// write the config summery into a file
-	configStr, err := model.NSXConfigStrFromResourcesContainer(rc, common.OutputParameters{})
-	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
-	require.Nil(t, err)
-	// write the abstract model rules into a file
+	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
-	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+	compareOrRegenerateOutputPerTest(t, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
+func runK8SSynthesis(synTest *synthesisTest, t *testing.T) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	testID := synTest.ID("K8S")
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
 	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
-	compareOrRegenerateOutputDirPerTest(t, mode, k8sDir, expectedOutputDir, synTest.name)
-	// run netpol-analyzer
+	compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	// run netpol-analyzer, the connectivity is kept, for debugging:
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
 	require.Nil(t, err)
@@ -223,30 +209,31 @@ func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
 	require.Nil(t, err)
 }
 
-func (synTest *synthesisTest) runCompareNSXConnectivity(t *testing.T) {
+func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T) {
 	debugDir := synTest.debugDir()
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	// store the original NSX resources in JSON
+	// store the original NSX resources in JSON, for debugging:
 	jsonOut, err := rc.ToJSONString()
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "nsx_resources.json"), jsonOut)
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
-	require.Nil(t, err)
 	connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
 	require.Nil(t, err)
 
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	require.Nil(t, err)
 	// convert the abstract model to a new equiv NSX config
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
+
+	// store the *new* (from abstract model) NSX resoutces JSON config in a file, for debugging:
 	jsonOut, err = rc.ToJSONString()
 	require.Nil(t, err)
-	// store the *new* (from abstract model) NSX JSON config in a file
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_resources.json"), jsonOut)
 	require.Nil(t, err)
 
@@ -295,51 +282,47 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////
-func TestConvertToAbsract(t *testing.T) {
+
+func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T)){
 	logging.Init(logging.HighVerbosity)
 	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
-			test.runConvertToAbstract(t, runTestMode)
+			f(&test,t)
 		},
 		)
 	}
+
+}
+func TestConvertToAbsract(t *testing.T) {
+	parallelRun(t,runConvertToAbstract)
 }
 func TestK8SSynthesis(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	for _, test := range groupsByVmsTests {
-		t.Run(test.name, func(t *testing.T) {
-			test.runK8SSynthesis(t, runTestMode)
-		},
-		)
-	}
+	parallelRun(t,runK8SSynthesis)
 }
 
 func TestPreprocessing(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	for _, test := range groupsByVmsTests {
-		t.Run(test.name, func(t *testing.T) {
-			test.runPreprocessing(t, runTestMode)
-		},
-		)
-	}
+	parallelRun(t,runPreprocessing)
 }
 
 func TestCompareNSXConnectivity(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	for _, test := range groupsByVmsTests {
-		t.Run(test.name, func(t *testing.T) {
-			test.runCompareNSXConnectivity(t)
-		},
-		)
-	}
+	parallelRun(t,runCompareNSXConnectivity)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
+type testMode int
+
+const (
+	OutputComparison testMode = iota // compare actual output to expected output
+	OutputGeneration                 // generate expected output
+)
+// change runTestMode to generate output results: 
+const runTestMode = OutputComparison
+
+func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
-	if mode == OutputComparison {
+	if runTestMode == OutputComparison {
 		expectedFiles, err := os.ReadDir(expectedDir)
 		require.Nil(t, err)
 		require.Equal(t, len(actualFiles), len(expectedFiles),
@@ -352,7 +335,7 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir,
 			require.Equal(t, cleanStr(string(actualOutput)), cleanStr(string(expectedOutput)),
 				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
 		}
-	} else if mode == OutputGeneration {
+	} else if runTestMode == OutputGeneration {
 		err := os.RemoveAll(expectedDir)
 		require.Nil(t, err)
 		err = os.CopyFS(expectedDir, os.DirFS(actualDir))
@@ -360,16 +343,16 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir,
 	}
 }
 
-func compareOrRegenerateOutputPerTest(t *testing.T, mode testMode, actualOutput, expectedOutputFileName, testName string) {
-	if mode == OutputComparison {
+func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutputFileName, testName string) {
+	if runTestMode == OutputComparison {
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
 		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
-	} else if mode == OutputGeneration {
+	} else if runTestMode == OutputGeneration {
 		fmt.Printf("outputGeneration\n")
-		err := os.WriteFile(expectedOutputFileName, []byte(actualOutput), writeFileMde)
+		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}
 }
@@ -378,6 +361,9 @@ func compareOrRegenerateOutputPerTest(t *testing.T, mode testMode, actualOutput,
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 // todo tmp until expr fully supported by synthesis
 func (synTest *synthesisTest) runTmpWithExpr() {
