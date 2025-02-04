@@ -193,8 +193,13 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 		require.Nil(t, err)
 	}
 	// write the abstract model rules into a file
-	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), actualOutput)
+	abstractStr := strAllowOnlyPolicy(abstractModel.policy[0])
+	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), abstractStr)
+	require.Nil(t, err)
+	// write the config summery into a file
+	configStr, err := model.NSXConfigStrFromResourcesContainer(rc, common.OutputParameters{})
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "config.txt"), configStr)
 	require.Nil(t, err)
 
 	// store the original NSX resources in JSON

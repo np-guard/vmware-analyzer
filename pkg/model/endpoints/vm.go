@@ -1,6 +1,9 @@
 package endpoints
 
-import "slices"
+import (
+	"maps"
+	"slices"
+)
 
 // VM intenal modeling for vmware endpoints
 type VM struct {
@@ -80,4 +83,12 @@ func Subtract(a, b []*VM) []*VM {
 		}
 	}
 	return res
+}
+
+func Compact(a []*VM) []*VM {
+	set := map[*VM]bool{}
+	for _, aVM := range a {
+		set[aVM] = true
+	}
+	return slices.Collect(maps.Keys(set))
 }

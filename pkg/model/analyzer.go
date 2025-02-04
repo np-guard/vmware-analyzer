@@ -42,6 +42,14 @@ func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.Resourc
 	return NSXConnectivityFromResourcesContainer(recourses, common.OutputParameters{Format: common.TextFormat})
 }
 
+func NSXConfigStrFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
+	config, err := configFromResourcesContainer(recourses, params)
+	if err != nil {
+		return "", err
+	}
+	return config.getConfigInfoStr(false), nil
+}
+
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
