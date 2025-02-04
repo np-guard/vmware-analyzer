@@ -178,16 +178,8 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
 	}
-	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), synTest.name+suffix+".txt")
+	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", synTest.name+suffix+".txt")
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
-}
-
-func TestPreprocessing(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	for i := range groupsByVmsTests {
-		test := &groupsByVmsTests[i]
-		test.runPreprocessing(t, runTestMode)
-	}
 }
 
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
@@ -330,6 +322,16 @@ func TestK8SSynthesis(t *testing.T) {
 	for _, test := range groupsByVmsTests {
 		t.Run(test.name, func(t *testing.T) {
 			test.runK8SSynthesis(t, runTestMode)
+		},
+		)
+	}
+}
+
+func TestPreprocessing(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	for _, test := range groupsByVmsTests {
+		t.Run(test.name, func(t *testing.T) {
+			test.runPreprocessing(t, runTestMode)
 		},
 		)
 	}
