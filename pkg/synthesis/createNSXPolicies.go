@@ -53,17 +53,17 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 		}
 	}
 	for _, vm := range a.allVMs {
-		addVMLabel := func(vm *endpoints.VM, label string){
+		addVMLabel := func(vm *endpoints.VM, label string) {
 			a.vmLabels[vm] = append(a.vmLabels[vm], label)
 			a.labelsVMs[label] = append(a.labelsVMs[label], vm)
-		} 
+		}
 		for _, tag := range vm.Tags() {
 			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
-			addVMLabel(vm,label)
+			addVMLabel(vm, label)
 		}
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			addVMLabel(vm,label)
+			addVMLabel(vm, label)
 		}
 	}
 }
