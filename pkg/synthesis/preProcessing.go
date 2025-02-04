@@ -36,7 +36,9 @@ func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[co
 func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category collector.DfwCategory) []*symbolicRule {
 	res := make([]*symbolicRule, len(rules))
 	for i, rule := range rules {
+		fmt.Printf("convertRulesToSymbolicPaths rule: %v\n", rule.String())
 		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(rule)
+		fmt.Printf("ruleSymbolicPaths: %v\n", ruleSymbolicPaths.String())
 		res[i] = &symbolicRule{origRule: rule, origRuleCategory: category, origSymbolicPaths: ruleSymbolicPaths}
 	}
 	return res
