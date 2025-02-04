@@ -16,15 +16,6 @@ import (
 // preProcessing: convert policy from spec to symbolicPolicy struct
 func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) {
 	categoryToPolicy = map[collector.DfwCategory]*symbolicPolicy{}
-	fmt.Printf("original rules:\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
-	for _, category := range categoriesSpecs {
-		if len(category.Rules) > 0 {
-			fmt.Println("category:", category.Category.String())
-			for _, rule := range category.Rules {
-				fmt.Println(rule.String())
-			}
-		}
-	}
 	for _, category := range categoriesSpecs {
 		categoryPolicy := symbolicPolicy{}
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
