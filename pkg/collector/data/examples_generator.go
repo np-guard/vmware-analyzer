@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"slices"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
@@ -78,15 +79,13 @@ func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
 		newPolicy.Category = &policy.CategoryType
 		newPolicy.DisplayName = &policy.Name
 		newPolicy.Scope = []string{AnyStr} // TODO: add scope as configurable
+		newPolicy.Rules = make([]collector.Rule, len(policy.Rules))
+		newPolicy.SecurityPolicy.Rules = make([]nsx.Rule, len(policy.Rules))
 		// add policy rules
 		for i := range policy.Rules {
 			rule := policy.Rules[i]
-			newRule := rule.toNSXRule()
-			newPolicy.SecurityPolicy.Rules = append(newPolicy.SecurityPolicy.Rules, *newRule)
-			collectorRule := collector.Rule{
-				Rule: *newRule,
-			}
-			newPolicy.Rules = append(newPolicy.Rules, collectorRule)
+			newPolicy.Rules[i] = rule.toCollectorRule()
+			newPolicy.SecurityPolicy.Rules[i] = newPolicy.Rules[i].Rule
 		}
 		policiesList = append(policiesList, newPolicy)
 	}
@@ -276,25 +275,99 @@ type Rule struct {
 	Dest                 string
 	DestinationsExcluded bool
 	Services             []string
+	Conn                 *netset.TransportSet
 	Action               string
 	Direction            string // if not set, used as default with "IN_OUT"
 	Description          string
 }
 
-func (r *Rule) toNSXRule() *nsx.Rule {
-	return &nsx.Rule{
-		DisplayName:          &r.Name,
-		RuleId:               &r.ID,
-		Action:               (*nsx.RuleAction)(&r.Action),
-		SourceGroups:         []string{r.Source},
-		DestinationGroups:    []string{r.Dest},
-		SourcesExcluded:      r.SourcesExcluded,
-		DestinationsExcluded: r.DestinationsExcluded,
-		Services:             r.Services,
-		Direction:            r.directionStr(),
-		Scope:                []string{AnyStr}, // TODO: add scope as configurable
-		Description:          &r.Description,
+func (r *Rule) toCollectorRule() collector.Rule {
+	services, entries := calcServiceAndEntries(r.Services, r.Conn)
+	return collector.Rule{
+		Rule: nsx.Rule{
+			DisplayName:          &r.Name,
+			RuleId:               &r.ID,
+			Action:               (*nsx.RuleAction)(&r.Action),
+			SourceGroups:         []string{r.Source},
+			DestinationGroups:    []string{r.Dest},
+			SourcesExcluded:      r.SourcesExcluded,
+			DestinationsExcluded: r.DestinationsExcluded,
+			Services:             services,
+			Direction:            r.directionStr(),
+			Scope:                []string{AnyStr}, // TODO: add scope as configurable
+			Description:          &r.Description,
+		},
+		ServiceEntries: entries,
 	}
+}
+
+var codeToProtocol = map[int]nsx.L4PortSetServiceEntryL4Protocol{
+	netset.UDPCode: nsx.L4PortSetServiceEntryL4ProtocolUDP,
+	netset.TCPCode: nsx.L4PortSetServiceEntryL4ProtocolTCP,
+}
+
+// calcServiceAndEntries() take a list of services, and the connection,
+// and translate it to a list of services and a list of service entries,
+// which represent the union of the services and the connection.
+func calcServiceAndEntries(services []string, conn *netset.TransportSet) ([]string, collector.ServiceEntries) {
+	if conn == nil {
+		// we have only services
+		return services, nil
+	}
+	if conn.IsAll() || slices.Contains(services, AnyStr) {
+		// the ANY string will do here:
+		return []string{AnyStr}, nil
+	}
+	// creating entries from the conn:
+	entries := collector.ServiceEntries{}
+	for _, partition := range conn.TCPUDPSet().Partitions() {
+		protocolsCodes := partition.S1.Elements()
+		portRanges := partition.S3.Intervals()
+		for _, protocolCode := range protocolsCodes {
+			entry := &collector.L4PortSetServiceEntry{}
+			entry.L4Protocol = common.PointerTo(codeToProtocol[int(protocolCode)])
+			for _, portRange := range portRanges {
+				var ports nsx.PortElement
+				if portRange.Start() == portRange.End() {
+					ports = nsx.PortElement(fmt.Sprintf("%d", portRange.Start()))
+				} else {
+					ports = nsx.PortElement(fmt.Sprintf("%d-%d", portRange.Start(), portRange.End()))
+				}
+				entry.DestinationPorts = append(entry.DestinationPorts, ports)
+			}
+			entries = append(entries, entry)
+		}
+	}
+	for _, partition := range conn.ICMPSet().Partitions() {
+		types := []*int{nil}
+		codes := []*int{nil}
+		typesSet := partition.Left
+		codesSet := partition.Right
+		if !typesSet.Equal(netset.AllICMPTypes()) {
+			// in this case each type will have an entry per code:
+			types = make([]*int, len(typesSet.Elements()))
+			for i, typeNumber := range typesSet.Elements() {
+				types[i] = common.PointerTo(int(typeNumber))
+			}
+		}
+		if !codesSet.Equal(netset.AllICMPCodes()) {
+			// in this case each code will have an entry per type:
+			codes = make([]*int, len(codesSet.Elements()))
+			for i, code := range codesSet.Elements() {
+				codes[i] = common.PointerTo(int(code))
+			}
+		}
+		// creating len(types) x len(codes) entries:
+		for _, t := range types {
+			for _, c := range codes {
+				entry := &collector.ICMPTypeServiceEntry{}
+				entry.IcmpCode = c
+				entry.IcmpType = t
+				entries = append(entries, entry)
+			}
+		}
+	}
+	return services, entries
 }
 
 /*

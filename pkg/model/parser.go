@@ -274,6 +274,7 @@ func (p *NSXConfigParser) getAllGroups() {
 			groupsPaths = append(groupsPaths, *group.Path)
 		}
 	}
+	vms = endpoints.Compact(vms)
 	p.allGroupsVMs = vms
 	p.allGroups = groups
 	p.allGroupsPaths = groupsPaths
@@ -298,6 +299,7 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		vms = append(vms, thisGroupVMs...)
 		groups = append(groups, thisGroup)
 	}
+	vms = endpoints.Compact(vms)
 	return vms, groups
 }
 

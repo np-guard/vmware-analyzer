@@ -94,6 +94,41 @@ var Example1c = Example{
 	},
 }
 
+var Example1d = Example{
+	Name: "Example1d",
+	VMs:  []string{"A", "B", "C"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+		"backend":  {"B"},
+		"db":       {"C"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1004,
+					Source:   "frontend",
+					Dest:     "backend",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_https_db_incoming",
+					ID:       1005,
+					Source:   "backend",
+					Dest:     "db",
+					Services: []string{"/infra/services/HTTPS"},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
 /*
 Example 2 with macro and micro segmentation
 

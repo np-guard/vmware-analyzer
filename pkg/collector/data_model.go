@@ -13,6 +13,7 @@ import (
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -98,14 +99,12 @@ type IPProtocolServiceEntry struct {
 	nsx.IPProtocolServiceEntry
 }
 
-const creatingConnectionError = "fail to create a connection from service %v"
-
 func (e *IPProtocolServiceEntry) String() string {
 	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeIPProtocolServiceEntry, *e.DisplayName)
 }
 
 func (e *IPProtocolServiceEntry) ToConnection() (*netset.TransportSet, error) {
-	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
+	return nil, fmt.Errorf(common.ErrCreatingConnection, *e.ResourceType)
 }
 
 type IGMPTypeServiceEntry struct {
@@ -117,7 +116,7 @@ func (e *IGMPTypeServiceEntry) String() string {
 }
 
 func (e *IGMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
-	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
+	return nil, fmt.Errorf(common.ErrCreatingConnection, *e.ResourceType)
 }
 
 type ICMPTypeServiceEntry struct {
@@ -154,7 +153,7 @@ func (e *ALGTypeServiceEntry) String() string {
 }
 
 func (e *ALGTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
-	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
+	return nil, fmt.Errorf(common.ErrCreatingConnection, *e.ResourceType)
 }
 
 type L4PortSetServiceEntry struct {
@@ -220,7 +219,7 @@ func (e *EtherTypeServiceEntry) String() string {
 }
 
 func (e *EtherTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
-	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
+	return nil, fmt.Errorf(common.ErrCreatingConnection, *e.ResourceType)
 }
 
 type NestedServiceServiceEntry struct {
@@ -232,7 +231,7 @@ func (e *NestedServiceServiceEntry) String() string {
 }
 
 func (e *NestedServiceServiceEntry) ToConnection() (*netset.TransportSet, error) {
-	return nil, fmt.Errorf(creatingConnectionError, *e.ResourceType)
+	return nil, fmt.Errorf(common.ErrCreatingConnection, *e.ResourceType)
 }
 
 type ServiceEntry interface {
@@ -241,6 +240,30 @@ type ServiceEntry interface {
 }
 
 type ServiceEntries []ServiceEntry
+
+func (s *ServiceEntries) MarshalJSON() ([]byte, error) {
+	type ServiceEntriesPlain ServiceEntries
+	for _, e := range *s {
+		switch v := e.(type) {
+		case *ALGTypeServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.ALGTypeServiceEntryResourceTypeALGTypeServiceEntry)
+		case *EtherTypeServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.EtherTypeServiceEntryResourceTypeEtherTypeServiceEntry)
+		case *ICMPTypeServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.ICMPTypeServiceEntryResourceTypeICMPTypeServiceEntry)
+		case *IGMPTypeServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.IGMPTypeServiceEntryResourceTypeIGMPTypeServiceEntry)
+		case *IPProtocolServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.IPProtocolServiceEntryResourceTypeIPProtocolServiceEntry)
+		case *L4PortSetServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.L4PortSetServiceEntryResourceTypeL4PortSetServiceEntry)
+		case *NestedServiceServiceEntry:
+			v.ResourceType = common.PointerTo(nsx.NestedServiceServiceEntryResourceTypeNestedServiceServiceEntry)
+		}
+	}
+	sp := ServiceEntriesPlain(*s)
+	return json.Marshal(sp)
+}
 
 func (s *ServiceEntries) UnmarshalJSON(b []byte) error {
 	var raws []json.RawMessage

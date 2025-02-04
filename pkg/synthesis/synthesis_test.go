@@ -206,8 +206,13 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 		require.Nil(t, err)
 	}
 	// write the abstract model rules into a file
-	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), actualOutput)
+	abstractStr := strAllowOnlyPolicy(abstractModel.policy[0])
+	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), abstractStr)
+	require.Nil(t, err)
+	// write the config summery into a file
+	configStr, err := model.NSXConfigStrFromResourcesContainer(rc, common.OutputParameters{})
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "config.txt"), configStr)
 	require.Nil(t, err)
 
 	// store the original NSX resources in JSON
@@ -249,10 +254,8 @@ func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstract
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	// commenting the following out, since we do not suppoert creating nsx services:
-	// todo - uncomment when supporting services
-	// require.Equal(t, connectivity["txt"], analyzed,
-	// 	fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+	require.Equal(t, connectivity["txt"], analyzed,
+		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 
 	// run netpol-analyzer
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
