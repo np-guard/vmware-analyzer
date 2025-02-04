@@ -171,11 +171,13 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T) {
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
-	fmt.Println(actualOutput)
+	preProcessOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	fmt.Println(preProcessOutput)
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
+	require.Nil(t, err)
 	testID := synTest.ID("PreProcessing")
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", testID+".txt")
-	compareOrRegenerateOutputPerTest(t, actualOutput, expectedOutputFileName, synTest.name)
+	compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
 }
 
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T) {
@@ -303,7 +305,6 @@ func TestK8SSynthesis(t *testing.T) {
 func TestPreprocessing(t *testing.T) {
 	parallelRun(t,runPreprocessing)
 }
-
 func TestCompareNSXConnectivity(t *testing.T) {
 	parallelRun(t,runCompareNSXConnectivity)
 }
