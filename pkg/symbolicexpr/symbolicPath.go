@@ -22,7 +22,7 @@ func (path *SymbolicPath) disjointPaths(other *SymbolicPath, hints *Hints) bool 
 }
 
 func (path *SymbolicPath) isSuperset(other *SymbolicPath, hints *Hints) bool {
-	return path.Conn.IsSubset(other.Conn) && path.Src.isSuperset(&other.Src, hints) &&
+	return other.Conn.IsSubset(path.Conn) && path.Src.isSuperset(&other.Src, hints) &&
 		path.Dst.isSuperset(&other.Dst, hints)
 }
 
