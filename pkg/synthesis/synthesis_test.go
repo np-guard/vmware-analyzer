@@ -156,6 +156,10 @@ func getTestsDirActualOut() string {
 	return filepath.Join(currentDir, actualOutput)
 }
 
+func (synTest *synthesisTest) debugDir() string {
+	return path.Join(getTestsDirActualOut(), synTest.ID(""), "debug_files")
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func TestDoNotAllowSameName(t *testing.T) {
@@ -183,11 +187,20 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	testID := synTest.ID("ConvertToAbstract")
-	model, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", testID+".txt")
 	require.Nil(t, err)
-	actualOutput := strAllowOnlyPolicy(model.policy[0])
+	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
 	fmt.Println(actualOutput)
+
+	// write the config summery into a file
+	configStr, err := model.NSXConfigStrFromResourcesContainer(rc, common.OutputParameters{})
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
+	require.Nil(t, err)
+	// write the abstract model rules into a file
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), actualOutput)
+	require.Nil(t, err)
 	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
 }
 
@@ -199,81 +212,49 @@ func (synTest *synthesisTest) runK8SSynthesis(t *testing.T, mode testMode) {
 	require.Nil(t, err)
 	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
 	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
+	// run netpol-analyzer
+	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
+	err = k8sAnalyzer(path.Join(outDir, k8sResourcesDir), path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
+	require.Nil(t, err)
 }
 
-func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
-	connectivity := map[string]string{}
-	var err error
-	// generate connectivity analysis output from the original NSX resources
-	debugDir := path.Join(outDir, "debug_resources")
-
-	for _, format := range []string{"txt", "dot"} {
-		params := common.OutputParameters{
-			Format: format,
-		}
-		connectivity[format], err = model.NSXConnectivityFromResourcesContainer(rc, params)
-		require.Nil(t, err)
-		err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity."+format), connectivity[format])
-		require.Nil(t, err)
-	}
-	// write the abstract model rules into a file
-	abstractStr := strAllowOnlyPolicy(abstractModel.policy[0])
-	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), abstractStr)
-	require.Nil(t, err)
-	// write the config summery into a file
-	configStr, err := model.NSXConfigStrFromResourcesContainer(rc, common.OutputParameters{})
-	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "config.txt"), configStr)
-	require.Nil(t, err)
-
+func (synTest *synthesisTest) runCompareNSXConnectivity(t *testing.T) {
+	debugDir := synTest.debugDir()
+	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	// store the original NSX resources in JSON
 	jsonOut, err := rc.ToJSONString()
-	if err != nil {
-		t.Errorf("failed in converting to json: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "nsx_resources.json"), jsonOut)
-	if err != nil {
-		t.Errorf("failed in write to file: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
+
+	// getting the vmware connectivity
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	require.Nil(t, err)
+	connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	require.Nil(t, err)
 
 	// convert the abstract model to a new equiv NSX config
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
 	jsonOut, err = rc.ToJSONString()
-	if err != nil {
-		t.Errorf("failed in converting to json: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
 	// store the *new* (from abstract model) NSX JSON config in a file
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_resources.json"), jsonOut)
-	if err != nil {
-		t.Errorf("failed in write to file: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
 
-	params := common.OutputParameters{
-		Format: "txt",
-	}
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	require.Equal(t, connectivity["txt"], analyzed,
+	require.Equal(t, connectivity, analyzed,
 		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
-
-	// run netpol-analyzer
-	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
-	for _, format := range []string{"txt", "dot"} {
-		err := k8sAnalyzer(path.Join(outDir, k8sResourcesDir), path.Join(debugDir, "k8s_connectivity."+format), format)
-		require.Nil(t, err)
-	}
 }
 
 // to be run only on "live nsx" mode
@@ -306,6 +287,7 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	require.Nil(t, err)
 }
 
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////
 func TestConvertToAbsract(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	for _, test := range groupsByVmsTests {
@@ -334,6 +316,18 @@ func TestPreprocessing(t *testing.T) {
 		)
 	}
 }
+
+func TestCompareNSXConnectivity(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	for _, test := range groupsByVmsTests {
+		t.Run(test.name, func(t *testing.T) {
+			test.runCompareNSXConnectivity(t)
+		},
+		)
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
