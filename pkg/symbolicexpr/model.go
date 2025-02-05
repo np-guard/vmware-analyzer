@@ -39,7 +39,7 @@ type atomic interface {
 	isNegateOf(atomic) bool         // is the term negation of the other given term
 	AsSelector() (string, bool)     // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool   // based on hints
-	supersetOf(atomic, *Hints) bool // based on hints
+	supersetOf(atomic, *Hints) bool // super set of resources satisfying atom, given Hints based on hints
 }
 
 // Conjunction a DNF Conjunction of Atomics
