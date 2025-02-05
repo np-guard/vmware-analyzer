@@ -61,8 +61,8 @@ func TestSymbolicPaths(t *testing.T) {
 	}
 	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTCPTransport()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.String())
-	require.Equal(t, "TCP from (group = str1 and group = str2 and group = str3) to "+
-		"(group != str1 and group != str2 and group != str3)",
+	require.Equal(t, "src: (group = str1 and group = str2 and group = str3) dst: "+
+		"(group != str1 and group != str2 and group != str3) conn: TCP",
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
 	println("conjEmpty", conjEmpty.string())
 	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
@@ -80,7 +80,7 @@ func TestSymbolicPaths(t *testing.T) {
 	hints := Hints{GroupsDisjoint: disjoint}
 	pathNoRedundant := path.removeRedundant(&hints)
 	fmt.Printf("pathNoRedundant:%v\n", pathNoRedundant)
-	require.Equal(t, "TCP from (group = Gryffindor) to (group = Slytherin)", pathNoRedundant.String(),
+	require.Equal(t, "src: (group = Gryffindor) dst: (group = Slytherin) conn: TCP", pathNoRedundant.String(),
 		"redundant removal not working")
 }
 
@@ -108,9 +108,9 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
-	require.Equal(t, "All Connections from (tag = src1 and tag != src2) to (tag = dst1)\n"+
-		"All Connections from (tag = src1) to (tag = dst1 and tag != dst2)\n"+
-		"ICMP,TCP from (tag = src1) to (tag = dst1)",
+	require.Equal(t, "src: (tag = src1 and tag != src2) dst: (tag = dst1) conn: All Connections\n"+
+		"src: (tag = src1) dst: (tag = dst1 and tag != dst2) conn: All Connections\n"+
+		"src: (tag = src1) dst: (tag = dst1) conn: ICMP,TCP",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 }
 
