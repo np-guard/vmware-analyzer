@@ -137,14 +137,14 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	// computeAllowGivenAllowHigherDeny not optimized
-	require.Equal(t, "UDP from (tag = src1 and tag != src2) to (tag = dst1)\n"+
-		"UDP from (tag = src1) to (tag = dst1 and tag != dst2)\nUDP from (tag = src1) to (tag = dst1)",
+	require.Equal(t, "src: (tag = src1 and tag != src2) dst: (tag = dst1) conn: UDP\n"+
+		"src: (tag = src1) dst: (tag = dst1 and tag != dst2) conn: UDP\nsrc: (tag = src1) dst: (tag = dst1) conn: UDP",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 	// ComputeAllowGivenDenies optimize
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
-	require.Equal(t, "UDP from (tag = src1) to (tag = dst1)", allowGivenDenyPaths.String(),
+	require.Equal(t, "src: (tag = src1) dst: (tag = dst1) conn: UDP", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
 }
 
@@ -168,7 +168,7 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
-	require.Equal(t, "TCP src-ports: 51-65535 from (group = src1) to (group = dst1)", allowGivenDenyPaths.String(),
+	require.Equal(t, "src: (group = src1) dst: (group = dst1) conn: TCP src-ports: 51-65535", allowGivenDenyPaths.String(),
 		"ComputeAllowGivenDenies does not work as expected")
 }
 
