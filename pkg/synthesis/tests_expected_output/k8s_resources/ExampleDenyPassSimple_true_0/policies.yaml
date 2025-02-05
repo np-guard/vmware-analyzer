@@ -3,7 +3,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (*) to (group != Hufflepuff and group != Slytherin)
-        nsx-id: "1925"
+        nsx-id: "10230"
     creationTimestamp: null
     name: policy_0
 spec:
@@ -24,7 +24,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (*) to (group = Dumbledore)
-        nsx-id: "1925"
+        nsx-id: "10230"
     creationTimestamp: null
     name: policy_1
 spec:
@@ -43,7 +43,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (*) to (group != Hufflepuff and group != Slytherin)
-        nsx-id: "1925"
+        nsx-id: "10230"
     creationTimestamp: null
     name: policy_2
 spec:
@@ -64,7 +64,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (*) to (group = Dumbledore)
-        nsx-id: "1925"
+        nsx-id: "10230"
     creationTimestamp: null
     name: policy_3
 spec:
