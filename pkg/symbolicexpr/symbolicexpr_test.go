@@ -278,10 +278,11 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
-		"All Connections src: (group != src1`) dst: (*)\nAll Connections src: (group != src2`) dst: (*)\n"+
-			"All Connections src: (group != src3`) dst: (*)\nAll Connections src: (*) dst: (group != dst1`)\n"+
-			"All Connections src: (*) dst: (group != dst2`)\nAll Connections src: (*) dst: (group != dst3`)\n"+
-			"ICMP,TCP src: (*) dst: (*)", allowGivenDeny.String(),
+		"src: (group != src1`) dst: (*) conn: All Connections\n"+
+			"src: (group != src2`) dst: (*) conn: All Connections\nsrc: (group != src3`) dst: (*) conn: All Connections\n"+
+			"src: (*) dst: (group != dst1`) conn: All Connections\n"+
+			"src: (*) dst: (group != dst2`) conn: All Connections\nsrc: (*) dst: (group != dst3`) conn: All Connections\n"+
+			"src: (*) dst: (*) conn: ICMP,TCP", allowGivenDeny.String(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
