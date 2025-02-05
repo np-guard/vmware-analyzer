@@ -56,7 +56,7 @@ func (synTest *synthesisTest) outDir() string {
 func (synTest *synthesisTest) debugDir() string {
 	return path.Join(synTest.outDir(), "debug_dir")
 }
-func (synTest *synthesisTest) isSyntheticExample() bool {
+func (synTest *synthesisTest) hasExpectedResults() bool {
 	return synTest.exData != nil
 }
 
@@ -252,7 +252,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
 	require.Nil(t, err)
 	// compare to expected results:
-	if synTest.isSyntheticExample() {
+	if synTest.hasExpectedResults() {
 		expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", synTest.id()+".txt")
 		compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
 	}
@@ -267,7 +267,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
 	require.Nil(t, err)
 	// compare to expected results:
-	if synTest.isSyntheticExample() {
+	if synTest.hasExpectedResults() {
 		expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", synTest.id()+".txt")
 		compareOrRegenerateOutputPerTest(t, abstractModelStr, expectedOutputFileName, synTest.name)
 	}
@@ -285,7 +285,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)
 	// compare to expected results:
-	if synTest.isSyntheticExample() {
+	if synTest.hasExpectedResults() {
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
