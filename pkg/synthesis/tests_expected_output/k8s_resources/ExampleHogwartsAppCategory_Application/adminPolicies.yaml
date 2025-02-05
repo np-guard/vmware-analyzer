@@ -2,7 +2,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Gryffindor) to (group = Gryffindor))'
+        description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10218"
     creationTimestamp: null
     name: admin_policy_0
@@ -32,7 +32,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Gryffindor) to (group = Gryffindor))'
+        description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10218"
     creationTimestamp: null
     name: admin_policy_1
@@ -62,7 +62,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Hufflepuff) to (group = Hufflepuff))'
+        description: '(jump_to_application: (src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: All Connections)'
         nsx-id: "10219"
     creationTimestamp: null
     name: admin_policy_2
@@ -92,7 +92,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Hufflepuff) to (group = Hufflepuff))'
+        description: '(jump_to_application: (src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: All Connections)'
         nsx-id: "10219"
     creationTimestamp: null
     name: admin_policy_3
@@ -122,7 +122,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Slytherin) to (group = Slytherin))'
+        description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections)'
         nsx-id: "10220"
     creationTimestamp: null
     name: admin_policy_4
@@ -152,7 +152,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Slytherin) to (group = Slytherin))'
+        description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections)'
         nsx-id: "10220"
     creationTimestamp: null
     name: admin_policy_5
@@ -182,7 +182,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Dumbledore) to (group = Gryffindor))'
+        description: '(jump_to_application: (src: (group = Dumbledore) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10221"
     creationTimestamp: null
     name: admin_policy_6
@@ -212,7 +212,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (All Connections from (group = Dumbledore) to (group = Gryffindor))'
+        description: '(jump_to_application: (src: (group = Dumbledore) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10221"
     creationTimestamp: null
     name: admin_policy_7
@@ -242,7 +242,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(deny: (All Connections from (*) to (*))'
+        description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
     name: admin_policy_8
@@ -266,7 +266,7 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(deny: (All Connections from (*) to (*))'
+        description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
     name: admin_policy_9

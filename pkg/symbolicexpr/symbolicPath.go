@@ -7,7 +7,7 @@ import (
 )
 
 func (path *SymbolicPath) String() string {
-	return path.Conn.String() + " from " + path.Src.string() + " to " + path.Dst.string()
+	return "src: " + path.Src.string() + " dst: " + path.Dst.string() + " conn: " + path.Conn.String()
 }
 
 // if the source or destination is empty then so is the entire path

@@ -1,18 +1,18 @@
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: allow paths: All Connections from (*) to (tag = Slytherin)
-All Connections from (*) to (tag != DB)
-	1. action: allow paths: All Connections from (*) to (tag = Gryffindor)
-All Connections from (*) to (tag != DB)
-	2. action: allow paths: All Connections from (*) to (tag = Hufflepuff)
-All Connections from (*) to (tag != DB)
-	3. action: deny paths: All Connections from (*) to (*)
+	0. action: allow paths: src: (*) dst: (tag = Slytherin) conn: All Connections
+src: (*) dst: (tag != DB) conn: All Connections
+	1. action: allow paths: src: (*) dst: (tag = Gryffindor) conn: All Connections
+src: (*) dst: (tag != DB) conn: All Connections
+	2. action: allow paths: src: (*) dst: (tag = Hufflepuff) conn: All Connections
+src: (*) dst: (tag != DB) conn: All Connections
+	3. action: deny paths: src: (*) dst: (*) conn: All Connections
 symbolic outbound rules:
-	0. action: allow paths: All Connections from (*) to (tag = Slytherin)
-All Connections from (*) to (tag != DB)
-	1. action: allow paths: All Connections from (*) to (tag = Gryffindor)
-All Connections from (*) to (tag != DB)
-	2. action: allow paths: All Connections from (*) to (tag = Hufflepuff)
-All Connections from (*) to (tag != DB)
-	3. action: deny paths: All Connections from (*) to (*)
+	0. action: allow paths: src: (*) dst: (tag = Slytherin) conn: All Connections
+src: (*) dst: (tag != DB) conn: All Connections
+	1. action: allow paths: src: (*) dst: (tag = Gryffindor) conn: All Connections
+src: (*) dst: (tag != DB) conn: All Connections
+	2. action: allow paths: src: (*) dst: (tag = Hufflepuff) conn: All Connections
+src: (*) dst: (tag != DB) conn: All Connections
+	3. action: deny paths: src: (*) dst: (*) conn: All Connections
