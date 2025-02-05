@@ -3,7 +3,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Gryffindor) to (group = Web and group = Gryffindor)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_0
 spec:
@@ -27,7 +27,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Hufflepuff) to (group = Web and group = Hufflepuff)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_1
 spec:
@@ -51,7 +51,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Slytherin) to (group = Web and group = Slytherin)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_2
 spec:
@@ -75,7 +75,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Dumbledore) to (group = Web and group = Gryffindor)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_3
 spec:
@@ -99,7 +99,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Gryffindor) to (group = Web and group = Gryffindor)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_4
 spec:
@@ -123,7 +123,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Hufflepuff) to (group = Web and group = Hufflepuff)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_5
 spec:
@@ -147,7 +147,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Slytherin) to (group = Web and group = Slytherin)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_6
 spec:
@@ -171,7 +171,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Dumbledore) to (group = Web and group = Gryffindor)
-        nsx-id: "9195"
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy_7
 spec:
@@ -195,7 +195,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Web and group = Gryffindor) to (group = App and group = Gryffindor)
-        nsx-id: "9196"
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy_8
 spec:
@@ -221,7 +221,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Web and group = Hufflepuff) to (group = App and group = Hufflepuff)
-        nsx-id: "9196"
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy_9
 spec:
@@ -247,7 +247,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Web and group = Slytherin) to (group = App and group = Slytherin)
-        nsx-id: "9196"
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy_10
 spec:
@@ -273,7 +273,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Web and group = Gryffindor) to (group = App and group = Gryffindor)
-        nsx-id: "9196"
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy_11
 spec:
@@ -299,7 +299,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Web and group = Hufflepuff) to (group = App and group = Hufflepuff)
-        nsx-id: "9196"
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy_12
 spec:
@@ -325,7 +325,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = Web and group = Slytherin) to (group = App and group = Slytherin)
-        nsx-id: "9196"
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy_13
 spec:
@@ -351,7 +351,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = App and group = Gryffindor) to (group = DB and group = Gryffindor)
-        nsx-id: "9197"
+        nsx-id: "10405"
     creationTimestamp: null
     name: policy_14
 spec:
@@ -377,7 +377,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = App and group = Hufflepuff) to (group = DB and group = Hufflepuff)
-        nsx-id: "9197"
+        nsx-id: "10405"
     creationTimestamp: null
     name: policy_15
 spec:
@@ -403,7 +403,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = App and group = Slytherin) to (group = DB and group = Slytherin)
-        nsx-id: "9197"
+        nsx-id: "10405"
     creationTimestamp: null
     name: policy_16
 spec:
@@ -429,7 +429,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = App and group = Gryffindor) to (group = DB and group = Gryffindor)
-        nsx-id: "9197"
+        nsx-id: "10405"
     creationTimestamp: null
     name: policy_17
 spec:
@@ -455,7 +455,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = App and group = Hufflepuff) to (group = DB and group = Hufflepuff)
-        nsx-id: "9197"
+        nsx-id: "10405"
     creationTimestamp: null
     name: policy_18
 spec:
@@ -481,7 +481,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = App and group = Slytherin) to (group = DB and group = Slytherin)
-        nsx-id: "9197"
+        nsx-id: "10405"
     creationTimestamp: null
     name: policy_19
 spec:

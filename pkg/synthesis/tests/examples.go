@@ -72,7 +72,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-Not-Sly",
-						ID:       9195,
+						ID:       newRuleID + 1,
 						Source:   "DumbledoreNoSly",
 						Dest:     sly,
 						Services: []string{"ANY"},
@@ -80,7 +80,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-To-All",
-						ID:       9196,
+						ID:       newRuleID + 2,
 						Source:   "DumbledoreNoSly",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -215,7 +215,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-all-to-all",
-						ID:       newRuleID,
+						ID:       10230,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -264,7 +264,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-Not-Gryf",
-						ID:       9195,
+						ID:       newRuleID + 1,
 						Source:   dum2,
 						Dest:     gry,
 						Services: []string{"ANY"},
@@ -272,7 +272,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb1-To-All",
-						ID:       9196,
+						ID:       newRuleID + 2,
 						Source:   dum1,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -280,7 +280,7 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb2-To-All",
-						ID:       9196,
+						ID:       newRuleID + 3,
 						Source:   dum2,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -392,7 +392,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Dumbledore-to-all",
-						ID:       10217,
+						ID:       10221,
 						Source:   dum,
 						Dest:     gry,
 						Services: []string{"ANY"},
@@ -400,7 +400,7 @@ var ExampleHogwarts = ExampleSynthesis{
 					},
 					{
 						Name:     "default-deny-env",
-						ID:       10218,
+						ID:       10300,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -415,7 +415,7 @@ var ExampleHogwarts = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Client-Access",
-						ID:       9195,
+						ID:       10400,
 						Source:   "ANY",
 						Dest:     web,
 						Services: []string{"ANY"},
@@ -423,7 +423,7 @@ var ExampleHogwarts = ExampleSynthesis{
 					},
 					{
 						Name:     "Web-To-App-Access",
-						ID:       9196,
+						ID:       10401,
 						Source:   web,
 						Dest:     app,
 						Services: []string{"ANY"},
@@ -431,7 +431,7 @@ var ExampleHogwarts = ExampleSynthesis{
 					},
 					{
 						Name:     "App-To-DB-Access",
-						ID:       9197,
+						ID:       10405,
 						Source:   app,
 						Dest:     db,
 						Services: []string{"ANY"},
@@ -495,7 +495,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 					},
 					{
 						Name:     "default-deny-env",
-						ID:       10218,
+						ID:       10221,
 						Source:   "ANY",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -583,7 +583,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 			},
 			{
 				Name:     "default-deny-env",
-				ID:       10218,
+				ID:       10230,
 				Source:   "ANY",
 				Dest:     "ANY",
 				Services: []string{"ANY"},
@@ -677,7 +677,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Dumb-All",
-						ID:       9195,
+						ID:       newRuleID + 1,
 						Source:   "DumbledoreNoSly",
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -691,7 +691,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Gryffindor-not-Hufflepuff",
-						ID:       newRuleID,
+						ID:       newRuleID + 2,
 						Source:   gry,
 						Dest:     huf,
 						Services: []string{"ANY"},
@@ -699,7 +699,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Gryffindor-All",
-						ID:       9195,
+						ID:       newRuleID + 3,
 						Source:   gry,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -713,7 +713,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Hufflepuff-No-Slytherin",
-						ID:       newRuleID,
+						ID:       newRuleID + 4,
 						Source:   huf,
 						Dest:     sly,
 						Services: []string{"ANY"},
@@ -721,7 +721,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Hufflepuff-All",
-						ID:       9195,
+						ID:       newRuleID + 5,
 						Source:   huf,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -735,7 +735,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				Rules: []data.Rule{
 					{
 						Name:     "Slytherin-no-Gryffindor",
-						ID:       newRuleID,
+						ID:       newRuleID + 6,
 						Source:   sly,
 						Dest:     gry,
 						Services: []string{"ANY"},
@@ -743,7 +743,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 					},
 					{
 						Name:     "Slytherin-All",
-						ID:       9195,
+						ID:       newRuleID + 7,
 						Source:   sly,
 						Dest:     "ANY",
 						Services: []string{"ANY"},
@@ -843,7 +843,7 @@ var andOrOrPolicies = []data.Category{
 			},
 			{
 				Name:     "to-Gryffindor",
-				ID:       10218,
+				ID:       10219,
 				Source:   "ANY",
 				Dest:     "Gryffindor-orOrAnd-no-DB",
 				Services: []string{"ANY"},
@@ -851,7 +851,7 @@ var andOrOrPolicies = []data.Category{
 			},
 			{
 				Name:     "to-Hufflepuff",
-				ID:       10218,
+				ID:       10220,
 				Source:   "ANY",
 				Dest:     "Hufflepuff-orOrAnd-no-DB",
 				Services: []string{"ANY"},
