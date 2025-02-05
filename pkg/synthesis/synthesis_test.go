@@ -27,7 +27,7 @@ const (
 
 type synthesisTest struct {
 	name                  string
-	exData                tests.ExampleSynthesis
+	exData                *tests.ExampleSynthesis
 	allowOnlyFromCategory collector.DfwCategory // category to start the "allow-only" conversion from
 	noHint                bool                  // run also with no hint
 }
@@ -50,58 +50,62 @@ func (synTest *synthesisTest) ID() string {
 	return name
 }
 
+func (synTest *synthesisTest) isSynthesis() bool {
+	return synTest.exData == nil
+}
+
 var groupsByVmsTests = []synthesisTest{
 	{
 		name:                  "Example1c",
-		exData:                tests.Example1c,
+		exData:                &tests.Example1c,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleDumbeldore",
-		exData:                tests.ExampleDumbeldore,
+		exData:                &tests.ExampleDumbeldore,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleTwoDeniesSimple",
-		exData:                tests.ExampleTwoDeniesSimple,
+		exData:                &tests.ExampleTwoDeniesSimple,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleDenyPassSimple",
-		exData:                tests.ExampleDenyPassSimple,
+		exData:                &tests.ExampleDenyPassSimple,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHintsDisjoint",
-		exData:                tests.ExampleHintsDisjoint,
+		exData:                &tests.ExampleHintsDisjoint,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHogwartsSimpler",
-		exData:                tests.ExampleHogwartsSimpler,
+		exData:                &tests.ExampleHogwartsSimpler,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHogwartsNoDumbledore",
-		exData:                tests.ExampleHogwartsNoDumbledore,
+		exData:                &tests.ExampleHogwartsNoDumbledore,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                false,
 	},
 	{
 		name:                  "ExampleHogwarts",
-		exData:                tests.ExampleHogwarts,
+		exData:                &tests.ExampleHogwarts,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                false,
 	},
 	{
 		name:                  "ExampleHogwartsAppCategory",
-		exData:                tests.ExampleHogwarts,
+		exData:                &tests.ExampleHogwarts,
 		allowOnlyFromCategory: collector.AppCategoty,
 		noHint:                false,
 	},
@@ -110,25 +114,32 @@ var groupsByVmsTests = []synthesisTest{
 var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
-		exData: tests.ExampleExprSingleScope,
+		exData: &tests.ExampleExprSingleScope,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprTwoScopes",
-		exData: tests.ExampleExprTwoScopes,
+		exData: &tests.ExampleExprTwoScopes,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprAndConds",
-		exData: tests.ExampleExprAndConds,
+		exData: &tests.ExampleExprAndConds,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprOrConds",
-		exData: tests.ExampleExprOrConds,
+		exData: &tests.ExampleExprOrConds,
 		noHint: false,
 	},
 }
+var liveNsxTest = &synthesisTest{
+	name:                  "fromCollection",
+	exData:                nil,
+	allowOnlyFromCategory: collector.MinCategory(),
+	noHint:                true,
+}
+
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,7 +187,9 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	require.Nil(t, err)
 	testID := synTest.ID()
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", testID+".txt")
-	compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
+	if synTest.isSynthesis() {
+		compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
+	}
 }
 
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
@@ -264,45 +277,36 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 	}
 
 	rc, err := collector.CollectResources(server)
-	if err != nil {
-		t.Errorf("CollectResources() error = %v", err)
-		return
-	}
-	if rc == nil {
-		t.Errorf(common.ErrNoResources)
-		return
-	}
-	outDir := path.Join("out", "from_collection")
-	err = NSXToK8sSynthesis(rc, outDir, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
 	require.Nil(t, err)
-	// addDebugFiles(t, rc, abstractModel, outDir)
-	require.Nil(t, err)
+	require.Nil(t, rc)
+
+	runPreprocessing(liveNsxTest, t, rc)
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)){
+func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	logging.Init(logging.HighVerbosity)
 	for _, test := range groupsByVmsTests {
 		rc := data.ExamplesGeneration(&test.exData.FromNSX)
 		t.Run(test.name, func(t *testing.T) {
-			f(&test,t, rc)
+			f(&test, t, rc)
 		},
 		)
 	}
 }
 func TestConvertToAbsract(t *testing.T) {
-	parallelRun(t,runConvertToAbstract)
+	parallelRun(t, runConvertToAbstract)
 }
 func TestK8SSynthesis(t *testing.T) {
-	parallelRun(t,runK8SSynthesis)
+	parallelRun(t, runK8SSynthesis)
 }
 
 func TestPreprocessing(t *testing.T) {
-	parallelRun(t,runPreprocessing)
+	parallelRun(t, runPreprocessing)
 }
 func TestCompareNSXConnectivity(t *testing.T) {
-	parallelRun(t,runCompareNSXConnectivity)
+	parallelRun(t, runCompareNSXConnectivity)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +317,8 @@ const (
 	OutputComparison testMode = iota // compare actual output to expected output
 	OutputGeneration                 // generate expected output
 )
-// change runTestMode to generate output results: 
+
+// change runTestMode to generate output results:
 const runTestMode = OutputComparison
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
@@ -358,7 +363,6 @@ func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutput
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
