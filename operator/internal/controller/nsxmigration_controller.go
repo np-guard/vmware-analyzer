@@ -86,7 +86,7 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	}
 
 	// Let's just set the status as Unknown when no status is available
-	if len(migratensx.Status.Conditions) == 0 {
+	/*if len(migratensx.Status.Conditions) == 0 {
 		meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableNSXMigration, Status: metav1.ConditionUnknown, Reason: "Reconciling", Message: "Starting reconciliation"})
 		if err = r.Status().Update(ctx, migratensx); err != nil {
 			log.Error(err, "Failed to update migratensx status")
@@ -102,7 +102,7 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			log.Error(err, "Failed to re-fetch migratensx")
 			return ctrl.Result{}, err
 		}
-	}
+	}*/
 
 	// Let's add a finalizer. Then, we can define some operations which should
 	// occur before the custom resource is deleted.
