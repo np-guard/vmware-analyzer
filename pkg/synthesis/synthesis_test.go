@@ -51,7 +51,7 @@ func (synTest *synthesisTest) ID() string {
 }
 
 func (synTest *synthesisTest) isSynthesis() bool {
-	return synTest.exData == nil
+	return synTest.exData != nil
 }
 
 var groupsByVmsTests = []synthesisTest{
@@ -139,6 +139,12 @@ var liveNsxTest = &synthesisTest{
 	allowOnlyFromCategory: collector.MinCategory(),
 	noHint:                true,
 }
+var resourceFileTest = &synthesisTest{
+	name:                  "fromResourceFile",
+	exData:                nil,
+	allowOnlyFromCategory: collector.MinCategory(),
+	noHint:                true,
+}
 
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
 
@@ -152,6 +158,10 @@ func getTestsDirExpectedOut() string {
 func getTestsDirActualOut() string {
 	currentDir, _ := os.Getwd()
 	return filepath.Join(currentDir, actualOutput)
+}
+func getTestsDirIn() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, "tests")
 }
 
 func (synTest *synthesisTest) outDir() string {
@@ -203,7 +213,9 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), actualOutput)
 	require.Nil(t, err)
-	compareOrRegenerateOutputPerTest(t, actualOutput, expectedOutputFileName, synTest.name)
+	if synTest.isSynthesis() {
+		compareOrRegenerateOutputPerTest(t, actualOutput, expectedOutputFileName, synTest.name)
+	}
 }
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
@@ -218,7 +230,9 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	testID := synTest.ID()
 	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
-	compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	if synTest.isSynthesis() {
+		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	}
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
@@ -262,27 +276,39 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// to be run only on "live nsx" mode
-// no expected output is tested
-// only generates
-// (1) converted config into k8s network policies
-// (2) equiv config in NSX with allow-only DFW rules, as derived from the abstract model
-// and validates that connectivity of orign and new NSX configs are the same
-func TestCollectAndConvertToAbstract(t *testing.T) {
+func TestLiveNSXServer(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	server, err := collector.GetNSXServerDate("", "", "")
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
-
 	rc, err := collector.CollectResources(server)
 	require.Nil(t, err)
-	require.Nil(t, rc)
-
-	runPreprocessing(liveNsxTest, t, rc)
+	require.NotNil(t, rc)
+	serialRun(liveNsxTest, t, rc)
 }
 
+func TestNsxResourceFile(t *testing.T) {
+	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
+	b, err := os.ReadFile(inputFile)
+	require.Nil(t, err)
+	rc, err := collector.FromJSONString(b)
+	require.Nil(t, err)
+	require.NotNil(t, rc)
+	if len(rc.DomainList) == 0 {
+		fmt.Printf("%s has no domains\n", inputFile)
+		return
+	}
+	serialRun(resourceFileTest, t, rc)
+}
+
+func serialRun(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel){
+	runPreprocessing(synTest, t, rc)
+	runConvertToAbstract(synTest, t, rc)
+	runK8SSynthesis(synTest, t, rc)
+	runCompareNSXConnectivity(synTest, t, rc)
+}
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
