@@ -13,6 +13,11 @@ import (
 // convert symbolic rules to allow only functionality
 /////////////////////////////////////////////////////////////////////////////////////
 
+// todo w.r.t. hints *symbolicexpr.Hints at the moment there is no differentiating between tags and groups.
+//  There are a few questions here:
+//  Is it guaranteed that groups and tags do not have the same name?
+//  Does it make sense to define a tag disjoint to a group (or vice versa)?
+
 func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, allowOnlyFromCategory collector.DfwCategory,
 	hints *symbolicexpr.Hints) symbolicPolicy {
