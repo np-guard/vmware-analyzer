@@ -1,0 +1,18 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+	0. action: allow paths: All Connections from (*) to (tag = Slytherin)
+All Connections from (*) to (tag != DB)
+	1. action: allow paths: All Connections from (*) to (tag = Gryffindor)
+All Connections from (*) to (tag != DB)
+	2. action: allow paths: All Connections from (*) to (tag = Hufflepuff)
+All Connections from (*) to (tag != DB)
+	3. action: deny paths: All Connections from (*) to (*)
+symbolic outbound rules:
+	0. action: allow paths: All Connections from (*) to (tag = Slytherin)
+All Connections from (*) to (tag != DB)
+	1. action: allow paths: All Connections from (*) to (tag = Gryffindor)
+All Connections from (*) to (tag != DB)
+	2. action: allow paths: All Connections from (*) to (tag = Hufflepuff)
+All Connections from (*) to (tag != DB)
+	3. action: deny paths: All Connections from (*) to (*)

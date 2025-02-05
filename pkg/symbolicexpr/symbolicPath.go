@@ -56,6 +56,7 @@ func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
+// remove any path that is a subset of another part in paths
 func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
@@ -154,26 +155,26 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	tarmAny := Conjunction{tautology{}}
-	srcTerms := getAtomicTermsForGroups(rule.SrcGroups)
-	dstTerms := getAtomicTermsForGroups(rule.DstGroups)
+	srcConjunctions := getConjunctionForGroups(rule.SrcGroups)
+	dstConjunctions := getConjunctionForGroups(rule.DstGroups)
 	switch {
 	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
 		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: tarmAny, Conn: rule.Conn})
 	case rule.IsAllSrcGroups:
-		for _, dstTerm := range dstTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: Conjunction{dstTerm},
+		for _, dstConjunction := range dstConjunctions {
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: *dstConjunction,
 				Conn: rule.Conn})
 		}
 	case rule.IsAllDstGroups:
-		for _, srcTerm := range srcTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: Conjunction{srcTerm}, Dst: tarmAny,
+		for _, srcConjunction := range srcConjunctions {
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction, Dst: tarmAny,
 				Conn: rule.Conn})
 		}
 	default:
-		for _, srcTerm := range srcTerms {
-			for _, dstTerm := range dstTerms {
-				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: Conjunction{srcTerm},
-					Dst: Conjunction{dstTerm}, Conn: rule.Conn})
+		for _, srcConjunction := range srcConjunctions {
+			for _, dstConjunction := range dstConjunctions {
+				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
+					Dst: *dstConjunction, Conn: rule.Conn})
 			}
 		}
 	}
