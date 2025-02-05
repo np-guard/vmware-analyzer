@@ -1,10 +1,10 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	All Connections from (*) to (group = Web)
-	All Connections from (group = Web) to (group = App)
-	All Connections from (group = App) to (group = DB)
+	src: (*) dst: (group = Web) conn: All Connections
+	src: (group = Web) dst: (group = App) conn: All Connections
+	src: (group = App) dst: (group = DB) conn: All Connections
 outbound rules
-	All Connections from (*) to (group = Web)
-	All Connections from (group = Web) to (group = App)
-	All Connections from (group = App) to (group = DB)
+	src: (*) dst: (group = Web) conn: All Connections
+	src: (group = Web) dst: (group = App) conn: All Connections
+	src: (group = App) dst: (group = DB) conn: All Connections

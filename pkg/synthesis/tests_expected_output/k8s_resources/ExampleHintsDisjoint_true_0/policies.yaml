@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore1 and group != Dumbledore2) to (group != Slytherin)
+        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_0
@@ -26,7 +26,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore1) to (group != Slytherin and group != Gryffindor)
+        description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_1
@@ -50,7 +50,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore1 and group != Dumbledore2) to (group != Slytherin)
+        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_2
@@ -74,7 +74,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore1) to (group != Slytherin and group != Gryffindor)
+        description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_3
@@ -98,7 +98,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore2 and group != Dumbledore1) to (group != Gryffindor)
+        description: 'src: (group = Dumbledore2 and group != Dumbledore1) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
     name: policy_4
@@ -122,7 +122,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore2) to (group != Slytherin and group != Gryffindor)
+        description: 'src: (group = Dumbledore2) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
     name: policy_5
@@ -146,7 +146,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore2 and group != Dumbledore1) to (group != Gryffindor)
+        description: 'src: (group = Dumbledore2 and group != Dumbledore1) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
     name: policy_6
@@ -170,7 +170,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Dumbledore2) to (group != Slytherin and group != Gryffindor)
+        description: 'src: (group = Dumbledore2) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
     name: policy_7

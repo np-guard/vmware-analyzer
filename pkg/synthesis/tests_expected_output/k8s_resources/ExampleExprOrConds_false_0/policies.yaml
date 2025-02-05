@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Slytherin)
+        description: 'src: (*) dst: (tag = Slytherin) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_0
@@ -21,7 +21,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag != DB)
+        description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_1
@@ -40,7 +40,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Slytherin)
+        description: 'src: (*) dst: (tag = Slytherin) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_2
@@ -59,7 +59,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag != DB)
+        description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_3
@@ -78,7 +78,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Gryffindor)
+        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
     name: policy_4
@@ -97,7 +97,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag != DB)
+        description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
     name: policy_5
@@ -116,7 +116,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Gryffindor)
+        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
     name: policy_6
@@ -135,7 +135,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag != DB)
+        description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
     name: policy_7
@@ -154,7 +154,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Hufflepuff)
+        description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_8
@@ -173,7 +173,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag != DB)
+        description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_9
@@ -192,7 +192,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Hufflepuff)
+        description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_10
@@ -211,7 +211,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag != DB)
+        description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_11

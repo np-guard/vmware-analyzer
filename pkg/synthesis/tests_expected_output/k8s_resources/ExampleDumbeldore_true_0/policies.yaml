@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = DumbledoreAll) to (*)
+        description: 'src: (group = DumbledoreAll) dst: (*) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_0
@@ -21,7 +21,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = DumbledoreAll) to (*)
+        description: 'src: (group = DumbledoreAll) dst: (*) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_1
@@ -40,7 +40,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = DumbledoreNoSly) to (group != Slytherin)
+        description: 'src: (group = DumbledoreNoSly) dst: (group != Slytherin) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_2
@@ -62,7 +62,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = DumbledoreNoSly) to (group != Slytherin)
+        description: 'src: (group = DumbledoreNoSly) dst: (group != Slytherin) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_3

@@ -1,10 +1,10 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	All Connections from (*) to (tag = Slytherin and tag != DB)
-	All Connections from (*) to (tag = Gryffindor and tag != DB)
-	All Connections from (*) to (tag = Hufflepuff and tag != DB)
+	src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections
+	src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections
+	src: (*) dst: (tag = Hufflepuff and tag != DB) conn: All Connections
 outbound rules
-	All Connections from (*) to (tag = Slytherin and tag != DB)
-	All Connections from (*) to (tag = Gryffindor and tag != DB)
-	All Connections from (*) to (tag = Hufflepuff and tag != DB)
+	src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections
+	src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections
+	src: (*) dst: (tag = Hufflepuff and tag != DB) conn: All Connections

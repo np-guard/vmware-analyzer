@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Slytherin) to (group != Dumbledore1 and group != Dumbledore2)
+        description: 'src: (group = Slytherin) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
         nsx-id: "3"
     creationTimestamp: null
     name: policy_0
@@ -26,7 +26,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Slytherin) to (group != Dumbledore1 and group != Dumbledore2)
+        description: 'src: (group = Slytherin) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
         nsx-id: "3"
     creationTimestamp: null
     name: policy_1
@@ -50,7 +50,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Gryffindor) to (group != Dumbledore1 and group != Dumbledore2)
+        description: 'src: (group = Gryffindor) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
         nsx-id: "4"
     creationTimestamp: null
     name: policy_2
@@ -74,7 +74,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Gryffindor) to (group != Dumbledore1 and group != Dumbledore2)
+        description: 'src: (group = Gryffindor) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
         nsx-id: "4"
     creationTimestamp: null
     name: policy_3
