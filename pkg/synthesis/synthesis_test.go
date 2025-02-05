@@ -160,8 +160,7 @@ func TestDoNotAllowSameName(t *testing.T) {
 	}
 }
 
-func runPreprocessing(synTest *synthesisTest, t *testing.T) {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err := parser.RunParser()
 	require.Nil(t, err)
@@ -180,8 +179,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T) {
 	compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
 }
 
-func runConvertToAbstract(synTest *synthesisTest, t *testing.T) {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	testID := synTest.ID()
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", testID+".txt")
@@ -195,8 +193,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T) {
 	compareOrRegenerateOutputPerTest(t, actualOutput, expectedOutputFileName, synTest.name)
 }
 
-func runK8SSynthesis(synTest *synthesisTest, t *testing.T) {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
+func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
@@ -211,9 +208,8 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T) {
 	compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 }
 
-func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T) {
+func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	debugDir := synTest.debugDir()
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
 	// store the original NSX resources in JSON, for debugging:
 	jsonOut, err := rc.ToJSONString()
 	require.Nil(t, err)
@@ -285,15 +281,15 @@ func TestCollectAndConvertToAbstract(t *testing.T) {
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T)){
+func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)){
 	logging.Init(logging.HighVerbosity)
 	for _, test := range groupsByVmsTests {
+		rc := data.ExamplesGeneration(&test.exData.FromNSX)
 		t.Run(test.name, func(t *testing.T) {
-			f(&test,t)
+			f(&test,t, rc)
 		},
 		)
 	}
-
 }
 func TestConvertToAbsract(t *testing.T) {
 	parallelRun(t,runConvertToAbstract)
