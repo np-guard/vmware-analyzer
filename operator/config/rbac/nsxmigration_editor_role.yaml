@@ -1,16 +1,16 @@
-# permissions for end users to edit migratensxes.
+# permissions for end users to edit nsxmigrations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/managed-by: kustomize
-  name: migratensx-editor-role
+  name: nsxmigration-editor-role
 rules:
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes
+  - nsxmigrations
   verbs:
   - create
   - delete
@@ -22,6 +22,6 @@ rules:
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes/status
+  - nsxmigrations/status
   verbs:
   - get

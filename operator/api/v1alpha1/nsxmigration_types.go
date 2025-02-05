@@ -24,8 +24,8 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// MigrateNSXSpec defines the desired state of MigrateNSX
-type MigrateNSXSpec struct {
+// NSXMigrationSpec defines the desired state of NSXMigration
+type NSXMigrationSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
@@ -36,8 +36,8 @@ type MigrateNSXSpec struct {
 	Secret core.ObjectReference `json:"secret" ref:"Secret"`
 }
 
-// MigrateNSXStatus defines the observed state of MigrateNSX
-type MigrateNSXStatus struct {
+// NSXMigrationStatus defines the observed state of NSXMigration
+type NSXMigrationStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
@@ -58,25 +58,25 @@ type MigrateNSXStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 
-// MigrateNSX is the Schema for the migratensxes API
+// NSXMigration is the Schema for the nsxmigrations API
 // +kubebuilder:subresource:status
-type MigrateNSX struct {
+type NSXMigration struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   MigrateNSXSpec   `json:"spec,omitempty"`
-	Status MigrateNSXStatus `json:"status,omitempty"`
+	Spec   NSXMigrationSpec   `json:"spec,omitempty"`
+	Status NSXMigrationStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// MigrateNSXList contains a list of MigrateNSX
-type MigrateNSXList struct {
+// NSXMigrationList contains a list of NSXMigration
+type NSXMigrationList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []MigrateNSX `json:"items"`
+	Items           []NSXMigration `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&MigrateNSX{}, &MigrateNSXList{})
+	SchemeBuilder.Register(&NSXMigration{}, &NSXMigrationList{})
 }

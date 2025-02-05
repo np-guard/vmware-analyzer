@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.16.1
-  name: migratensxs.nsx.npguard.io
+  name: nsxmigrations.nsx.npguard.io
 spec:
   group: nsx.npguard.io
   names:
-    kind: MigrateNSX
-    listKind: MigrateNSXList
-    plural: migratensxs
-    singular: migratensx
+    kind: NSXMigration
+    listKind: NSXMigrationList
+    plural: nsxmigrations
+    singular: nsxmigration
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: MigrateNSX is the Schema for the migratensxes API
+        description: NSXMigration is the Schema for the nsxmigrations API
         properties:
           apiVersion:
             description: |-
@@ -37,7 +37,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: MigrateNSXSpec defines the desired state of MigrateNSX
+            description: NSXMigrationSpec defines the desired state of NSXMigration
             properties:
               secret:
                 description: |-
@@ -91,7 +91,7 @@ spec:
             - secret
             type: object
           status:
-            description: MigrateNSXStatus defines the observed state of MigrateNSX
+            description: NSXMigrationStatus defines the observed state of NSXMigration
             properties:
               conditions:
                 description: Conditions store the status conditions of the MigrateNSX

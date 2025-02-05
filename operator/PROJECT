@@ -17,7 +17,7 @@ resources:
   controller: true
   domain: npguard.io
   group: nsx
-  kind: MigrateNSX
+  kind: NSXMigration
   path: github.com/np-guard/vmware-analyzer/api/v1alpha1
   version: v1alpha1
 version: "3"

@@ -7,7 +7,7 @@ rules:
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes
+  - nsxmigrations
   verbs:
   - create
   - delete
@@ -19,13 +19,13 @@ rules:
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes/finalizers
+  - nsxmigrations/finalizers
   verbs:
   - update
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes/status
+  - nsxmigrations/status
   verbs:
   - get
   - patch

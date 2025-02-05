@@ -1,16 +1,16 @@
-# permissions for end users to view migratensxes.
+# permissions for end users to view nsxmigrations.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/managed-by: kustomize
-  name: migratensx-viewer-role
+  name: nsxmigration-viewer-role
 rules:
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes
+  - nsxmigrations
   verbs:
   - get
   - list
@@ -18,6 +18,6 @@ rules:
 - apiGroups:
   - nsx.npguard.io
   resources:
-  - migratensxes/status
+  - nsxmigrations/status
   verbs:
   - get

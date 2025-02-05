@@ -144,12 +144,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.MigrateNSXReconciler{
+	if err = (&controller.NSXMigrationReconciler{
 		Client:   mgr.GetClient(),
 		Scheme:   mgr.GetScheme(),
-		Recorder: mgr.GetEventRecorderFor("migratensx-controller"),
+		Recorder: mgr.GetEventRecorderFor("NSXMigration-controller"),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "MigrateNSX")
+		setupLog.Error(err, "unable to create controller", "controller", "NSXMigration")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

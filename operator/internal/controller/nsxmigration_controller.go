@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 
-	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,46 +30,48 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
 )
 
 const migratensxFinalizer = "nsx.npguard.io/finalizer"
 
 // Definitions to manage status conditions
 const (
-	// typeAvailableMigrateNSX represents the status of the Deployment reconciliation
-	typeAvailableMigrateNSX = "Available"
-	// typeDegradedMigrateNSX represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
-	typeDegradedMigrateNSX = "Degraded"
+	// typeAvailableNSXMigration represents the status of the Deployment reconciliation
+	typeAvailableNSXMigration = "Available"
+	// typeDegradedNSXMigration represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
+	typeDegradedNSXMigration = "Degraded"
 )
 
-// MigrateNSXReconciler reconciles a MigrateNSX object
-type MigrateNSXReconciler struct {
+// NSXMigrationReconciler reconciles a NSXMigration object
+type NSXMigrationReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	// The recorder will be used within the reconcile method of the controller to emit events
 	Recorder record.EventRecorder
 }
 
-// +kubebuilder:rbac:groups=nsx.npguard.io,resources=migratensxes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=nsx.npguard.io,resources=migratensxes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=nsx.npguard.io,resources=migratensxes/finalizers,verbs=update
+// +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(user): Modify the Reconcile function to compare the state specified by
-// the MigrateNSX object against the actual cluster state, and then
+// the NSXMigration object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
-func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
 	// Fetch the Memcached instance
 	// The purpose is check if the Custom Resource for the Kind Memcached
 	// is applied on the cluster if not we return nil to stop the reconciliation
-	migratensx := &nsxv1alpha1.MigrateNSX{}
+	migratensx := &nsxv1alpha1.NSXMigration{}
 	err := r.Get(ctx, req.NamespacedName, migratensx)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -87,7 +88,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	// Let's just set the status as Unknown when no status is available
 	if len(migratensx.Status.Conditions) == 0 {
-		meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableMigrateNSX, Status: metav1.ConditionUnknown, Reason: "Reconciling", Message: "Starting reconciliation"})
+		meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableNSXMigration, Status: metav1.ConditionUnknown, Reason: "Reconciling", Message: "Starting reconciliation"})
 		if err = r.Status().Update(ctx, migratensx); err != nil {
 			log.Error(err, "Failed to update migratensx status")
 			return ctrl.Result{}, err
@@ -108,7 +109,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	// occur before the custom resource is deleted.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers
 	if !controllerutil.ContainsFinalizer(migratensx, migratensxFinalizer) {
-		log.Info("Adding Finalizer for Memcached")
+		log.Info("Adding Finalizer for NSXMigration")
 		if ok := controllerutil.AddFinalizer(migratensx, migratensxFinalizer); !ok {
 			log.Error(err, "Failed to add finalizer into the custom resource")
 			return ctrl.Result{Requeue: true}, nil
@@ -128,7 +129,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 			log.Info("Performing Finalizer Operations for MigrateNSX before delete CR")
 
 			// Let's add here a status "Downgrade" to reflect that this resource began its process to be terminated.
-			meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeDegradedMigrateNSX,
+			meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeDegradedNSXMigration,
 				Status: metav1.ConditionUnknown, Reason: "Finalizing",
 				Message: fmt.Sprintf("Performing finalizer operations for the custom resource: %s ", migratensx.Name)})
 
@@ -154,7 +155,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				return ctrl.Result{}, err
 			}
 
-			meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeDegradedMigrateNSX,
+			meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeDegradedNSXMigration,
 				Status: metav1.ConditionTrue, Reason: "Finalizing",
 				Message: fmt.Sprintf("Finalizer operations for custom resource %s name were successfully accomplished", migratensx.Name)})
 
@@ -185,7 +186,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		log.Error(err, "Failed to run nsxMigration")
 
 		// The following implementation will update the status
-		meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableMigrateNSX,
+		meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableNSXMigration,
 			Status: metav1.ConditionFalse, Reason: "Reconciling",
 			Message: fmt.Sprintf("Failed to run nsxMigration for the custom resource (%s): (%s)", migratensx.Name, err)})
 
@@ -198,7 +199,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// The following implementation will update the status
-	meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableMigrateNSX,
+	meta.SetStatusCondition(&migratensx.Status.Conditions, metav1.Condition{Type: typeAvailableNSXMigration,
 		Status: metav1.ConditionTrue, Reason: "Reconciling",
 		Message: fmt.Sprintf("migrate nsx for migration spec at %s completed successfully", migratensx.Name)})
 
@@ -211,7 +212,7 @@ func (r *MigrateNSXReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-func (r *MigrateNSXReconciler) nsxMigration(cr *nsxv1alpha1.MigrateNSX) error {
+func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration) error {
 	// TODO: initial step: connect to NSX host from spec, validate connection is OK, print to log the results.
 
 	// TODO: implement
@@ -219,7 +220,7 @@ func (r *MigrateNSXReconciler) nsxMigration(cr *nsxv1alpha1.MigrateNSX) error {
 }
 
 // finalizeMemcached will perform the required operations before delete the CR.
-func (r *MigrateNSXReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alpha1.MigrateNSX) {
+func (r *NSXMigrationReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alpha1.NSXMigration) {
 	// TODO(user): Add the cleanup steps that the operator
 	// needs to do before the CR can be deleted. Examples
 	// of finalizers include performing backups and deleting
@@ -239,10 +240,10 @@ func (r *MigrateNSXReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alpha
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *MigrateNSXReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *NSXMigrationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&nsxv1alpha1.MigrateNSX{}). // MigrateNSX type as the primary resource to watch
-		// For each MigrateNSX type Add/Update/Delete event the reconcile loop will be sent a reconcile Request (a namespace/name key) for that MigrateNSX object.
+		For(&nsxv1alpha1.NSXMigration{}). // NSXMigration type as the primary resource to watch
+		// For each NSXMigration type Add/Update/Delete event the reconcile loop will be sent a reconcile Request (a namespace/name key) for that NSXMigration object.
 		WithOptions(controller.Options{MaxConcurrentReconciles: 2}).
 		Complete(r)
 }
