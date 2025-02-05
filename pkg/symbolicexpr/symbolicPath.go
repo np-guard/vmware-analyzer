@@ -21,9 +21,9 @@ func (path *SymbolicPath) disjointPaths(other *SymbolicPath, hints *Hints) bool 
 		path.Dst.disjoint(&other.Dst, hints)
 }
 
-func (path *SymbolicPath) isSubset(other *SymbolicPath, hints *Hints) bool {
-	return path.Conn.IsSubset(other.Conn) && path.Src.isSubset(&other.Src, hints) &&
-		path.Dst.isSubset(&other.Dst, hints)
+func (path *SymbolicPath) isSuperset(other *SymbolicPath, hints *Hints) bool {
+	return other.Conn.IsSubset(path.Conn) && path.Src.isSuperset(&other.Src, hints) &&
+		path.Dst.isSuperset(&other.Dst, hints)
 }
 
 func (paths *SymbolicPaths) add(newPath *SymbolicPath, hints *Hints) *SymbolicPaths {
@@ -56,6 +56,7 @@ func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
+// remove any path that is a subset of another part in paths
 func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
@@ -64,7 +65,7 @@ func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.isSubset(outerPath, hints) && !(outerPath.isSubset(innerPath, hints) && outerIndex < innerIndex) {
+			if innerPath.isSuperset(outerPath, hints) && !(outerPath.isSuperset(innerPath, hints) && outerIndex < innerIndex) {
 				addPath = false
 				break
 			}
@@ -154,26 +155,26 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	tarmAny := Conjunction{tautology{}}
-	srcTerms := getAtomicTermsForGroups(rule.SrcGroups)
-	dstTerms := getAtomicTermsForGroups(rule.DstGroups)
+	srcConjunctions := getConjunctionForGroups(rule.SrcGroups)
+	dstConjunctions := getConjunctionForGroups(rule.DstGroups)
 	switch {
 	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
 		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: tarmAny, Conn: rule.Conn})
 	case rule.IsAllSrcGroups:
-		for _, dstTerm := range dstTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: Conjunction{dstTerm},
+		for _, dstConjunction := range dstConjunctions {
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: *dstConjunction,
 				Conn: rule.Conn})
 		}
 	case rule.IsAllDstGroups:
-		for _, srcTerm := range srcTerms {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: Conjunction{srcTerm}, Dst: tarmAny,
+		for _, srcConjunction := range srcConjunctions {
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction, Dst: tarmAny,
 				Conn: rule.Conn})
 		}
 	default:
-		for _, srcTerm := range srcTerms {
-			for _, dstTerm := range dstTerms {
-				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: Conjunction{srcTerm},
-					Dst: Conjunction{dstTerm}, Conn: rule.Conn})
+		for _, srcConjunction := range srcConjunctions {
+			for _, dstConjunction := range dstConjunctions {
+				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
+					Dst: *dstConjunction, Conn: rule.Conn})
 			}
 		}
 	}

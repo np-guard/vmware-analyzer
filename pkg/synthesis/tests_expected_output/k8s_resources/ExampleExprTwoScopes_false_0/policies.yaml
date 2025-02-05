@@ -1,0 +1,469 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Gryffindor) to (tag = Web and tag = Gryffindor)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_0
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Hufflepuff) to (tag = Web and tag = Hufflepuff)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_1
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Slytherin) to (tag = Web and tag = Slytherin)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_2
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Gryffindor) to (tag = Web and tag = Gryffindor)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_3
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Hufflepuff) to (tag = Web and tag = Hufflepuff)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_4
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Slytherin) to (tag = Web and tag = Slytherin)
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy_5
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Web and tag = Gryffindor) to (tag = App and tag = Gryffindor)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_6
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Web and tag = Hufflepuff) to (tag = App and tag = Hufflepuff)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_7
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Web and tag = Slytherin) to (tag = App and tag = Slytherin)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_8
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Web and tag = Gryffindor) to (tag = App and tag = Gryffindor)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_9
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__App
+              operator: Exists
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Web and tag = Hufflepuff) to (tag = App and tag = Hufflepuff)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_10
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__App
+              operator: Exists
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = Web and tag = Slytherin) to (tag = App and tag = Slytherin)
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy_11
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__App
+              operator: Exists
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = App and tag = Gryffindor) to (tag = DB and tag = Gryffindor)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_12
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__DB
+                      operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__App
+              operator: Exists
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = App and tag = Hufflepuff) to (tag = DB and tag = Hufflepuff)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_13
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__DB
+                      operator: Exists
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__App
+              operator: Exists
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = App and tag = Slytherin) to (tag = DB and tag = Slytherin)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_14
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__DB
+                      operator: Exists
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__App
+              operator: Exists
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = App and tag = Gryffindor) to (tag = DB and tag = Gryffindor)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_15
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__DB
+              operator: Exists
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = App and tag = Hufflepuff) to (tag = DB and tag = Hufflepuff)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_16
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__DB
+              operator: Exists
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: All Connections from (tag = App and tag = Slytherin) to (tag = DB and tag = Slytherin)
+        nsx-id: "9197"
+    creationTimestamp: null
+    name: policy_17
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__DB
+              operator: Exists
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: noNsxID
+    creationTimestamp: null
+    name: defaultDeny
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

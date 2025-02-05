@@ -1,0 +1,22 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+	0. action: deny paths: All Connections from (tag = Dumbledore) to (tag = Slytherin)
+	1. action: allow paths: All Connections from (tag = Dumbledore) to (*)
+	2. action: deny paths: All Connections from (tag = Gryffindor) to (tag = Hufflepuff)
+	3. action: allow paths: All Connections from (tag = Gryffindor) to (*)
+	4. action: deny paths: All Connections from (tag = Hufflepuff) to (tag = Slytherin)
+	5. action: allow paths: All Connections from (tag = Hufflepuff) to (*)
+	6. action: deny paths: All Connections from (tag = Slytherin) to (tag = Gryffindor)
+	7. action: allow paths: All Connections from (tag = Slytherin) to (*)
+	8. action: deny paths: All Connections from (*) to (*)
+symbolic outbound rules:
+	0. action: deny paths: All Connections from (tag = Dumbledore) to (tag = Slytherin)
+	1. action: allow paths: All Connections from (tag = Dumbledore) to (*)
+	2. action: deny paths: All Connections from (tag = Gryffindor) to (tag = Hufflepuff)
+	3. action: allow paths: All Connections from (tag = Gryffindor) to (*)
+	4. action: deny paths: All Connections from (tag = Hufflepuff) to (tag = Slytherin)
+	5. action: allow paths: All Connections from (tag = Hufflepuff) to (*)
+	6. action: deny paths: All Connections from (tag = Slytherin) to (tag = Gryffindor)
+	7. action: allow paths: All Connections from (tag = Slytherin) to (*)
+	8. action: deny paths: All Connections from (*) to (*)

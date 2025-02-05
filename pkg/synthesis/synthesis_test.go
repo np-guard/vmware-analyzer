@@ -35,7 +35,7 @@ type synthesisTest struct {
 func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
 	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
 	if !synTest.noHint {
-		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroups
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroupsTags
 	}
 	return hintsParm
 }
@@ -313,7 +313,7 @@ func serialRun(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesCont
 
 func parallelRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	logging.Init(logging.HighVerbosity)
-	for _, test := range groupsByVmsTests {
+	for _, test := range allTests {
 		rc := data.ExamplesGeneration(&test.exData.FromNSX)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
@@ -388,28 +388,4 @@ func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutput
 // comparison should be insensitive to line comparators; cleaning strings from line comparators
 func cleanStr(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////
-
-// todo tmp until expr fully supported by synthesis
-func (synTest *synthesisTest) runTmpWithExpr() {
-	fmt.Printf("\ntest:%v\n~~~~~~~~~~~~~~~~~~~~~~~~~~~\nrc.VirtualMachineList:\n", synTest.name)
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	for i := range rc.DomainList[0].Resources.GroupList {
-		expr := rc.DomainList[0].Resources.GroupList[i].Expression
-		fmt.Printf("group: %v ", rc.DomainList[0].Resources.GroupList[i].Name())
-		if expr != nil {
-			fmt.Printf("of expression %v\n", rc.DomainList[0].Resources.GroupList[i].Expression.String())
-		} else {
-			fmt.Printf("has no expression; must be defined by vms\n")
-		}
-	}
-}
-
-func TestTmpExpr(t *testing.T) {
-	for i := range allTests {
-		test := &allTests[i]
-		test.runTmpWithExpr()
-	}
 }
