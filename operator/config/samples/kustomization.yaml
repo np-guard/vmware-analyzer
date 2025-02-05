@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- nsx_v1alpha1_migratensx.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples
