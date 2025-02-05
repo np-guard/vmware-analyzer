@@ -39,10 +39,10 @@ func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
 	}
 	return hintsParm
 }
-func (synTest *synthesisTest) ID(tName string) string {
-	name := fmt.Sprintf("%s_%s", synTest.name, tName)
+func (synTest *synthesisTest) ID() string {
+	name := synTest.name
 	if synTest.noHint {
-		name += "NoHint"
+		name += "_NoHint"
 	}
 	if synTest.allowOnlyFromCategory > 0 {
 		name = fmt.Sprintf("%v_%s", name, synTest.allowOnlyFromCategory)
@@ -144,7 +144,7 @@ func getTestsDirActualOut() string {
 }
 
 func (synTest *synthesisTest) outDir() string {
-	return path.Join(getTestsDirActualOut(), synTest.ID(""))
+	return path.Join(getTestsDirActualOut(), synTest.ID())
 }
 func (synTest *synthesisTest) debugDir() string {
 	return path.Join(synTest.outDir(), "debug_files")
@@ -175,14 +175,14 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T) {
 	fmt.Println(preProcessOutput)
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
 	require.Nil(t, err)
-	testID := synTest.ID("PreProcessing")
+	testID := synTest.ID()
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", testID+".txt")
 	compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
 }
 
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	testID := synTest.ID("ConvertToAbstract")
+	testID := synTest.ID()
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
 	expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", testID+".txt")
 	require.Nil(t, err)
@@ -197,18 +197,18 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T) {
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T) {
 	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	testID := synTest.ID("K8S")
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
-	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
-	compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	// run netpol-analyzer, the connectivity is kept, for debugging:
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
 	require.Nil(t, err)
 	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)
+	testID := synTest.ID()
+	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, testID)
+	compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T) {
