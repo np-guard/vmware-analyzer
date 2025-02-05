@@ -11,7 +11,7 @@ import (
 const tagConst = "tag"
 
 // todo: support scope as well
-func newTagTerm(tagName string, neg bool) *tagAtomicTerm {
+func NewTagTerm(tagName string, neg bool) *tagAtomicTerm {
 	return &tagAtomicTerm{atomicTerm: atomicTerm{neg: neg}, tag: &resources.Tag{Tag: tagName}}
 }
 

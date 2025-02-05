@@ -183,7 +183,7 @@ kind: AdminNetworkPolicy
 metadata:
     annotations:
         description: '(jump_to_application: (All Connections from (group = Dumbledore) to (group = Gryffindor))'
-        nsx-id: "10217"
+        nsx-id: "10221"
     creationTimestamp: null
     name: admin_policy_6
 spec:
@@ -213,7 +213,7 @@ kind: AdminNetworkPolicy
 metadata:
     annotations:
         description: '(jump_to_application: (All Connections from (group = Dumbledore) to (group = Gryffindor))'
-        nsx-id: "10217"
+        nsx-id: "10221"
     creationTimestamp: null
     name: admin_policy_7
 spec:
@@ -243,7 +243,7 @@ kind: AdminNetworkPolicy
 metadata:
     annotations:
         description: '(deny: (All Connections from (*) to (*))'
-        nsx-id: "10218"
+        nsx-id: "10300"
     creationTimestamp: null
     name: admin_policy_8
 spec:
@@ -267,7 +267,7 @@ kind: AdminNetworkPolicy
 metadata:
     annotations:
         description: '(deny: (All Connections from (*) to (*))'
-        nsx-id: "10218"
+        nsx-id: "10300"
     creationTimestamp: null
     name: admin_policy_9
 spec:

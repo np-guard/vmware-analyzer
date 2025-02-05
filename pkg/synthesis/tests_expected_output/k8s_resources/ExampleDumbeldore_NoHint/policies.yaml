@@ -41,7 +41,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = DumbledoreNoSly) to (group != Slytherin)
-        nsx-id: "9196"
+        nsx-id: "1927"
     creationTimestamp: null
     name: policy_2
 spec:
@@ -63,7 +63,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: All Connections from (group = DumbledoreNoSly) to (group != Slytherin)
-        nsx-id: "9196"
+        nsx-id: "1927"
     creationTimestamp: null
     name: policy_3
 spec:

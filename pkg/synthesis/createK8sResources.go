@@ -57,9 +57,14 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 			continue
 		}
 		pod.ObjectMeta.Labels = map[string]string{}
+		const theTrue = "true"
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			pod.ObjectMeta.Labels[label] = "true"
+			pod.ObjectMeta.Labels[label] = theTrue
+		}
+		for _, tag := range vm.Tags() {
+			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+			pod.ObjectMeta.Labels[label] = theTrue
 		}
 		pods = append(pods, pod)
 	}

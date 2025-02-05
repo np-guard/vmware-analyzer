@@ -4,6 +4,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Slytherin: "true"
+        tag__Slytherin: "true"
     name: Slytherin
 spec:
     containers: null
@@ -15,6 +16,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Hufflepuff: "true"
+        tag__Hufflepuff: "true"
     name: Hufflepuff
 spec:
     containers: null
@@ -26,6 +28,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Gryffindor: "true"
+        tag__Gryffindor: "true"
     name: Gryffindor
 spec:
     containers: null
@@ -37,6 +40,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Dumbledore: "true"
+        tag__Dumbledore: "true"
     name: Dumbledore
 spec:
     containers: null
