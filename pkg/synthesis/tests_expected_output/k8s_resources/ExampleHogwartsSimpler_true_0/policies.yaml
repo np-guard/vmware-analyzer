@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Gryffindor) to (group = Web and group = Gryffindor)
+        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy_0
@@ -26,7 +26,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Slytherin) to (group = Web and group = Slytherin)
+        description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy_1
@@ -50,7 +50,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Gryffindor) to (group = Web and group = Gryffindor)
+        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy_2
@@ -74,7 +74,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Slytherin) to (group = Web and group = Slytherin)
+        description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy_3
@@ -98,7 +98,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Web and group = Gryffindor) to (group = App and group = Gryffindor)
+        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
     name: policy_4
@@ -124,7 +124,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Web and group = Slytherin) to (group = App and group = Slytherin)
+        description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
     name: policy_5
@@ -150,7 +150,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Web and group = Gryffindor) to (group = App and group = Gryffindor)
+        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
     name: policy_6
@@ -176,7 +176,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (group = Web and group = Slytherin) to (group = App and group = Slytherin)
+        description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
     name: policy_7

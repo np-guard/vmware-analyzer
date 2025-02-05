@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Slytherin and tag != DB)
+        description: 'src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_0
@@ -23,7 +23,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Slytherin and tag != DB)
+        description: 'src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy_1
@@ -44,7 +44,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Gryffindor and tag != DB)
+        description: 'src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
     name: policy_2
@@ -65,7 +65,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Gryffindor and tag != DB)
+        description: 'src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
     name: policy_3
@@ -86,7 +86,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Hufflepuff and tag != DB)
+        description: 'src: (*) dst: (tag = Hufflepuff and tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_4
@@ -107,7 +107,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: All Connections from (*) to (tag = Hufflepuff and tag != DB)
+        description: 'src: (*) dst: (tag = Hufflepuff and tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy_5

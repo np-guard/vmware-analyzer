@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'TCP dst-ports: 445 from (group = frontend) to (group = backend)'
+        description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
     name: policy_0
@@ -27,7 +27,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'TCP dst-ports: 445 from (group = frontend) to (group = backend)'
+        description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
     name: policy_1

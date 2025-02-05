@@ -1,8 +1,8 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	All Connections from (group = Slytherin) to (group != Dumbledore1 and group != Dumbledore2)
-	All Connections from (group = Gryffindor) to (group != Dumbledore1 and group != Dumbledore2)
+	src: (group = Slytherin) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections
+	src: (group = Gryffindor) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections
 outbound rules
-	All Connections from (group = Slytherin) to (group != Dumbledore1 and group != Dumbledore2)
-	All Connections from (group = Gryffindor) to (group != Dumbledore1 and group != Dumbledore2)
+	src: (group = Slytherin) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections
+	src: (group = Gryffindor) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections
