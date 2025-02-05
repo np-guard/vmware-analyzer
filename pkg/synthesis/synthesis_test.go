@@ -179,7 +179,7 @@ func TestCompareNSXConnectivity(t *testing.T) {
 	parallelTestsRun(t, runCompareNSXConnectivity)
 }
 
-// the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()  
+// the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
 func TestLiveNSXServer(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	server, err := collector.GetNSXServerDate("", "", "")
@@ -209,13 +209,15 @@ func TestNsxResourceFile(t *testing.T) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// serialTestsRun() gets a resource, and run the test functions serially 
+// serialTestsRun() gets a resource, and run the test functions serially
+// we need it to be serially, because we have only one resource
 func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	runPreprocessing(synTest, t, rc)
 	runConvertToAbstract(synTest, t, rc)
 	runK8SSynthesis(synTest, t, rc)
 	runCompareNSXConnectivity(synTest, t, rc)
 }
+
 // parallelTestsRun() gets a test function to run, and run it on all the syntheticTests in parallel
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	logging.Init(logging.HighVerbosity)

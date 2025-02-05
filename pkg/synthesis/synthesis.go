@@ -10,7 +10,7 @@ func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
 	outDir string,
 	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) error {
-	abstractModel,err := NSXToPolicy(recourses, hints, allowOnlyFromCategory)
+	abstractModel, err := NSXToPolicy(recourses, hints, allowOnlyFromCategory)
 	if err != nil {
 		return err
 	}
