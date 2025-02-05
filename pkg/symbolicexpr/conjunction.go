@@ -126,7 +126,8 @@ func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
 	return false
 }
 
-// Conjunction c is superset of other iff any term in c either exists in other or is a subset of it
+// Conjunction c is superset of other if any resource satisfying other also satisfies c,
+// this is the case if if any term in c either exists in other or is a subset of it
 func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
 		return false
@@ -139,7 +140,8 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	return true
 }
 
-// Conjunction c is a superset of atomic atom if each of c's term is a superset of atom
+// Conjunction c is a superset of atomic atom if any resource satisfying atom also satisfies c
+// this is the case if each of c's term is a superset of atom
 // e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
 func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology

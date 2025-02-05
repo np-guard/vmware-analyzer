@@ -56,6 +56,7 @@ func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
+// remove any path that is a subset of another part in paths
 func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
