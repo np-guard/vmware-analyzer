@@ -28,7 +28,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
@@ -94,13 +93,13 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			return ctrl.Result{}, err
 		}
 
-		// Let's re-fetch the memcached Custom Resource after updating the status
+		// Let's re-fetch the migratensx Custom Resource after updating the status
 		// so that we have the latest state of the resource on the cluster and we will avoid
 		// raising the error "the object has been modified, please apply
 		// your changes to the latest version and try again" which would re-trigger the reconciliation
 		// if we try to update it again in the following operations
 		if err := r.Get(ctx, req.NamespacedName, migratensx); err != nil {
-			log.Error(err, "Failed to re-fetch memcached")
+			log.Error(err, "Failed to re-fetch migratensx")
 			return ctrl.Result{}, err
 		}
 	}
@@ -108,7 +107,7 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// Let's add a finalizer. Then, we can define some operations which should
 	// occur before the custom resource is deleted.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers
-	if !controllerutil.ContainsFinalizer(migratensx, migratensxFinalizer) {
+	/*if !controllerutil.ContainsFinalizer(migratensx, migratensxFinalizer) {
 		log.Info("Adding Finalizer for NSXMigration")
 		if ok := controllerutil.AddFinalizer(migratensx, migratensxFinalizer); !ok {
 			log.Error(err, "Failed to add finalizer into the custom resource")
@@ -119,13 +118,13 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 			log.Error(err, "Failed to update custom resource to add finalizer")
 			return ctrl.Result{}, err
 		}
-	}
+	}*/
 
 	// Check if the MigrateNSX instance is marked to be deleted, which is
 	// indicated by the deletion timestamp being set.
 	isMigrateNSXMarkedToBeDeleted := migratensx.GetDeletionTimestamp() != nil
 	if isMigrateNSXMarkedToBeDeleted {
-		if controllerutil.ContainsFinalizer(migratensx, migratensxFinalizer) {
+		/*if controllerutil.ContainsFinalizer(migratensx, migratensxFinalizer) {
 			log.Info("Performing Finalizer Operations for MigrateNSX before delete CR")
 
 			// Let's add here a status "Downgrade" to reflect that this resource began its process to be terminated.
@@ -175,7 +174,7 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 				return ctrl.Result{}, err
 			}
 
-		}
+		}*/
 		// stop the Reconcile
 		return ctrl.Result{}, nil
 	}
