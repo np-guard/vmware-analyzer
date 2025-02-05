@@ -356,22 +356,22 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
 	require.Equal(t,
-		"TCP src: (group = t0 and group != s0 and group != s2 and group != s4) dst: (group = t1)\n"+
-			"TCP src: (group = t0 and group != s0 and group != s2) dst: (group = t1 and group != s5)\n"+
-			"TCP src: (group = t0 and group != s0 and group != s4) dst: (group = t1 and group != s3)\n"+
-			"TCP src: (group = t0 and group != s0) dst: (group = t1 and group != s3 and group != s5)\n"+
-			"TCP src: (group = t0 and group != s2 and group != s4) dst: (group = t1 and group != s1)\n"+
-			"TCP src: (group = t0 and group != s2) dst: (group = t1 and group != s1 and group != s5)\n"+
-			"TCP src: (group = t0 and group != s4) dst: (group = t1 and group != s1 and group != s3)\n"+
-			"TCP src: (group = t0) dst: (group = t1 and group != s1 and group != s3 and group != s5)\n"+
-			"TCP src: (group = t2 and group != s0 and group != s2 and group != s4) dst: (group = t3)\n"+
-			"TCP src: (group = t2 and group != s0 and group != s2) dst: (group = t3 and group != s5)\n"+
-			"TCP src: (group = t2 and group != s0 and group != s4) dst: (group = t3 and group != s3)\n"+
-			"TCP src: (group = t2 and group != s0) dst: (group = t3 and group != s3 and group != s5)\n"+
-			"TCP src: (group = t2 and group != s2 and group != s4) dst: (group = t3 and group != s1)\n"+
-			"TCP src: (group = t2 and group != s2) dst: (group = t3 and group != s1 and group != s5)\n"+
-			"TCP src: (group = t2 and group != s4) dst: (group = t3 and group != s1 and group != s3)\n"+
-			"TCP src: (group = t2) dst: (group = t3 and group != s1 and group != s3 and group != s5)",
+		"src: (group = t0 and group != s0 and group != s2 and group != s4) dst: (group = t1) conn: TCP\n"+
+			"src: (group = t0 and group != s0 and group != s2) dst: (group = t1 and group != s5) conn: TCP\n"+
+			"src: (group = t0 and group != s0 and group != s4) dst: (group = t1 and group != s3) conn: TCP\n"+
+			"src: (group = t0 and group != s0) dst: (group = t1 and group != s3 and group != s5) conn: TCP\n"+
+			"src: (group = t0 and group != s2 and group != s4) dst: (group = t1 and group != s1) conn: TCP\n"+
+			"src: (group = t0 and group != s2) dst: (group = t1 and group != s1 and group != s5) conn: TCP\n"+
+			"src: (group = t0 and group != s4) dst: (group = t1 and group != s1 and group != s3) conn: TCP\n"+
+			"src: (group = t0) dst: (group = t1 and group != s1 and group != s3 and group != s5) conn: TCP\n"+
+			"src: (group = t2 and group != s0 and group != s2 and group != s4) dst: (group = t3) conn: TCP\n"+
+			"src: (group = t2 and group != s0 and group != s2) dst: (group = t3 and group != s5) conn: TCP\n"+
+			"src: (group = t2 and group != s0 and group != s4) dst: (group = t3 and group != s3) conn: TCP\n"+
+			"src: (group = t2 and group != s0) dst: (group = t3 and group != s3 and group != s5) conn: TCP\n"+
+			"src: (group = t2 and group != s2 and group != s4) dst: (group = t3 and group != s1) conn: TCP\n"+
+			"src: (group = t2 and group != s2) dst: (group = t3 and group != s1 and group != s5) conn: TCP\n"+
+			"src: (group = t2 and group != s4) dst: (group = t3 and group != s1 and group != s3) conn: TCP\n"+
+			"src: (group = t2) dst: (group = t3 and group != s1 and group != s3 and group != s5) conn: TCP",
 		res.String(), "ComputeAllowGivenDenies computation not as expected")
 }
 
@@ -393,7 +393,7 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.String())
-	require.Equal(t, "All Connections src: (group = src1) dst: (group != dst1)", allowWithDeny.String(),
+	require.Equal(t, "src: (group = src1) dst: (group != dst1) conn: All Connections", allowWithDeny.String(),
 		"optimized with deny not working properly")
 }
 
