@@ -35,11 +35,19 @@ func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
 
-// todo: treat negation properly
-func getAtomicTermsForGroups(groups []*collector.Group) []*groupAtomicTerm {
-	res := make([]*groupAtomicTerm, len(groups))
-	for i, group := range groups {
-		res[i] = &groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}
+func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
+	res := []*Conjunction{}
+	for _, group := range groups {
+		// if group has a tag based supported expression then considers the tags instead of the group
+		if group.Expression != nil {
+			tagConj := GetTagConjunctionForExpr(&group.Expression)
+			if tagConj != nil {
+				res = append(res, tagConj...)
+				continue
+			}
+		}
+		// todo: treat negation properly
+		res = append(res, &Conjunction{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}})
 	}
 	return res
 }
