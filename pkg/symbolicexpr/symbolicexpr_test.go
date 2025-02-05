@@ -234,18 +234,18 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDenyPaths.String())
 	require.Equal(t,
-		"TCP from (group = src1 and group = src2 and group = src3 and group != src1`) to"+
-			" (group = dst1 and group = dst2 and group = dst3)\n"+
-			"TCP from (group = src1 and group = src2 and group = src3 and group != src2`) to "+
-			"(group = dst1 and group = dst2 and group = dst3)\n"+
-			"TCP from (group = src1 and group = src2 and group = src3 and group != src3`) to"+
-			" (group = dst1 and group = dst2 and group = dst3)\n"+
-			"TCP from (group = src1 and group = src2 and group = src3) to "+
-			"(group = dst1 and group = dst2 and group = dst3 and group != dst1`)\n"+
-			"TCP from (group = src1 and group = src2 and group = src3) to "+
-			"(group = dst1 and group = dst2 and group = dst3 and group != dst2`)\n"+
-			"TCP from (group = src1 and group = src2 and group = src3) to "+
-			"(group = dst1 and group = dst2 and group = dst3 and group != dst3`)",
+		"src: (group = src1 and group = src2 and group = src3 and group != src1`) dst:"+
+			" (group = dst1 and group = dst2 and group = dst3) conn: TCP\n"+
+			"src: (group = src1 and group = src2 and group = src3 and group != src2`) dst: "+
+			"(group = dst1 and group = dst2 and group = dst3) conn: TCP\n"+
+			"src: (group = src1 and group = src2 and group = src3 and group != src3`) dst:"+
+			" (group = dst1 and group = dst2 and group = dst3) conn: TCP\n"+
+			"src: (group = src1 and group = src2 and group = src3) dst: "+
+			"(group = dst1 and group = dst2 and group = dst3 and group != dst1`) conn: TCP\n"+
+			"src: (group = src1 and group = src2 and group = src3) dst: "+
+			"(group = dst1 and group = dst2 and group = dst3 and group != dst2`) conn: TCP\n"+
+			"src: (group = src1 and group = src2 and group = src3) dst: "+
+			"(group = dst1 and group = dst2 and group = dst3 and group != dst3`) conn: TCP",
 		allowGivenDenyPaths.String(), "allowGivenDeny three terms computation not as expected")
 }
 
@@ -278,10 +278,10 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
-		"All Connections from (group != src1`) to (*)\nAll Connections from (group != src2`) to (*)\n"+
-			"All Connections from (group != src3`) to (*)\nAll Connections from (*) to (group != dst1`)\n"+
-			"All Connections from (*) to (group != dst2`)\nAll Connections from (*) to (group != dst3`)\n"+
-			"ICMP,TCP from (*) to (*)", allowGivenDeny.String(),
+		"All Connections src: (group != src1`) dst: (*)\nAll Connections src: (group != src2`) dst: (*)\n"+
+			"All Connections src: (group != src3`) dst: (*)\nAll Connections src: (*) dst: (group != dst1`)\n"+
+			"All Connections src: (*) dst: (group != dst2`)\nAll Connections src: (*) dst: (group != dst3`)\n"+
+			"ICMP,TCP src: (*) dst: (*)", allowGivenDeny.String(),
 		"allowGivenDeny allow tautology computation not as expected")
 }
 
@@ -355,31 +355,31 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
 	require.Equal(t,
-		"TCP from (group = t0 and group != s0 and group != s2 and group != s4) to (group = t1)\n"+
-			"TCP from (group = t0 and group != s0 and group != s2) to (group = t1 and group != s5)\n"+
-			"TCP from (group = t0 and group != s0 and group != s4) to (group = t1 and group != s3)\n"+
-			"TCP from (group = t0 and group != s0) to (group = t1 and group != s3 and group != s5)\n"+
-			"TCP from (group = t0 and group != s2 and group != s4) to (group = t1 and group != s1)\n"+
-			"TCP from (group = t0 and group != s2) to (group = t1 and group != s1 and group != s5)\n"+
-			"TCP from (group = t0 and group != s4) to (group = t1 and group != s1 and group != s3)\n"+
-			"TCP from (group = t0) to (group = t1 and group != s1 and group != s3 and group != s5)\n"+
-			"TCP from (group = t2 and group != s0 and group != s2 and group != s4) to (group = t3)\n"+
-			"TCP from (group = t2 and group != s0 and group != s2) to (group = t3 and group != s5)\n"+
-			"TCP from (group = t2 and group != s0 and group != s4) to (group = t3 and group != s3)\n"+
-			"TCP from (group = t2 and group != s0) to (group = t3 and group != s3 and group != s5)\n"+
-			"TCP from (group = t2 and group != s2 and group != s4) to (group = t3 and group != s1)\n"+
-			"TCP from (group = t2 and group != s2) to (group = t3 and group != s1 and group != s5)\n"+
-			"TCP from (group = t2 and group != s4) to (group = t3 and group != s1 and group != s3)\n"+
-			"TCP from (group = t2) to (group = t3 and group != s1 and group != s3 and group != s5)",
+		"TCP src: (group = t0 and group != s0 and group != s2 and group != s4) dst: (group = t1)\n"+
+			"TCP src: (group = t0 and group != s0 and group != s2) dst: (group = t1 and group != s5)\n"+
+			"TCP src: (group = t0 and group != s0 and group != s4) dst: (group = t1 and group != s3)\n"+
+			"TCP src: (group = t0 and group != s0) dst: (group = t1 and group != s3 and group != s5)\n"+
+			"TCP src: (group = t0 and group != s2 and group != s4) dst: (group = t1 and group != s1)\n"+
+			"TCP src: (group = t0 and group != s2) dst: (group = t1 and group != s1 and group != s5)\n"+
+			"TCP src: (group = t0 and group != s4) dst: (group = t1 and group != s1 and group != s3)\n"+
+			"TCP src: (group = t0) dst: (group = t1 and group != s1 and group != s3 and group != s5)\n"+
+			"TCP src: (group = t2 and group != s0 and group != s2 and group != s4) dst: (group = t3)\n"+
+			"TCP src: (group = t2 and group != s0 and group != s2) dst: (group = t3 and group != s5)\n"+
+			"TCP src: (group = t2 and group != s0 and group != s4) dst: (group = t3 and group != s3)\n"+
+			"TCP src: (group = t2 and group != s0) dst: (group = t3 and group != s3 and group != s5)\n"+
+			"TCP src: (group = t2 and group != s2 and group != s4) dst: (group = t3 and group != s1)\n"+
+			"TCP src: (group = t2 and group != s2) dst: (group = t3 and group != s1 and group != s5)\n"+
+			"TCP src: (group = t2 and group != s4) dst: (group = t3 and group != s1 and group != s3)\n"+
+			"TCP src: (group = t2) dst: (group = t3 and group != s1 and group != s3 and group != s5)",
 		res.String(), "ComputeAllowGivenDenies computation not as expected")
 }
 
 // Input:
 // allow symbolic path:
-// group = src1 to *
+// group = src1 dst: *
 // deny symbolic path:
-// (group = src1) to (d1 = dst1)
-// Output allow paths: (group = str1) to (d1 != dst1)
+// (group = src1) dst: (d1 = dst1)
+// Output allow paths: (group = str1) dst: (d1 != dst1)
 func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
 	atomicSrc1 := newDummyGroupTerm("src1", false)
@@ -392,19 +392,19 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.String())
-	require.Equal(t, "All Connections from (group = src1) to (group != dst1)", allowWithDeny.String(),
+	require.Equal(t, "All Connections src: (group = src1) dst: (group != dst1)", allowWithDeny.String(),
 		"optimized with deny not working properly")
 }
 
 // conj1: (group = str1)
 // conj2: (group = str1), (s2 = str2)
 // conj3: (group = str1), (s2 = str2), (s3 = str3)
-// path1: conj1 to conj1 TCP
-// path1Tag: conj1 to conj1 All
-// path2: conj2 to conj2 TCP
-// path3: conj3 to conj3 TCP
-// path4: conj1 to conj2 TCP
-// path5: conj3 to conj2 TCP
+// path1: conj1 dst: conj1 TCP
+// path1Tag: conj1 dst: conj1 All
+// path2: conj2 dst: conj2 TCP
+// path3: conj3 dst: conj3 TCP
+// path4: conj1 dst: conj2 TCP
+// path5: conj3 dst: conj2 TCP
 // tests:
 // path1 is implied by all paths
 // path1Tag is not implied by path3
@@ -437,7 +437,7 @@ func TestSymbolicPathsImplied(t *testing.T) {
 			path1.isSuperset(path5, &Hints{GroupsDisjoint: [][]string{}}),
 		"path1 is a superset of all paths but path2Tag")
 	require.Equal(t, true, !path1.isSuperset(path2Tag, &Hints{GroupsDisjoint: [][]string{}}),
-		"path1 is not a superset of path2Tag due to the connection")
+		"path1 is not a superset of path2Tag due dst: the connection")
 	require.Equal(t, true, path2.isSuperset(path3, &Hints{GroupsDisjoint: [][]string{}}) &&
 		path2.isSuperset(path5, &Hints{GroupsDisjoint: [][]string{}}) &&
 		!path2.isSuperset(path4, &Hints{GroupsDisjoint: [][]string{}}),
