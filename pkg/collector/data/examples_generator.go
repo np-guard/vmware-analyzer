@@ -468,13 +468,13 @@ func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []
 		// union of vmsCond1 and vmsCond2
 		copy(res, vmsCond1)
 		for i := range vmsCond2 {
-			if !vmInList(res, vmsCond2[i]) {
+			if !vmInList(&res, vmsCond2[i]) {
 				res = append(res, vmsCond2[i])
 			}
 		}
 	} else { // intersection
 		for i := range vmsCond1 {
-			if vmInList(vmsCond2, vmsCond1[i]) {
+			if vmInList(&vmsCond2, vmsCond1[i]) {
 				res = append(res, vmsCond1[i])
 			}
 		}
@@ -482,9 +482,9 @@ func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []
 	return virtualToRealizedVirtual(res)
 }
 
-func vmInList(vmList []collector.VirtualMachine, vm collector.VirtualMachine) bool {
-	for _, vmFromList := range vmList {
-		if vmFromList.Name() == vm.Name() {
+func vmInList(vmList *[]collector.VirtualMachine, vm collector.VirtualMachine) bool {
+	for i := range *vmList {
+		if (*vmList)[i].Name() == vm.Name() {
 			return true
 		}
 	}
@@ -493,10 +493,10 @@ func vmInList(vmList []collector.VirtualMachine, vm collector.VirtualMachine) bo
 
 func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.RealizedVirtualMachine {
 	res := make([]collector.RealizedVirtualMachine, len(origList))
-	for i, vm := range origList {
+	for i := range origList {
 		realizedVM := collector.RealizedVirtualMachine{}
-		realizedVM.RealizedVirtualMachine.DisplayName = vm.DisplayName
-		realizedVM.RealizedVirtualMachine.Id = vm.ExternalId
+		realizedVM.RealizedVirtualMachine.DisplayName = origList[i].DisplayName
+		realizedVM.RealizedVirtualMachine.Id = origList[i].ExternalId
 		res[i] = realizedVM
 	}
 	return res
