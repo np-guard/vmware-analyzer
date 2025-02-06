@@ -20,16 +20,19 @@ import (
 	"context"
 	"fmt"
 
+	core "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	"github.com/go-logr/logr"
 	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
 )
 
@@ -54,6 +57,8 @@ type NSXMigrationReconciler struct {
 // +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations/finalizers,verbs=update
+// +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -66,6 +71,7 @@ type NSXMigrationReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.0/pkg/reconcile
 func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
+	log.Info("begin NSXMigrationReconciler Reconcile()")
 
 	// Fetch the Memcached instance
 	// The purpose is check if the Custom Resource for the Kind Memcached
@@ -124,6 +130,7 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	// indicated by the deletion timestamp being set.
 	isMigrateNSXMarkedToBeDeleted := migratensx.GetDeletionTimestamp() != nil
 	if isMigrateNSXMarkedToBeDeleted {
+		log.Info("the MigrateNSX instance is marked to be deleted")
 		/*if controllerutil.ContainsFinalizer(migratensx, migratensxFinalizer) {
 			log.Info("Performing Finalizer Operations for MigrateNSX before delete CR")
 
@@ -179,9 +186,17 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		return ctrl.Result{}, nil
 	}
 
+	if meta.IsStatusConditionTrue(migratensx.Status.Conditions, typeAvailableNSXMigration) {
+		// migration completed successfully - no need to re-run...
+		// (currently reconcile is triggered  by status update after success )
+		log.Info("exit Reconcile without error - no need to call nsxMigration() because status Available true is already set")
+		// stop the Reconcile
+		return ctrl.Result{}, nil
+	}
+
 	// MigrateNSX instance should trigger nsxMigration() [on create/update action]
 	// TODO: add migration logic here ...
-	if err := r.nsxMigration(migratensx); err != nil {
+	if err := r.nsxMigration(migratensx, ctx, log); err != nil {
 		log.Error(err, "Failed to run nsxMigration")
 
 		// The following implementation will update the status
@@ -203,16 +218,29 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 		Message: fmt.Sprintf("migrate nsx for migration spec at %s completed successfully", migratensx.Name)})
 
 	if err := r.Status().Update(ctx, migratensx); err != nil {
-		log.Error(err, "Failed to update Memcached status")
+		log.Error(err, "Failed to update migratensx status")
 		return ctrl.Result{}, err
 	}
 
+	log.Info("finished the Reconcile without error")
 	// stop the Reconcile
 	return ctrl.Result{}, nil
 }
 
-func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration) error {
+func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
 	// TODO: initial step: connect to NSX host from spec, validate connection is OK, print to log the results.
+	ref := cr.Spec.Secret
+	nsName := types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}
+	log.Info("called nsxMigration() to fetch secret", "NamespacedName", nsName.String())
+	// get the secret from spec
+
+	secret := &core.Secret{}
+	if err := r.Get(ctx, nsName, secret); err != nil {
+		log.Error(err, "Failed to get secret ref", "namespace", ref.Namespace, "name", ref.Name)
+		log.Error(err, "error is:", "errorStr", err.Error())
+		return err
+	}
+	log.Info("completed Get Secrete without error")
 
 	// TODO: implement
 	return nil

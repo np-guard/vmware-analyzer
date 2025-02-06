@@ -4,10 +4,10 @@ metadata:
   labels:
     app.kubernetes.io/name: operator
     app.kubernetes.io/managed-by: kustomize
-  name: nsxmigration-sample-2
+  name: nsxmigration-sample-3
 spec:
   # TODO(user): Add fields here
   url: ''
   secret:
-    name: 'test'
+    name: 'db-user-pass-new'
     namespace: 'default'
