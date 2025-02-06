@@ -425,12 +425,12 @@ func getServices() []collector.Service {
 // todo: should be generalized and moved elsewhere?
 func getVMsOfTagOrNotTag(vmList *[]collector.VirtualMachine, tag string, resTagNotExist bool) []collector.VirtualMachine {
 	res := []collector.VirtualMachine{}
-	for _, vm := range *vmList {
-		tagExist := tagInTags(vm.Tags, tag)
+	for i := range *vmList {
+		tagExist := tagInTags((*vmList)[i].Tags, tag)
 		if !tagExist && resTagNotExist {
-			res = append(res, vm)
+			res = append(res, (*vmList)[i])
 		} else if tagExist && !resTagNotExist {
-			res = append(res, vm)
+			res = append(res, (*vmList)[i])
 		}
 	}
 	return res
@@ -467,15 +467,15 @@ func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []
 	if *conj.ConjunctionOperator.ConjunctionOperator == nsx.ConjunctionOperatorConjunctionOperatorOR {
 		// union of vmsCond1 and vmsCond2
 		copy(res, vmsCond1)
-		for _, cond2Vm := range vmsCond2 {
-			if !vmInList(res, cond2Vm) {
-				res = append(res, cond2Vm)
+		for i := range vmsCond2 {
+			if !vmInList(res, vmsCond2[i]) {
+				res = append(res, vmsCond2[i])
 			}
 		}
 	} else { // intersection
-		for _, cond1Vm := range vmsCond1 {
-			if vmInList(vmsCond2, cond1Vm) {
-				res = append(res, cond1Vm)
+		for i := range vmsCond1 {
+			if vmInList(vmsCond2, vmsCond1[i]) {
+				res = append(res, vmsCond1[i])
 			}
 		}
 	}
