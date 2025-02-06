@@ -143,8 +143,8 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.LowVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
+	for i := range groupsByExprTests {
+		test := &groupsByExprTests[i]
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output

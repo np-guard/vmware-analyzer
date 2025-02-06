@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -47,10 +48,13 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		groupList = append(groupList, newGroup)
 	}
 	// groups defined by expr and VMs
+	fmt.Printf("\nexample:%v\n~~~~~~~~~~~~~~~~~~~~~~~~\n", e.Name)
 	for group, exprAndVms := range e.GroupsByExprAndVMs {
 		newGroup := newGroupByExample(group)
 		groupExpr := exprAndVms.Expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
+		realizedVmsList := vmsOfExpr(res.VirtualMachineList, &newGroup.Expression)
+		fmt.Printf("group: %v\nrealizedVmsList:\n%v\n", group, realizedVMsString(realizedVmsList))
 		newGroup.VMMembers = addVMsToGroup(exprAndVms.VMs)
 		groupList = append(groupList, newGroup)
 	}
@@ -424,4 +428,91 @@ func getServices() []collector.Service {
 		return nil
 	}
 	return rc.ServiceList
+}
+
+// todo: should be generalized and moved elsewhere?
+func getVMsOfTagOrNotTag(vmList []collector.VirtualMachine, tag string, resTagNotExist bool) []collector.VirtualMachine {
+	res := []collector.VirtualMachine{}
+	for _, vm := range vmList {
+		tagExist := tagInTags(vm.Tags, tag)
+		if !tagExist && resTagNotExist {
+			res = append(res, vm)
+		} else if tagExist && !resTagNotExist {
+			res = append(res, vm)
+		}
+	}
+	return res
+}
+
+func tagInTags(vmTags []nsx.Tag, tag string) bool {
+	for _, tagOfVm := range vmTags {
+		if tag == tagOfVm.Tag {
+			return true
+		}
+	}
+	return false
+}
+
+func vmsOfCondition(vmList []collector.VirtualMachine, cond *collector.Condition) []collector.VirtualMachine {
+	var resTagNotExist bool
+	if *cond.Operator == nsx.ConditionOperatorNOTEQUALS {
+		resTagNotExist = true
+	}
+	return getVMsOfTagOrNotTag(vmList, *cond.Value, resTagNotExist)
+}
+
+func vmsOfExpr(vmList []collector.VirtualMachine, exp *collector.Expression) []collector.RealizedVirtualMachine {
+	cond1 := (*exp)[0].(*collector.Condition)
+	vmsCond1 := vmsOfCondition(vmList, cond1)
+	if len(*exp) == 1 {
+		return virtualToRealizedVirtual(vmsCond1)
+	}
+	// len(*exp) is 3
+	cond2 := (*exp)[2].(*collector.Condition)
+	vmsCond2 := vmsOfCondition(vmList, cond2)
+	res := []collector.VirtualMachine{}
+	conj := (*exp)[1].(*collector.ConjunctionOperator)
+	if *conj.ConjunctionOperator.ConjunctionOperator == nsx.ConjunctionOperatorConjunctionOperatorOR {
+		// union of vmsCond1 and vmsCond2
+		copy(res, vmsCond1)
+		for _, cond2Vm := range vmsCond2 {
+			if !vmInList(res, cond2Vm) {
+				res = append(res, cond2Vm)
+			}
+		}
+	} else { // intersection
+		for _, cond1Vm := range vmsCond1 {
+			if vmInList(vmsCond2, cond1Vm) {
+				res = append(res, cond1Vm)
+			}
+		}
+	}
+	return virtualToRealizedVirtual(res)
+}
+
+func vmInList(vmList []collector.VirtualMachine, vm collector.VirtualMachine) bool {
+	for _, vmFromList := range vmList {
+		if vmFromList.Name() == vm.Name() {
+			return true
+		}
+	}
+	return false
+}
+
+func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.RealizedVirtualMachine {
+	res := make([]collector.RealizedVirtualMachine, len(origList))
+	for i, vm := range origList {
+		realizedVM := collector.RealizedVirtualMachine{}
+		realizedVM.RealizedVirtualMachine.DisplayName = vm.DisplayName
+		realizedVM.RealizedVirtualMachine.Id = vm.ExternalId
+		res[i] = realizedVM
+	}
+	return res
+}
+func realizedVMsString(list []collector.RealizedVirtualMachine) string {
+	res := make([]string, len(list))
+	for i, item := range list {
+		res[i] = fmt.Sprintf("\tdisplayName: %v, id: %v", *item.DisplayName, *item.Id)
+	}
+	return strings.Join(res, "\n")
 }
