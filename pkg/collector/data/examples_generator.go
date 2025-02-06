@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -48,14 +47,12 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		groupList = append(groupList, newGroup)
 	}
 	// groups defined by expr and VMs
-	fmt.Printf("\nexample:%v\n~~~~~~~~~~~~~~~~~~~~~~~~\n", e.Name)
 	for group, exprAndVms := range e.GroupsByExprAndVMs {
 		newGroup := newGroupByExample(group)
 		groupExpr := exprAndVms.Expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
 		realizedVmsList := vmsOfExpr(res.VirtualMachineList, &newGroup.Expression)
-		fmt.Printf("group: %v\nrealizedVmsList:\n%v\n", group, realizedVMsString(realizedVmsList))
-		newGroup.VMMembers = addVMsToGroup(exprAndVms.VMs)
+		newGroup.VMMembers = realizedVmsList
 		groupList = append(groupList, newGroup)
 	}
 	res.DomainList[0].Resources.GroupList = groupList
@@ -508,11 +505,4 @@ func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.R
 		res[i] = realizedVM
 	}
 	return res
-}
-func realizedVMsString(list []collector.RealizedVirtualMachine) string {
-	res := make([]string, len(list))
-	for i, item := range list {
-		res[i] = fmt.Sprintf("\tdisplayName: %v, id: %v", *item.DisplayName, *item.Id)
-	}
-	return strings.Join(res, "\n")
 }
