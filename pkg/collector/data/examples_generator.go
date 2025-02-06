@@ -49,7 +49,7 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	// groups defined by expr and VMs
 	for group, exprAndVms := range e.GroupsByExprAndVMs {
 		newGroup := newGroupByExample(group)
-		groupExpr := exprAndVms.Expr.exampleExprToExpr()
+		groupExpr := exprAndVms.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
 		realizedVmsList := vmsOfExpr(&res.VirtualMachineList, &newGroup.Expression)
 		newGroup.VMMembers = realizedVmsList
@@ -140,16 +140,11 @@ type Example struct {
 	VMs                []string
 	VMsTags            map[string][]nsx.Tag
 	GroupsByVMs        map[string][]string // todo: refactor to GroupsByExprAndVMs
-	GroupsByExprAndVMs map[string]ExprAndVMs
+	GroupsByExprAndVMs map[string]ExampleExpr
 	Policies           []Category
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
-}
-
-type ExprAndVMs struct {
-	VMs  []string
-	Expr ExampleExpr
 }
 
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")
