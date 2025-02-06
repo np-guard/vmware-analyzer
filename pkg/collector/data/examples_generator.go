@@ -468,13 +468,13 @@ func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []
 		// union of vmsCond1 and vmsCond2
 		copy(res, vmsCond1)
 		for i := range vmsCond2 {
-			if !vmInList(&res, vmsCond2[i]) {
+			if !vmInList(&res, &vmsCond2[i]) {
 				res = append(res, vmsCond2[i])
 			}
 		}
 	} else { // intersection
 		for i := range vmsCond1 {
-			if vmInList(&vmsCond2, vmsCond1[i]) {
+			if vmInList(&vmsCond2, &vmsCond1[i]) {
 				res = append(res, vmsCond1[i])
 			}
 		}
@@ -482,7 +482,7 @@ func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []
 	return virtualToRealizedVirtual(res)
 }
 
-func vmInList(vmList *[]collector.VirtualMachine, vm collector.VirtualMachine) bool {
+func vmInList(vmList *[]collector.VirtualMachine, vm *collector.VirtualMachine) bool {
 	for i := range *vmList {
 		if (*vmList)[i].Name() == vm.Name() {
 			return true
