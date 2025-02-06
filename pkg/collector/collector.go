@@ -50,6 +50,16 @@ func NewServerData(host, user, password string) ServerData {
 	return ServerData{host, user, password}
 }
 
+func ValidateNSXConnection(server ServerData) (string, error) {
+	res := NewResourcesContainerModel()
+	// vms:
+	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("found %d vms", len(res.VirtualMachineList)), nil
+}
+
 //nolint:funlen,gocyclo // just a long function
 func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 	res := NewResourcesContainerModel()
