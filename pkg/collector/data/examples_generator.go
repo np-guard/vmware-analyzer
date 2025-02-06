@@ -51,7 +51,7 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		newGroup := newGroupByExample(group)
 		groupExpr := exprAndVms.Expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
-		realizedVmsList := vmsOfExpr(res.VirtualMachineList, &newGroup.Expression)
+		realizedVmsList := vmsOfExpr(&res.VirtualMachineList, &newGroup.Expression)
 		newGroup.VMMembers = realizedVmsList
 		groupList = append(groupList, newGroup)
 	}
@@ -428,9 +428,9 @@ func getServices() []collector.Service {
 }
 
 // todo: should be generalized and moved elsewhere?
-func getVMsOfTagOrNotTag(vmList []collector.VirtualMachine, tag string, resTagNotExist bool) []collector.VirtualMachine {
+func getVMsOfTagOrNotTag(vmList *[]collector.VirtualMachine, tag string, resTagNotExist bool) []collector.VirtualMachine {
 	res := []collector.VirtualMachine{}
-	for _, vm := range vmList {
+	for _, vm := range *vmList {
 		tagExist := tagInTags(vm.Tags, tag)
 		if !tagExist && resTagNotExist {
 			res = append(res, vm)
@@ -442,15 +442,15 @@ func getVMsOfTagOrNotTag(vmList []collector.VirtualMachine, tag string, resTagNo
 }
 
 func tagInTags(vmTags []nsx.Tag, tag string) bool {
-	for _, tagOfVm := range vmTags {
-		if tag == tagOfVm.Tag {
+	for _, tagOfVM := range vmTags {
+		if tag == tagOfVM.Tag {
 			return true
 		}
 	}
 	return false
 }
 
-func vmsOfCondition(vmList []collector.VirtualMachine, cond *collector.Condition) []collector.VirtualMachine {
+func vmsOfCondition(vmList *[]collector.VirtualMachine, cond *collector.Condition) []collector.VirtualMachine {
 	var resTagNotExist bool
 	if *cond.Operator == nsx.ConditionOperatorNOTEQUALS {
 		resTagNotExist = true
@@ -458,7 +458,7 @@ func vmsOfCondition(vmList []collector.VirtualMachine, cond *collector.Condition
 	return getVMsOfTagOrNotTag(vmList, *cond.Value, resTagNotExist)
 }
 
-func vmsOfExpr(vmList []collector.VirtualMachine, exp *collector.Expression) []collector.RealizedVirtualMachine {
+func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []collector.RealizedVirtualMachine {
 	cond1 := (*exp)[0].(*collector.Condition)
 	vmsCond1 := vmsOfCondition(vmList, cond1)
 	if len(*exp) == 1 {
