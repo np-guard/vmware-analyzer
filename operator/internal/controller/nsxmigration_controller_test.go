@@ -27,7 +27,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
+	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
 )
 
 var _ = Describe("NSXMigration Controller", func() {

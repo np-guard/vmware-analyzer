@@ -35,8 +35,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
-	"github.com/np-guard/vmware-analyzer/internal/controller"
+	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
+	"github.com/np-guard/vmware-analyzer-operator/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
 

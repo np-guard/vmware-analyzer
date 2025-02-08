@@ -37,8 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/go-logr/logr"
-	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
-	//"github.com/np-guard/vmware-analyzer/pkg/collector" // TODO: fix dependency for nsx-analyzer tool
+	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
+	"github.com/np-guard/vmware-analyzer/pkg/collector" // TODO: fix dependency for nsx-analyzer tool
 )
 
 const migratensxFinalizer = "nsx.npguard.io/finalizer"
@@ -258,17 +258,23 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	if urlData, found := secret.Data["url"]; found {
 		url = string(urlData)
 	}
-	log.Info("extracted nsx credentials", "user", user, "password", password, "url", url)
+	log.Info("extracted nsx credentials", "user", user, "url", url)
 
 	// next: validate nsx connection with given credentials
-	//collector.ValidateNSXConnection()
-	currentQuery := "api/v1/fabric/virtual-machines"
+	res, err := collector.ValidateNSXConnection(url, user, password)
+	if err != nil {
+		log.Error(err, "REST API call error", "errStr", err.Error())
+		return err
+	}
+	log.Info("REST API call returned successfully", "response", res)
+
+	/*currentQuery := "api/v1/fabric/virtual-machines"
 	b, err := curlGetRequest(ServerData{host: url, user: user, password: password}, currentQuery, log)
 	if err != nil {
 		log.Error(err, "REST API call error", "errStr", err.Error())
 		return err
 	}
-	log.Info("REST API call returned successfully", "response", string(b))
+	log.Info("REST API call returned successfully", "response", string(b))*/
 
 	// TODO: implement
 

@@ -50,10 +50,10 @@ func NewServerData(host, user, password string) ServerData {
 	return ServerData{host, user, password}
 }
 
-func ValidateNSXConnection(server ServerData) (string, error) {
+func ValidateNSXConnection(host, user, password string) (string, error) {
 	res := NewResourcesContainerModel()
 	// vms:
-	err := collectResultList(server, virtualMachineQuery, &res.VirtualMachineList)
+	err := collectResultList(NewServerData(host, user, password), virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return "", err
 	}

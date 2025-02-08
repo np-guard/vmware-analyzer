@@ -24,7 +24,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/np-guard/vmware-analyzer/test/utils"
+	"github.com/np-guard/vmware-analyzer-operator/test/utils"
 )
 
 const namespace = "operator-system"

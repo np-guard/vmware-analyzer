@@ -33,7 +33,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	nsxv1alpha1 "github.com/np-guard/vmware-analyzer/api/v1alpha1"
+	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
