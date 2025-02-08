@@ -46,3 +46,13 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", abstractPolicyStr)
 	return abstractModel, nil
 }
+
+type Synthesis struct {
+}
+
+/*func (s *Synthesis) NSXToK8sSynthesis(resources *collector.ResourcesContainerModel) ([]*v1.NetworkPolicy, error) {
+	hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	category := collector.MinCategory()
+	_, policies, err := NSXToK8sSynthesis(resources, "", hints, category)
+	return policies, err
+}*/

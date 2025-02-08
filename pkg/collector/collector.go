@@ -42,6 +42,14 @@ const (
 	defaultForwardingUpTimer = 5
 )
 
+type Collector struct {
+	//nsxConnData *ServerData
+}
+
+func (c *Collector) CollectResources(host, user, password string) (*ResourcesContainerModel, error) {
+	return CollectResources(NewServerData(host, user, password))
+}
+
 type ServerData struct {
 	host, user, password string
 }
