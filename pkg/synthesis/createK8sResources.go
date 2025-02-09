@@ -53,6 +53,7 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 		pod.TypeMeta.Kind = "Pod"
 		pod.TypeMeta.APIVersion = "v1"
 		pod.ObjectMeta.Name = vm.Name()
+		pod.ObjectMeta.Namespace = core.NamespaceDefault
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
