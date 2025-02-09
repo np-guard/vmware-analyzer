@@ -34,5 +34,5 @@ cmd/examples/output/*
 examples/
 pkg/nsx
 pkg/model/*_old.go
-
+out/
 
