@@ -9,6 +9,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -42,6 +43,7 @@ const (
 	verboseFlag                 = "verbose"
 	explainFlag                 = "explain"
 	colorFlag                   = "color"
+	hintsFlag                   = "hint"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp                    = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
@@ -60,6 +62,7 @@ const (
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
+	hintsHelp                   = "comma separated list of vms, ... (can have more than one)"
 )
 
 type inArgs struct {
@@ -80,6 +83,7 @@ type inArgs struct {
 	explain           bool
 	outputFilter      []string
 	color             bool
+	hints             []string
 }
 
 func newInArgs() *inArgs {
@@ -127,6 +131,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
+	rootCmd.PersistentFlags().StringArrayVar(&args.hints, hintsFlag, nil, hintsHelp)
 
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
@@ -212,8 +217,10 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		// todo - get hints from the user
-		hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+		hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(args.hints))}
+		for i, hint := range args.hints {
+			hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
+		}
 		category := collector.MinCategory()
 		if args.synthesizeAdmin {
 			category = collector.AppCategoty

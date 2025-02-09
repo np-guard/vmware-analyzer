@@ -123,7 +123,7 @@ var staticTests = []*cliTest{
 	},
 	{
 		name:            "synthesize-only",
-		args:            "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis",
+		args:            "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis --hint A,B --hint B,A",
 		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
 	},
 	{
