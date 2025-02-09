@@ -223,6 +223,7 @@ func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T,
 	logging.Init(logging.HighVerbosity)
 	for _, test := range allSyntheticTests {
 		rc := data.ExamplesGeneration(&test.exData.FromNSX)
+		t.Parallel()
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
 		},
