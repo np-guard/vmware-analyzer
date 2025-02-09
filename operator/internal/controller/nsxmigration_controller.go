@@ -25,6 +25,7 @@ import (
 	"time"
 
 	core "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,6 +66,7 @@ type NSXMigrationReconciler struct {
 // +kubebuilder:rbac:groups=nsx.npguard.io,resources=nsxmigrations/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -295,6 +297,22 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		return err
 	}
 	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))*/
+
+	// create policies
+	if len(policies) > 0 {
+		policy := policies[0]
+		if policy.Namespace == "" {
+			policy.Namespace = v1.NamespaceDefault
+		}
+		if err = r.Create(ctx, policy); err != nil {
+			log.Error(err, "Failed to create new NetworkPolicy",
+				"NetworkPolicy.Namespace", policy.Namespace, "NetworkPolicy.Name", policy.Name)
+			return err
+		}
+	}
+	// NetworkPolicy created successfully
+
+	log.Info("NetworkPolicy created successfully")
 
 	/*currentQuery := "api/v1/fabric/virtual-machines"
 	b, err := curlGetRequest(ServerData{host: url, user: user, password: password}, currentQuery, log)
