@@ -43,7 +43,7 @@ const (
 	verboseFlag                 = "verbose"
 	explainFlag                 = "explain"
 	colorFlag                   = "color"
-	hintsFlag                   = "hint"
+	disjointHintsFlag           = "disjoint-hint"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp                    = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
@@ -62,7 +62,7 @@ const (
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
-	hintsHelp                   = "comma separated list of vms, ... (can have more than one)"
+	disjointHintsHelp           = "comma separated list of groups/tags that are VMs disjoint, needed for an effective and sound synthesis process, can specify more than one hint (example: \"--hint vm1,vm2 --hint vm3,vm4\")"
 )
 
 type inArgs struct {
@@ -83,7 +83,7 @@ type inArgs struct {
 	explain           bool
 	outputFilter      []string
 	color             bool
-	hints             []string
+	disjointHints     []string
 }
 
 func newInArgs() *inArgs {
@@ -131,7 +131,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
-	rootCmd.PersistentFlags().StringArrayVar(&args.hints, hintsFlag, nil, hintsHelp)
+	rootCmd.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
@@ -217,8 +217,8 @@ func runCommand(args *inArgs) error {
 		fmt.Println(connResStr)
 	}
 	if args.synthesisDumpDir != "" {
-		hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(args.hints))}
-		for i, hint := range args.hints {
+		hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(args.disjointHints))}
+		for i, hint := range args.disjointHints {
 			hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 		}
 		category := collector.MinCategory()

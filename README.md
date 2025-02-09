@@ -20,6 +20,7 @@ Usage:
 Flags:
       --anonymize                    flag to anonymize collected NSX resources (default false)
       --color                        flag to enable color output (default false)
+      --disjoint-hint stringArray    comma separated list of groups/tags that are VMs disjoint, needed for an effective and sound synthesis process, can specify more than one hint (example: "--hint vm1,vm2 --hint vm3,vm4")
   -e, --explain                      flag to explain connectivity output with rules explanations per allowed/denied connections (default false)
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
