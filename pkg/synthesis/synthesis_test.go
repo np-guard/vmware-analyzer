@@ -51,7 +51,7 @@ func (synTest *synthesisTest) id() string {
 		id += "_NoHint"
 	}
 	// specify if there are admin policies:
-	if synTest.allowOnlyFromCategory > 0 {
+	if synTest.allowOnlyFromCategory > collector.MinCategory() {
 		id += "_AdminPoliciesEnabled"
 	}
 	return id
@@ -117,7 +117,7 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:                false,
 	},
 	{
-		name:                  "ExampleHogwartsAppCategory",
+		name:                  "ExampleHogwartsAdmin",
 		exData:                &tests.ExampleHogwarts,
 		allowOnlyFromCategory: collector.AppCategoty,
 		noHint:                false,
