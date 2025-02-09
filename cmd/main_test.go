@@ -122,8 +122,9 @@ var staticTests = []*cliTest{
 		expectedOutFile: []string{"examples/output/topology.txt", "examples/output/analysis.txt"},
 	},
 	{
-		name:            "synthesize-only",
-		args:            "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis --disjoint-hint backend,frontend --disjoint-hint frontend,backend",
+		name: "synthesize-only",
+		args: "--resource-input-file ../pkg/collector/data/json/Example1.json" +
+			" --synthesis-dump-dir examples/output/synthesis --disjoint-hint backend,frontend --disjoint-hint frontend,backend",
 		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
 	},
 	{

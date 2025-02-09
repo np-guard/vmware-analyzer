@@ -62,7 +62,8 @@ const (
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
-	disjointHintsHelp           = "comma separated list of groups/tags that are VMs disjoint, needed for an effective and sound synthesis process, can specify more than one hint (example: \"--hint vm1,vm2 --hint vm3,vm4\")"
+	disjointHintsHelp           = "comma separated list of groups/tags that are VMs disjoint," +
+		" needed for an effective and sound synthesis process, can specify more than one hint (example: \"--hint vm1,vm2 --hint vm3,vm4\")"
 )
 
 type inArgs struct {
@@ -167,6 +168,7 @@ func resourcesFromNSXEnv(args *inArgs) (*collector.ResourcesContainerModel, erro
 	return resources, nil
 }
 
+//nolint:gocyclo // one function with lots of options
 func runCommand(args *inArgs) error {
 	var resources *collector.ResourcesContainerModel
 	var err error
