@@ -36,3 +36,6 @@ pkg/nsx
 pkg/model/*_old.go
 out/
 
+# empty files to be edited for testing:
+pkg/synthesis/tests/resources.json
+cmd/examples/input/resources.json
