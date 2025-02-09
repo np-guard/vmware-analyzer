@@ -4,6 +4,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Slytherin: "true"
+        group__Slytherin-orOrAnd-no-DB: "true"
         tag__DB: "true"
         tag__Slytherin: "true"
     name: Slytherin-DB
@@ -49,6 +50,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Hufflepuff: "true"
+        group__Hufflepuff-orOrAnd-no-DB: "true"
         tag__DB: "true"
         tag__Hufflepuff: "true"
     name: Hufflepuff-DB
@@ -94,6 +96,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Gryffindor: "true"
+        group__Gryffindor-orOrAnd-no-DB: "true"
         tag__DB: "true"
         tag__Gryffindor: "true"
     name: Gryffindor-DB

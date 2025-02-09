@@ -466,7 +466,7 @@ func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []
 	conj := (*exp)[1].(*collector.ConjunctionOperator)
 	if *conj.ConjunctionOperator.ConjunctionOperator == nsx.ConjunctionOperatorConjunctionOperatorOR {
 		// union of vmsCond1 and vmsCond2
-		copy(res, vmsCond1)
+		res = append(res, vmsCond1...)
 		for i := range vmsCond2 {
 			if !vmInList(&res, &vmsCond2[i]) {
 				res = append(res, vmsCond2[i])
