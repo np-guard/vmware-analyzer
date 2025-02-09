@@ -41,6 +41,7 @@ func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
 }
 
 // id() creates a uniq id for a synthesisTest, based on its parameter.
+// the id is used to create files/directories names
 // the prefix is the test name, and labels are added according to the flags values:
 func (synTest *synthesisTest) id() string {
 	// starting with test name:
