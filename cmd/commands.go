@@ -64,7 +64,7 @@ const (
 	colorHelp                   = "flag to enable color output (default false)"
 	disjointHintsHelp           = "comma separated list of NSX groups/tags that are VMs disjoint," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
-		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web\")"
+		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
 )
 
 type inArgs struct {
