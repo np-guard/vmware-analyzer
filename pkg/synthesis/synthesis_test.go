@@ -39,13 +39,19 @@ func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
 	}
 	return hintsParm
 }
+
+// id() creates a uniq id for a synthesisTest, based on its parameter.
+// the prefix is the test name, and labels are added according to the flags values:
 func (synTest *synthesisTest) id() string {
+	// starting with test name:
 	id := synTest.name
+	// specify if there is no hints
 	if synTest.noHint {
 		id += "_NoHint"
 	}
+	// specify if there are admin policies:
 	if synTest.allowOnlyFromCategory > 0 {
-		id = fmt.Sprintf("%v_%s", id, synTest.allowOnlyFromCategory)
+		id +="_AdminPoliciesEnabled"
 	}
 	return id
 }
