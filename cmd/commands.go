@@ -62,8 +62,9 @@ const (
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
-	disjointHintsHelp           = "comma separated list of groups/tags that are VMs disjoint, needed for an effective and sound synthesis process," +
-		" can specify more than one hint (example: \"--" + disjointHintsFlag + " vm1,vm2 --" + disjointHintsFlag + " vm3,vm4\")"
+	disjointHintsHelp           = "comma separated list of NSX groups/tags that are VMs disjoint," +
+		" needed for an effective and sound synthesis process, can specify more than one hint" +
+		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web\")"
 )
 
 type inArgs struct {
