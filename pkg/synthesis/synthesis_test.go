@@ -52,7 +52,7 @@ func (synTest *synthesisTest) id() string {
 	}
 	// specify if there are admin policies:
 	if synTest.allowOnlyFromCategory > 0 {
-		id +="_AdminPoliciesEnabled"
+		id += "_AdminPoliciesEnabled"
 	}
 	return id
 }
