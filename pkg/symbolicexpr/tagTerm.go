@@ -98,7 +98,7 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	if expr == nil || len(*expr) == 0 {
-		logging.Infof("Illegal or nil expression attached to group %s. Thus using the group VM members for synthesis and "+
+		logging.Debugf("Illegal or nil expression attached to group %s. Thus using the group VM members for synthesis and "+
 			"ignoring the expression", group)
 		return nil
 	}
