@@ -23,6 +23,6 @@ func NSXToK8sSynthesis(
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, allowOnlyFromCategory, hints)
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
 		allowOnlyFromCategory: allowOnlyFromCategory, policy: []*symbolicPolicy{&allowOnlyPolicy}}
-	logging.Infof(fmt.Sprintf("abstract model\n~~~~~~~~~~~~~~\n%s", printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)))
+	logging.Infof(fmt.Sprintf("abstract model\n~~~~~~~~~~~~~~\n%v", printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)))
 	return abstractModel, createK8sResources(abstractModel, outDir)
 }
