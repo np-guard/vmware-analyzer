@@ -3,6 +3,7 @@ package synthesis
 import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -30,4 +31,8 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
 		allowOnlyFromCategory: allowOnlyFromCategory, policy: []*symbolicPolicy{&allowOnlyPolicy}}
 	return abstractModel, nil
+}
+
+func toAbstractModel(specs []*dfw.CategorySpec){
+
 }

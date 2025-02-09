@@ -184,7 +184,7 @@ func TestLiveNSXServer(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	server, err := collector.GetNSXServerDate("", "", "")
 	if err != nil {
-		fmt.Println(err.Error())
+		logging.Debug(err.Error())
 		return
 	}
 	rc, err := collector.CollectResources(server)
@@ -202,7 +202,7 @@ func TestNsxResourceFile(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, rc)
 	if len(rc.DomainList) == 0 {
-		fmt.Printf("%s has no domains\n", inputFile)
+		logging.Debugf("%s has no domains\n", inputFile)
 		return
 	}
 	serialTestsRun(&resourceFileTest, t, rc)
@@ -221,9 +221,9 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 // parallelTestsRun() gets a test function to run, and run it on all the syntheticTests in parallel
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	logging.Init(logging.HighVerbosity)
+	t.Parallel()
 	for _, test := range allSyntheticTests {
 		rc := data.ExamplesGeneration(&test.exData.FromNSX)
-		t.Parallel()
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
 		},
@@ -241,14 +241,14 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := parser.RunParser()
 	require.Nil(t, err)
 	config := parser.GetConfig()
-	// write the config summery into a file, for debugging:
+	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	preProcessOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
-	fmt.Println(preProcessOutput)
+	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
 	require.Nil(t, err)
@@ -263,7 +263,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
 	require.Nil(t, err)
 	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0])
-	fmt.Println(abstractModelStr)
+	logging.Debug(abstractModelStr)
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
 	require.Nil(t, err)
@@ -392,7 +392,6 @@ func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutput
 		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
 	} else if runTestMode == OutputGeneration {
-		fmt.Printf("outputGeneration\n")
 		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}
