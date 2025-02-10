@@ -27,6 +27,7 @@ schemas/*.json
 # For tests output
 pkg/*/out/*
 pkg/*/*/actual_output/*
+pkg/*/tests_actual_output/*
 cmd/examples/output/*
 
 # For temporary examples and pkgs
@@ -35,3 +36,6 @@ pkg/nsx
 pkg/model/*_old.go
 out/
 
+# empty files to be edited for testing:
+pkg/synthesis/tests/resources.json
+cmd/examples/input/resources.json

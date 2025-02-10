@@ -20,80 +20,105 @@ import (
 )
 
 const (
-	expectedOutput = "tests_expected_output/"
+	expectedOutput = "tests_expected_output"
+	actualOutput   = "tests_actual_output"
 	carriageReturn = "\r"
-)
-
-const (
-	writeFileMde = 0o600
-)
-
-type testMode int
-
-const (
-	OutputComparison testMode = iota // compare actual output to expected output
-	OutputGeneration                 // generate expected output
 )
 
 type synthesisTest struct {
 	name                  string
-	exData                tests.ExampleSynthesis
+	exData                *tests.ExampleSynthesis
 	allowOnlyFromCategory collector.DfwCategory // category to start the "allow-only" conversion from
 	noHint                bool                  // run also with no hint
+}
+
+func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
+	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	if !synTest.noHint {
+		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroupsTags
+	}
+	return hintsParm
+}
+
+// id() creates a uniq id for a synthesisTest, based on its parameter.
+// the id is used to create files/directories names
+// the prefix is the test name, and labels are added according to the flags values:
+func (synTest *synthesisTest) id() string {
+	// starting with test name:
+	id := synTest.name
+	// specify if there is no hints
+	if synTest.noHint {
+		id += "_NoHint"
+	}
+	// specify if there are admin policies:
+	if synTest.allowOnlyFromCategory > collector.MinCategory() {
+		id += "_AdminPoliciesEnabled"
+	}
+	return id
+}
+
+func (synTest *synthesisTest) outDir() string {
+	return path.Join(getTestsDirActualOut(), synTest.id())
+}
+func (synTest *synthesisTest) debugDir() string {
+	return path.Join(synTest.outDir(), "debug_dir")
+}
+func (synTest *synthesisTest) hasExpectedResults() bool {
+	return synTest.exData != nil
 }
 
 var groupsByVmsTests = []synthesisTest{
 	{
 		name:                  "Example1c",
-		exData:                tests.Example1c,
+		exData:                &tests.Example1c,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleDumbeldore",
-		exData:                tests.ExampleDumbeldore,
+		exData:                &tests.ExampleDumbeldore,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleTwoDeniesSimple",
-		exData:                tests.ExampleTwoDeniesSimple,
+		exData:                &tests.ExampleTwoDeniesSimple,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleDenyPassSimple",
-		exData:                tests.ExampleDenyPassSimple,
+		exData:                &tests.ExampleDenyPassSimple,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHintsDisjoint",
-		exData:                tests.ExampleHintsDisjoint,
+		exData:                &tests.ExampleHintsDisjoint,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHogwartsSimpler",
-		exData:                tests.ExampleHogwartsSimpler,
+		exData:                &tests.ExampleHogwartsSimpler,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                true,
 	},
 	{
 		name:                  "ExampleHogwartsNoDumbledore",
-		exData:                tests.ExampleHogwartsNoDumbledore,
+		exData:                &tests.ExampleHogwartsNoDumbledore,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                false,
 	},
 	{
 		name:                  "ExampleHogwarts",
-		exData:                tests.ExampleHogwarts,
+		exData:                &tests.ExampleHogwarts,
 		allowOnlyFromCategory: collector.MinCategory(),
 		noHint:                false,
 	},
 	{
-		name:                  "ExampleHogwarts",
-		exData:                tests.ExampleHogwarts,
+		name:                  "ExampleHogwartsAdmin",
+		exData:                &tests.ExampleHogwarts,
 		allowOnlyFromCategory: collector.AppCategoty,
 		noHint:                false,
 	},
@@ -102,208 +127,250 @@ var groupsByVmsTests = []synthesisTest{
 var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
-		exData: tests.ExampleExprSingleScope,
+		exData: &tests.ExampleExprSingleScope,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprTwoScopes",
-		exData: tests.ExampleExprTwoScopes,
+		exData: &tests.ExampleExprTwoScopes,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprAndConds",
-		exData: tests.ExampleExprAndConds,
+		exData: &tests.ExampleExprAndConds,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprOrConds",
-		exData: tests.ExampleExprOrConds,
+		exData: &tests.ExampleExprOrConds,
 		noHint: false,
 	},
 }
-
-var allTests = append(groupsByVmsTests, groupsByExprTests...)
-
-func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
-	err1 := parser.RunParser()
-	require.Nil(t, err1)
-	config := parser.GetConfig()
-	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	actualOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
-	fmt.Println(actualOutput)
-	suffix := "_PreProcessing"
-	if synTest.allowOnlyFromCategory > 0 {
-		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
-	}
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix+".txt")
-	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
+var liveNsxTest = synthesisTest{
+	name:                  "fromCollection",
+	exData:                nil,
+	allowOnlyFromCategory: collector.MinCategory(),
+	noHint:                true,
+}
+var resourceFileTest = synthesisTest{
+	name:                  "fromResourceFile",
+	exData:                nil,
+	allowOnlyFromCategory: collector.MinCategory(),
+	noHint:                true,
 }
 
+var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
+var allTests = append(allSyntheticTests, []synthesisTest{liveNsxTest, resourceFileTest}...)
+
+///////////////////////////////////////////////////////////////////////
+// the tests:
+//////////////////////////////////////////////////////////////////////
+
+func TestDoNotAllowSameName(t *testing.T) {
+	names := map[string]bool{}
+	for _, test := range allTests {
+		require.False(t, names[test.name], "There are two tests with the same name %s", names[test.name])
+		names[test.name] = true
+	}
+}
 func TestPreprocessing(t *testing.T) {
-	logging.Init(logging.LowVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
-		// to generate output comment the following line and uncomment the one after
-		test.runPreprocessing(t, OutputComparison)
-		//nolint:gocritic // uncomment for generating output
-		//test.runPreprocessing(t, OutputGeneration)
+	parallelTestsRun(t, runPreprocessing)
+}
+func TestConvertToAbsract(t *testing.T) {
+	parallelTestsRun(t, runConvertToAbstract)
+}
+func TestK8SSynthesis(t *testing.T) {
+	parallelTestsRun(t, runK8SSynthesis)
+}
+func TestCompareNSXConnectivity(t *testing.T) {
+	parallelTestsRun(t, runCompareNSXConnectivity)
+}
+
+// the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
+func TestLiveNSXServer(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
+	server, err := collector.GetNSXServerDate("", "", "")
+	if err != nil {
+		logging.Debug(err.Error())
+		return
+	}
+	rc, err := collector.CollectResources(server)
+	require.Nil(t, err)
+	require.NotNil(t, rc)
+	serialTestsRun(&liveNsxTest, t, rc)
+}
+
+// the TestLiveNSXServer() get the resource from resources.json, and call serialTestsRun()
+func TestNsxResourceFile(t *testing.T) {
+	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
+	b, err := os.ReadFile(inputFile)
+	require.Nil(t, err)
+	rc, err := collector.FromJSONString(b)
+	require.Nil(t, err)
+	require.NotNil(t, rc)
+	if len(rc.DomainList) == 0 {
+		logging.Debugf("%s has no domains\n", inputFile)
+		return
+	}
+	serialTestsRun(&resourceFileTest, t, rc)
+}
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////////
+// serialTestsRun() gets a resource, and run the test functions serially
+// we need it to be serially, because we have only one resource
+func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	runPreprocessing(synTest, t, rc)
+	runConvertToAbstract(synTest, t, rc)
+	runK8SSynthesis(synTest, t, rc)
+	runCompareNSXConnectivity(synTest, t, rc)
+}
+
+// parallelTestsRun() gets a test function to run, and run it on all the syntheticTests in parallel
+func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
+	logging.Init(logging.HighVerbosity)
+	t.Parallel()
+	for _, test := range allSyntheticTests {
+		rc := data.ExamplesGeneration(&test.exData.FromNSX)
+		t.Run(test.name, func(t *testing.T) {
+			f(&test, t, rc)
+		},
+		)
 	}
 }
 
-func (synTest *synthesisTest) runConvertToAbstract(t *testing.T, mode testMode) {
-	rc := data.ExamplesGeneration(&synTest.exData.FromNSX)
-	hintsParm := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	suffix := "_ConvertToAbstractNoHint.txt"
-	if !synTest.noHint {
-		hintsParm.GroupsDisjoint = synTest.exData.DisjointGroupsTags
-		suffix = "_ConvertToAbstract.txt"
-	}
-	if synTest.allowOnlyFromCategory > 0 {
-		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
-	}
-	baseName := fmt.Sprintf("%s_%t_%d", synTest.name, synTest.noHint, synTest.allowOnlyFromCategory)
-	outDir := path.Join("out", baseName)
-	fmt.Println("suffix:", suffix)
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, hintsParm, synTest.allowOnlyFromCategory)
-	expectedOutputFileName := filepath.Join(getTestsDirOut(), synTest.name+suffix)
-	expectedOutputDir := filepath.Join(getTestsDirOut(), k8sResourcesDir, baseName)
+//////////////////////////////////////////
+// the test functions:
+//////////////////////////////////////////
+
+func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	// get the config:
+	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
+	err := parser.RunParser()
 	require.Nil(t, err)
-	addDebugFiles(t, rc, abstractModel, outDir)
-	actualOutput := strAllowOnlyPolicy(abstractModel.policy[0])
-	fmt.Println(actualOutput)
-	compareOrRegenerateOutputPerTest(t, mode, actualOutput, expectedOutputFileName, synTest.name)
-	compareOrRegenerateOutputDirPerTest(t, mode, filepath.Join(outDir, k8sResourcesDir), expectedOutputDir, synTest.name)
+	config := parser.GetConfig()
+	// write the config summary into a file, for debugging:
+	configStr := config.GetConfigInfoStr(false)
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
+	require.Nil(t, err)
+	// get the preProcess results:
+	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
+	preProcessOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	logging.Debug(preProcessOutput)
+	// write the preProcess results into a file, for debugging:
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
+	require.Nil(t, err)
+	// compare to expected results:
+	if synTest.hasExpectedResults() {
+		expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "pre_process", synTest.id()+".txt")
+		compareOrRegenerateOutputPerTest(t, preProcessOutput, expectedOutputFileName, synTest.name)
+	}
 }
 
-func addDebugFiles(t *testing.T, rc *collector.ResourcesContainerModel, abstractModel *AbstractModelSyn, outDir string) {
-	connectivity := map[string]string{}
-	var err error
-	// generate connectivity analysis output from the original NSX resources
-	debugDir := path.Join(outDir, "debug_resources")
-
-	for _, format := range []string{"txt", "dot"} {
-		params := common.OutputParameters{
-			Format: format,
-		}
-		connectivity[format], err = model.NSXConnectivityFromResourcesContainer(rc, params)
-		require.Nil(t, err)
-		err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity."+format), connectivity[format])
-		require.Nil(t, err)
+func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	require.Nil(t, err)
+	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0])
+	logging.Debug(abstractModelStr)
+	// write the abstract model rules into a file, for debugging:
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
+	require.Nil(t, err)
+	// compare to expected results:
+	if synTest.hasExpectedResults() {
+		expectedOutputFileName := filepath.Join(getTestsDirExpectedOut(), "abstract_models", synTest.id()+".txt")
+		compareOrRegenerateOutputPerTest(t, abstractModelStr, expectedOutputFileName, synTest.name)
 	}
-	// write the abstract model rules into a file
-	abstractStr := strAllowOnlyPolicy(abstractModel.policy[0])
-	err = common.WriteToFile(path.Join(debugDir, "abstract_model.txt"), abstractStr)
-	require.Nil(t, err)
-	// write the config summery into a file
-	configStr, err := model.NSXConfigStrFromResourcesContainer(rc, common.OutputParameters{})
-	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "config.txt"), configStr)
-	require.Nil(t, err)
+}
 
-	// store the original NSX resources in JSON
+func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
+	// create K8S resources:
+	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory)
+	require.Nil(t, err)
+	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
+	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
+	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
+	require.Nil(t, err)
+	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
+	require.Nil(t, err)
+	// compare to expected results:
+	if synTest.hasExpectedResults() {
+		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
+		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	}
+}
+
+func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	debugDir := synTest.debugDir()
+	// store the original NSX resources in JSON, for debugging:
 	jsonOut, err := rc.ToJSONString()
-	if err != nil {
-		t.Errorf("failed in converting to json: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "nsx_resources.json"), jsonOut)
-	if err != nil {
-		t.Errorf("failed in write to file: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
 
-	// convert the abstract model to a new equiv NSX config
+	// getting the vmware connectivity
+	connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	require.Nil(t, err)
+	// write to file, for debugging:
+	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	require.Nil(t, err)
+
+	// create abstract model convert it to a new equiv NSX resources:
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
+	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
 	jsonOut, err = rc.ToJSONString()
-	if err != nil {
-		t.Errorf("failed in converting to json: error = %v", err)
-		return
-	}
-	// store the *new* (from abstract model) NSX JSON config in a file
+	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_resources.json"), jsonOut)
-	if err != nil {
-		t.Errorf("failed in write to file: error = %v", err)
-		return
-	}
+	require.Nil(t, err)
 
-	params := common.OutputParameters{
-		Format: "txt",
-	}
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, params)
+	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	// currently comment out this test, since there is no support of creating groups by tags:
-	// require.Equal(t, connectivity["txt"], analyzed,
-	// 	fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
-
-	// run netpol-analyzer
-	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
-	for _, format := range []string{"txt", "dot"} {
-		err := k8sAnalyzer(path.Join(outDir, k8sResourcesDir), path.Join(debugDir, "k8s_connectivity."+format), format)
-		require.Nil(t, err)
-	}
+	require.Equal(t, connectivity, analyzed,
+		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
 
-// to be run only on "live nsx" mode
-// no expected output is tested
-// only generates
-// (1) converted config into k8s network policies
-// (2) equiv config in NSX with allow-only DFW rules, as derived from the abstract model
-// and validates that connectivity of orign and new NSX configs are the same
-func TestCollectAndConvertToAbstract(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	server, err := collector.GetNSXServerDate("", "", "")
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
-
-	rc, err := collector.CollectResources(server)
-	if err != nil {
-		t.Errorf("CollectResources() error = %v", err)
-		return
-	}
-	if rc == nil {
-		t.Errorf(common.ErrNoResources)
-		return
-	}
-	outDir := path.Join("out", "from_collection")
-	abstractModel, err := NSXToK8sSynthesis(rc, outDir, &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}, 0)
-	require.Nil(t, err)
-	// print the conntent of the abstract model
-	fmt.Println(strAllowOnlyPolicy(abstractModel.policy[0]))
-
-	addDebugFiles(t, rc, abstractModel, outDir)
-	require.Nil(t, err)
+// /////////////////////////////////////////////////////////////////////
+// some directory related functions:
+// ////////////////////////////////////////////////////////////////////
+func getTestsDirExpectedOut() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, expectedOutput)
+}
+func getTestsDirActualOut() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, actualOutput)
+}
+func getTestsDirIn() string {
+	currentDir, _ := os.Getwd()
+	return filepath.Join(currentDir, "tests")
 }
 
-// this function runs on generated examples
-// calls to addDebugFiles  - see comments there
-func TestConvertToAbsract(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
-	for _, test := range allTests {
-		t.Run(test.name, func(t *testing.T) {
-			// to generate output comment the following line and uncomment the one after
-			test.runConvertToAbstract(t, OutputComparison)
-			//nolint:gocritic // uncomment for generating output
-			// test.runConvertToAbstract(t, OutputGeneration)
-		},
-		)
-	}
-}
-func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir, expectedDir, testName string) {
+// /////////////////////////////////////////////////////////////////////////
+// comparing / generating files and dirs:
+// /////////////////////////////////////////////////////////////////////////
+type testMode int
+
+const (
+	OutputComparison testMode = iota // compare actual output to expected output
+	OutputGeneration                 // generate expected output
+)
+
+// to generate output results change runTestMode:
+const runTestMode = OutputComparison
+
+func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
-	if mode == OutputComparison {
+	if runTestMode == OutputComparison {
 		expectedFiles, err := os.ReadDir(expectedDir)
 		require.Nil(t, err)
 		require.Equal(t, len(actualFiles), len(expectedFiles),
@@ -316,7 +383,7 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir,
 			require.Equal(t, cleanStr(string(actualOutput)), cleanStr(string(expectedOutput)),
 				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
 		}
-	} else if mode == OutputGeneration {
+	} else if runTestMode == OutputGeneration {
 		err := os.RemoveAll(expectedDir)
 		require.Nil(t, err)
 		err = os.CopyFS(expectedDir, os.DirFS(actualDir))
@@ -324,24 +391,17 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, mode testMode, actualDir,
 	}
 }
 
-func compareOrRegenerateOutputPerTest(t *testing.T, mode testMode, actualOutput, expectedOutputFileName, testName string) {
-	if mode == OutputComparison {
+func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutputFileName, testName string) {
+	if runTestMode == OutputComparison {
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
 		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
-	} else if mode == OutputGeneration {
-		fmt.Printf("outputGeneration\n")
-		err := os.WriteFile(expectedOutputFileName, []byte(actualOutput), writeFileMde)
+	} else if runTestMode == OutputGeneration {
+		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}
-}
-
-// getTestsDirOut returns the path to the dir where test output files are located
-func getTestsDirOut() string {
-	currentDir, _ := os.Getwd()
-	return filepath.Join(currentDir, expectedOutput)
 }
 
 // comparison should be insensitive to line comparators; cleaning strings from line comparators

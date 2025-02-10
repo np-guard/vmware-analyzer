@@ -40,8 +40,8 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 	c.analysisDone = true
 }
 
-// getConfigInfoStr returns string describing the captured configuration content
-func (c *config) getConfigInfoStr(color bool) string {
+// GetConfigInfoStr returns string describing the captured configuration content
+func (c *config) GetConfigInfoStr(color bool) string {
 	var sb strings.Builder
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")

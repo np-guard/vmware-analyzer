@@ -10,6 +10,15 @@ import (
 func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
 	outDir string,
+	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) error {
+	abstractModel, err := NSXToPolicy(recourses, hints, allowOnlyFromCategory)
+	if err != nil {
+		return err
+	}
+	return createK8sResources(abstractModel, outDir)
+}
+
+func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) (*AbstractModelSyn, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
@@ -23,5 +32,5 @@ func NSXToK8sSynthesis(
 		allowOnlyFromCategory: allowOnlyFromCategory, policy: []*symbolicPolicy{&allowOnlyPolicy}}
 	policyStr := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	logging.Debugf("abstract model\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", policyStr)
-	return abstractModel, createK8sResources(abstractModel, outDir)
+	return abstractModel, nil
 }

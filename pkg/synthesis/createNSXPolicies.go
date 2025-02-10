@@ -43,12 +43,14 @@ func newAbsToNXS() *absToNXS {
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
 	a.allVMs = model.vms
-	for iGroup := range rc.DomainList[0].Resources.GroupList {
-		for iVM := range rc.DomainList[0].Resources.GroupList[iGroup].VMMembers {
-			vmResource := rc.DomainList[0].Resources.GroupList[iGroup].VMMembers[iVM]
-			vmIndex := slices.IndexFunc(a.allVMs, func(vm *endpoints.VM) bool { return *vmResource.DisplayName == vm.Name() })
-			if vmIndex >= 0 {
-				a.vmResource[a.allVMs[vmIndex]] = vmResource
+	for i := range rc.DomainList {
+		for iGroup := range rc.DomainList[i].Resources.GroupList {
+			for iVM := range rc.DomainList[i].Resources.GroupList[iGroup].VMMembers {
+				vmResource := rc.DomainList[i].Resources.GroupList[iGroup].VMMembers[iVM]
+				vmIndex := slices.IndexFunc(a.allVMs, func(vm *endpoints.VM) bool { return *vmResource.DisplayName == vm.Name() })
+				if vmIndex >= 0 {
+					a.vmResource[a.allVMs[vmIndex]] = vmResource
+				}
 			}
 		}
 	}
