@@ -58,7 +58,7 @@ type cliTest struct {
 
 const (
 	noDotExecErr    = "exec: \"dot\": executable file not found"
-	fileNotFoundErr = "The system cannot find the file specified"
+	fileNotFoundErr = "no such file or directory"
 )
 
 var staticTests = []*cliTest{
