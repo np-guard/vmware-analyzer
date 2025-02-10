@@ -233,6 +233,9 @@ func runCommand(args *inArgs) error {
 			return err
 		}
 		err = resources.CreateDir(args.synthesisDumpDir)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
