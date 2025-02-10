@@ -1,6 +1,7 @@
 # clean up cr instances
 kubectl delete nsxmigration --all
 kubectl delete netpol --all
+kubectl delete secret my-nsx
 # remove controller and crd
 make undeploy
 #validate undeploy
@@ -11,3 +12,4 @@ make docker-build docker-push
 make deploy
 #validate deploy
 kubectl get pods -n operator-system
+kubectl create secret generic my-nsx  --from-literal=username=$NSX_USER --from-literal=password=$NSX_PASSWORD --from-literal=url=$NSX_HOST
