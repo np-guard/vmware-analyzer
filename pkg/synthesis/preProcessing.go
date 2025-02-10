@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -40,23 +41,28 @@ func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category collector.DfwCate
 	return res
 }
 
-func (policy symbolicPolicy) string() string {
-	return fmt.Sprintf("symbolic inbound rules:\n%v\nsymbolic outbound rules:\n%v", strSymbolicRules(policy.inbound),
-		strSymbolicRules(policy.outbound))
+func (policy symbolicPolicy) string(color bool) string {
+	return fmt.Sprintf("symbolic inbound rules:\n%v\nsymbolic outbound rules:\n%v", strSymbolicRules(policy.inbound, color),
+		strSymbolicRules(policy.outbound, color))
 }
 
-func strSymbolicRules(rules []*symbolicRule) string {
-	resStr := make([]string, len(rules))
+func strSymbolicRules(rules []*symbolicRule, color bool) string {
+	header := []string{"Priority", "Action", "Src", "Dst", "Connection"}
+	lines := [][]string{}
 	for i, rule := range rules {
-		resStr[i] = fmt.Sprintf("\t%v. action: %v paths: %v", i, rule.origRule.Action, rule.origSymbolicPaths)
+		for _, path := range *rule.origSymbolicPaths {
+			newLine := []string{fmt.Sprintf("%v", i), fmt.Sprintf("%s", rule.origRule.Action),
+				path.Src.String(), path.Dst.String(), path.Conn.String()}
+			lines = append(lines, newLine)
+		}
 	}
-	return strings.Join(resStr, "\n")
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 // prints all symbolic rules by ordered category
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
 func printSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) string {
+	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, color bool) string {
 	res := []string{}
 	for _, category := range categoriesSpecs {
 		policy := categoryToPolicy[category.Category]
@@ -65,7 +71,7 @@ func printSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
 		}
 		if len(policy.inbound) > 0 || len(policy.outbound) > 0 {
 			res = append(res, fmt.Sprintf("category: %s\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v",
-				category.Category.String(), policy.string()))
+				category.Category.String(), policy.string(color)))
 		}
 	}
 	return strings.Join(res, "\n")

@@ -8,10 +8,9 @@ import (
 )
 
 func NSXToK8sSynthesis(
-	recourses *collector.ResourcesContainerModel,
-	outDir string,
-	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) error {
-	abstractModel, err := NSXToPolicy(recourses, hints, allowOnlyFromCategory)
+	recourses *collector.ResourcesContainerModel, outDir string, hints *symbolicexpr.Hints,
+	allowOnlyFromCategory collector.DfwCategory, color bool) error {
+	abstractModel, err := NSXToPolicy(recourses, hints, allowOnlyFromCategory, color)
 	if err != nil {
 		return err
 	}
@@ -19,7 +18,7 @@ func NSXToK8sSynthesis(
 }
 
 func NSXToPolicy(recourses *collector.ResourcesContainerModel,
-	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) (*AbstractModelSyn, error) {
+	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory, color bool) (*AbstractModelSyn, error) {
 	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
@@ -30,7 +29,7 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, allowOnlyFromCategory, hints)
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
 		allowOnlyFromCategory: allowOnlyFromCategory, policy: []*symbolicPolicy{&allowOnlyPolicy}}
-	policyStr := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	policyStr := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, color)
 	logging.Debugf("abstract model\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", policyStr)
 	return abstractModel, nil
 }

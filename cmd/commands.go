@@ -228,7 +228,7 @@ func runCommand(args *inArgs) error {
 		if args.synthesizeAdmin {
 			category = collector.AppCategoty
 		}
-		err := synthesis.NSXToK8sSynthesis(resources, args.synthesisDumpDir, hints, category)
+		err := synthesis.NSXToK8sSynthesis(resources, args.synthesisDumpDir, hints, category, args.color)
 		if err != nil {
 			return err
 		}
