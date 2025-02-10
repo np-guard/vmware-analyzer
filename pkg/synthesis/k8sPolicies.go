@@ -93,7 +93,7 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addDefaultDenyNetworkPolicy() {
-	pol := newNetworkPolicy("defaultDeny", "Default Deny Network Policy", "noNsxID")
+	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", "noNsxID")
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
 }
