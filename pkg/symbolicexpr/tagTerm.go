@@ -95,10 +95,11 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 
 // GetTagConjunctionForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
-func GetTagConjunctionForExpr(expr *collector.Expression) []*Conjunction {
+func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	if expr == nil || len(*expr) == 0 {
-		logging.Infof("Expression must not be nil and must be of size at least 1")
+		logging.Debugf("Illegal or nil expression attached to group %s. Thus using the group VM members for synthesis and "+
+			"ignoring the expression", group)
 		return nil
 	}
 	exprVal := *expr

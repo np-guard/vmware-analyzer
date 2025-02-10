@@ -40,7 +40,7 @@ func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
 	for _, group := range groups {
 		// if group has a tag based supported expression then considers the tags instead of the group
 		if group.Expression != nil {
-			tagConj := GetTagConjunctionForExpr(&group.Expression)
+			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
 			if tagConj != nil {
 				res = append(res, tagConj...)
 				continue
