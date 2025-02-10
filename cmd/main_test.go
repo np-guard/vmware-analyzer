@@ -54,6 +54,7 @@ type cliTest struct {
 	expectedOutputSubstring string   // output of successful run
 	expectedOutFile         []string // generated output files of successful run
 	expectedErr             []string // expectedErr if assigned, should be returned (at least one of the given options)
+	ensureInputFileExist    string
 }
 
 const (
@@ -131,15 +132,17 @@ var staticTests = []*cliTest{
 		name: "anonymize-only",
 		args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
 			" --skip-analysis --anonymize",
-		expectedOutFile: []string{"examples/output/resources_anon_only.json"},
+		expectedOutFile:      []string{"examples/output/resources_anon_only.json"},
+		ensureInputFileExist: "examples/input/resources.json",
 	},
 	// tests with possible errors if are not run on env with dot executable
 	{
 		name: "anonymize-analyze",
 		args: "--resource-input-file examples/input/resources.json  --resource-dump-file examples/output/resources_anon.json" +
 			" --anonymize --filename examples/output/analysis.svg -o svg",
-		possibleErr:     noDotExecErr,
-		expectedOutFile: []string{"examples/output/resources_anon.json", "examples/output/analysis.svg"},
+		possibleErr:          noDotExecErr,
+		expectedOutFile:      []string{"examples/output/resources_anon.json", "examples/output/analysis.svg"},
+		ensureInputFileExist: "examples/input/resources.json",
 	},
 	{
 		name: "analyze-topology-svg",
@@ -160,6 +163,10 @@ func TestMainStatic(t *testing.T) {
 }
 
 func (st *cliTest) runTest(t *testing.T) {
+	if st.ensureInputFileExist != "" && !common.FileExist(st.ensureInputFileExist) {
+		logging.Debugf("input resource file %s does not exist, nothing to test", st.ensureInputFileExist)
+		return
+	}
 	output, err := buildAndExecuteCommand(strings.Split(st.args, " "))
 	switch {
 	case len(st.expectedErr) > 0:
