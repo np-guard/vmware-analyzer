@@ -1,5 +1,6 @@
 # clean up cr instances
 kubectl delete nsxmigration --all
+kubectl delete netpol --all
 # remove controller and crd
 make undeploy
 #validate undeploy

@@ -298,9 +298,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	}
 	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))*/
 
-	// create policies
-	if len(policies) > 0 {
-		policy := policies[0]
+	for _, policy := range policies {
 		if policy.Namespace == "" {
 			policy.Namespace = v1.NamespaceDefault
 		}
@@ -310,6 +308,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 			return err
 		}
 	}
+
 	// NetworkPolicy created successfully
 
 	log.Info("NetworkPolicy created successfully")
