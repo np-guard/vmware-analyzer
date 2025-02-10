@@ -24,8 +24,7 @@ type k8sPolicies struct {
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 }
 
-func toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
-	policies := &k8sPolicies{}
+func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}

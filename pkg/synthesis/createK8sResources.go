@@ -21,7 +21,8 @@ func createK8sResources(model *AbstractModelSyn, outDir string) error {
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
 	}
-	policies, adminPolicies := toNetworkPolicies(model)
+	k8sPolicies := &k8sPolicies{}
+	policies, adminPolicies := k8sPolicies.toNetworkPolicies(model)
 	if len(policies) > 0 {
 		policiesFileName := path.Join(outDir, "policies.yaml")
 		if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {
