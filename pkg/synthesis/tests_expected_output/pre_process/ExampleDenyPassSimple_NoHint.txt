@@ -1,18 +1,29 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: jump_to_application paths: src: (*) dst: (group = Dumbledore) conn: All Connections
-	1. action: deny paths: src: (*) dst: (group = Hufflepuff) conn: All Connections
-	2. action: deny paths: src: (*) dst: (group = Slytherin) conn: All Connections
+Priority |Action              |Src |Dst                  |Connection
+0        |jump_to_application |(*) |(group = Dumbledore) |All Connections
+1        |deny                |(*) |(group = Hufflepuff) |All Connections
+2        |deny                |(*) |(group = Slytherin)  |All Connections
+
+
 symbolic outbound rules:
-	0. action: jump_to_application paths: src: (*) dst: (group = Dumbledore) conn: All Connections
-	1. action: deny paths: src: (*) dst: (group = Hufflepuff) conn: All Connections
-	2. action: deny paths: src: (*) dst: (group = Slytherin) conn: All Connections
+Priority |Action              |Src |Dst                  |Connection
+0        |jump_to_application |(*) |(group = Dumbledore) |All Connections
+1        |deny                |(*) |(group = Hufflepuff) |All Connections
+2        |deny                |(*) |(group = Slytherin)  |All Connections
+
+
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: allow paths: src: (*) dst: (*) conn: All Connections
-	1. action: deny paths: src: (*) dst: (*) conn: All Connections
+Priority |Action |Src |Dst |Connection
+0        |allow  |(*) |(*) |All Connections
+1        |deny   |(*) |(*) |All Connections
+
+
 symbolic outbound rules:
-	0. action: allow paths: src: (*) dst: (*) conn: All Connections
-	1. action: deny paths: src: (*) dst: (*) conn: All Connections
+Priority |Action |Src |Dst |Connection
+0        |allow  |(*) |(*) |All Connections
+1        |deny   |(*) |(*) |All Connections
+

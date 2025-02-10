@@ -1,12 +1,16 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections
-	src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections
-	src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections
-	src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections
+original allow rule index |Src                |Dst                 |Connection
+0                         |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
+1                         |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
+2                         |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
+3                         |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
+
 outbound rules
-	src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections
-	src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections
-	src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections
-	src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections
+original allow rule index |Src                |Dst                 |Connection
+0                         |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
+1                         |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
+2                         |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
+3                         |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
+
