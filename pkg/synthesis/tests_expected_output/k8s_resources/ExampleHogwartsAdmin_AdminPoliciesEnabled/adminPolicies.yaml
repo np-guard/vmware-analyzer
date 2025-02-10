@@ -5,7 +5,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10218"
     creationTimestamp: null
-    name: admin_policy_0
+    name: admin-policy-0
+    namespace: default
 spec:
     egress:
         - action: Pass
@@ -35,7 +36,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10218"
     creationTimestamp: null
-    name: admin_policy_1
+    name: admin-policy-1
+    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -65,7 +67,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: All Connections)'
         nsx-id: "10219"
     creationTimestamp: null
-    name: admin_policy_2
+    name: admin-policy-2
+    namespace: default
 spec:
     egress:
         - action: Pass
@@ -95,7 +98,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: All Connections)'
         nsx-id: "10219"
     creationTimestamp: null
-    name: admin_policy_3
+    name: admin-policy-3
+    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -125,7 +129,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections)'
         nsx-id: "10220"
     creationTimestamp: null
-    name: admin_policy_4
+    name: admin-policy-4
+    namespace: default
 spec:
     egress:
         - action: Pass
@@ -155,7 +160,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections)'
         nsx-id: "10220"
     creationTimestamp: null
-    name: admin_policy_5
+    name: admin-policy-5
+    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -185,7 +191,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Dumbledore) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10221"
     creationTimestamp: null
-    name: admin_policy_6
+    name: admin-policy-6
+    namespace: default
 spec:
     egress:
         - action: Pass
@@ -215,7 +222,8 @@ metadata:
         description: '(jump_to_application: (src: (group = Dumbledore) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10221"
     creationTimestamp: null
-    name: admin_policy_7
+    name: admin-policy-7
+    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -245,7 +253,8 @@ metadata:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
-    name: admin_policy_8
+    name: admin-policy-8
+    namespace: default
 spec:
     egress:
         - action: Deny
@@ -269,7 +278,8 @@ metadata:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
-    name: admin_policy_9
+    name: admin-policy-9
+    namespace: default
 spec:
     ingress:
         - action: Deny

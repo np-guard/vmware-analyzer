@@ -9,13 +9,12 @@ import (
 
 func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
-	outDir string,
-	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) error {
+	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) (*k8sResources, error) {
 	abstractModel, err := NSXToPolicy(recourses, hints, allowOnlyFromCategory)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return createK8sResources(abstractModel, outDir)
+	return createK8sResources(abstractModel), nil
 }
 
 func NSXToPolicy(recourses *collector.ResourcesContainerModel,

@@ -5,7 +5,8 @@ metadata:
         description: 'src: (*) dst: (tag = Slytherin) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
-    name: policy_0
+    name: policy-0
+    namespace: default
 spec:
     egress:
         - to:
@@ -24,7 +25,8 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
-    name: policy_1
+    name: policy-1
+    namespace: default
 spec:
     egress:
         - to:
@@ -43,7 +45,8 @@ metadata:
         description: 'src: (*) dst: (tag = Slytherin) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
-    name: policy_2
+    name: policy-2
+    namespace: default
 spec:
     ingress:
         - from:
@@ -62,7 +65,8 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
-    name: policy_3
+    name: policy-3
+    namespace: default
 spec:
     ingress:
         - from:
@@ -81,7 +85,8 @@ metadata:
         description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
-    name: policy_4
+    name: policy-4
+    namespace: default
 spec:
     egress:
         - to:
@@ -100,7 +105,8 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
-    name: policy_5
+    name: policy-5
+    namespace: default
 spec:
     egress:
         - to:
@@ -119,7 +125,8 @@ metadata:
         description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
-    name: policy_6
+    name: policy-6
+    namespace: default
 spec:
     ingress:
         - from:
@@ -138,7 +145,8 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
-    name: policy_7
+    name: policy-7
+    namespace: default
 spec:
     ingress:
         - from:
@@ -157,7 +165,8 @@ metadata:
         description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy_8
+    name: policy-8
+    namespace: default
 spec:
     egress:
         - to:
@@ -176,7 +185,8 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy_9
+    name: policy-9
+    namespace: default
 spec:
     egress:
         - to:
@@ -195,7 +205,8 @@ metadata:
         description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy_10
+    name: policy-10
+    namespace: default
 spec:
     ingress:
         - from:
@@ -214,7 +225,8 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy_11
+    name: policy-11
+    namespace: default
 spec:
     ingress:
         - from:
@@ -233,7 +245,8 @@ metadata:
         description: Default Deny Network Policy
         nsx-id: noNsxID
     creationTimestamp: null
-    name: defaultDeny
+    name: default-deny
+    namespace: default
 spec:
     podSelector: {}
     policyTypes:

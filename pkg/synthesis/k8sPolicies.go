@@ -24,12 +24,11 @@ type k8sPolicies struct {
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 }
 
-func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
+func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn) {
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
 	policies.addDefaultDenyNetworkPolicy()
-	return policies.networkPolicies, policies.adminNetworkPolicies
 }
 
 func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn, rulePairs []*symbolicRulePair) {
@@ -74,7 +73,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []networking.NetworkPolicyPort, inbound bool,
 	description, nsxRuleID string) {
-	pol := newNetworkPolicy(fmt.Sprintf("policy_%d", len(policies.networkPolicies)), description, nsxRuleID)
+	pol := newNetworkPolicy(fmt.Sprintf("policy-%d", len(policies.networkPolicies)), description, nsxRuleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	if inbound {
 		from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
@@ -92,14 +91,14 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addDefaultDenyNetworkPolicy() {
-	pol := newNetworkPolicy("defaultDeny", "Default Deny Network Policy", "noNsxID")
+	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", "noNsxID")
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
-	pol := newAdminNetworkPolicy(fmt.Sprintf("admin_policy_%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
+	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
 	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	//nolint:gosec // priority should fit int32:
 	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
@@ -126,6 +125,7 @@ func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPo
 	pol.TypeMeta.Kind = "NetworkPolicy"
 	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
 	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Namespace = meta.NamespaceDefault
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
@@ -138,6 +138,7 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 	pol.TypeMeta.Kind = "AdminNetworkPolicy"
 	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
 	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Namespace = meta.NamespaceDefault
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,

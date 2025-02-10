@@ -6,6 +6,7 @@ metadata:
         group__Slytherin: "true"
         group__Web: "true"
     name: Slytherin-Web
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -18,6 +19,7 @@ metadata:
         group__App: "true"
         group__Slytherin: "true"
     name: Slytherin-App
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -30,6 +32,7 @@ metadata:
         group__DB: "true"
         group__Slytherin: "true"
     name: Slytherin-DB
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -42,6 +45,7 @@ metadata:
         group__Hufflepuff: "true"
         group__Web: "true"
     name: Hufflepuff-Web
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -54,6 +58,7 @@ metadata:
         group__App: "true"
         group__Hufflepuff: "true"
     name: Hufflepuff-App
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -66,6 +71,7 @@ metadata:
         group__DB: "true"
         group__Hufflepuff: "true"
     name: Hufflepuff-DB
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -78,6 +84,7 @@ metadata:
         group__Gryffindor: "true"
         group__Web: "true"
     name: Gryffindor-Web
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -90,6 +97,7 @@ metadata:
         group__App: "true"
         group__Gryffindor: "true"
     name: Gryffindor-App
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -102,6 +110,7 @@ metadata:
         group__DB: "true"
         group__Gryffindor: "true"
     name: Gryffindor-DB
+    namespace: default
 spec:
     containers: null
 status: {}
