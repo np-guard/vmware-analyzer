@@ -25,11 +25,13 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		return nil, err
 	}
 	config := parser.GetConfig()
-	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, allowOnlyFromCategory, hints)
+	preProcessingCategoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
+	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy, color)
+	logging.Debugf("pre processing symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", preProcessingPolicyStr)
+	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy, allowOnlyFromCategory, hints)
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
 		allowOnlyFromCategory: allowOnlyFromCategory, policy: []*symbolicPolicy{&allowOnlyPolicy}}
-	policyStr := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, color)
-	logging.Debugf("abstract model\n~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", policyStr)
+	abstractPolicyStr := strAllowOnlyPolicy(&allowOnlyPolicy, color)
+	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", abstractPolicyStr)
 	return abstractModel, nil
 }

@@ -10,6 +10,10 @@ func (path *SymbolicPath) String() string {
 	return "src: " + path.Src.String() + " dst: " + path.Dst.String() + " conn: " + path.Conn.String()
 }
 
+func (path *SymbolicPath) TableString() []string {
+	return []string{path.Src.String(), path.Dst.String(), path.Conn.String()}
+}
+
 // if the source or destination is empty then so is the entire path
 func (path *SymbolicPath) isEmpty(hints *Hints) bool {
 	return path.Conn.IsEmpty() || path.Src.isEmptySet(hints) || path.Dst.isEmptySet(hints)

@@ -51,17 +51,17 @@ func strSymbolicRules(rules []*symbolicRule, color bool) string {
 	lines := [][]string{}
 	for i, rule := range rules {
 		for _, path := range *rule.origSymbolicPaths {
-			newLine := []string{fmt.Sprintf("%v", i), fmt.Sprintf("%s", rule.origRule.Action),
-				path.Src.String(), path.Dst.String(), path.Conn.String()}
+			newLine := append([]string{fmt.Sprintf("%v", i), fmt.Sprintf("%s", rule.origRule.Action)},
+				path.TableString()...)
 			lines = append(lines, newLine)
 		}
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-// prints all symbolic rules by ordered category
+// prints pre-processing symbolic rules by ordered category
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
-func printSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
+func printPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
 	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, color bool) string {
 	res := []string{}
 	for _, category := range categoriesSpecs {

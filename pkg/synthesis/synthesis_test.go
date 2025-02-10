@@ -254,7 +254,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	require.Nil(t, err)
 	// get the preProcess results:
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	preProcessOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, false)
+	preProcessOutput := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, false)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
@@ -269,7 +269,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
 	require.Nil(t, err)
-	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0])
+	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
 	logging.Debug(abstractModelStr)
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
@@ -365,7 +365,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputComparison
+const runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)

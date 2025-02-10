@@ -1,12 +1,16 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections
-	src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections
-	src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections
-	src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections
+original allow rule index |Src                                  |Dst                                  |Connection
+0                         |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
+0                         |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
+1                         |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
+1                         |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+
 outbound rules
-	src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections
-	src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections
-	src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections
-	src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections
+original allow rule index |Src                                  |Dst                                  |Connection
+0                         |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
+0                         |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
+1                         |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
+1                         |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+

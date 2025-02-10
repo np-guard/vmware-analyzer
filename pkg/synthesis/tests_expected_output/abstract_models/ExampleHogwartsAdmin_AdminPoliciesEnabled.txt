@@ -1,10 +1,14 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	src: (*) dst: (group = Web) conn: All Connections
-	src: (group = Web) dst: (group = App) conn: All Connections
-	src: (group = App) dst: (group = DB) conn: All Connections
+original allow rule index |Src           |Dst           |Connection
+5                         |(*)           |(group = Web) |All Connections
+6                         |(group = Web) |(group = App) |All Connections
+7                         |(group = App) |(group = DB)  |All Connections
+
 outbound rules
-	src: (*) dst: (group = Web) conn: All Connections
-	src: (group = Web) dst: (group = App) conn: All Connections
-	src: (group = App) dst: (group = DB) conn: All Connections
+original allow rule index |Src           |Dst           |Connection
+5                         |(*)           |(group = Web) |All Connections
+6                         |(group = Web) |(group = App) |All Connections
+7                         |(group = App) |(group = DB)  |All Connections
+
