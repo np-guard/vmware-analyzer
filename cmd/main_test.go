@@ -58,7 +58,7 @@ type cliTest struct {
 
 const (
 	noDotExecErr    = "exec: \"dot\": executable file not found"
-	fileNotFoundErr = "no such file or directory"
+	resourceFileNotFoundErr = "open examples/input/resources.json:"
 )
 
 var staticTests = []*cliTest{
@@ -132,7 +132,7 @@ var staticTests = []*cliTest{
 		name: "anonymize-only",
 		args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
 			" --skip-analysis --anonymize",
-		possibleErr:     fileNotFoundErr,
+		possibleErr:     resourceFileNotFoundErr,
 		expectedOutFile: []string{"examples/output/resources_anon_only.json"},
 	},
 	// tests with possible errors if are not run on env with dot executable
@@ -140,7 +140,7 @@ var staticTests = []*cliTest{
 		name: "anonymize-analyze",
 		args: "--resource-input-file examples/input/resources.json  --resource-dump-file examples/output/resources_anon.json" +
 			" --anonymize --filename examples/output/analysis.txt -o txt",
-		possibleErr:     fileNotFoundErr,
+		possibleErr:     resourceFileNotFoundErr,
 		expectedOutFile: []string{"examples/output/resources_anon.json", "examples/output/analysis.svg"},
 	},
 	{
