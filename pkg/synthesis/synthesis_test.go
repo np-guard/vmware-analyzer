@@ -202,7 +202,12 @@ func TestLiveNSXServer(t *testing.T) {
 
 // the TestNsxResourceFile() get the resource from resources.json, and call serialTestsRun()
 func TestNsxResourceFile(t *testing.T) {
+	logging.Init(logging.HighVerbosity)
 	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
+	if !common.FileExist(inputFile){
+		logging.Debugf("resource file %s does not exist, nothing to test\n",inputFile)
+		return
+	}
 	b, err := os.ReadFile(inputFile)
 	require.Nil(t, err)
 	rc, err := collector.FromJSONString(b)
