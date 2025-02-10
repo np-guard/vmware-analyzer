@@ -24,12 +24,11 @@ type k8sPolicies struct {
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 }
 
-func (policies *k8sPolicies) toNetworkPolicies(model *AbstractModelSyn) ([]*networking.NetworkPolicy, []*admin.AdminNetworkPolicy) {
+func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn) {
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
 	policies.addDefaultDenyNetworkPolicy()
-	return policies.networkPolicies, policies.adminNetworkPolicies
 }
 
 func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn, rulePairs []*symbolicRulePair) {

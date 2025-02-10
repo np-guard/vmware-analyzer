@@ -16,38 +16,46 @@ import (
 
 const k8sResourcesDir = "k8s_resources"
 
-func createK8sResources(model *AbstractModelSyn, outDir string) error {
+type k8sResources struct {
+	k8sPolicies
+	pods []*core.Pod
+}
+
+func createK8sResources(model *AbstractModelSyn) *k8sResources {
+	k8sResources := &k8sResources{}
+	k8sResources.createPolicies(model)
+	k8sResources.createPods(model)
+	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
+		len(k8sResources.networkPolicies), len(k8sResources.adminNetworkPolicies), len(k8sResources.pods))
+	return k8sResources
+}
+
+func (resources *k8sResources) CreateDir(outDir string) error {
 	outDir = filepath.Join(outDir, k8sResourcesDir)
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
 	}
-	k8sPolicies := &k8sPolicies{}
-	policies, adminPolicies := k8sPolicies.toNetworkPolicies(model)
-	if len(policies) > 0 {
+	if len(resources.networkPolicies) > 0 {
 		policiesFileName := path.Join(outDir, "policies.yaml")
-		if err := common.WriteYamlUsingJSON(policies, policiesFileName); err != nil {
+		if err := common.WriteYamlUsingJSON(resources.networkPolicies, policiesFileName); err != nil {
 			return err
 		}
 	}
-	if len(adminPolicies) > 0 {
+	if len(resources.adminNetworkPolicies) > 0 {
 		adminPoliciesFileName := path.Join(outDir, "adminPolicies.yaml")
-		if err := common.WriteYamlUsingJSON(adminPolicies, adminPoliciesFileName); err != nil {
+		if err := common.WriteYamlUsingJSON(resources.adminNetworkPolicies, adminPoliciesFileName); err != nil {
 			return err
 		}
 	}
-	pods := toPods(model)
 	podsFileName := path.Join(outDir, "pods.yaml")
-	if err := common.WriteYamlUsingJSON(pods, podsFileName); err != nil {
+	if err := common.WriteYamlUsingJSON(resources.pods, podsFileName); err != nil {
 		return err
 	}
-	logging.Debugf("%d k8s network policies, and %d admin network policies were generated at %s",
-		len(policies), len(adminPolicies), outDir)
 	return nil
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
-func toPods(model *AbstractModelSyn) []*core.Pod {
-	pods := []*core.Pod{}
+func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 	for _, vm := range model.vms {
 		pod := &core.Pod{}
 		pod.TypeMeta.Kind = "Pod"
@@ -67,9 +75,8 @@ func toPods(model *AbstractModelSyn) []*core.Pod {
 			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
 			pod.ObjectMeta.Labels[label] = theTrue
 		}
-		pods = append(pods, pod)
+		resources.pods = append(resources.pods, pod)
 	}
-	return pods
 }
 
 ///////////////////////////////////////////////////////////////////////////
