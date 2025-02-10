@@ -254,7 +254,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	require.Nil(t, err)
 	// get the preProcess results:
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	preProcessOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	preProcessOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
