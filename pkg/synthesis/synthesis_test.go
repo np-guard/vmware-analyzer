@@ -200,7 +200,7 @@ func TestLiveNSXServer(t *testing.T) {
 	serialTestsRun(&liveNsxTest, t, rc)
 }
 
-// the TestLiveNSXServer() get the resource from resources.json, and call serialTestsRun()
+// the TestNsxResourceFile() get the resource from resources.json, and call serialTestsRun()
 func TestNsxResourceFile(t *testing.T) {
 	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
 	b, err := os.ReadFile(inputFile)
