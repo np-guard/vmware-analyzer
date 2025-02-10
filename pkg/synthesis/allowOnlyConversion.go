@@ -1,8 +1,8 @@
 package synthesis
 
 import (
-	"fmt"
 	"slices"
+	"strconv"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
@@ -116,7 +116,7 @@ func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
 			continue
 		}
 		for _, path := range rule.allowOnlyRulePaths {
-			newLine := append([]string{fmt.Sprintf("%v", i)}, path.TableString()...)
+			newLine := append([]string{strconv.Itoa(i)}, path.TableString()...)
 			lines = append(lines, newLine)
 		}
 	}
