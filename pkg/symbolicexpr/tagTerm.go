@@ -96,7 +96,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return exprNotSupported(expr, group)
 	}
 	exprVal := *expr
-	condTag1 := getTagTermExprElement(exprVal[0], true)
+	condTag1 := getTagTermExprElement(exprVal[0])
 	if condTag1 == nil {
 		return exprNotSupported(expr, group)
 	}
@@ -104,7 +104,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}}
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(exprVal[1])
-		condTag2 := getTagTermExprElement(exprVal[2], true)
+		condTag2 := getTagTermExprElement(exprVal[2])
 		if orOrAnd == nil || condTag2 == nil {
 			return exprNotSupported(expr, group)
 		}
@@ -122,7 +122,7 @@ func exprNotSupported(expr *collector.Expression, group string) []*Conjunction {
 	return nil
 }
 
-func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagAtomicTerm {
+func getTagTermExprElement(elem collector.ExpressionElement) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
 		return nil
