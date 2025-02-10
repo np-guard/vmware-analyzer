@@ -71,17 +71,15 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 	return &tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 }
 
-const supportErrMsg = "Supported expression: cond \"And\" or \"Or\" cond"
-
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
 // returns nil if neither
 func getConjunctionOperator(elem collector.ExpressionElement) *resources.ConjunctionOperatorConjunctionOperator {
 	if elem == nil {
-		logging.Infof(supportErrMsg + "\n; operator must not be nil\n")
+		return nil
 	}
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Infof(supportErrMsg + "\n\tillegal operator\n")
+		return nil
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
@@ -98,14 +96,12 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	if expr == nil || len(*expr) == 0 {
-		logging.Debugf("Illegal or nil expression attached to group %s. Thus using the group VM members for synthesis and "+
-			"ignoring the expression", group)
-		return nil
+		return exprNotSupported(expr)
 	}
 	exprVal := *expr
 	condTag1 := getTagTermExprElement(exprVal[0], true)
 	if condTag1 == nil {
-		return nil
+		return exprNotSupported(expr)
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
 		return []*Conjunction{{condTag1}}
@@ -121,19 +117,17 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 	}
 	// len not 1 neither 3
-	logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
+	return exprNotSupported(expr)
+}
+
+func exprNotSupported(expr *collector.Expression) []*Conjunction {
+	logging.Debugf("expr %s not supported in the POC", expr.String())
 	return nil
 }
 
 func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
-		firstOrSec := "first"
-		if !isFirst {
-			firstOrSec = "second"
-		}
-		logging.Infof(supportErrMsg+"; the %v element must be a condition", firstOrSec+
-			fmt.Sprintf("\n\t%+v is not\n", elem))
 		return nil
 	}
 	return getTagTermsForCondition(cond)
