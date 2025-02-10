@@ -229,10 +229,10 @@ func runCommand(args *inArgs) error {
 			category = collector.AppCategoty
 		}
 		resources, err := synthesis.NSXToK8sSynthesis(resources, hints, category)
-		resources.CreateDir(args.synthesisDumpDir)
 		if err != nil {
 			return err
 		}
+		err = resources.CreateDir(args.synthesisDumpDir)
 	}
 	return nil
 }
