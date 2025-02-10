@@ -41,6 +41,7 @@ import (
 	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 )
 
 const migratensxFinalizer = "nsx.npguard.io/finalizer"
@@ -290,13 +291,13 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	log.Info("NSXConnectivity res:", "res", conn)
 
 	// synthesis
-	/*synth := &synthesis.Synthesis{}
+	synth := &synthesis.Synthesis{}
 	policies, err := synth.NSXToK8sSynthesis(nsxResourecs)
 	if err != nil {
 		log.Error(err, "NSXToK8sSynthesis returned with error", "errStr", err.Error())
 		return err
 	}
-	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))*/
+	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))
 
 	for _, policy := range policies {
 		if policy.Namespace == "" {

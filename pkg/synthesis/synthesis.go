@@ -5,6 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	v1 "k8s.io/api/networking/v1"
 )
 
 type SynthesisOptions struct {
@@ -50,9 +51,8 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 type Synthesis struct {
 }
 
-/*func (s *Synthesis) NSXToK8sSynthesis(resources *collector.ResourcesContainerModel) ([]*v1.NetworkPolicy, error) {
+func (s *Synthesis) NSXToK8sSynthesis(resources *collector.ResourcesContainerModel) ([]*v1.NetworkPolicy, error) {
 	hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	category := collector.MinCategory()
-	_, policies, err := NSXToK8sSynthesis(resources, "", hints, category)
-	return policies, err
-}*/
+	policies, err := NSXToK8sSynthesis(resources, hints, collector.MinCategory(), false)
+	return policies.networkPolicies, err
+}
