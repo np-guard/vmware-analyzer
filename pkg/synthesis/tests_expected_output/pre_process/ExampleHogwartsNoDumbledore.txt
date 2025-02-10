@@ -1,24 +1,35 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: jump_to_application paths: src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections
-	1. action: jump_to_application paths: src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: All Connections
-	2. action: jump_to_application paths: src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections
-	3. action: deny paths: src: (*) dst: (*) conn: All Connections
+Priority |Action              |Src                  |Dst                  |Connection
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
+2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+3        |deny                |(*)                  |(*)                  |All Connections
+
+
 symbolic outbound rules:
-	0. action: jump_to_application paths: src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections
-	1. action: jump_to_application paths: src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: All Connections
-	2. action: jump_to_application paths: src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections
-	3. action: deny paths: src: (*) dst: (*) conn: All Connections
+Priority |Action              |Src                  |Dst                  |Connection
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
+2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+3        |deny                |(*)                  |(*)                  |All Connections
+
+
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-	0. action: allow paths: src: (*) dst: (group = Web) conn: All Connections
-	1. action: allow paths: src: (group = Web) dst: (group = App) conn: All Connections
-	2. action: allow paths: src: (group = App) dst: (group = DB) conn: All Connections
-	3. action: deny paths: src: (*) dst: (*) conn: All Connections
+Priority |Action |Src           |Dst           |Connection
+0        |allow  |(*)           |(group = Web) |All Connections
+1        |allow  |(group = Web) |(group = App) |All Connections
+2        |allow  |(group = App) |(group = DB)  |All Connections
+3        |deny   |(*)           |(*)           |All Connections
+
+
 symbolic outbound rules:
-	0. action: allow paths: src: (*) dst: (group = Web) conn: All Connections
-	1. action: allow paths: src: (group = Web) dst: (group = App) conn: All Connections
-	2. action: allow paths: src: (group = App) dst: (group = DB) conn: All Connections
-	3. action: deny paths: src: (*) dst: (*) conn: All Connections
+Priority |Action |Src           |Dst           |Connection
+0        |allow  |(*)           |(group = Web) |All Connections
+1        |allow  |(group = Web) |(group = App) |All Connections
+2        |allow  |(group = App) |(group = DB)  |All Connections
+3        |deny   |(*)           |(*)           |All Connections
+

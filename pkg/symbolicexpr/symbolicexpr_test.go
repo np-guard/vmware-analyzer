@@ -64,8 +64,8 @@ func TestSymbolicPaths(t *testing.T) {
 	require.Equal(t, "src: (group = str1 and group = str2 and group = str3) dst: "+
 		"(group != str1 and group != str2 and group != str3) conn: TCP",
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
-	println("conjEmpty", conjEmpty.string())
-	require.Equal(t, emptySet, conjEmpty.string(), "empty conjunction not as expected")
+	println("conjEmpty", conjEmpty.String())
+	require.Equal(t, emptySet, conjEmpty.String(), "empty conjunction not as expected")
 	// tests removeRedundant
 	slytherin, gryffindor := "Slytherin", "Gryffindor"
 	atomicSly := newDummyGroupTerm(slytherin, false)

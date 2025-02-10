@@ -259,7 +259,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	require.Nil(t, err)
 	// get the preProcess results:
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	preProcessOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	preProcessOutput := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, false)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
@@ -272,9 +272,9 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 }
 
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
 	require.Nil(t, err)
-	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0])
+	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
 	logging.Debug(abstractModelStr)
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
@@ -289,7 +289,9 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	// create K8S resources:
-	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory)
+	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
+	require.Nil(t, err)
+	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
@@ -320,7 +322,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory)
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
 	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::

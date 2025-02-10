@@ -5,7 +5,8 @@ metadata:
         description: 'src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy_0
+    name: policy-0
+    namespace: default
 spec:
     egress:
         - to:
@@ -26,7 +27,8 @@ metadata:
         description: 'src: (*) dst: (group = Dumbledore) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy_1
+    name: policy-1
+    namespace: default
 spec:
     egress:
         - to:
@@ -45,7 +47,8 @@ metadata:
         description: 'src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy_2
+    name: policy-2
+    namespace: default
 spec:
     ingress:
         - from:
@@ -66,7 +69,8 @@ metadata:
         description: 'src: (*) dst: (group = Dumbledore) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy_3
+    name: policy-3
+    namespace: default
 spec:
     ingress:
         - from:
@@ -85,7 +89,8 @@ metadata:
         description: Default Deny Network Policy
         nsx-id: noNsxID
     creationTimestamp: null
-    name: defaultDeny
+    name: default-deny
+    namespace: default
 spec:
     podSelector: {}
     policyTypes:

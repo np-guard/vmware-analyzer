@@ -1,22 +1,26 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-	src: (tag = Gryffindor) dst: (tag = Web and tag = Gryffindor) conn: All Connections
-	src: (tag = Hufflepuff) dst: (tag = Web and tag = Hufflepuff) conn: All Connections
-	src: (tag = Slytherin) dst: (tag = Web and tag = Slytherin) conn: All Connections
-	src: (tag = Web and tag = Gryffindor) dst: (tag = App and tag = Gryffindor) conn: All Connections
-	src: (tag = Web and tag = Hufflepuff) dst: (tag = App and tag = Hufflepuff) conn: All Connections
-	src: (tag = Web and tag = Slytherin) dst: (tag = App and tag = Slytherin) conn: All Connections
-	src: (tag = App and tag = Gryffindor) dst: (tag = DB and tag = Gryffindor) conn: All Connections
-	src: (tag = App and tag = Hufflepuff) dst: (tag = DB and tag = Hufflepuff) conn: All Connections
-	src: (tag = App and tag = Slytherin) dst: (tag = DB and tag = Slytherin) conn: All Connections
+original allow rule index |Src                              |Dst                              |Connection
+0                         |(tag = Gryffindor)               |(tag = Web and tag = Gryffindor) |All Connections
+0                         |(tag = Hufflepuff)               |(tag = Web and tag = Hufflepuff) |All Connections
+0                         |(tag = Slytherin)                |(tag = Web and tag = Slytherin)  |All Connections
+1                         |(tag = Web and tag = Gryffindor) |(tag = App and tag = Gryffindor) |All Connections
+1                         |(tag = Web and tag = Hufflepuff) |(tag = App and tag = Hufflepuff) |All Connections
+1                         |(tag = Web and tag = Slytherin)  |(tag = App and tag = Slytherin)  |All Connections
+2                         |(tag = App and tag = Gryffindor) |(tag = DB and tag = Gryffindor)  |All Connections
+2                         |(tag = App and tag = Hufflepuff) |(tag = DB and tag = Hufflepuff)  |All Connections
+2                         |(tag = App and tag = Slytherin)  |(tag = DB and tag = Slytherin)   |All Connections
+
 outbound rules
-	src: (tag = Gryffindor) dst: (tag = Web and tag = Gryffindor) conn: All Connections
-	src: (tag = Hufflepuff) dst: (tag = Web and tag = Hufflepuff) conn: All Connections
-	src: (tag = Slytherin) dst: (tag = Web and tag = Slytherin) conn: All Connections
-	src: (tag = Web and tag = Gryffindor) dst: (tag = App and tag = Gryffindor) conn: All Connections
-	src: (tag = Web and tag = Hufflepuff) dst: (tag = App and tag = Hufflepuff) conn: All Connections
-	src: (tag = Web and tag = Slytherin) dst: (tag = App and tag = Slytherin) conn: All Connections
-	src: (tag = App and tag = Gryffindor) dst: (tag = DB and tag = Gryffindor) conn: All Connections
-	src: (tag = App and tag = Hufflepuff) dst: (tag = DB and tag = Hufflepuff) conn: All Connections
-	src: (tag = App and tag = Slytherin) dst: (tag = DB and tag = Slytherin) conn: All Connections
+original allow rule index |Src                              |Dst                              |Connection
+0                         |(tag = Gryffindor)               |(tag = Web and tag = Gryffindor) |All Connections
+0                         |(tag = Hufflepuff)               |(tag = Web and tag = Hufflepuff) |All Connections
+0                         |(tag = Slytherin)                |(tag = Web and tag = Slytherin)  |All Connections
+1                         |(tag = Web and tag = Gryffindor) |(tag = App and tag = Gryffindor) |All Connections
+1                         |(tag = Web and tag = Hufflepuff) |(tag = App and tag = Hufflepuff) |All Connections
+1                         |(tag = Web and tag = Slytherin)  |(tag = App and tag = Slytherin)  |All Connections
+2                         |(tag = App and tag = Gryffindor) |(tag = DB and tag = Gryffindor)  |All Connections
+2                         |(tag = App and tag = Hufflepuff) |(tag = DB and tag = Hufflepuff)  |All Connections
+2                         |(tag = App and tag = Slytherin)  |(tag = DB and tag = Slytherin)   |All Connections
+
