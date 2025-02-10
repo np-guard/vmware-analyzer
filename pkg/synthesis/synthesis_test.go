@@ -284,7 +284,9 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	// create K8S resources:
-	err := NSXToK8sSynthesis(rc, synTest.outDir(), synTest.hints(), synTest.allowOnlyFromCategory, false)
+	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
+	require.Nil(t, err)
+	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
