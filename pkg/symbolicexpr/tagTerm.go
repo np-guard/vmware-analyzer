@@ -60,8 +60,6 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 	if cond.Condition.MemberType == nil || *cond.Condition.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Condition.Key == nil || *cond.Condition.Key != resources.ConditionKeyTag ||
 		cond.Condition.Operator == nil {
-		logging.Infof("supported nsx condition with type VM, key tag and non empty operator."+
-			"\n\t %+v not supported", *cond)
 		return nil
 	}
 	var neg bool
@@ -84,7 +82,6 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
 		*conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorOR {
-		logging.Infof("supported nsx ConjunctionOperator: and, or\n\t%+v not supported", *conj)
 		return nil
 	}
 	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
@@ -109,7 +106,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		orOrAnd := getConjunctionOperator(exprVal[1])
 		condTag2 := getTagTermExprElement(exprVal[2], true)
 		if orOrAnd == nil || condTag2 == nil {
-			return nil
+			return exprNotSupported(expr)
 		}
 		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
 			return []*Conjunction{{condTag1, condTag2}} // And: single Conjunction
