@@ -55,7 +55,7 @@ func strSymbolicRules(rules []*symbolicRule) string {
 
 // prints all symbolic rules by ordered category
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
-func stringCategoryToSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
+func printSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
 	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) string {
 	res := []string{}
 	for _, category := range categoriesSpecs {

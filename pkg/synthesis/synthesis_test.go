@@ -131,7 +131,7 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	require.Nil(t, err1)
 	config := parser.GetConfig()
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	actualOutput := stringCategoryToSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
+	actualOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
 	suffix := "_PreProcessing"
 	if synTest.allowOnlyFromCategory > 0 {
