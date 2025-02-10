@@ -42,14 +42,6 @@ func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.Resourc
 	return NSXConnectivityFromResourcesContainer(recourses, common.OutputParameters{Format: common.TextFormat})
 }
 
-func NSXConfigStrFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
-	config, err := configFromResourcesContainer(recourses, params)
-	if err != nil {
-		return "", err
-	}
-	return config.getConfigInfoStr(false), nil
-}
-
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
@@ -59,7 +51,7 @@ func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, 
 	config := parser.GetConfig()
 
 	// in debug/verbose mode -- print the parsed config
-	logging.Debugf("the parsed config details: %s", config.getConfigInfoStr(params.Color))
+	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
 
 	// compute connectivity map from the parsed config
 	config.ComputeConnectivity(params.VMs)
