@@ -93,12 +93,12 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	if expr == nil || len(*expr) == 0 {
-		return exprNotSupported(expr)
+		return exprNotSupported(expr, group)
 	}
 	exprVal := *expr
 	condTag1 := getTagTermExprElement(exprVal[0], true)
 	if condTag1 == nil {
-		return exprNotSupported(expr)
+		return exprNotSupported(expr, group)
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
 		return []*Conjunction{{condTag1}}
@@ -106,7 +106,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		orOrAnd := getConjunctionOperator(exprVal[1])
 		condTag2 := getTagTermExprElement(exprVal[2], true)
 		if orOrAnd == nil || condTag2 == nil {
-			return exprNotSupported(expr)
+			return exprNotSupported(expr, group)
 		}
 		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
 			return []*Conjunction{{condTag1, condTag2}} // And: single Conjunction
@@ -114,11 +114,11 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 	}
 	// len not 1 neither 3
-	return exprNotSupported(expr)
+	return exprNotSupported(expr, group)
 }
 
-func exprNotSupported(expr *collector.Expression) []*Conjunction {
-	logging.Debugf("expr %s not supported in the POC", expr.String())
+func exprNotSupported(expr *collector.Expression, group string) []*Conjunction {
+	logging.Debugf("expr %s of group %s is either illegal or not supported by the POC", expr.String(), group)
 	return nil
 }
 
