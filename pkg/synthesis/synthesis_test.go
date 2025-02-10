@@ -204,8 +204,8 @@ func TestLiveNSXServer(t *testing.T) {
 func TestNsxResourceFile(t *testing.T) {
 	logging.Init(logging.HighVerbosity)
 	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
-	if !common.FileExist(inputFile){
-		logging.Debugf("resource file %s does not exist, nothing to test\n",inputFile)
+	if !common.FileExist(inputFile) {
+		logging.Debugf("resource file %s does not exist, nothing to test\n", inputFile)
 		return
 	}
 	b, err := os.ReadFile(inputFile)

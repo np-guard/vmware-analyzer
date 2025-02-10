@@ -27,9 +27,9 @@ func WriteToFile(file, content string) error {
 	return os.WriteFile(file, []byte(content), writeFileMode)
 }
 
- func FileExist(path string)bool{
+func FileExist(path string) bool {
 	_, err := os.Stat(path)
-	return err == nil 
+	return err == nil
 }
 
 func WriteYamlUsingJSON[A any](content []A, file string) error {
