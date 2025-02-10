@@ -5,6 +5,7 @@ metadata:
     labels:
         group__frontend: "true"
     name: A
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -16,6 +17,7 @@ metadata:
     labels:
         group__backend: "true"
     name: B
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -27,6 +29,7 @@ metadata:
     labels:
         group__frontend1: "true"
     name: C
+    namespace: default
 spec:
     containers: null
 status: {}
