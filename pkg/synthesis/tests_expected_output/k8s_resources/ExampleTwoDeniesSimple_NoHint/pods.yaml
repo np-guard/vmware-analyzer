@@ -5,6 +5,7 @@ metadata:
     labels:
         group__Slytherin: "true"
     name: Slytherin
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -16,6 +17,7 @@ metadata:
     labels:
         group__Hufflepuff: "true"
     name: Hufflepuff
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -27,6 +29,7 @@ metadata:
     labels:
         group__Gryffindor: "true"
     name: Gryffindor
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -39,6 +42,7 @@ metadata:
         group__Dumbledore: "true"
         group__Dumbledore1: "true"
     name: Dumbledore1
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -51,6 +55,7 @@ metadata:
         group__Dumbledore: "true"
         group__Dumbledore2: "true"
     name: Dumbledore2
+    namespace: default
 spec:
     containers: null
 status: {}

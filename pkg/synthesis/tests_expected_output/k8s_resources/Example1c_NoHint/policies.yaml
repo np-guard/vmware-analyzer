@@ -5,7 +5,8 @@ metadata:
         description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy_0
+    name: policy-0
+    namespace: default
 spec:
     egress:
         - ports:
@@ -30,7 +31,8 @@ metadata:
         description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy_1
+    name: policy-1
+    namespace: default
 spec:
     ingress:
         - from:
@@ -55,7 +57,8 @@ metadata:
         description: Default Deny Network Policy
         nsx-id: noNsxID
     creationTimestamp: null
-    name: defaultDeny
+    name: default-deny
+    namespace: default
 spec:
     podSelector: {}
     policyTypes:
