@@ -12,7 +12,7 @@ func NSXToK8sSynthesis(
 	hints *symbolicexpr.Hints, allowOnlyFromCategory collector.DfwCategory) (*k8sResources, error) {
 	abstractModel, err := NSXToPolicy(recourses, hints, allowOnlyFromCategory)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	return createK8sResources(abstractModel), nil
 }
