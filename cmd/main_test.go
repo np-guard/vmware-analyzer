@@ -57,7 +57,7 @@ type cliTest struct {
 }
 
 const (
-	noDotExecErr    = "exec: \"dot\": executable file not found"
+	noDotExecErr            = "exec: \"dot\": executable file not found"
 	resourceFileNotFoundErr = "open examples/input/resources.json:"
 )
 
