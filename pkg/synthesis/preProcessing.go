@@ -52,7 +52,7 @@ func strSymbolicRules(rules []*symbolicRule, color bool) string {
 	lines := [][]string{}
 	for i, rule := range rules {
 		for _, path := range *rule.origSymbolicPaths {
-			newLine := append([]string{strconv.Itoa(i), fmt.Sprintf("%s", rule.origRule.Action)},
+			newLine := append([]string{strconv.Itoa(i), string(rule.origRule.Action)},
 				path.TableString()...)
 			lines = append(lines, newLine)
 		}
