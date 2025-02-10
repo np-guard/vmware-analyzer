@@ -1,6 +1,7 @@
 package symbolicexpr
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -153,6 +154,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule) *SymbolicPaths {
+	fmt.Printf("ConvertFWRuleToSymbolicPaths %v\n", rule.String())
 	resSymbolicPaths := SymbolicPaths{}
 	tarmAny := Conjunction{tautology{}}
 	srcConjunctions := getConjunctionForGroups(rule.SrcGroups)

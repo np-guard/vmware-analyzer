@@ -122,6 +122,15 @@ var groupsByExprTests = []synthesisTest{
 	},
 }
 
+var groupsByExprTmp = []synthesisTest{
+	{
+		name:                  "Example1",
+		exData:                tests.Example1,
+		allowOnlyFromCategory: collector.MinCategory(),
+		noHint:                true,
+	},
+}
+
 var allTests = append(groupsByVmsTests, groupsByExprTests...)
 
 func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
@@ -133,6 +142,7 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	actualOutput := printSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy)
 	fmt.Println(actualOutput)
+	return
 	suffix := "_PreProcessing"
 	if synTest.allowOnlyFromCategory > 0 {
 		suffix = fmt.Sprintf("%v_%s", suffix, synTest.allowOnlyFromCategory)
@@ -143,8 +153,9 @@ func (synTest *synthesisTest) runPreprocessing(t *testing.T, mode testMode) {
 
 func TestPreprocessing(t *testing.T) {
 	logging.Init(logging.LowVerbosity)
-	for i := range allTests {
-		test := &allTests[i]
+	for i := range groupsByExprTmp {
+		test := &groupsByExprTmp[i]
+		fmt.Printf("TestPreprocessing %v\n", test.name)
 		// to generate output comment the following line and uncomment the one after
 		test.runPreprocessing(t, OutputComparison)
 		//nolint:gocritic // uncomment for generating output

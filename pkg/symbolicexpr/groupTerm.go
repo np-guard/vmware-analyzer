@@ -38,6 +38,7 @@ func (groupTerm groupAtomicTerm) name() string {
 func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
 	res := []*Conjunction{}
 	for _, group := range groups {
+		fmt.Printf("getConjunctionForGroups for %v\n\tgroup.Expression != nil? %v\n", group.Name(), group.Expression != nil)
 		// if group has a tag based supported expression then considers the tags instead of the group
 		if group.Expression != nil {
 			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())

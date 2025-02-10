@@ -97,8 +97,11 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
+	fmt.Printf("in GetTagConjunctionForExpr for %s\n", expr.String())
 	if expr == nil || len(*expr) == 0 {
 		logging.Debugf("Illegal or nil expression attached to group %s. Thus using the group VM members for synthesis and "+
+			"ignoring the expression", group)
+		fmt.Printf("Illegal or nil expression attached to group %s. Thus using the group VM members for synthesis and "+
 			"ignoring the expression", group)
 		return nil
 	}
