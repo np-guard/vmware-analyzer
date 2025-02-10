@@ -105,7 +105,7 @@ func k8sAnalyzer(k8sDir, outfile, format string) error {
 
 	var analyzerExecPath string
 	for _, path := range potentialAnalyzerExecPaths {
-		if _, err := os.Stat(path); err == nil {
+		if common.FileExist(path) {
 			analyzerExecPath = path
 			break
 		}
