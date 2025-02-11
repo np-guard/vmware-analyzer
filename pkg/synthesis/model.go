@@ -21,6 +21,7 @@ type AbstractModelSyn struct {
 	// todo: "JumpTaoApp" -> pass. Not correct in all scenarios, but is good enough for what we need and for POC
 	synthesizeAdmin bool
 	policy          []*symbolicPolicy // with default deny todo: should be *symbolicPolicy?
+	defaultDenyRule *dfw.FwRule
 }
 
 // Tags map from tag's name to the tag

@@ -82,3 +82,16 @@ func (c *config) getVMsInfoStr(color bool) string {
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
+
+func (c *config) DefaultDenyRule() *dfw.FwRule {
+	for _, category := range c.Fw.CategoriesSpecs {
+		if category.Category == collector.LastCategory() {
+			for _, rule := range category.Rules {
+				if rule.IsDenyAll() {
+					return rule
+				}
+			}
+		}
+	}
+	return nil
+}
