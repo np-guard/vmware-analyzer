@@ -90,14 +90,15 @@ func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
 
 // a temporary function to get the default deny rule, if exist.
 // to be remove after reorg symbolicPolicy
-func (model *AbstractModelSyn) defaultDenyOrigRule() *dfw.FwRule {
-	for iPolicy := len(model.policy) - 1; iPolicy >= 0; iPolicy-- {
-		pairs := model.policy[iPolicy].toPairs()
-		for iRule := len(pairs) - 1; iRule >= 0; iRule-- {
-			rule := pairs[iRule].inbound.origRule
-			if *rule.OrigRuleObj.Action == resources.RuleActionREJECT &&
-				slices.Contains(rule.OrigRuleObj.SourceGroups, "ANY") &&
-				slices.Contains(rule.OrigRuleObj.DestinationGroups, "ANY") {
+func (model *AbstractModelSyn) defaultDenyOrigRule() *symbolicRule {
+	for _, policy := range model.policy {
+		for _, pair := range policy.toPairs() {
+			rule := pair.inbound
+			origObj := rule.origRule.OrigRuleObj
+			if rule.origRuleCategory == collector.AppCategoty &&
+				*origObj.Action == resources.RuleActionREJECT &&
+				slices.Contains(origObj.SourceGroups, "ANY") &&
+				slices.Contains(origObj.DestinationGroups, "ANY") {
 				return rule
 			}
 		}

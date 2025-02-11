@@ -90,10 +90,10 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 	}
 }
 
-func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
-	ruleId := "no-nsx-id"
+func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *symbolicRule) {
+	ruleId := "noNsxID"
 	if defaultRule != nil {
-		ruleId = *defaultRule.OrigRuleObj.Id
+		ruleId = *defaultRule.origRule.OrigRuleObj.Id
 	}
 	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleId)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
