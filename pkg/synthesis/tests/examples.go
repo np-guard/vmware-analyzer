@@ -825,7 +825,7 @@ const (
 )
 
 func getAndOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
-	slyDB, hufDB, gryDB := getOrOrAnsGroupNames(op)
+	slyCondDB, hufCondDB, gryCondDB := getOrOrAnsGroupNames(op)
 	slyAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	hufAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
@@ -833,12 +833,12 @@ func getAndOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
 	gryAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	return map[string]data.ExampleExpr{
-		sly:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-		slyDB: slyAndOrDBExpr,
-		hufDB: hufAndOrDBExpr,
-		gryDB: gryAndOrDBExpr,
+		sly:       {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry:       {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf:       {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		slyCondDB: slyAndOrDBExpr,
+		hufCondDB: hufAndOrDBExpr,
+		gryCondDB: gryAndOrDBExpr,
 	}
 }
 
@@ -855,7 +855,7 @@ func getOrOrAnsGroupNames(op data.ExampleOp) (slyDB, hufDB, gryDB string) {
 }
 
 func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
-	slyDB, hufDB, gryDB := getOrOrAnsGroupNames(op)
+	slyCondDB, hufCondDB, gryCondDB := getOrOrAnsGroupNames(op)
 	return []data.Category{
 		{
 			Name:         "Protect-DBs",
@@ -865,7 +865,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Name:     "to-Slytherin",
 					ID:       newRuleID,
 					Source:   "ANY",
-					Dest:     slyDB,
+					Dest:     slyCondDB,
 					Services: []string{"ANY"},
 					Action:   data.Allow,
 				},
@@ -873,7 +873,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Name:     "to-Gryffindor",
 					ID:       newRuleID + 1,
 					Source:   "ANY",
-					Dest:     gryDB,
+					Dest:     gryCondDB,
 					Services: []string{"ANY"},
 					Action:   data.Allow,
 				},
@@ -881,7 +881,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Name:     "to-Hufflepuff",
 					ID:       newRuleID + 2,
 					Source:   "ANY",
-					Dest:     hufDB,
+					Dest:     hufCondDB,
 					Services: []string{"ANY"},
 					Action:   data.Allow,
 				},
