@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
 )
@@ -49,7 +50,13 @@ func Init(verbosity Verbosity) {
 		logger = *NewDefaultLoggerWithVerbosity(verbosity)
 	})
 }
+
+// Tee() redirect the output into the default log, and a file
 func Tee(fileName string) error {
+	err := os.MkdirAll(filepath.Dir(fileName), os.ModePerm)
+	if err != nil {
+		return err
+	}
 	f, err := os.Create(fileName)
 	if err != nil {
 		return err
