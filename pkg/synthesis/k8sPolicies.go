@@ -29,7 +29,7 @@ func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn) {
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
-	policies.addDefaultDenyNetworkPolicy(model.defaultDenyOrigRule())
+	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)
 }
 
 func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn, rulePairs []*symbolicRulePair) {
@@ -91,10 +91,10 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 	}
 }
 
-func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *symbolicRule) {
+func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
 	ruleId := "noNsxID"
 	if defaultRule != nil {
-		ruleId = *defaultRule.origRule.OrigRuleObj.Id
+		ruleId = fmt.Sprintf("%d", defaultRule.RuleID)
 	}
 	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleId)
 	policies.networkPolicies = append(policies.networkPolicies, pol)

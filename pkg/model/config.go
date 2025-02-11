@@ -1,6 +1,7 @@
 package model
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -81,4 +82,20 @@ func (c *config) getVMsInfoStr(color bool) string {
 		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *config) DefaultDenyRule() *dfw.FwRule {
+	lastCategoryIndex := slices.IndexFunc(c.Fw.CategoriesSpecs, func(category *dfw.CategorySpec) bool { return category.Category == collector.LastCategory() })
+	if lastCategoryIndex < 0 {
+		return nil
+	}
+	lastCategory := c.Fw.CategoriesSpecs[lastCategoryIndex]
+	for _, rule := range lastCategory.Rules {
+		if rule.Action == dfw.ActionDeny &&
+			rule.IsAllSrcGroups &&
+			rule.IsAllDstGroups {
+			return rule
+		}
+	}
+	return nil
 }

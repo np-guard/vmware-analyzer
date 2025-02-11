@@ -7,7 +7,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -22,6 +21,7 @@ type AbstractModelSyn struct {
 	// todo: "JumpTaoApp" -> pass. Not correct in all scenarios, but is good enough for what we need and for POC
 	synthesizeAdmin bool
 	policy          []*symbolicPolicy // with default deny todo: should be *symbolicPolicy?
+	defaultDenyRule *dfw.FwRule
 }
 
 // Tags map from tag's name to the tag
@@ -86,24 +86,6 @@ func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
 		}
 	})
 	return res
-}
-
-// a temporary function to get the default deny rule, if exist.
-// to be remove after reorg symbolicPolicy
-func (model *AbstractModelSyn) defaultDenyOrigRule() *symbolicRule {
-	for _, policy := range model.policy {
-		for _, pair := range policy.toPairs() {
-			rule := pair.inbound
-			origObj := rule.origRule.OrigRuleObj
-			if rule.origRuleCategory == collector.AppCategoty &&
-				*origObj.Action == resources.RuleActionREJECT &&
-				slices.Contains(origObj.SourceGroups, "ANY") &&
-				slices.Contains(origObj.DestinationGroups, "ANY") {
-				return rule
-			}
-		}
-	}
-	return nil
 }
 
 // maps used by AbstractModelSyn
