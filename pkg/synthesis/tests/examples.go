@@ -798,8 +798,8 @@ var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
 	Name:         "ExampleExprAndConds",
 	VMs:          vmsHouses,
 	VMsTags:      vmsHousesTags,
-	GroupsByExpr: andOrOrExpr(data.And),
-	Policies:     andOrOrPolicies,
+	GroupsByExpr: getAndOrOrExpr(data.And),
+	Policies:     getAndOrOrPolicies(data.And),
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
@@ -809,71 +809,90 @@ var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
 	Name:         "ExampleOrSimple",
 	VMs:          vmsHouses,
 	VMsTags:      vmsHousesTags,
-	GroupsByExpr: andOrOrExpr(data.Or),
-	Policies:     andOrOrPolicies,
+	GroupsByExpr: getAndOrOrExpr(data.Or),
+	Policies:     getAndOrOrPolicies(data.Or),
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
-func andOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
-	const (
-		slyAndOrNoDB = "Slytherin-orOrAnd-no-DB"
-		hufAndOrNoDB = "Hufflepuff-orOrAnd-no-DB"
-		gryAndOrNoDB = "Gryffindor-orOrAnd-no-DB"
-	)
+const (
+	slyAndNoDB = "Slytherin-And-no-DB"
+	hufAndNoDB = "Hufflepuff-And-no-DB"
+	gryAndNoDB = "Gryffindor-And-no-DB"
+	slyOrNoDB  = "Slytherin-Or-no-DB"
+	hufOrNoDB  = "Hufflepuff-Or-no-DB"
+	gryOrNoDB  = "Gryffindor-Or-no-DB"
+)
+
+func getAndOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
+	slyDB, hufDB, gryDB := getOrOrAnsGroupNames(op)
 	slyAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	hufAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	gryAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
-	res := map[string]data.ExampleExpr{
-		sly:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-		slyAndOrNoDB: slyAndOrDBExpr,
-		hufAndOrNoDB: hufAndOrDBExpr,
-		gryAndOrNoDB: gryAndOrDBExpr,
+	return map[string]data.ExampleExpr{
+		sly:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf:   {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		slyDB: slyAndOrDBExpr,
+		hufDB: hufAndOrDBExpr,
+		gryDB: gryAndOrDBExpr,
 	}
-	return res
 }
 
-var andOrOrPolicies = []data.Category{
-	{
-		Name:         "Protect-DBs",
-		CategoryType: "Application",
-		Rules: []data.Rule{
-			{
-				Name:     "to-Slytherin",
-				ID:       newRuleID,
-				Source:   "ANY",
-				Dest:     "Slytherin-orOrAnd-no-DB",
-				Services: []string{"ANY"},
-				Action:   data.Allow,
-			},
-			{
-				Name:     "to-Gryffindor",
-				ID:       newRuleID + 1,
-				Source:   "ANY",
-				Dest:     "Gryffindor-orOrAnd-no-DB",
-				Services: []string{"ANY"},
-				Action:   data.Allow,
-			},
-			{
-				Name:     "to-Hufflepuff",
-				ID:       newRuleID + 2,
-				Source:   "ANY",
-				Dest:     "Hufflepuff-orOrAnd-no-DB",
-				Services: []string{"ANY"},
-				Action:   data.Allow,
+func getOrOrAnsGroupNames(op data.ExampleOp) (slyDB, hufDB, gryDB string) {
+	slyDB = slyAndNoDB
+	hufDB = hufAndNoDB
+	gryDB = gryAndNoDB
+	if op == data.Or {
+		slyDB = slyOrNoDB
+		hufDB = hufOrNoDB
+		gryDB = gryOrNoDB
+	}
+	return
+}
+
+func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
+	slyDB, hufDB, gryDB := getOrOrAnsGroupNames(op)
+	return []data.Category{
+		{
+			Name:         "Protect-DBs",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				{
+					Name:     "to-Slytherin",
+					ID:       newRuleID,
+					Source:   "ANY",
+					Dest:     slyDB,
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Gryffindor",
+					ID:       newRuleID + 1,
+					Source:   "ANY",
+					Dest:     gryDB,
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Hufflepuff",
+					ID:       newRuleID + 2,
+					Source:   "ANY",
+					Dest:     hufDB,
+					Services: []string{"ANY"},
+					Action:   data.Allow,
+				},
 			},
 		},
-	},
-	{
-		Name:         "Default-L3-Section",
-		CategoryType: "Application",
-		Rules: []data.Rule{
-			data.DefaultDenyRule(denyRuleIDEnv),
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
+			},
 		},
-	},
+	}
 }
