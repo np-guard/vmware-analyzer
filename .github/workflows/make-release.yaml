@@ -30,7 +30,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/np-guard/net-top-analyzer:${{ github.ref_name }}
+          tags: ghcr.io/np-guard/vmware-analyzer:${{ github.ref_name }}
 
       - name: Set up Go
         uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
