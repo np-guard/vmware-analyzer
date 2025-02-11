@@ -1,0 +1,17 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Action |Src                       |Dst                 |Connection
+0        |allow  |(group = DumbledoreAll)   |(*)                 |All Connections
+1        |deny   |(group = DumbledoreNoSly) |(group = Slytherin) |All Connections
+2        |allow  |(group = DumbledoreNoSly) |(*)                 |All Connections
+3        |deny   |(*)                       |(*)                 |All Connections
+
+
+symbolic outbound rules:
+Priority |Action |Src                       |Dst                 |Connection
+0        |allow  |(group = DumbledoreAll)   |(*)                 |All Connections
+1        |deny   |(group = DumbledoreNoSly) |(group = Slytherin) |All Connections
+2        |allow  |(group = DumbledoreNoSly) |(*)                 |All Connections
+3        |deny   |(*)                       |(*)                 |All Connections
+

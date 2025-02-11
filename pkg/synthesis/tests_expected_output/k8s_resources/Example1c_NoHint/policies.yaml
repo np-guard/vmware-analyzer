@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__backend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__frontend
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__frontend
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__backend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: noNsxID
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

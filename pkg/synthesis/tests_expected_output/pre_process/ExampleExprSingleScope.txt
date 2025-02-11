@@ -1,0 +1,27 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Action |Src                |Dst                |Connection
+0        |deny   |(tag = Dumbledore) |(tag = Slytherin)  |All Connections
+1        |allow  |(tag = Dumbledore) |(*)                |All Connections
+2        |deny   |(tag = Gryffindor) |(tag = Hufflepuff) |All Connections
+3        |allow  |(tag = Gryffindor) |(*)                |All Connections
+4        |deny   |(tag = Hufflepuff) |(tag = Slytherin)  |All Connections
+5        |allow  |(tag = Hufflepuff) |(*)                |All Connections
+6        |deny   |(tag = Slytherin)  |(tag = Gryffindor) |All Connections
+7        |allow  |(tag = Slytherin)  |(*)                |All Connections
+8        |deny   |(*)                |(*)                |All Connections
+
+
+symbolic outbound rules:
+Priority |Action |Src                |Dst                |Connection
+0        |deny   |(tag = Dumbledore) |(tag = Slytherin)  |All Connections
+1        |allow  |(tag = Dumbledore) |(*)                |All Connections
+2        |deny   |(tag = Gryffindor) |(tag = Hufflepuff) |All Connections
+3        |allow  |(tag = Gryffindor) |(*)                |All Connections
+4        |deny   |(tag = Hufflepuff) |(tag = Slytherin)  |All Connections
+5        |allow  |(tag = Hufflepuff) |(*)                |All Connections
+6        |deny   |(tag = Slytherin)  |(tag = Gryffindor) |All Connections
+7        |allow  |(tag = Slytherin)  |(*)                |All Connections
+8        |deny   |(*)                |(*)                |All Connections
+

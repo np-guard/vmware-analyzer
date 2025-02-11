@@ -1,0 +1,16 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+original allow rule index |Src                                            |Dst                                          |Connection
+0                         |(group = Dumbledore1 and group != Dumbledore2) |(group != Slytherin)                         |All Connections
+0                         |(group = Dumbledore1)                          |(group != Slytherin and group != Gryffindor) |All Connections
+1                         |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                        |All Connections
+1                         |(group = Dumbledore2)                          |(group != Slytherin and group != Gryffindor) |All Connections
+
+outbound rules
+original allow rule index |Src                                            |Dst                                          |Connection
+0                         |(group = Dumbledore1 and group != Dumbledore2) |(group != Slytherin)                         |All Connections
+0                         |(group = Dumbledore1)                          |(group != Slytherin and group != Gryffindor) |All Connections
+1                         |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                        |All Connections
+1                         |(group = Dumbledore2)                          |(group != Slytherin and group != Gryffindor) |All Connections
+

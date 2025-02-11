@@ -2,9 +2,10 @@ package synthesis
 
 import (
 	"slices"
-	"strings"
+	"strconv"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
@@ -101,21 +102,23 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenie
 	return allowOnlyRules, &newGlobalDenies
 }
 
-func strAllowOnlyPolicy(policy *symbolicPolicy) string {
+func strAllowOnlyPolicy(policy *symbolicPolicy, color bool) string {
 	return "Allow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n" +
-		strAllowOnlyPathsOfRules(policy.inbound) + "\noutbound rules\n" +
-		strAllowOnlyPathsOfRules(policy.outbound)
+		strAllowOnlyPathsOfRules(policy.inbound, color) + "outbound rules\n" +
+		strAllowOnlyPathsOfRules(policy.outbound, color)
 }
 
-func strAllowOnlyPathsOfRules(rules []*symbolicRule) string {
-	res := []string{}
-	for _, rule := range rules {
+func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
+	header := []string{"original allow rule index", "Src", "Dst", "Connection"}
+	lines := [][]string{}
+	for i, rule := range rules {
 		if rule.allowOnlyRulePaths == nil {
 			continue
 		}
 		for _, path := range rule.allowOnlyRulePaths {
-			res = append(res, "\t"+path.String())
+			newLine := append([]string{strconv.Itoa(i)}, path.TableString()...)
+			lines = append(lines, newLine)
 		}
 	}
-	return strings.Join(res, "\n")
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

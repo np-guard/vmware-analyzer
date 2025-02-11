@@ -27,6 +27,11 @@ func WriteToFile(file, content string) error {
 	return os.WriteFile(file, []byte(content), writeFileMode)
 }
 
+func FileExist(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
 func WriteYamlUsingJSON[A any](content []A, file string) error {
 	outs := make([]string, len(content))
 	for i := range content {

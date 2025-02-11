@@ -1,6 +1,0 @@
-Allow Only Rules
-~~~~~~~~~~~~~~~~~
-inbound rules
-	src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445
-outbound rules
-	src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445

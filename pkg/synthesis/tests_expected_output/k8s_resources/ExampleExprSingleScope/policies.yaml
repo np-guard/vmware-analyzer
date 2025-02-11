@@ -1,0 +1,198 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections'
+        nsx-id: "1926"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Slytherin
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: tag__Dumbledore
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections'
+        nsx-id: "1926"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Dumbledore
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Slytherin
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections'
+        nsx-id: "1928"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Hufflepuff
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections'
+        nsx-id: "1928"
+    creationTimestamp: null
+    name: policy-3
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Hufflepuff
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections'
+        nsx-id: "1930"
+    creationTimestamp: null
+    name: policy-4
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Slytherin
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: tag__Hufflepuff
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections'
+        nsx-id: "1930"
+    creationTimestamp: null
+    name: policy-5
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Hufflepuff
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Slytherin
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections'
+        nsx-id: "1932"
+    creationTimestamp: null
+    name: policy-6
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Gryffindor
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections'
+        nsx-id: "1932"
+    creationTimestamp: null
+    name: policy-7
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Gryffindor
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: noNsxID
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

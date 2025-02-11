@@ -1,0 +1,23 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Action |Src |Dst                |Connection
+0        |allow  |(*) |(tag != DB)        |All Connections
+0        |allow  |(*) |(tag = Slytherin)  |All Connections
+1        |allow  |(*) |(tag != DB)        |All Connections
+1        |allow  |(*) |(tag = Gryffindor) |All Connections
+2        |allow  |(*) |(tag != DB)        |All Connections
+2        |allow  |(*) |(tag = Hufflepuff) |All Connections
+3        |deny   |(*) |(*)                |All Connections
+
+
+symbolic outbound rules:
+Priority |Action |Src |Dst                |Connection
+0        |allow  |(*) |(tag != DB)        |All Connections
+0        |allow  |(*) |(tag = Slytherin)  |All Connections
+1        |allow  |(*) |(tag != DB)        |All Connections
+1        |allow  |(*) |(tag = Gryffindor) |All Connections
+2        |allow  |(*) |(tag != DB)        |All Connections
+2        |allow  |(*) |(tag = Hufflepuff) |All Connections
+3        |deny   |(*) |(*)                |All Connections
+

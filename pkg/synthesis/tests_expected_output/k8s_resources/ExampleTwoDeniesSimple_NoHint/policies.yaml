@@ -1,0 +1,114 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Slytherin) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
+        nsx-id: "3"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Dumbledore1
+                      operator: DoesNotExist
+                    - key: group__Dumbledore2
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__Slytherin
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Slytherin) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
+        nsx-id: "3"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore1
+              operator: DoesNotExist
+            - key: group__Dumbledore2
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Gryffindor) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
+        nsx-id: "4"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Dumbledore1
+                      operator: DoesNotExist
+                    - key: group__Dumbledore2
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Gryffindor) dst: (group != Dumbledore1 and group != Dumbledore2) conn: All Connections'
+        nsx-id: "4"
+    creationTimestamp: null
+    name: policy-3
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore1
+              operator: DoesNotExist
+            - key: group__Dumbledore2
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: noNsxID
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

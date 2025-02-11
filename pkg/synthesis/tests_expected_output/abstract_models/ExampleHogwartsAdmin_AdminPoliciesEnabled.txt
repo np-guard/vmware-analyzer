@@ -1,0 +1,14 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+original allow rule index |Src           |Dst           |Connection
+5                         |(*)           |(group = Web) |All Connections
+6                         |(group = Web) |(group = App) |All Connections
+7                         |(group = App) |(group = DB)  |All Connections
+
+outbound rules
+original allow rule index |Src           |Dst           |Connection
+5                         |(*)           |(group = Web) |All Connections
+6                         |(group = Web) |(group = App) |All Connections
+7                         |(group = App) |(group = DB)  |All Connections
+

@@ -6,7 +6,7 @@ import (
 
 const emptySet = "empty set "
 
-func (c *Conjunction) string() string {
+func (c *Conjunction) String() string {
 	resArray := make([]string, len(*c))
 	for i, atomic := range *c {
 		resArray[i] = atomic.string()

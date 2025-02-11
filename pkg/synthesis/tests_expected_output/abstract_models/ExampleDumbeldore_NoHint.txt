@@ -1,0 +1,12 @@
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+original allow rule index |Src                       |Dst                  |Connection
+0                         |(group = DumbledoreAll)   |(*)                  |All Connections
+1                         |(group = DumbledoreNoSly) |(group != Slytherin) |All Connections
+
+outbound rules
+original allow rule index |Src                       |Dst                  |Connection
+0                         |(group = DumbledoreAll)   |(*)                  |All Connections
+1                         |(group = DumbledoreNoSly) |(group != Slytherin) |All Connections
+

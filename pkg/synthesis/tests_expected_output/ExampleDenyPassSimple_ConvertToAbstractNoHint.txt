@@ -1,8 +1,0 @@
-Allow Only Rules
-~~~~~~~~~~~~~~~~~
-inbound rules
-	src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections
-	src: (*) dst: (group = Dumbledore) conn: All Connections
-outbound rules
-	src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections
-	src: (*) dst: (group = Dumbledore) conn: All Connections

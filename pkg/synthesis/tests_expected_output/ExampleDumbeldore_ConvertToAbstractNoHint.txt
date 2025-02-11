@@ -1,8 +1,0 @@
-Allow Only Rules
-~~~~~~~~~~~~~~~~~
-inbound rules
-	src: (group = DumbledoreAll) dst: (*) conn: All Connections
-	src: (group = DumbledoreNoSly) dst: (group != Slytherin) conn: All Connections
-outbound rules
-	src: (group = DumbledoreAll) dst: (*) conn: All Connections
-	src: (group = DumbledoreNoSly) dst: (group != Slytherin) conn: All Connections

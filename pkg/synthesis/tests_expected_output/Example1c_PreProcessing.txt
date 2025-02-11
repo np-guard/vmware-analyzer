@@ -1,8 +1,0 @@
-category: Application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-symbolic inbound rules:
-	0. action: allow paths: src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445
-	1. action: deny paths: src: (*) dst: (*) conn: All Connections
-symbolic outbound rules:
-	0. action: allow paths: src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445
-	1. action: deny paths: src: (*) dst: (*) conn: All Connections

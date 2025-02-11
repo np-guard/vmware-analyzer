@@ -1,0 +1,13 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Action |Src                |Dst               |Connection
+0        |allow  |(group = frontend) |(group = backend) |TCP dst-ports: 445
+1        |deny   |(*)                |(*)               |All Connections
+
+
+symbolic outbound rules:
+Priority |Action |Src                |Dst               |Connection
+0        |allow  |(group = frontend) |(group = backend) |TCP dst-ports: 445
+1        |deny   |(*)                |(*)               |All Connections
+
