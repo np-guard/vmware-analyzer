@@ -655,11 +655,11 @@ var ExampleExprSingleScope = ExampleSynthesis{
 		VMs:  []string{sly, huf, gry, dum},
 		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
 			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
-		GroupsByExprAndVMs: map[string]data.ExampleExpr{
-			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop},
-			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop},
-			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop},
-			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}, Op: data.Nop}},
+		GroupsByExpr: map[string]data.ExampleExpr{
+			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}},
+			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}},
+			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}},
+			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
 		Policies: []data.Category{
 			{
 				Name:         "From-Dumbledore-connection",
@@ -777,13 +777,13 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
-	GroupsByExprAndVMs: map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
-		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop},
-		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop},
-		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop}},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
 	Policies: hogwartsAppToHousesPolicy,
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
@@ -795,22 +795,22 @@ var vmsHouses = []string{slyDB, slyWeb, slyApp,
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
 var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
-	Name:               "ExampleExprAndConds",
-	VMs:                vmsHouses,
-	VMsTags:            vmsHousesTags,
-	GroupsByExprAndVMs: andOrOrExpr(data.And),
-	Policies:           andOrOrPolicies,
+	Name:         "ExampleExprAndConds",
+	VMs:          vmsHouses,
+	VMsTags:      vmsHousesTags,
+	GroupsByExpr: andOrOrExpr(data.And),
+	Policies:     andOrOrPolicies,
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
 var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
-	Name:               "ExampleOrSimple",
-	VMs:                vmsHouses,
-	VMsTags:            vmsHousesTags,
-	GroupsByExprAndVMs: andOrOrExpr(data.Or),
-	Policies:           andOrOrPolicies,
+	Name:         "ExampleOrSimple",
+	VMs:          vmsHouses,
+	VMsTags:      vmsHousesTags,
+	GroupsByExpr: andOrOrExpr(data.Or),
+	Policies:     andOrOrPolicies,
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
@@ -828,9 +828,9 @@ func andOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
 	gryAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	res := map[string]data.ExampleExpr{
-		sly:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-		gry:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-		huf:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
+		sly:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf:          {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
 		slyAndOrNoDB: slyAndOrDBExpr,
 		hufAndOrNoDB: hufAndOrDBExpr,
 		gryAndOrNoDB: gryAndOrDBExpr,

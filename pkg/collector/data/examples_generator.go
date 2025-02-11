@@ -39,7 +39,6 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 
 	// add groups
 	// defined by VMs
-	// todo: remove once all examples uses GroupsByExprAndVMs
 	groupList := []collector.Group{}
 	for group, members := range e.GroupsByVMs {
 		newGroup := newGroupByExample(group)
@@ -47,9 +46,9 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		groupList = append(groupList, newGroup)
 	}
 	// groups defined by expr and VMs
-	for group, exprAndVms := range e.GroupsByExprAndVMs {
+	for group, expr := range e.GroupsByExpr {
 		newGroup := newGroupByExample(group)
-		groupExpr := exprAndVms.exampleExprToExpr()
+		groupExpr := expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
 		realizedVmsList := vmsOfExpr(&res.VirtualMachineList, &newGroup.Expression)
 		newGroup.VMMembers = realizedVmsList
@@ -137,11 +136,11 @@ type ExampleExpr struct {
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
-	VMs                []string
-	VMsTags            map[string][]nsx.Tag
-	GroupsByVMs        map[string][]string // todo: refactor to GroupsByExprAndVMs
-	GroupsByExprAndVMs map[string]ExampleExpr
-	Policies           []Category
+	VMs          []string
+	VMsTags      map[string][]nsx.Tag
+	GroupsByVMs  map[string][]string
+	GroupsByExpr map[string]ExampleExpr // map from group name to its expr
+	Policies     []Category
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
