@@ -32,7 +32,7 @@ type tautology struct {
 // atomic interface for atomic expression - implemented by groupAtomicTerm and tautology
 type atomic interface {
 	name() string                   // name of group/tag/...
-	string() string                 // full expression e.g. "group = slytherin"
+	String() string                 // full expression e.g. "group = slytherin"
 	negate() atomic                 // negation of the atomic term todo: once tag scope is supported will return []atomic
 	isNegation() bool               // is term not-equal
 	IsTautology() bool              // is term tautology?

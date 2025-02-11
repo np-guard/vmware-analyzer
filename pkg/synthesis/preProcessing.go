@@ -3,7 +3,6 @@ package synthesis
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
@@ -66,16 +65,12 @@ func strSymbolicRules(rules []*symbolicRule, color bool) string {
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
 func printPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
 	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, color bool) string {
-	res := []string{}
-	for _, category := range categoriesSpecs {
-		policy := categoryToPolicy[category.Category]
+	var categoryToStr = func(c *dfw.CategorySpec) string {
+		policy := categoryToPolicy[c.Category]
 		if policy == nil {
-			continue
+			return ""
 		}
-		if len(policy.inbound) > 0 || len(policy.outbound) > 0 {
-			res = append(res, fmt.Sprintf("category: %s\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v",
-				category.Category.String(), policy.string(color)))
-		}
+		return fmt.Sprintf("category: %s\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%s", c.Category.String(), policy.string(color))
 	}
-	return strings.Join(res, "\n")
+	return common.JoinCustomStrFuncSlice(categoriesSpecs, categoryToStr, common.NewLine)
 }

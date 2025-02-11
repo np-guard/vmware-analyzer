@@ -11,7 +11,7 @@ const grp = "group"
 const equalSignConst = " = "
 const nonEqualSignConst = " != "
 
-func (groupTerm groupAtomicTerm) string() string {
+func (groupTerm groupAtomicTerm) String() string {
 	equalSign := equalSignConst
 	if groupTerm.neg {
 		equalSign = nonEqualSignConst

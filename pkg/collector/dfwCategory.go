@@ -7,7 +7,7 @@ const (
 	EmergencyCategory
 	InfrastructureCategory
 	EnvCategory
-	AppCategoty
+	AppCategory
 	EmptyCategory
 )
 
@@ -43,6 +43,13 @@ func MinCategory() DfwCategory {
 	return EthernetCategory
 }
 
+func MinNonAdminCategory() DfwCategory {
+	return AppCategory
+}
+func LastCategory() DfwCategory {
+	return AppCategory
+}
+
 func (d DfwCategory) String() string {
 	switch d {
 	case EthernetCategory:
@@ -53,7 +60,7 @@ func (d DfwCategory) String() string {
 		return InfrastructureStr
 	case EnvCategory:
 		return EnvironmentStr
-	case AppCategoty:
+	case AppCategory:
 		return ApplicationStr
 	case EmptyCategory:
 		return EmptyStr
@@ -63,5 +70,5 @@ func (d DfwCategory) String() string {
 }
 
 var CategoriesList = []DfwCategory{
-	EthernetCategory, EmergencyCategory, InfrastructureCategory, EnvCategory, AppCategoty, EmptyCategory,
+	EthernetCategory, EmergencyCategory, InfrastructureCategory, EnvCategory, AppCategory, EmptyCategory,
 }

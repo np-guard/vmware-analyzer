@@ -1,8 +1,7 @@
 package symbolicexpr
 
 import (
-	"strings"
-
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 )
 
@@ -42,11 +41,7 @@ func (paths *SymbolicPaths) String() string {
 	if len(*paths) == 0 {
 		return emptySet
 	}
-	res := make([]string, len(*paths))
-	for i, path := range *paths {
-		res[i] = path.String()
-	}
-	return strings.Join(res, "\n")
+	return common.JoinStringifiedSlice(*paths, common.NewLine)
 }
 
 // Given SymbolicPaths, removes redundant terms from each SymbolicPath

@@ -6,7 +6,7 @@ import (
 
 // tautology implementation
 
-func (tautology) string() string {
+func (tautology) String() string {
 	return "*"
 }
 
@@ -76,7 +76,7 @@ func (atomicTerm atomicTerm) isNegation() bool {
 //  1. the base class is implemented as an interface
 //  2. the receiver of the methods of the base class are given to the method as first argument.
 func isNegateOf(atom, otherAtom atomic) bool {
-	return atom.string() == otherAtom.negate().string()
+	return atom.String() == otherAtom.negate().String()
 }
 
 // returns true iff otherAtom is disjoint to atom as given by hints

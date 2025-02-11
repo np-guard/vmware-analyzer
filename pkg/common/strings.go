@@ -34,6 +34,20 @@ type HasString interface {
 	String() string
 }
 
+func JoinNonNilStrings(ptrSlice []*string, sep string) string {
+	return JoinNonNil(ptrSlice, func(s *string) string { return *s }, sep)
+}
+
+func JoinNonNil[S any](ptrSlice []*S, f func(s *S) string, sep string) string {
+	ptrSlice = slices.DeleteFunc(ptrSlice, func(s *S) bool { return s == nil })
+	return JoinCustomStrFuncSlice(ptrSlice, f, sep)
+}
+
+func JoinNonEmpty(slice []string, sep string) string {
+	slice = slices.DeleteFunc(slice, func(s string) bool { return s == "" })
+	return strings.Join(slice, sep)
+}
+
 func CustomStrSliceToStrings[S any](slice []S, f func(s S) string) []string {
 	resStrSlice := make([]string, len(slice))
 	for i := range slice {
