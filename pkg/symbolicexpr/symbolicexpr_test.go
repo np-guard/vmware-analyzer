@@ -26,9 +26,9 @@ func TestTagTerms(t *testing.T) {
 	atomicNegSly := NewTagTerm(slytherin, true)
 	atomicGry := NewTagTerm(gryffindor, false)
 	atomicNegGry := NewTagTerm(gryffindor, true)
-	fmt.Println("atomicSly is", atomicSly.string())
-	fmt.Println("atomicNegSly is", atomicNegSly.string())
-	fmt.Println("atomicGry is", atomicGry.string())
+	fmt.Println("atomicSly is", atomicSly.String())
+	fmt.Println("atomicNegSly is", atomicNegSly.String())
+	fmt.Println("atomicGry is", atomicGry.String())
 	disjoint := [][]string{{slytherin, gryffindor}}
 	hints := Hints{GroupsDisjoint: disjoint}
 	// test disjoint between atomics

@@ -19,7 +19,7 @@ func (tagTerm tagAtomicTerm) name() string {
 	return tagTerm.tag.Tag
 }
 
-func (tagTerm tagAtomicTerm) string() string {
+func (tagTerm tagAtomicTerm) String() string {
 	equalSign := equalSignConst
 	if tagTerm.neg {
 		equalSign = nonEqualSignConst
