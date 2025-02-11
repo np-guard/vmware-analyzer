@@ -35,8 +35,9 @@ func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[co
 
 func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category collector.DfwCategory) []*symbolicRule {
 	res := make([]*symbolicRule, len(rules))
+	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} //cashing groups' Conjunctions
 	for i, rule := range rules {
-		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(rule)
+		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(rule, groupToConjunctions)
 		res[i] = &symbolicRule{origRule: rule, origRuleCategory: category, origSymbolicPaths: ruleSymbolicPaths}
 	}
 	return res

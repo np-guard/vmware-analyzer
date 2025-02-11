@@ -36,22 +36,31 @@ func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
 
-func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
+func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction) []*Conjunction {
 	res := []*Conjunction{}
+	const synthesisUseGroup = "Synthesis will thus use only group name"
 	for _, group := range groups {
-		// if group has a tag based supported expression then considers the tags instead of the group
-		if group.Expression != nil && len(group.Expression) > 0 {
-			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
-			if tagConj != nil {
-				res = append(res, tagConj...)
-				continue
-			}
-		} else {
-			logging.Debugf("No expression is attached to group %s. Synthesis will thus use only group name",
-				group.Name())
-		}
+		// default: Conjunction defined via group only
 		// todo: treat negation properly
-		res = append(res, &Conjunction{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}})
+		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
+		if cashedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
+			groupConj = cashedGroupConj
+		} else { // not in cash
+			// if group has a tag based supported expression then considers the tags
+			if group.Expression != nil && len(group.Expression) > 0 {
+				tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
+				if tagConj != nil {
+					groupConj = tagConj
+				} else {
+					logging.Debugf("Expression attached to group %s is illegal or not supported. %s",
+						group.Name(), synthesisUseGroup)
+				}
+			} else {
+				logging.Debugf("No expression is attached to group %s. %s", group.Name(), synthesisUseGroup)
+			}
+			groupToConjunctions[group.Name()] = groupConj
+		}
+		res = append(res, groupConj...)
 	}
 	return res
 }
