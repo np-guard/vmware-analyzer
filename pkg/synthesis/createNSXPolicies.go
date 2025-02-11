@@ -17,7 +17,7 @@ const firstGroupID = 4826
 func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group) {
 	a := newAbsToNXS()
 	a.getVMsInfo(rc, model)
-	a.convertPolicies(model.policy)
+	a.convertPolicies(model.policy, model.synthesizeAdmin)
 	return data.ToPoliciesList(a.categories), a.groups
 }
 
@@ -76,18 +76,18 @@ var fwRuleToDataRuleAction = map[dfw.RuleAction]string{
 	dfw.ActionJumpToApp: data.JumpToApp,
 }
 
-func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
+func (a *absToNXS) convertPolicies(policy []*symbolicPolicy, synthesizeAdmin bool) {
 	for _, p := range policy {
 		rulesToDirection := map[*[]*symbolicRule]string{&p.outbound: "OUT", &p.inbound: "IN"}
 		for rules, dir := range rulesToDirection {
 			for _, rule := range *rules {
-				if rule.allowOnlyRulePaths != nil {
-					for _, p := range rule.allowOnlyRulePaths {
-						a.pathToRule(p, dir, data.Allow, collector.LastCategory().String())
-					}
-				} else {
+				if synthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory() {
 					for _, p := range *rule.origSymbolicPaths {
 						a.pathToRule(p, dir, fwRuleToDataRuleAction[rule.origRule.Action], rule.origRuleCategory.String())
+					}
+				} else {
+					for _, p := range rule.allowOnlyRulePaths {
+						a.pathToRule(p, dir, data.Allow, collector.LastCategory().String())
 					}
 				}
 			}
