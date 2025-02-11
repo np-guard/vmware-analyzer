@@ -18,7 +18,7 @@ import (
 // preProcessing: convert policy from spec to symbolicPolicy struct
 func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) {
 	categoryToPolicy = map[collector.DfwCategory]*symbolicPolicy{}
-	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} //cashing groups' Conjunctions
+	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} // cashing groups' Conjunctions
 	for _, category := range categoriesSpecs {
 		categoryPolicy := symbolicPolicy{}
 		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
