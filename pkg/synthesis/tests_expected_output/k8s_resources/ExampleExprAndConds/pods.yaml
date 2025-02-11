@@ -7,6 +7,7 @@ metadata:
         tag__DB: "true"
         tag__Slytherin: "true"
     name: Slytherin-DB
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -50,6 +51,7 @@ metadata:
         tag__DB: "true"
         tag__Hufflepuff: "true"
     name: Hufflepuff-DB
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -93,6 +95,7 @@ metadata:
         tag__DB: "true"
         tag__Gryffindor: "true"
     name: Gryffindor-DB
+    namespace: default
 spec:
     containers: null
 status: {}
