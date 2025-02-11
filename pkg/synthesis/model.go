@@ -7,6 +7,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -85,6 +86,23 @@ func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
 		}
 	})
 	return res
+}
+
+// a temporary function to get the default deny rule, if exist.
+// to be remove after reorg symbolicPolicy
+func (model *AbstractModelSyn) defaultDenyOrigRule() *dfw.FwRule {
+	for iPolicy := len(model.policy) - 1; iPolicy >= 0; iPolicy-- {
+		pairs := model.policy[iPolicy].toPairs()
+		for iRule := len(pairs) - 1; iRule >= 0; iRule-- {
+			rule := pairs[iRule].inbound.origRule
+			if *rule.OrigRuleObj.Action == resources.RuleActionREJECT &&
+				slices.Contains(rule.OrigRuleObj.SourceGroups, "ANY") &&
+				slices.Contains(rule.OrigRuleObj.DestinationGroups, "ANY") {
+				return rule
+			}
+		}
+	}
+	return nil
 }
 
 // maps used by AbstractModelSyn
