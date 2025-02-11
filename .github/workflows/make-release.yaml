@@ -1,0 +1,41 @@
+name: Create docker release and publish to pkg.go.dev
+
+on:
+  push:
+    tags:
+      - v*.**
+
+permissions:
+  contents: read
+
+jobs:
+  push_to_registry:
+    name: Publish a new Docker image and publish a new version in pkg.go.dev
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@48aba3b46d1b1fec4febb7c5d0c644b249a11355
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/np-guard/vmware-analyzer:${{ github.ref_name }}
+
+      - name: Set up Go
+        uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a
+        with:
+          go-version: 'stable'
+
+      - name: Publish on pkg.go.dev
+        run: GOPROXY=proxy.golang.org go list -m github.com/np-guard/vmware-analyzer/@${{ github.ref_name }}
