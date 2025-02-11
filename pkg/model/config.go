@@ -87,9 +87,7 @@ func (c *config) DefaultDenyRule() *dfw.FwRule {
 	for _, category := range c.Fw.CategoriesSpecs {
 		if category.Category == collector.LastCategory() {
 			for _, rule := range category.Rules {
-				if rule.Action == dfw.ActionDeny &&
-					rule.IsAllSrcGroups &&
-					rule.IsAllDstGroups {
+				if rule.IsDenyAll() {
 					return rule
 				}
 			}

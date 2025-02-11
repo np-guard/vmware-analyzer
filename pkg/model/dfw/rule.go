@@ -79,6 +79,12 @@ func (f *FwRule) RuleIDStr() string {
 	return fmt.Sprintf("%d", f.RuleID)
 }
 
+func (f *FwRule) IsDenyAll() bool {
+	return f.Action == ActionDeny &&
+		f.IsAllSrcGroups &&
+		f.IsAllDstGroups
+}
+
 func (f *FwRule) ruleDescriptionStr() string {
 	return fmt.Sprintf("rule %d in category %s", f.RuleID, f.categoryRef.Category.String())
 }
