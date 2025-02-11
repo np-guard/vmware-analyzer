@@ -17,7 +17,7 @@ type AbstractModelSyn struct {
 	// todo: add similar maps to OS, hostname
 
 	// if synthesizeAdmin is true, rules will be translated to allow only starting with category MinNonAdminCategory();
-	// categories before that category rules' also include pass, deny and priority (default: 0 - all categories are "Allow only")
+	// categories before that category rules' also include pass, deny and priority (default: false - all categories are "Allow only")
 	// todo: "JumpTaoApp" -> pass. Not correct in all scenarios, but is good enough for what we need and for POC
 	synthesizeAdmin bool
 	policy          []*symbolicPolicy // with default deny todo: should be *symbolicPolicy?
