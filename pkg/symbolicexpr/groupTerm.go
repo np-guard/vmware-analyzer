@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 const grp = "group"
@@ -39,12 +40,15 @@ func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
 	res := []*Conjunction{}
 	for _, group := range groups {
 		// if group has a tag based supported expression then considers the tags instead of the group
-		if group.Expression != nil {
+		if group.Expression != nil && len(group.Expression) > 0 {
 			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
 			if tagConj != nil {
 				res = append(res, tagConj...)
 				continue
 			}
+		} else {
+			logging.Debugf("No expression is attached to group %s. Synthesis will thus use only group name",
+				group.Name())
 		}
 		// todo: treat negation properly
 		res = append(res, &Conjunction{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}})
