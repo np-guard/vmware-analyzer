@@ -51,7 +51,7 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 	}
 	for _, p := range *paths {
 		if !p.Conn.TCPUDPSet().IsEmpty() {
-			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, fmt.Sprintf("%d", rule.origRule.RuleID))
+			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, rule.origRule.RuleIDStr())
 		} else {
 			logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
 		}
@@ -92,11 +92,11 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
-	ruleId := "no-nsx-id"
+	ruleID := "no-nsx-id"
 	if defaultRule != nil {
-		ruleId = fmt.Sprintf("%d", defaultRule.RuleID)
+		ruleID = defaultRule.RuleIDStr()
 	}
-	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleId)
+	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
 }

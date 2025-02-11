@@ -75,6 +75,10 @@ type FwRule struct {
 
 }
 
+func (f *FwRule) RuleIDStr() string {
+	return fmt.Sprintf("%d", f.RuleID)
+}
+
 func (f *FwRule) ruleDescriptionStr() string {
 	return fmt.Sprintf("rule %d in category %s", f.RuleID, f.categoryRef.Category.String())
 }
@@ -315,7 +319,7 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		name = *f.OrigRuleObj.DisplayName
 	}
 	return []string{
-		fmt.Sprintf("%d", f.RuleID),
+		f.RuleIDStr(),
 		name,
 		f.getSrcString(),
 		f.getDstString(),
