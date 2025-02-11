@@ -3,7 +3,8 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Slytherin: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__DB: "true"
         tag__Slytherin: "true"
     name: Slytherin-DB
@@ -17,9 +18,10 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Gryffindor-orOrAnd-no-DB: "true"
-        group__Hufflepuff-orOrAnd-no-DB: "true"
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Gryffindor-Or-no-DB: "true"
+        group__Hufflepuff-Or-no-DB: "true"
+        group__Slytherin: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__Slytherin: "true"
         tag__Web: "true"
     name: Slytherin-Web
@@ -33,9 +35,10 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Gryffindor-orOrAnd-no-DB: "true"
-        group__Hufflepuff-orOrAnd-no-DB: "true"
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Gryffindor-Or-no-DB: "true"
+        group__Hufflepuff-Or-no-DB: "true"
+        group__Slytherin: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__App: "true"
         tag__Slytherin: "true"
     name: Slytherin-App
@@ -49,8 +52,8 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Gryffindor-orOrAnd-no-DB: "true"
-        group__Hufflepuff-orOrAnd-no-DB: "true"
+        group__Hufflepuff: "true"
+        group__Hufflepuff-Or-no-DB: "true"
         tag__DB: "true"
         tag__Hufflepuff: "true"
     name: Hufflepuff-DB
@@ -64,8 +67,10 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Hufflepuff-orOrAnd-no-DB: "true"
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Gryffindor-Or-no-DB: "true"
+        group__Hufflepuff: "true"
+        group__Hufflepuff-Or-no-DB: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__Hufflepuff: "true"
         tag__Web: "true"
     name: Hufflepuff-Web
@@ -79,8 +84,10 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Hufflepuff-orOrAnd-no-DB: "true"
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Gryffindor-Or-no-DB: "true"
+        group__Hufflepuff: "true"
+        group__Hufflepuff-Or-no-DB: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__App: "true"
         tag__Hufflepuff: "true"
     name: Hufflepuff-App
@@ -94,7 +101,8 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Gryffindor-orOrAnd-no-DB: "true"
+        group__Gryffindor: "true"
+        group__Gryffindor-Or-no-DB: "true"
         tag__DB: "true"
         tag__Gryffindor: "true"
     name: Gryffindor-DB
@@ -108,9 +116,10 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Gryffindor-orOrAnd-no-DB: "true"
-        group__Hufflepuff-orOrAnd-no-DB: "true"
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Gryffindor: "true"
+        group__Gryffindor-Or-no-DB: "true"
+        group__Hufflepuff-Or-no-DB: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__Gryffindor: "true"
         tag__Web: "true"
     name: Gryffindor-Web
@@ -124,9 +133,10 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
-        group__Gryffindor-orOrAnd-no-DB: "true"
-        group__Hufflepuff-orOrAnd-no-DB: "true"
-        group__Slytherin-orOrAnd-no-DB: "true"
+        group__Gryffindor: "true"
+        group__Gryffindor-Or-no-DB: "true"
+        group__Hufflepuff-Or-no-DB: "true"
+        group__Slytherin-Or-no-DB: "true"
         tag__App: "true"
         tag__Gryffindor: "true"
     name: Gryffindor-App
