@@ -8,7 +8,9 @@ package logging
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"runtime"
 	"sync"
 )
@@ -47,6 +49,16 @@ func Init(verbosity Verbosity) {
 		logger = *NewDefaultLoggerWithVerbosity(verbosity)
 	})
 }
+func Tee(fileName string) error {
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	w := io.MultiWriter(log.Default().Writer(), f)
+	logger.l = log.New(w, "", log.LstdFlags)
+	return nil
+}
+
 func DebugVerbosity() bool   { return logger.verbosity == HighVerbosity }
 func InfoVerbosity() bool    { return logger.verbosity == HighVerbosity }
 func WarningVerbosity() bool { return logger.verbosity >= MediumVerbosity }

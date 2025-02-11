@@ -248,6 +248,7 @@ func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T,
 //////////////////////////////////////////
 
 func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	// get the config:
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
 	err := parser.RunParser()
@@ -272,6 +273,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 }
 
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.synthesizeAdmin, false)
 	require.Nil(t, err)
 	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
@@ -287,6 +289,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 }
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	// create K8S resources:
 	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.synthesizeAdmin, false)
@@ -307,6 +310,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	logging.Tee(path.Join(synTest.debugDir(), "runCompareNSXConnectivity.log"))
 	debugDir := synTest.debugDir()
 	// store the original NSX resources in JSON, for debugging:
 	jsonOut, err := rc.ToJSONString()
