@@ -35,6 +35,12 @@ const (
 	hufWeb = "Hufflepuff-Web"
 )
 
+const (
+	anyStr      = "ANY"
+	application = "Application"
+	defaultL3   = "Default-L3-Section"
+)
+
 type ExampleSynthesis struct {
 	FromNSX            data.Example
 	DisjointGroupsTags [][]string
@@ -60,14 +66,14 @@ var ExampleDumbeldore = ExampleSynthesis{
 		Policies: []data.Category{
 			{
 				Name:         "From-Dumbledore-connection",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb1-To-All",
 						ID:       newRuleID,
 						Source:   "DumbledoreAll",
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 					{
@@ -75,22 +81,22 @@ var ExampleDumbeldore = ExampleSynthesis{
 						ID:       newRuleID + 1,
 						Source:   "DumbledoreNoSly",
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Dumb2-To-All",
 						ID:       newRuleID + 2,
 						Source:   "DumbledoreNoSly",
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -116,45 +122,45 @@ var ExampleTwoDeniesSimple = ExampleSynthesis{
 		Policies: []data.Category{
 			{
 				Name:         "Two-Denys-Simple-Test",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "no-conn-to-dumb1",
 						ID:       1,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     dum1,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "no-conn-to-dumb2",
 						ID:       2,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     dum2,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Slytherin-to-all",
 						ID:       3,
 						Source:   sly,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 					{
 						Name:     "Gryffindor-to-all",
 						ID:       4,
 						Source:   gry,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -188,46 +194,46 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 					{
 						Name:     "pass-all-to-dumb",
 						ID:       10218,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     dum,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 					{
 						Name:     "deny-all-to-Hufflepuff",
 						ID:       10219,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     huf,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "deny-all-to-Slytherin",
 						ID:       10220,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 				},
 			},
 			{
 				Name:         "App-Allow-All",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "allow-all-to-all",
 						ID:       10230,
-						Source:   "ANY",
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Source:   anyStr,
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -252,14 +258,14 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 		Policies: []data.Category{
 			{
 				Name:         "From-Dumbledore-connection",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb1-Not-Sly",
 						ID:       newRuleID,
 						Source:   dum1,
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
@@ -267,30 +273,30 @@ var ExampleHintsDisjoint = ExampleSynthesis{
 						ID:       newRuleID + 1,
 						Source:   dum2,
 						Dest:     gry,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Dumb1-To-All",
 						ID:       newRuleID + 2,
 						Source:   dum1,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 					{
 						Name:     "Dumb2-To-All",
 						ID:       newRuleID + 3,
 						Source:   dum2,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -351,7 +357,7 @@ var ExampleHogwarts = ExampleSynthesis{
 						ID:       10218,
 						Source:   gry,
 						Dest:     gry,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 				},
@@ -365,7 +371,7 @@ var ExampleHogwarts = ExampleSynthesis{
 						ID:       10219,
 						Source:   huf,
 						Dest:     huf,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 				},
@@ -379,7 +385,7 @@ var ExampleHogwarts = ExampleSynthesis{
 						ID:       10220,
 						Source:   sly,
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 				},
@@ -393,15 +399,15 @@ var ExampleHogwarts = ExampleSynthesis{
 						ID:       10221,
 						Source:   dum,
 						Dest:     gry,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 					{
 						Name:     "default-deny-env",
 						ID:       10300,
-						Source:   "ANY",
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Source:   anyStr,
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 				},
@@ -409,14 +415,14 @@ var ExampleHogwarts = ExampleSynthesis{
 
 			{
 				Name:         "Intra-App-Policy",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Client-Access",
 						ID:       10400,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     web,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 					{
@@ -424,7 +430,7 @@ var ExampleHogwarts = ExampleSynthesis{
 						ID:       10401,
 						Source:   web,
 						Dest:     app,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 					{
@@ -432,14 +438,14 @@ var ExampleHogwarts = ExampleSynthesis{
 						ID:       10405,
 						Source:   app,
 						Dest:     db,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -478,7 +484,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						ID:       10218,
 						Source:   gry,
 						Dest:     gry,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 				},
@@ -492,29 +498,29 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						ID:       10220,
 						Source:   sly,
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.JumpToApp,
 					},
 					{
 						Name:     "default-deny-env",
 						ID:       10221,
-						Source:   "ANY",
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Source:   anyStr,
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 				},
 			},
 			{
 				Name:         "Intra-App-Policy",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Client-Access",
 						ID:       9195,
-						Source:   "ANY",
+						Source:   anyStr,
 						Dest:     web,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 					{
@@ -522,14 +528,14 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						ID:       9196,
 						Source:   web,
 						Dest:     app,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -549,7 +555,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 				ID:       10218,
 				Source:   gry,
 				Dest:     gry,
-				Services: []string{"ANY"},
+				Services: []string{anyStr},
 				Action:   data.JumpToApp,
 			},
 		},
@@ -563,7 +569,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 				ID:       10219,
 				Source:   huf,
 				Dest:     huf,
-				Services: []string{"ANY"},
+				Services: []string{anyStr},
 				Action:   data.JumpToApp,
 			},
 		},
@@ -577,29 +583,29 @@ var hogwartsAppToHousesPolicy = []data.Category{
 				ID:       10220,
 				Source:   sly,
 				Dest:     sly,
-				Services: []string{"ANY"},
+				Services: []string{anyStr},
 				Action:   data.JumpToApp,
 			},
 			{
 				Name:     "default-deny-env",
 				ID:       10230,
-				Source:   "ANY",
-				Dest:     "ANY",
-				Services: []string{"ANY"},
+				Source:   anyStr,
+				Dest:     anyStr,
+				Services: []string{anyStr},
 				Action:   data.Drop,
 			},
 		},
 	},
 	{
 		Name:         "Intra-App-Policy",
-		CategoryType: "Application",
+		CategoryType: application,
 		Rules: []data.Rule{
 			{
 				Name:     "Client-Access",
 				ID:       9195,
-				Source:   "ANY",
+				Source:   anyStr,
 				Dest:     web,
-				Services: []string{"ANY"},
+				Services: []string{anyStr},
 				Action:   data.Allow,
 			},
 			{
@@ -607,7 +613,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 				ID:       9196,
 				Source:   web,
 				Dest:     app,
-				Services: []string{"ANY"},
+				Services: []string{anyStr},
 				Action:   data.Allow,
 			},
 			{
@@ -615,14 +621,14 @@ var hogwartsAppToHousesPolicy = []data.Category{
 				ID:       9197,
 				Source:   app,
 				Dest:     db,
-				Services: []string{"ANY"},
+				Services: []string{anyStr},
 				Action:   data.Allow,
 			},
 		},
 	},
 	{
-		Name:         "Default-L3-Section",
-		CategoryType: "Application",
+		Name:         defaultL3,
+		CategoryType: application,
 		Rules: []data.Rule{
 			data.DefaultDenyRule(denyRuleIDEnv),
 		},
@@ -655,107 +661,103 @@ var ExampleExprSingleScope = ExampleSynthesis{
 		VMs:  []string{sly, huf, gry, dum},
 		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
 			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
-		GroupsByExprAndVMs: map[string]data.ExprAndVMs{
-			sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}, Op: data.Nop},
-				VMs: []string{sly}},
-			gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}, Op: data.Nop},
-				VMs: []string{gry}},
-			huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}, Op: data.Nop},
-				VMs: []string{huf}},
-			dum: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}, Op: data.Nop},
-				VMs: []string{dum}}},
+		GroupsByExpr: map[string]data.ExampleExpr{
+			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}},
+			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}},
+			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}},
+			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
 		Policies: []data.Category{
 			{
 				Name:         "From-Dumbledore-connection",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Dumb-No-Slytherin",
 						ID:       newRuleID,
 						Source:   dum,
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Dumb-All",
 						ID:       newRuleID + 1,
 						Source:   dum,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
 				Name:         "Gryffindor-connections",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Gryffindor-not-Hufflepuff",
 						ID:       newRuleID + 2,
 						Source:   gry,
 						Dest:     huf,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Gryffindor-All",
 						ID:       newRuleID + 3,
 						Source:   gry,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
 				Name:         "Hufflepuff-connection",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Hufflepuff-No-Slytherin",
 						ID:       newRuleID + 4,
 						Source:   huf,
 						Dest:     sly,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Hufflepuff-All",
 						ID:       newRuleID + 5,
 						Source:   huf,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
 				Name:         "Slytherin-connection",
-				CategoryType: "Application",
+				CategoryType: application,
 				Rules: []data.Rule{
 					{
 						Name:     "Slytherin-no-Gryffindor",
 						ID:       newRuleID + 6,
 						Source:   sly,
 						Dest:     gry,
-						Services: []string{"ANY"},
+						Services: []string{anyStr},
 						Action:   data.Drop,
 					},
 					{
 						Name:     "Slytherin-All",
 						ID:       newRuleID + 7,
 						Source:   sly,
-						Dest:     "ANY",
-						Services: []string{"ANY"},
+						Dest:     anyStr,
+						Services: []string{anyStr},
 						Action:   data.Allow,
 					},
 				},
 			},
 			{
-				Name:         "Default-L3-Section",
-				CategoryType: "Application",
+				Name:         defaultL3,
+				CategoryType: application,
 				Rules: []data.Rule{
 					data.DefaultDenyRule(denyRuleIDEnv),
 				},
@@ -781,19 +783,13 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
 	VMsTags: vmsHousesTags,
-	GroupsByExprAndVMs: map[string]data.ExprAndVMs{
-		sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-			VMs: []string{slyDB, slyWeb, slyApp}},
-		gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-			VMs: []string{gryDB, gryWeb, gryApp}},
-		huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
-			VMs: []string{hufDB, hufWeb, hufApp}},
-		db: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}, Op: data.Nop},
-			VMs: []string{slyDB, gryDB, hufDB}},
-		web: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}, Op: data.Nop},
-			VMs: []string{slyWeb, gryWeb, hufWeb}},
-		app: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}, Op: data.Nop},
-			VMs: []string{slyApp, gryApp, hufApp}}},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
 	Policies: hogwartsAppToHousesPolicy,
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
@@ -805,95 +801,104 @@ var vmsHouses = []string{slyDB, slyWeb, slyApp,
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
 var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
-	Name:               "ExampleExprAndConds",
-	VMs:                vmsHouses,
-	VMsTags:            vmsHousesTags,
-	GroupsByExprAndVMs: andOrOrExpr(data.And),
-	Policies:           andOrOrPolicies,
+	Name:         "ExampleExprAndConds",
+	VMs:          vmsHouses,
+	VMsTags:      vmsHousesTags,
+	GroupsByExpr: getAndOrOrExpr(data.And),
+	Policies:     getAndOrOrPolicies(data.And),
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
 var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
-	Name:               "ExampleOrSimple",
-	VMs:                vmsHouses,
-	VMsTags:            vmsHousesTags,
-	GroupsByExprAndVMs: andOrOrExpr(data.Or),
-	Policies:           andOrOrPolicies,
+	Name:         "ExampleOrSimple",
+	VMs:          vmsHouses,
+	VMsTags:      vmsHousesTags,
+	GroupsByExpr: getAndOrOrExpr(data.Or),
+	Policies:     getAndOrOrPolicies(data.Or),
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
-func andOrOrExpr(op data.ExampleOp) map[string]data.ExprAndVMs {
-	const (
-		slyAndOrNoDB = "Slytherin-orOrAnd-no-DB"
-		hufAndOrNoDB = "Hufflepuff-orOrAnd-no-DB"
-		gryAndOrNoDB = "Gryffindor-orOrAnd-no-DB"
-	)
+const (
+	slyAndNoDB = "Slytherin-And-no-DB"
+	hufAndNoDB = "Hufflepuff-And-no-DB"
+	gryAndNoDB = "Gryffindor-And-no-DB"
+	slyOrNoDB  = "Slytherin-Or-no-DB"
+	hufOrNoDB  = "Hufflepuff-Or-no-DB"
+	gryOrNoDB  = "Gryffindor-Or-no-DB"
+)
+
+func getAndOrOrExpr(op data.ExampleOp) map[string]data.ExampleExpr {
+	slyCondDB, hufCondDB, gryCondDB := getOrOrAnsGroupNames(op)
 	slyAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	hufAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	gryAndOrDBExpr := data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
 		Cond2: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
-	res := map[string]data.ExprAndVMs{
-		sly: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: data.Nop},
-			VMs: []string{"slyDB", "slyWeb", "slyApp"}},
-		gry: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: data.Nop},
-			VMs: []string{"gryDB", "gryWeb", "gryApp"}},
-		huf: {Expr: data.ExampleExpr{Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: data.Nop},
-			VMs: []string{"hufDB", "hufWeb", "hufApp"}}}
-	if op == data.And {
-		res[slyAndOrNoDB] = data.ExprAndVMs{Expr: slyAndOrDBExpr, VMs: []string{slyApp, slyWeb}}
-		res[hufAndOrNoDB] = data.ExprAndVMs{Expr: hufAndOrDBExpr, VMs: []string{hufApp, hufWeb}}
-		res[gryAndOrNoDB] = data.ExprAndVMs{Expr: gryAndOrDBExpr, VMs: []string{gryApp, gryWeb}}
-	} else { // op == data.Or
-		res[slyAndOrNoDB] = data.ExprAndVMs{Expr: slyAndOrDBExpr, VMs: []string{slyDB, slyWeb, slyApp,
-			hufApp, hufWeb, gryApp, gryWeb}}
-		res[hufAndOrNoDB] = data.ExprAndVMs{Expr: hufAndOrDBExpr, VMs: []string{slyWeb, slyApp, hufDB, hufWeb, hufApp,
-			gryApp, gryWeb}}
-		res[gryAndOrNoDB] = data.ExprAndVMs{Expr: gryAndOrDBExpr, VMs: []string{slyWeb, slyApp, hufDB, gryDB, gryWeb, gryApp}}
+	return map[string]data.ExampleExpr{
+		sly:       {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry:       {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf:       {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		slyCondDB: slyAndOrDBExpr,
+		hufCondDB: hufAndOrDBExpr,
+		gryCondDB: gryAndOrDBExpr,
 	}
-	return res
 }
 
-var andOrOrPolicies = []data.Category{
-	{
-		Name:         "Protect-DBs",
-		CategoryType: "Application",
-		Rules: []data.Rule{
-			{
-				Name:     "to-Slytherin",
-				ID:       newRuleID,
-				Source:   "ANY",
-				Dest:     "Slytherin-orOrAnd-no-DB",
-				Services: []string{"ANY"},
-				Action:   data.Allow,
-			},
-			{
-				Name:     "to-Gryffindor",
-				ID:       newRuleID + 1,
-				Source:   "ANY",
-				Dest:     "Gryffindor-orOrAnd-no-DB",
-				Services: []string{"ANY"},
-				Action:   data.Allow,
-			},
-			{
-				Name:     "to-Hufflepuff",
-				ID:       newRuleID + 2,
-				Source:   "ANY",
-				Dest:     "Hufflepuff-orOrAnd-no-DB",
-				Services: []string{"ANY"},
-				Action:   data.Allow,
+func getOrOrAnsGroupNames(op data.ExampleOp) (slyDB, hufDB, gryDB string) {
+	slyDB = slyAndNoDB
+	hufDB = hufAndNoDB
+	gryDB = gryAndNoDB
+	if op == data.Or {
+		slyDB = slyOrNoDB
+		hufDB = hufOrNoDB
+		gryDB = gryOrNoDB
+	}
+	return
+}
+
+func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
+	slyCondDB, hufCondDB, gryCondDB := getOrOrAnsGroupNames(op)
+	return []data.Category{
+		{
+			Name:         "Protect-DBs",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "to-Slytherin",
+					ID:       newRuleID,
+					Source:   anyStr,
+					Dest:     slyCondDB,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Gryffindor",
+					ID:       newRuleID + 1,
+					Source:   anyStr,
+					Dest:     gryCondDB,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "to-Hufflepuff",
+					ID:       newRuleID + 2,
+					Source:   anyStr,
+					Dest:     hufCondDB,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
 			},
 		},
-	},
-	{
-		Name:         "Default-L3-Section",
-		CategoryType: "Application",
-		Rules: []data.Rule{
-			data.DefaultDenyRule(denyRuleIDEnv),
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
+			},
 		},
-	},
+	}
 }

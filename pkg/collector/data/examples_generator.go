@@ -39,7 +39,6 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 
 	// add groups
 	// defined by VMs
-	// todo: remove once all examples uses GroupsByExprAndVMs
 	groupList := []collector.Group{}
 	for group, members := range e.GroupsByVMs {
 		newGroup := newGroupByExample(group)
@@ -47,11 +46,12 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 		groupList = append(groupList, newGroup)
 	}
 	// groups defined by expr and VMs
-	for group, exprAndVms := range e.GroupsByExprAndVMs {
+	for group, expr := range e.GroupsByExpr {
 		newGroup := newGroupByExample(group)
-		groupExpr := exprAndVms.Expr.exampleExprToExpr()
+		groupExpr := expr.exampleExprToExpr()
 		newGroup.Expression = *groupExpr
-		newGroup.VMMembers = addVMsToGroup(exprAndVms.VMs)
+		realizedVmsList := vmsOfExpr(&res.VirtualMachineList, &newGroup.Expression)
+		newGroup.VMMembers = realizedVmsList
 		groupList = append(groupList, newGroup)
 	}
 	res.DomainList[0].Resources.GroupList = groupList
@@ -136,19 +136,14 @@ type ExampleExpr struct {
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
-	VMs                []string
-	VMsTags            map[string][]nsx.Tag
-	GroupsByVMs        map[string][]string // todo: refactor to GroupsByExprAndVMs
-	GroupsByExprAndVMs map[string]ExprAndVMs
-	Policies           []Category
+	VMs          []string
+	VMsTags      map[string][]nsx.Tag
+	GroupsByVMs  map[string][]string
+	GroupsByExpr map[string]ExampleExpr // map from group name to its expr
+	Policies     []Category
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
-}
-
-type ExprAndVMs struct {
-	VMs  []string
-	Expr ExampleExpr
 }
 
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")
@@ -424,4 +419,84 @@ func getServices() []collector.Service {
 		return nil
 	}
 	return rc.ServiceList
+}
+
+// todo: should be generalized and moved elsewhere?
+func getVMsOfTagOrNotTag(vmList *[]collector.VirtualMachine, tag string, resTagNotExist bool) []collector.VirtualMachine {
+	res := []collector.VirtualMachine{}
+	for i := range *vmList {
+		tagExist := tagInTags((*vmList)[i].Tags, tag)
+		if !tagExist && resTagNotExist {
+			res = append(res, (*vmList)[i])
+		} else if tagExist && !resTagNotExist {
+			res = append(res, (*vmList)[i])
+		}
+	}
+	return res
+}
+
+func tagInTags(vmTags []nsx.Tag, tag string) bool {
+	for _, tagOfVM := range vmTags {
+		if tag == tagOfVM.Tag {
+			return true
+		}
+	}
+	return false
+}
+
+func vmsOfCondition(vmList *[]collector.VirtualMachine, cond *collector.Condition) []collector.VirtualMachine {
+	var resTagNotExist bool
+	if *cond.Operator == nsx.ConditionOperatorNOTEQUALS {
+		resTagNotExist = true
+	}
+	return getVMsOfTagOrNotTag(vmList, *cond.Value, resTagNotExist)
+}
+
+func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []collector.RealizedVirtualMachine {
+	cond1 := (*exp)[0].(*collector.Condition)
+	vmsCond1 := vmsOfCondition(vmList, cond1)
+	if len(*exp) == 1 {
+		return virtualToRealizedVirtual(vmsCond1)
+	}
+	// len(*exp) is 3
+	cond2 := (*exp)[2].(*collector.Condition)
+	vmsCond2 := vmsOfCondition(vmList, cond2)
+	res := []collector.VirtualMachine{}
+	conj := (*exp)[1].(*collector.ConjunctionOperator)
+	if *conj.ConjunctionOperator.ConjunctionOperator == nsx.ConjunctionOperatorConjunctionOperatorOR {
+		// union of vmsCond1 and vmsCond2
+		res = append(res, vmsCond1...)
+		for i := range vmsCond2 {
+			if !vmInList(&res, &vmsCond2[i]) {
+				res = append(res, vmsCond2[i])
+			}
+		}
+	} else { // intersection
+		for i := range vmsCond1 {
+			if vmInList(&vmsCond2, &vmsCond1[i]) {
+				res = append(res, vmsCond1[i])
+			}
+		}
+	}
+	return virtualToRealizedVirtual(res)
+}
+
+func vmInList(vmList *[]collector.VirtualMachine, vm *collector.VirtualMachine) bool {
+	for i := range *vmList {
+		if (*vmList)[i].Name() == vm.Name() {
+			return true
+		}
+	}
+	return false
+}
+
+func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.RealizedVirtualMachine {
+	res := make([]collector.RealizedVirtualMachine, len(origList))
+	for i := range origList {
+		realizedVM := collector.RealizedVirtualMachine{}
+		realizedVM.RealizedVirtualMachine.DisplayName = origList[i].DisplayName
+		realizedVM.RealizedVirtualMachine.Id = origList[i].ExternalId
+		res[i] = realizedVM
+	}
+	return res
 }
