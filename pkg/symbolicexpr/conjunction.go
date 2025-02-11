@@ -1,20 +1,16 @@
 package symbolicexpr
 
 import (
-	"strings"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 )
 
 const emptySet = "empty set "
 
 func (c *Conjunction) String() string {
-	resArray := make([]string, len(*c))
-	for i, atomic := range *c {
-		resArray[i] = atomic.string()
-	}
-	if len(resArray) == 0 {
+	if len(*c) == 0 {
 		return emptySet
 	}
-	return "(" + strings.Join(resArray, " and ") + ")"
+	return "(" + common.JoinStringifiedSlice(*c, " and ") + ")"
 }
 
 func (c *Conjunction) add(atom atomic) *Conjunction {
@@ -110,7 +106,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 
 func (c *Conjunction) contains(atom atomic) bool {
 	for _, atomicTerm := range *c {
-		if atomicTerm.string() == (atom).string() {
+		if atomicTerm.String() == (atom).String() {
 			return true
 		}
 	}
