@@ -7,6 +7,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -43,7 +44,7 @@ func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn
 }
 
 func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rule *symbolicRule, inbound bool) {
-	isAdmin := model.allowOnlyFromCategory > rule.origRuleCategory
+	isAdmin := model.synthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory()
 	paths := &rule.allowOnlyRulePaths
 	if isAdmin {
 		paths = rule.origSymbolicPaths
