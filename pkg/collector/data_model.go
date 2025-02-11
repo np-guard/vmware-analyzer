@@ -124,7 +124,9 @@ type ICMPTypeServiceEntry struct {
 }
 
 func (e *ICMPTypeServiceEntry) String() string {
-	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeICMPTypeServiceEntry, *e.DisplayName)
+	nameAndProtocol := common.JoinNonNilStrings([]*string{e.DisplayName, (*string)(e.Protocol)}, common.CommaSeparator)
+	// todo: add icmp type and code to str details
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeICMPTypeServiceEntry, nameAndProtocol)
 }
 
 func (e *ICMPTypeServiceEntry) ToConnection() (*netset.TransportSet, error) {
@@ -165,7 +167,12 @@ func serviceEntryStr(kind nsx.IPProtocolServiceEntryResourceType, name string) s
 }
 
 func (e *L4PortSetServiceEntry) String() string {
-	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeL4PortSetServiceEntry, *e.DisplayName)
+	nameAndProtocol := common.JoinNonNilStrings([]*string{e.DisplayName, (*string)(e.L4Protocol)}, common.CommaSeparator)
+	var portElementStr = func(s nsx.PortElement) string { return string(s) }
+	srcPortStr := "SourcePorts: " + common.JoinCustomStrFuncSlice(e.SourcePorts, portElementStr, common.CommaSeparator)
+	dstPortsStr := "DestinationPorts: " + common.JoinCustomStrFuncSlice(e.DestinationPorts, portElementStr, common.CommaSeparator)
+	allDetails := strings.Join([]string{nameAndProtocol, srcPortStr, dstPortsStr}, common.CommaSeparator)
+	return serviceEntryStr(nsx.IPProtocolServiceEntryResourceTypeL4PortSetServiceEntry, allDetails)
 }
 
 func (e *L4PortSetServiceEntry) ToConnection() (*netset.TransportSet, error) {

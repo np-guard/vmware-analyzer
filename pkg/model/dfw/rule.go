@@ -216,11 +216,22 @@ func getDefaultRuleScope(r *collector.FirewallRule) string {
 		}, common.CommaSeparator)
 }
 
+// shorten long strings in output, to enable readable table of the input fw-rules
+func trimmedString(s string) string {
+	const (
+		strLenLimit = 30
+		trimmedStr  = "..."
+	)
+	if len(s) > strLenLimit {
+		// shorten long strings in output, to enable readable table of the input fw-rules
+		s = s[0:strLenLimit] + trimmedStr
+	}
+	return s
+}
+
 func (f *FwRule) pathToShortPathString(path string) string {
 	const (
-		strLenLimit = 20
-		pathSep     = "/"
-		trimmedStr  = "..."
+		pathSep = "/"
 	)
 	var res string
 	// get display name from path when possible
@@ -234,11 +245,7 @@ func (f *FwRule) pathToShortPathString(path string) string {
 		}
 		res = pathElems[len(pathElems)-1]
 	}
-	if len(res) > strLenLimit {
-		// shorten long strings in output, to enable readable table of the input fw-rules
-		res = res[0:strLenLimit] + trimmedStr
-	}
-	return res
+	return trimmedString(res)
 }
 
 func (f *FwRule) getShortPathsString(paths []string) string {
@@ -272,7 +279,7 @@ func getRulesHeader() []string {
 		"ruleName",
 		"src",
 		"dst",
-		"conn",
+		"services",
 		"action",
 		"direction",
 		"scope",
@@ -319,11 +326,17 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		name,
 		f.getSrcString(),
 		f.getDstString(),
-		// todo: origRuleObj.Services is not always the services, can also be service_entries
-		f.getShortPathsString(f.OrigRuleObj.Services),
+		f.servicesString(),
 		string(f.Action), f.direction,
 		strings.Join(f.OrigRuleObj.Scope, common.CommaSeparator),
 		f.secPolicyName,
 		f.secPolicyCategory,
 	}
+}
+
+func (f *FwRule) servicesString() string {
+	var serviceEntriesStr, servicesStr string
+	serviceEntriesStr = trimmedString(common.JoinStringifiedSlice(f.OrigRuleObj.ServiceEntries, common.CommaSeparator))
+	servicesStr = f.getShortPathsString(f.OrigRuleObj.Services)
+	return common.JoinNonEmpty([]string{serviceEntriesStr, servicesStr}, common.CommaSeparator)
 }
