@@ -224,11 +224,7 @@ func runCommand(args *inArgs) error {
 		for i, hint := range args.disjointHints {
 			hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 		}
-		category := collector.MinCategory()
-		if args.synthesizeAdmin {
-			category = collector.AppCategoty
-		}
-		resources, err := synthesis.NSXToK8sSynthesis(resources, hints, category, args.color)
+		resources, err := synthesis.NSXToK8sSynthesis(resources, hints, args.synthesizeAdmin, args.color)
 		if err != nil {
 			return err
 		}

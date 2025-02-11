@@ -26,10 +26,10 @@ const (
 )
 
 type synthesisTest struct {
-	name                  string
-	exData                *tests.ExampleSynthesis
-	allowOnlyFromCategory collector.DfwCategory // category to start the "allow-only" conversion from
-	noHint                bool                  // run also with no hint
+	name            string
+	exData          *tests.ExampleSynthesis
+	synthesizeAdmin bool
+	noHint          bool // run also with no hint
 }
 
 func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
@@ -51,7 +51,7 @@ func (synTest *synthesisTest) id() string {
 		id += "_NoHint"
 	}
 	// specify if there are admin policies:
-	if synTest.allowOnlyFromCategory > collector.MinCategory() {
+	if synTest.synthesizeAdmin {
 		id += "_AdminPoliciesEnabled"
 	}
 	return id
@@ -69,58 +69,58 @@ func (synTest *synthesisTest) hasExpectedResults() bool {
 
 var groupsByVmsTests = []synthesisTest{
 	{
-		name:                  "Example1c",
-		exData:                &tests.Example1c,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                true,
+		name:            "Example1c",
+		exData:          &tests.Example1c,
+		synthesizeAdmin: false,
+		noHint:          true,
 	},
 	{
-		name:                  "ExampleDumbeldore",
-		exData:                &tests.ExampleDumbeldore,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                true,
+		name:            "ExampleDumbeldore",
+		exData:          &tests.ExampleDumbeldore,
+		synthesizeAdmin: false,
+		noHint:          true,
 	},
 	{
-		name:                  "ExampleTwoDeniesSimple",
-		exData:                &tests.ExampleTwoDeniesSimple,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                true,
+		name:            "ExampleTwoDeniesSimple",
+		exData:          &tests.ExampleTwoDeniesSimple,
+		synthesizeAdmin: false,
+		noHint:          true,
 	},
 	{
-		name:                  "ExampleDenyPassSimple",
-		exData:                &tests.ExampleDenyPassSimple,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                true,
+		name:            "ExampleDenyPassSimple",
+		exData:          &tests.ExampleDenyPassSimple,
+		synthesizeAdmin: false,
+		noHint:          true,
 	},
 	{
-		name:                  "ExampleHintsDisjoint",
-		exData:                &tests.ExampleHintsDisjoint,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                true,
+		name:            "ExampleHintsDisjoint",
+		exData:          &tests.ExampleHintsDisjoint,
+		synthesizeAdmin: false,
+		noHint:          true,
 	},
 	{
-		name:                  "ExampleHogwartsSimpler",
-		exData:                &tests.ExampleHogwartsSimpler,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                true,
+		name:            "ExampleHogwartsSimpler",
+		exData:          &tests.ExampleHogwartsSimpler,
+		synthesizeAdmin: false,
+		noHint:          true,
 	},
 	{
-		name:                  "ExampleHogwartsNoDumbledore",
-		exData:                &tests.ExampleHogwartsNoDumbledore,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                false,
+		name:            "ExampleHogwartsNoDumbledore",
+		exData:          &tests.ExampleHogwartsNoDumbledore,
+		synthesizeAdmin: false,
+		noHint:          false,
 	},
 	{
-		name:                  "ExampleHogwarts",
-		exData:                &tests.ExampleHogwarts,
-		allowOnlyFromCategory: collector.MinCategory(),
-		noHint:                false,
+		name:            "ExampleHogwarts",
+		exData:          &tests.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
 	},
 	{
-		name:                  "ExampleHogwartsAdmin",
-		exData:                &tests.ExampleHogwarts,
-		allowOnlyFromCategory: collector.AppCategoty,
-		noHint:                false,
+		name:            "ExampleHogwartsAdmin",
+		exData:          &tests.ExampleHogwarts,
+		synthesizeAdmin: true,
+		noHint:          false,
 	},
 }
 
@@ -147,16 +147,16 @@ var groupsByExprTests = []synthesisTest{
 	},
 }
 var liveNsxTest = synthesisTest{
-	name:                  "fromCollection",
-	exData:                nil,
-	allowOnlyFromCategory: collector.MinCategory(),
-	noHint:                true,
+	name:            "fromCollection",
+	exData:          nil,
+	synthesizeAdmin: false,
+	noHint:          true,
 }
 var resourceFileTest = synthesisTest{
-	name:                  "fromResourceFile",
-	exData:                nil,
-	allowOnlyFromCategory: collector.MinCategory(),
-	noHint:                true,
+	name:            "fromResourceFile",
+	exData:          nil,
+	synthesizeAdmin: false,
+	noHint:          true,
 }
 
 var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
@@ -272,7 +272,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 }
 
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.synthesizeAdmin, false)
 	require.Nil(t, err)
 	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
 	logging.Debug(abstractModelStr)
@@ -289,7 +289,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	// create K8S resources:
-	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
+	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.synthesizeAdmin, false)
 	require.Nil(t, err)
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
@@ -322,7 +322,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.allowOnlyFromCategory, false)
+	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.synthesizeAdmin, false)
 	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::

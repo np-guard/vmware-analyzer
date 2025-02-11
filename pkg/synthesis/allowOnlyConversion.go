@@ -20,7 +20,7 @@ import (
 //  Does it make sense to define a tag disjoint to a group (or vice versa)?
 
 func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, allowOnlyFromCategory collector.DfwCategory,
+	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, synthesizeAdmin bool,
 	hints *symbolicexpr.Hints) symbolicPolicy {
 	computedPolicy := symbolicPolicy{}
 	globalInboundDenies, globalOutboundDenies := symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{}
@@ -30,7 +30,7 @@ func computeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 		if thisCategoryPolicy == nil {
 			continue
 		}
-		if category.Category < allowOnlyFromCategory {
+		if synthesizeAdmin && category.Category < collector.MinNonAdminCategory() {
 			computedPolicy.inbound = append(computedPolicy.inbound, thisCategoryPolicy.inbound...)
 			computedPolicy.outbound = append(computedPolicy.outbound, thisCategoryPolicy.outbound...)
 			continue

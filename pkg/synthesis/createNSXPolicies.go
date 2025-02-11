@@ -83,7 +83,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 			for _, rule := range *rules {
 				if rule.allowOnlyRulePaths != nil {
 					for _, p := range rule.allowOnlyRulePaths {
-						a.pathToRule(p, dir, data.Allow, collector.AppCategoty.String())
+						a.pathToRule(p, dir, data.Allow, collector.LastCategory().String())
 					}
 				} else {
 					for _, p := range *rule.origSymbolicPaths {
@@ -98,7 +98,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy) {
 
 func (a *absToNXS) addDefaultDenyRule() {
 	const defaultDenyID = 9999
-	r := a.addNewRule(collector.AppCategoty.String())
+	r := a.addNewRule(collector.LastCategory().String())
 	r.Action = data.Drop
 	r.Source = data.AnyStr
 	r.Dest = data.AnyStr
