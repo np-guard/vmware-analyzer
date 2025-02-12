@@ -27,7 +27,15 @@ containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry]
     config_path = "/etc/containerd/certs.d"
+nodes:
+- role: control-plane
+- role: worker
+- role: worker
+networking:
+  disableDefaultCNI: true
+  podSubnet: 192.168.0.0/16    
 EOF
+
 
 # 3. Add the registry config to the nodes
 #
@@ -66,3 +74,7 @@ data:
 EOF
 
 
+# add calico installation
+# from https://docs.tigera.io/calico/latest/getting-started/kubernetes/kind
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/tigera-operator.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/custom-resources.yaml
