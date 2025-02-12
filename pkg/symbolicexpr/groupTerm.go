@@ -45,7 +45,7 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 			res = append(res, cashedGroupConj...)
 			continue
 		}
-		// not in cash
+		// not in cache
 		// default: Conjunction defined via group only
 		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
 		// if group has a tag based supported expression then considers the tags
