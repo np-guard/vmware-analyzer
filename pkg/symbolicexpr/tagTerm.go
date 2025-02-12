@@ -111,7 +111,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 	}
 	// len not 1 neither 3
-	logging.Debugf("NSX expression %v not supported", expr.String())
+	logging.Debugf("NSX expression %v is not supported", expr.String())
 	return nil
 }
 
