@@ -188,7 +188,7 @@ func TestCompareNSXConnectivity(t *testing.T) {
 
 // the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
 func TestLiveNSXServer(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity,""))
+	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	server, err := collector.GetNSXServerDate("", "", "")
 	if err != nil {
 		logging.Debug(err.Error())
@@ -202,7 +202,7 @@ func TestLiveNSXServer(t *testing.T) {
 
 // the TestNsxResourceFile() get the resource from resources.json, and call serialTestsRun()
 func TestNsxResourceFile(t *testing.T) {
-	require.Nil(t,logging.Init(logging.HighVerbosity,""))
+	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
 	if !common.FileExist(inputFile) {
 		logging.Debugf("resource file %s does not exist, nothing to test\n", inputFile)
@@ -232,7 +232,7 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 
 // parallelTestsRun() gets a test function to run, and run it on all the syntheticTests in parallel
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
-	require.Nil(t,logging.Init(logging.HighVerbosity,""))
+	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
 		rc := data.ExamplesGeneration(&test.exData.FromNSX)
 		t.Run(test.name, func(t *testing.T) {

@@ -41,7 +41,7 @@ func TestCollectResources(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			require.Nil(t,logging.Init(logging.HighVerbosity,""))
+			require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 			server, err := GetNSXServerDate(tt.args.nsxServer, tt.args.userName, tt.args.password)
 			if err != nil {
 				// do not fail on env without access to nsx host
