@@ -75,7 +75,7 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 func getConjunctionOperator(elem collector.ExpressionElement) *resources.ConjunctionOperatorConjunctionOperator {
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Debugf("%v is not a legal NSX operator", elem.String())
+		logging.Debugf("Type %T is not a legal NSX operator", elem)
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
@@ -122,8 +122,8 @@ func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagA
 		if !isFirst {
 			leftOrRight = "right"
 		}
-		logging.Debugf("NSX expressions' %s component %s is not supported. Currently only components which are NSX "+
-			"condition are supported", leftOrRight, elem.String())
+		logging.Debugf("NSX expressions' %s component is of type %T which is not supported. "+
+			"(Currently only NSX condition are supported.)", leftOrRight, elem)
 		return nil
 	}
 	return getTagTermsForCondition(cond)
