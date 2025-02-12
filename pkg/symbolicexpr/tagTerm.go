@@ -93,7 +93,7 @@ func getConjunctionOperator(elem collector.ExpressionElement) *resources.Conjunc
 func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	exprVal := *expr
-	condTag1 := getTagTermExprElement(exprVal[0], true)
+	condTag1 := getTagTermExprElement(exprVal[0], group)
 	if condTag1 == nil {
 		return nil
 	}
@@ -101,7 +101,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}}
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(exprVal[1])
-		condTag2 := getTagTermExprElement(exprVal[2], true)
+		condTag2 := getTagTermExprElement(exprVal[2], group)
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
@@ -115,15 +115,11 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 	return nil
 }
 
-func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagAtomicTerm {
+func getTagTermExprElement(elem collector.ExpressionElement, group string) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
-		leftOrRight := "left"
-		if !isFirst {
-			leftOrRight = "right"
-		}
-		logging.Debugf("NSX expressions' %s component is of type %T which is not supported. "+
-			"(Currently only NSX condition are supported.)", leftOrRight, elem)
+		logging.Debugf("group's %s defining expression includes a component is of type %T which is not supported",
+			group, elem)
 		return nil
 	}
 	return getTagTermsForCondition(cond)

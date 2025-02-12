@@ -10,6 +10,7 @@ import (
 func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
 	hints *symbolicexpr.Hints, synthesizeAdmin, color bool) (*k8sResources, error) {
+	logging.Debugf("started synthesis")
 	abstractModel, err := NSXToPolicy(recourses, hints, synthesizeAdmin, color)
 	if err != nil {
 		return nil, err
