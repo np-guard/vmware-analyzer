@@ -38,7 +38,7 @@ func (groupTerm groupAtomicTerm) name() string {
 
 func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction) []*Conjunction {
 	res := []*Conjunction{}
-	const synthesisUseGroup = "Synthesis will be based only on group name"
+	const synthesisUseGroup = "synthesis will be based only on group name"
 	for _, group := range groups {
 		// todo: treat negation properly
 		if cachedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
@@ -54,10 +54,10 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
-				logging.Debugf("%s (%s).", synthesisUseGroup, group.Name())
+				logging.Debugf("For group %s, %s", group.Name(), synthesisUseGroup)
 			}
 		} else {
-			logging.Debugf("No expression is attached to group %s. %s.", group.Name(), synthesisUseGroup)
+			logging.Debugf("No expression is attached to group %s. S%s.", group.Name(), synthesisUseGroup)
 		}
 		groupToConjunctions[group.Name()] = groupConj
 		res = append(res, groupConj...)
