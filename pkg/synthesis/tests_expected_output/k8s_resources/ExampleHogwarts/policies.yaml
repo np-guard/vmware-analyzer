@@ -2,14 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: TCP'
         nsx-id: "10400"
     creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - protocol: TCP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__Web
@@ -27,14 +29,18 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Hufflepuff) dst: (group = Web and group = Hufflepuff) conn: All Connections'
+        description: 'src: (group = Hufflepuff) dst: (group = Web and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10400"
     creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - endPort: 320
+              port: 300
+              protocol: UDP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__Web
@@ -102,7 +108,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: TCP'
         nsx-id: "10400"
     creationTimestamp: null
     name: policy-4
@@ -114,6 +120,8 @@ spec:
                 matchExpressions:
                     - key: group__Gryffindor
                       operator: Exists
+          ports:
+            - protocol: TCP
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -127,7 +135,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Hufflepuff) dst: (group = Web and group = Hufflepuff) conn: All Connections'
+        description: 'src: (group = Hufflepuff) dst: (group = Web and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10400"
     creationTimestamp: null
     name: policy-5
@@ -139,6 +147,10 @@ spec:
                 matchExpressions:
                     - key: group__Hufflepuff
                       operator: Exists
+          ports:
+            - endPort: 320
+              port: 300
+              protocol: UDP
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -202,14 +214,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: TCP'
         nsx-id: "10401"
     creationTimestamp: null
     name: policy-8
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - protocol: TCP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__App
@@ -229,14 +243,18 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Web and group = Hufflepuff) dst: (group = App and group = Hufflepuff) conn: All Connections'
+        description: 'src: (group = Web and group = Hufflepuff) dst: (group = App and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10401"
     creationTimestamp: null
     name: policy-9
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - endPort: 320
+              port: 300
+              protocol: UDP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__App
@@ -283,7 +301,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: TCP'
         nsx-id: "10401"
     creationTimestamp: null
     name: policy-11
@@ -297,6 +315,8 @@ spec:
                       operator: Exists
                     - key: group__Gryffindor
                       operator: Exists
+          ports:
+            - protocol: TCP
     podSelector:
         matchExpressions:
             - key: group__App
@@ -310,7 +330,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Web and group = Hufflepuff) dst: (group = App and group = Hufflepuff) conn: All Connections'
+        description: 'src: (group = Web and group = Hufflepuff) dst: (group = App and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10401"
     creationTimestamp: null
     name: policy-12
@@ -324,6 +344,10 @@ spec:
                       operator: Exists
                     - key: group__Hufflepuff
                       operator: Exists
+          ports:
+            - endPort: 320
+              port: 300
+              protocol: UDP
     podSelector:
         matchExpressions:
             - key: group__App
@@ -364,14 +388,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = App and group = Gryffindor) dst: (group = DB and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = App and group = Gryffindor) dst: (group = DB and group = Gryffindor) conn: TCP'
         nsx-id: "10405"
     creationTimestamp: null
     name: policy-14
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - protocol: TCP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__DB
@@ -391,14 +417,18 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = App and group = Hufflepuff) dst: (group = DB and group = Hufflepuff) conn: All Connections'
+        description: 'src: (group = App and group = Hufflepuff) dst: (group = DB and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10405"
     creationTimestamp: null
     name: policy-15
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - endPort: 320
+              port: 300
+              protocol: UDP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__DB
@@ -445,7 +475,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = App and group = Gryffindor) dst: (group = DB and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = App and group = Gryffindor) dst: (group = DB and group = Gryffindor) conn: TCP'
         nsx-id: "10405"
     creationTimestamp: null
     name: policy-17
@@ -459,6 +489,8 @@ spec:
                       operator: Exists
                     - key: group__Gryffindor
                       operator: Exists
+          ports:
+            - protocol: TCP
     podSelector:
         matchExpressions:
             - key: group__DB
@@ -472,7 +504,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = App and group = Hufflepuff) dst: (group = DB and group = Hufflepuff) conn: All Connections'
+        description: 'src: (group = App and group = Hufflepuff) dst: (group = DB and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10405"
     creationTimestamp: null
     name: policy-18
@@ -486,6 +518,10 @@ spec:
                       operator: Exists
                     - key: group__Hufflepuff
                       operator: Exists
+          ports:
+            - endPort: 320
+              port: 300
+              protocol: UDP
     podSelector:
         matchExpressions:
             - key: group__DB
