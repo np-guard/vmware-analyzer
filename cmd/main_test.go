@@ -95,9 +95,10 @@ var staticTests = []*cliTest{
 	},
 	{
 		// analysis from nsx resources input file
-		name:            "analyze-only",
-		args:            "--resource-input-file ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only.txt",
-		expectedOutFile: []string{"examples/output/analysis-only.txt"},
+		name: "analyze-only",
+		args: "--verbose --resource-input-file ../pkg/collector/data/json/Example1.json" +
+			" --filename examples/output/analysis-only.txt --log-file examples/output/analysis-only.log",
+		expectedOutFile: []string{"examples/output/analysis-only.txt", "examples/output/analysis-only.log"},
 	},
 	{
 		name:            "analyze-only-resources-shorthand-flag",
