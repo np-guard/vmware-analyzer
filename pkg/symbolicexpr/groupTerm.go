@@ -54,7 +54,7 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
-				logging.Debugf("For group %s, s%s.", group.Name(), synthesisUseGroup)
+				logging.Debugf("For group %s, %s", group.Name(), synthesisUseGroup)
 			}
 		} else {
 			logging.Debugf("No expression is attached to group %s. S%s.", group.Name(), synthesisUseGroup)
