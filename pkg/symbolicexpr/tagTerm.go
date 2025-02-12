@@ -55,12 +55,12 @@ func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 //////////////////////////////////////////////////////////
 
 // return the tag corresponding to a given condition
-func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
+func getTagTermsForCondition(cond *collector.Condition, group string) *tagAtomicTerm {
 	// assumption: cond is of a tag over VMs
 	if cond.Condition.MemberType == nil || *cond.Condition.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Condition.Key == nil || *cond.Condition.Key != resources.ConditionKeyTag ||
 		cond.Condition.Operator == nil {
-		logging.Debugf("NSX condition %s not supported", cond.String())
+		debugMsg(group, fmt.Sprintf("contains NSX condition %s which is not supported", cond.String()))
 		return nil
 	}
 	var neg bool
@@ -72,15 +72,16 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
 // returns nil if neither
-func getConjunctionOperator(elem collector.ExpressionElement) *resources.ConjunctionOperatorConjunctionOperator {
+func getConjunctionOperator(elem collector.ExpressionElement,
+	group string) *resources.ConjunctionOperatorConjunctionOperator {
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Debugf("Type %T is not a legal NSX operator", elem)
+		debugMsg(group, fmt.Sprintf("contains an operator of type %T which is not a legal NSX operator", elem))
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
 		*conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorOR {
-		logging.Debugf("NSX operator %v is not supported", conj.String())
+		debugMsg(group, fmt.Sprintf("contains an operator %s which is not supported (yet)", conj.String()))
 		return nil
 	}
 	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
@@ -100,7 +101,7 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
 		return []*Conjunction{{condTag1}}
 	} else if len(*expr) == nonTrivialExprLength {
-		orOrAnd := getConjunctionOperator(exprVal[1])
+		orOrAnd := getConjunctionOperator(exprVal[1], group)
 		condTag2 := getTagTermExprElement(exprVal[2], group)
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
@@ -111,16 +112,19 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 	}
 	// len not 1 neither 3
-	logging.Debugf("NSX expression %v is not supported", expr.String())
+	debugMsg(group, "is not supported")
 	return nil
 }
 
 func getTagTermExprElement(elem collector.ExpressionElement, group string) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
-		logging.Debugf("group's %s defining expression includes a component is of type %T which is not supported",
-			group, elem)
+		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
 	}
-	return getTagTermsForCondition(cond)
+	return getTagTermsForCondition(cond, group)
+}
+
+func debugMsg(group, text string) {
+	logging.Debugf("group's %s defining expression %s ", group, text)
 }

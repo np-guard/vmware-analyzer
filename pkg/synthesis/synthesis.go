@@ -10,7 +10,6 @@ import (
 func NSXToK8sSynthesis(
 	recourses *collector.ResourcesContainerModel,
 	hints *symbolicexpr.Hints, synthesizeAdmin, color bool) (*k8sResources, error) {
-	logging.Debugf("started synthesis")
 	abstractModel, err := NSXToPolicy(recourses, hints, synthesizeAdmin, color)
 	if err != nil {
 		return nil, err
@@ -26,6 +25,7 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		return nil, err
 	}
 	config := parser.GetConfig()
+	logging.Debugf("started synthesis")
 	preProcessingCategoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy, color)
 	logging.Debugf("pre processing symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", preProcessingPolicyStr)
