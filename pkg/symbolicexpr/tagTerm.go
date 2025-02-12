@@ -60,8 +60,7 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 	if cond.Condition.MemberType == nil || *cond.Condition.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Condition.Key == nil || *cond.Condition.Key != resources.ConditionKeyTag ||
 		cond.Condition.Operator == nil {
-		logging.Infof("supported nsx condition with type VM, key tag and non empty operator."+
-			"\n\t %+v not supported", *cond)
+		logging.Debugf("NSX condition %v not supported", cond.String())
 		return nil
 	}
 	var neg bool
@@ -71,22 +70,17 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 	return &tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 }
 
-const supportErrMsg = "Supported expression: cond \"And\" or \"Or\" cond"
-
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
 // returns nil if neither
 func getConjunctionOperator(elem collector.ExpressionElement) *resources.ConjunctionOperatorConjunctionOperator {
-	if elem == nil {
-		logging.Infof(supportErrMsg + "\n; operator must not be nil\n")
-	}
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
-		logging.Infof(supportErrMsg + "\n\tillegal operator\n")
+		logging.Debugf("%v is not a legal NSX operator", elem.String())
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
 		*conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorOR {
-		logging.Infof("supported nsx ConjunctionOperator: and, or\n\t%+v not supported", *conj)
+		logging.Debugf("NSX operator %v is not supported", conj.String())
 		return nil
 	}
 	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
@@ -117,19 +111,19 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
 	}
 	// len not 1 neither 3
-	logging.Infof("%v\n\t%+v is neither\n", supportErrMsg, expr)
+	logging.Debugf("NSX expression %v not supported", expr.String())
 	return nil
 }
 
 func getTagTermExprElement(elem collector.ExpressionElement, isFirst bool) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
-		firstOrSec := "first"
+		leftOrRight := "left"
 		if !isFirst {
-			firstOrSec = "second"
+			leftOrRight = "right"
 		}
-		logging.Infof(supportErrMsg+"; the %v element must be a condition", firstOrSec+
-			fmt.Sprintf("\n\t%+v is not\n", elem))
+		logging.Debugf("NSX expressions' %s component %s is not supported. Currently only components which are NSX "+
+			"condition are supported", leftOrRight, elem.String())
 		return nil
 	}
 	return getTagTermsForCondition(cond)

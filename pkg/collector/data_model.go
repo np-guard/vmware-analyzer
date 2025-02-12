@@ -439,7 +439,7 @@ type NestedExpression struct {
 	nsx.NestedExpression
 }
 
-const toImplement = "to implement"
+const toImplement = "(String() not yet implemented for this expression element)"
 
 func (e *NestedExpression) String() string { return toImplement } // todo
 
