@@ -60,7 +60,7 @@ func getTagTermsForCondition(cond *collector.Condition) *tagAtomicTerm {
 	if cond.Condition.MemberType == nil || *cond.Condition.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Condition.Key == nil || *cond.Condition.Key != resources.ConditionKeyTag ||
 		cond.Condition.Operator == nil {
-		logging.Debugf("NSX condition %v not supported", cond.String())
+		logging.Debugf("NSX condition %s not supported", cond.String())
 		return nil
 	}
 	var neg bool
