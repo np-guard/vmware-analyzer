@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
@@ -375,7 +376,8 @@ var ExampleHogwarts = ExampleSynthesis{
 						Dest:     huf,
 						Services: []string{anyStr},
 						Action:   data.JumpToApp,
-						Conn:     netset.NewUDPTransport(4, 5, 300, 320),
+						//nolint:mnd // these are the port numbers for the test
+						Conn: netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
 					},
 				},
 			},
