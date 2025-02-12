@@ -44,11 +44,15 @@ func NewDefaultLoggerWithVerbosity(verbosity Verbosity) *DefaultLogger {
 
 // Init initializes a thread-safe singleton logger
 // This would be called from a main method when the application starts up
-func Init(verbosity Verbosity) {
+func Init(verbosity Verbosity, logFile string) error {
 	// once ensures the singleton is initialized only once
 	once.Do(func() {
 		logger = *NewDefaultLoggerWithVerbosity(verbosity)
 	})
+	if logFile != "" {
+		return Tee(logFile)
+	}
+	return nil
 }
 
 // Tee() redirect the output into the default log, and a file
