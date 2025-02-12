@@ -72,13 +72,13 @@ func WarningVerbosity() bool { return logger.verbosity >= MediumVerbosity }
 
 // Debug/Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
 func Debug(msg string) {
-	DebugCommon("%s", msg)
+	DebugCommonf("%s", msg)
 }
 func Debugf(format string, o ...interface{}) {
-	DebugCommon(format, o...)
+	DebugCommonf(format, o...)
 }
 
-func DebugCommon(format string, o ...interface{}) {
+func DebugCommonf(format string, o ...interface{}) {
 	if DebugVerbosity() {
 		pc, _, _, _ := runtime.Caller(2)
 		details := runtime.FuncForPC(pc)
