@@ -3,8 +3,10 @@ package synthesis
 import (
 	"fmt"
 
+	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -26,6 +28,7 @@ type k8sPolicies struct {
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn) {
+	policies.addDNSAllowNetworkPolicy()
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
@@ -99,6 +102,16 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
+}
+
+func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
+	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", "dns-rule-id")
+	policies.networkPolicies = append(policies.networkPolicies, pol)
+	to := []networking.NetworkPolicyPeer{{PodSelector: &meta.LabelSelector{MatchLabels: map[string]string{"k8s-app": "kube-dns"}}, NamespaceSelector: &meta.LabelSelector{}}}
+	rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: []networking.NetworkPolicyPort{{Protocol:common.PointerTo(core.ProtocolUDP), Port: common.PointerTo(intstr.FromInt(53))}}}}
+	pol.Spec.Egress = rules
+	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
+	pol.Spec.PodSelector = meta.LabelSelector{}
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
