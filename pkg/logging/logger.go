@@ -70,14 +70,17 @@ func DebugVerbosity() bool   { return logger.verbosity == HighVerbosity }
 func InfoVerbosity() bool    { return logger.verbosity == HighVerbosity }
 func WarningVerbosity() bool { return logger.verbosity >= MediumVerbosity }
 
+// Debug/Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
 func Debug(msg string) {
-	Debugf("%s", msg)
+	DebugCommon("%s", msg)
+}
+func Debugf(format string, o ...interface{}) {
+	DebugCommon(format, o...)
 }
 
-// Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
-func Debugf(format string, o ...interface{}) {
+func DebugCommon(format string, o ...interface{}) {
 	if DebugVerbosity() {
-		pc, _, _, _ := runtime.Caller(1)
+		pc, _, _, _ := runtime.Caller(2)
 		details := runtime.FuncForPC(pc)
 		logger.l.Printf("DEBUG	%s	%s", details.Name(), fmt.Sprintf(format, o...))
 	}

@@ -233,7 +233,6 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 // parallelTestsRun() gets a test function to run, and run it on all the syntheticTests in parallel
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	logging.Init(logging.HighVerbosity)
-	t.Parallel()
 	for _, test := range allSyntheticTests {
 		rc := data.ExamplesGeneration(&test.exData.FromNSX)
 		t.Run(test.name, func(t *testing.T) {
@@ -279,7 +278,6 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.synthesizeAdmin, false)
 	require.Nil(t, err)
 	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
-	logging.Debug(abstractModelStr)
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
 	require.Nil(t, err)
