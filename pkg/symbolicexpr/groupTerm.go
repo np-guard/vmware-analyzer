@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 const grp = "group"
@@ -35,19 +36,31 @@ func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
 
-func getConjunctionForGroups(groups []*collector.Group) []*Conjunction {
+func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction) []*Conjunction {
 	res := []*Conjunction{}
+	const synthesisUseGroup = "synthesis will be based only on group name"
 	for _, group := range groups {
-		// if group has a tag based supported expression then considers the tags instead of the group
-		if group.Expression != nil {
+		// todo: treat negation properly
+		if cachedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
+			res = append(res, cachedGroupConj...)
+			continue
+		}
+		// not in cache
+		// default: Conjunction defined via group only
+		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
+		// if group has a tag based supported expression then considers the tags
+		if len(group.Expression) > 0 {
 			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
 			if tagConj != nil {
-				res = append(res, tagConj...)
-				continue
+				groupConj = tagConj
+			} else {
+				logging.Debugf("For group %s, %s", group.Name(), synthesisUseGroup)
 			}
+		} else {
+			logging.Debugf("No expression is attached to group %s. S%s.", group.Name(), synthesisUseGroup)
 		}
-		// todo: treat negation properly
-		res = append(res, &Conjunction{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}})
+		groupToConjunctions[group.Name()] = groupConj
+		res = append(res, groupConj...)
 	}
 	return res
 }
