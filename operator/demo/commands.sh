@@ -12,5 +12,7 @@ kubectl run new-virtual-machine  --image=ahmet/app-on-two-ports --labels="group_
 # check conn without sh:
 # kubectl exec new-vm-1 -- wget -qO- --timeout=2 http://10.244.120.68:8000
 #  kubectl exec new-vm-1 -- wget -qO- --timeout=2  http://192.168.110.130:5000/metrics
+# kubectl exec new-vm-2 -- wget -qO- --timeout=2  `kubectl get -o template pod/new-vm-3 --template={{.status.podIP}}`:8000
+
 
 # https://github.com/ahmetb/kubernetes-network-policy-recipes/blob/master/09-allow-traffic-only-to-a-port.md

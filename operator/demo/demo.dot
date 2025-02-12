@@ -1,0 +1,20 @@
+digraph {
+	subgraph "cluster_default" {
+		color="black"
+		fontcolor="black"
+		"default/new-virtual-machine[Pod]" [label="new-virtual-machine[Pod]" color="blue" fontcolor="blue"]
+		"default/new-vm-1[Pod]" [label="new-vm-1[Pod]" color="blue" fontcolor="blue"]
+		"default/new-vm-2[Pod]" [label="new-vm-2[Pod]" color="blue" fontcolor="blue"]
+		"default/new-vm-3[Pod]" [label="new-vm-3[Pod]" color="blue" fontcolor="blue"]
+		"default/new-vm-4[Pod]" [label="new-vm-4[Pod]" color="blue" fontcolor="blue"]
+		label="default"
+	}
+	"default/new-virtual-machine[Pod]" -> "default/new-vm-4[Pod]" [label="TCP 80" color="gold2" fontcolor="darkgreen" weight=0.5]
+	"default/new-vm-1[Pod]" -> "default/new-vm-4[Pod]" [label="All Connections" color="gold2" fontcolor="darkgreen" weight=0.5]
+	"default/new-vm-2[Pod]" -> "default/new-vm-4[Pod]" [label="TCP 80" color="gold2" fontcolor="darkgreen" weight=0.5]
+	"default/new-vm-3[Pod]" -> "default/new-vm-4[Pod]" [label="All Connections" color="gold2" fontcolor="darkgreen" weight=0.5]
+	"default/new-vm-4[Pod]" -> "default/new-virtual-machine[Pod]" [label="TCP 80" color="gold2" fontcolor="darkgreen" weight=1]
+	"default/new-vm-4[Pod]" -> "default/new-vm-1[Pod]" [label="All Connections" color="gold2" fontcolor="darkgreen" weight=1]
+	"default/new-vm-4[Pod]" -> "default/new-vm-2[Pod]" [label="TCP 80" color="gold2" fontcolor="darkgreen" weight=1]
+	"default/new-vm-4[Pod]" -> "default/new-vm-3[Pod]" [label="All Connections" color="gold2" fontcolor="darkgreen" weight=1]
+}
