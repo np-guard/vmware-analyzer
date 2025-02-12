@@ -38,4 +38,4 @@ jobs:
           go-version: 'stable'
 
       - name: Publish on pkg.go.dev
-        run: GOPROXY=proxy.golang.org go list -m github.com/np-guard/vmware-analyzer/@${{ github.ref_name }}
+        run: GOPROXY=proxy.golang.org go list -m github.com/np-guard/vmware-analyzer@${{ github.ref_name }}
