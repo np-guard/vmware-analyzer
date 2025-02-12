@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -34,7 +36,7 @@ func Test_verifyTraceflow(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			logging.Init(logging.HighVerbosity)
+			require.Nil(t, logging.Init(logging.HighVerbosity, path.Join(outDir, "traceflows.log")))
 			server, err := collector.GetNSXServerDate(tt.args.nsxServer, tt.args.userName, tt.args.password)
 			if err != nil {
 				// do not fail on env without access to nsx host

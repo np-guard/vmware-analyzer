@@ -92,7 +92,7 @@ func cleanStr(str string) string {
 }
 
 func TestAnalyzer(t *testing.T) {
-	logging.Init(logging.HighVerbosity)
+	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for i := range allTests {
 		test := &allTests[i]
 		test.run(t)

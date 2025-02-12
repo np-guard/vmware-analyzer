@@ -8,7 +8,10 @@ package logging
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
 )
@@ -41,24 +44,47 @@ func NewDefaultLoggerWithVerbosity(verbosity Verbosity) *DefaultLogger {
 
 // Init initializes a thread-safe singleton logger
 // This would be called from a main method when the application starts up
-func Init(verbosity Verbosity) {
+func Init(verbosity Verbosity, logFile string) error {
 	// once ensures the singleton is initialized only once
 	once.Do(func() {
 		logger = *NewDefaultLoggerWithVerbosity(verbosity)
 	})
+	if logFile != "" {
+		return Tee(logFile)
+	}
+	return nil
 }
+
+// Tee() redirect the output into the default log, and a file
+func Tee(fileName string) error {
+	err := os.MkdirAll(filepath.Dir(fileName), os.ModePerm)
+	if err != nil {
+		return err
+	}
+	f, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	w := io.MultiWriter(log.Default().Writer(), f)
+	logger.l = log.New(w, "", log.LstdFlags)
+	return nil
+}
+
 func DebugVerbosity() bool   { return logger.verbosity == HighVerbosity }
 func InfoVerbosity() bool    { return logger.verbosity == HighVerbosity }
 func WarningVerbosity() bool { return logger.verbosity >= MediumVerbosity }
 
+// Debug/Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
 func Debug(msg string) {
-	Debugf("%s", msg)
+	debugCommonf("%s", msg)
+}
+func Debugf(format string, o ...interface{}) {
+	debugCommonf(format, o...)
 }
 
-// Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
-func Debugf(format string, o ...interface{}) {
+func debugCommonf(format string, o ...interface{}) {
 	if DebugVerbosity() {
-		pc, _, _, _ := runtime.Caller(1)
+		pc, _, _, _ := runtime.Caller(2)
 		details := runtime.FuncForPC(pc)
 		logger.l.Printf("DEBUG	%s	%s", details.Name(), fmt.Sprintf(format, o...))
 	}

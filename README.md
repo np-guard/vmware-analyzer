@@ -25,7 +25,8 @@ Flags:
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
       --host string                  NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
-  -o, --output string                output format; must be one of [txt, dot, json, svg] (default "txt")
+      --log-file string              file path to write nsxanalyzer log
+  -o, --output string                output format; must be one of txt,dot,svg,json (default "txt")
       --output-filter strings        filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")
       --password string              NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable
   -q, --quiet                        flag to run quietly, report only severe errors and result (default false)

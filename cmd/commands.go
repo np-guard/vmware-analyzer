@@ -34,6 +34,7 @@ const (
 	anonymizeFlag               = "anonymize"
 	synthesisDumpDirFlag        = "synthesis-dump-dir"
 	synthesizeAdminPoliciesFlag = "synthesize-admin-policies"
+	logFileFlag                 = "log-file"
 	outputFileFlag              = "filename"
 	outputFormatFlag            = "output"
 	outputFileShortFlag         = "f"
@@ -53,6 +54,7 @@ const (
 	topologyDumpFileHelp        = "file path to store topology"
 	skipAnalysisHelp            = "flag to skip analysis, run only collector and/or synthesis (default false)"
 	anonymizeHelp               = "flag to anonymize collected NSX resources (default false)"
+	logFileHelp                 = "file path to write nsxanalyzer log"
 	outputFileHelp              = "file path to store analysis results"
 	explainHelp                 = "flag to explain connectivity output with rules explanations per allowed/denied connections (default false)"
 	synthesisDumpDirHelp        = "apply synthesis; specify directory path to store k8s synthesis results"
@@ -78,6 +80,7 @@ type inArgs struct {
 	synthesizeAdmin   bool
 	skipAnalysis      bool
 	anonymise         bool
+	logFile           string
 	outputFile        string
 	outputFormat      outFormat
 	quiet             bool
@@ -101,14 +104,14 @@ and generation of k8s network policies`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
 and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
-		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			verbosity := logging.MediumVerbosity
 			if args.quiet {
 				verbosity = logging.LowVerbosity
 			} else if args.verbose {
 				verbosity = logging.HighVerbosity
 			}
-			logging.Init(verbosity) // initializes a thread-safe singleton logger
+			return logging.Init(verbosity, args.logFile) // initializes a thread-safe singleton logger
 		},
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -134,6 +137,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 	rootCmd.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
+	rootCmd.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
 
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, hostFlag)
 	rootCmd.MarkFlagsMutuallyExclusive(resourceInputFileFlag, userFlag)
