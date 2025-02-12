@@ -41,8 +41,8 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 	const synthesisUseGroup = "Synthesis will thus use only group name"
 	for _, group := range groups {
 		// todo: treat negation properly
-		if cashedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
-			res = append(res, cashedGroupConj...)
+		if cachedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
+			res = append(res, cachedGroupConj...)
 			continue
 		}
 		// not in cache
