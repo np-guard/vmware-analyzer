@@ -38,7 +38,7 @@ func (groupTerm groupAtomicTerm) name() string {
 
 func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction) []*Conjunction {
 	res := []*Conjunction{}
-	const synthesisUseGroup = "ynthesis will be based only on group name"
+	const synthesisUseGroup = "synthesis will be based only on group name"
 	for _, group := range groups {
 		// todo: treat negation properly
 		if cachedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
