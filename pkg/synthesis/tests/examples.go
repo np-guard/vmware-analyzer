@@ -375,7 +375,8 @@ var ExampleHogwarts = ExampleSynthesis{
 						Dest:   huf,
 						Action: data.JumpToApp,
 						//nolint:mnd // these are the port numbers for the test
-						Conn: netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+						Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+						Direction: string(nsx.RuleDirectionIN),
 					},
 				},
 			},
