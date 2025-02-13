@@ -491,6 +491,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						Dest:     gry,
 						Services: []string{anyStr},
 						Action:   data.JumpToApp,
+						Conn:     netset.AllTCPTransport(),
 					},
 				},
 			},
@@ -505,6 +506,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						Dest:     sly,
 						Services: []string{anyStr},
 						Action:   data.JumpToApp,
+						Conn:     netset.AllUDPTransport().Union(netset.AllTCPTransport()),
 					},
 					{
 						Name:     "default-deny-env",
@@ -527,6 +529,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						Dest:     web,
 						Services: []string{anyStr},
 						Action:   data.Allow,
+						Conn:     netset.AllTCPTransport(),
 					},
 					{
 						Name:     "Web-To-App-Access",
@@ -535,6 +538,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 						Dest:     app,
 						Services: []string{anyStr},
 						Action:   data.Allow,
+						Conn:     netset.AllUDPTransport(),
 					},
 				},
 			},

@@ -2,15 +2,15 @@ category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |TCP,UDP
 2        |deny                |(*)                  |(*)                  |All Connections
 
 
 symbolic outbound rules:
 Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |TCP,UDP
 2        |deny                |(*)                  |(*)                  |All Connections
 
 
@@ -18,14 +18,14 @@ category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Action |Src           |Dst           |Connection
-0        |allow  |(*)           |(group = Web) |All Connections
-1        |allow  |(group = Web) |(group = App) |All Connections
+0        |allow  |(*)           |(group = Web) |TCP
+1        |allow  |(group = Web) |(group = App) |UDP
 2        |deny   |(*)           |(*)           |All Connections
 
 
 symbolic outbound rules:
 Priority |Action |Src           |Dst           |Connection
-0        |allow  |(*)           |(group = Web) |All Connections
-1        |allow  |(group = Web) |(group = App) |All Connections
+0        |allow  |(*)           |(group = Web) |TCP
+1        |allow  |(group = Web) |(group = App) |UDP
 2        |deny   |(*)           |(*)           |All Connections
 
