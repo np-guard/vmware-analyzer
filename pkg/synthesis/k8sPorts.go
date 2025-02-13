@@ -24,6 +24,13 @@ func connToAdminPolicyPort(conn *netset.TransportSet) []admin.AdminNetworkPolicy
 	return ports.ports
 }
 
+func dnsPorts() []networking.NetworkPolicyPort {
+	const dnsPort = 53
+	conn := netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
+	return connToPolicyPort(conn)
+}
+
+
 // here we have two derived classes: k8sNetworkPorts and k8sAdminNetworkPorts.
 // the base class is k8sPorts, which has code that calls methods of the derived classes.
 // however, in golang there is no pattern in which the code of the base class can call the derived class methods.

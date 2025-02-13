@@ -3,10 +3,8 @@ package synthesis
 import (
 	"fmt"
 
-	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -108,7 +106,7 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", "dns-rule-id")
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	to := []networking.NetworkPolicyPeer{{PodSelector: &meta.LabelSelector{MatchLabels: map[string]string{"k8s-app": "kube-dns"}}, NamespaceSelector: &meta.LabelSelector{}}}
-	rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: []networking.NetworkPolicyPort{{Protocol:common.PointerTo(core.ProtocolUDP), Port: common.PointerTo(intstr.FromInt(53))}}}}
+	rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: dnsPorts()}}
 	pol.Spec.Egress = rules
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 	pol.Spec.PodSelector = meta.LabelSelector{}
