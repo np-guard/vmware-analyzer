@@ -2,24 +2,22 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
-        nsx-id: "1927"
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: dns-rule-id
     creationTimestamp: null
-    name: policy-0
+    name: dns-policy
     namespace: default
 spec:
     egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__Slytherin
-                      operator: DoesNotExist
-    podSelector:
-        matchExpressions:
-            - key: group__Dumbledore1
-              operator: Exists
-            - key: group__Dumbledore2
-              operator: DoesNotExist
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -27,7 +25,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
+        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
     name: policy-1
@@ -39,6 +37,31 @@ spec:
                 matchExpressions:
                     - key: group__Slytherin
                       operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore1
+              operator: Exists
+            - key: group__Dumbledore2
+              operator: DoesNotExist
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
+        nsx-id: "1927"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Slytherin
+                      operator: DoesNotExist
                     - key: group__Gryffindor
                       operator: DoesNotExist
     podSelector:
@@ -55,7 +78,7 @@ metadata:
         description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy-2
+    name: policy-3
     namespace: default
 spec:
     ingress:
@@ -80,7 +103,7 @@ metadata:
         description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy-3
+    name: policy-4
     namespace: default
 spec:
     ingress:
@@ -105,7 +128,7 @@ metadata:
         description: 'src: (group = Dumbledore2 and group != Dumbledore1) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
-    name: policy-4
+    name: policy-5
     namespace: default
 spec:
     egress:
@@ -130,7 +153,7 @@ metadata:
         description: 'src: (group = Dumbledore2) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
-    name: policy-5
+    name: policy-6
     namespace: default
 spec:
     egress:
@@ -155,7 +178,7 @@ metadata:
         description: 'src: (group = Dumbledore2 and group != Dumbledore1) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
-    name: policy-6
+    name: policy-7
     namespace: default
 spec:
     ingress:
@@ -180,7 +203,7 @@ metadata:
         description: 'src: (group = Dumbledore2) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
-    name: policy-7
+    name: policy-8
     namespace: default
 spec:
     ingress:

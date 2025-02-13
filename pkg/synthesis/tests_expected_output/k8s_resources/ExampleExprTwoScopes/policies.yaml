@@ -2,24 +2,22 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (tag = Gryffindor) dst: (tag = Web and tag = Gryffindor) conn: All Connections'
-        nsx-id: "9195"
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: dns-rule-id
     creationTimestamp: null
-    name: policy-0
+    name: dns-policy
     namespace: default
 spec:
     egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: tag__Web
-                      operator: Exists
-                    - key: tag__Gryffindor
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: tag__Gryffindor
-              operator: Exists
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -27,7 +25,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (tag = Hufflepuff) dst: (tag = Web and tag = Hufflepuff) conn: All Connections'
+        description: 'src: (tag = Gryffindor) dst: (tag = Web and tag = Gryffindor) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy-1
@@ -39,6 +37,31 @@ spec:
                 matchExpressions:
                     - key: tag__Web
                       operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Hufflepuff) dst: (tag = Web and tag = Hufflepuff) conn: All Connections'
+        nsx-id: "9195"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__Web
+                      operator: Exists
                     - key: tag__Hufflepuff
                       operator: Exists
     podSelector:
@@ -55,7 +78,7 @@ metadata:
         description: 'src: (tag = Slytherin) dst: (tag = Web and tag = Slytherin) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
-    name: policy-2
+    name: policy-3
     namespace: default
 spec:
     egress:
@@ -80,7 +103,7 @@ metadata:
         description: 'src: (tag = Gryffindor) dst: (tag = Web and tag = Gryffindor) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
-    name: policy-3
+    name: policy-4
     namespace: default
 spec:
     ingress:
@@ -105,7 +128,7 @@ metadata:
         description: 'src: (tag = Hufflepuff) dst: (tag = Web and tag = Hufflepuff) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
-    name: policy-4
+    name: policy-5
     namespace: default
 spec:
     ingress:
@@ -130,7 +153,7 @@ metadata:
         description: 'src: (tag = Slytherin) dst: (tag = Web and tag = Slytherin) conn: All Connections'
         nsx-id: "9195"
     creationTimestamp: null
-    name: policy-5
+    name: policy-6
     namespace: default
 spec:
     ingress:
@@ -153,33 +176,6 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Web and tag = Gryffindor) dst: (tag = App and tag = Gryffindor) conn: All Connections'
-        nsx-id: "9196"
-    creationTimestamp: null
-    name: policy-6
-    namespace: default
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: tag__App
-                      operator: Exists
-                    - key: tag__Gryffindor
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: tag__Web
-              operator: Exists
-            - key: tag__Gryffindor
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (tag = Web and tag = Hufflepuff) dst: (tag = App and tag = Hufflepuff) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
     name: policy-7
@@ -191,6 +187,33 @@ spec:
                 matchExpressions:
                     - key: tag__App
                       operator: Exists
+                    - key: tag__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__Web
+              operator: Exists
+            - key: tag__Gryffindor
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Web and tag = Hufflepuff) dst: (tag = App and tag = Hufflepuff) conn: All Connections'
+        nsx-id: "9196"
+    creationTimestamp: null
+    name: policy-8
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: tag__App
+                      operator: Exists
                     - key: tag__Hufflepuff
                       operator: Exists
     podSelector:
@@ -209,7 +232,7 @@ metadata:
         description: 'src: (tag = Web and tag = Slytherin) dst: (tag = App and tag = Slytherin) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy-8
+    name: policy-9
     namespace: default
 spec:
     egress:
@@ -236,7 +259,7 @@ metadata:
         description: 'src: (tag = Web and tag = Gryffindor) dst: (tag = App and tag = Gryffindor) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy-9
+    name: policy-10
     namespace: default
 spec:
     ingress:
@@ -263,7 +286,7 @@ metadata:
         description: 'src: (tag = Web and tag = Hufflepuff) dst: (tag = App and tag = Hufflepuff) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy-10
+    name: policy-11
     namespace: default
 spec:
     ingress:
@@ -290,7 +313,7 @@ metadata:
         description: 'src: (tag = Web and tag = Slytherin) dst: (tag = App and tag = Slytherin) conn: All Connections'
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy-11
+    name: policy-12
     namespace: default
 spec:
     ingress:
@@ -317,7 +340,7 @@ metadata:
         description: 'src: (tag = App and tag = Gryffindor) dst: (tag = DB and tag = Gryffindor) conn: All Connections'
         nsx-id: "9197"
     creationTimestamp: null
-    name: policy-12
+    name: policy-13
     namespace: default
 spec:
     egress:
@@ -344,7 +367,7 @@ metadata:
         description: 'src: (tag = App and tag = Hufflepuff) dst: (tag = DB and tag = Hufflepuff) conn: All Connections'
         nsx-id: "9197"
     creationTimestamp: null
-    name: policy-13
+    name: policy-14
     namespace: default
 spec:
     egress:
@@ -371,7 +394,7 @@ metadata:
         description: 'src: (tag = App and tag = Slytherin) dst: (tag = DB and tag = Slytherin) conn: All Connections'
         nsx-id: "9197"
     creationTimestamp: null
-    name: policy-14
+    name: policy-15
     namespace: default
 spec:
     egress:
@@ -398,7 +421,7 @@ metadata:
         description: 'src: (tag = App and tag = Gryffindor) dst: (tag = DB and tag = Gryffindor) conn: All Connections'
         nsx-id: "9197"
     creationTimestamp: null
-    name: policy-15
+    name: policy-16
     namespace: default
 spec:
     ingress:
@@ -425,7 +448,7 @@ metadata:
         description: 'src: (tag = App and tag = Hufflepuff) dst: (tag = DB and tag = Hufflepuff) conn: All Connections'
         nsx-id: "9197"
     creationTimestamp: null
-    name: policy-16
+    name: policy-17
     namespace: default
 spec:
     ingress:
@@ -452,7 +475,7 @@ metadata:
         description: 'src: (tag = App and tag = Slytherin) dst: (tag = DB and tag = Slytherin) conn: All Connections'
         nsx-id: "9197"
     creationTimestamp: null
-    name: policy-17
+    name: policy-18
     namespace: default
 spec:
     ingress:
