@@ -26,10 +26,10 @@ type k8sPolicies struct {
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn) {
-	policies.addDNSAllowNetworkPolicy()
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
+	policies.addDNSAllowNetworkPolicy()
 	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)
 }
 
