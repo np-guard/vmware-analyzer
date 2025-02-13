@@ -10,11 +10,11 @@ original allow rule index |Src |Dst                |Connection
 2                         |(*) |(tag = Hufflepuff) |All Connections
 
 outbound rules
-original allow rule index |Src |Dst                |Connection
-0                         |(*) |(tag != DB)        |All Connections
-0                         |(*) |(tag = Slytherin)  |All Connections
-1                         |(*) |(tag != DB)        |All Connections
-1                         |(*) |(tag = Gryffindor) |All Connections
-2                         |(*) |(tag != DB)        |All Connections
-2                         |(*) |(tag = Hufflepuff) |All Connections
+original allow rule index |Src                |Dst                |Connection
+0                         |(tag = Gryffindor) |(tag != DB)        |All Connections
+0                         |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
+1                         |(*)                |(tag != DB)        |All Connections
+1                         |(*)                |(tag = Gryffindor) |All Connections
+2                         |(*)                |(tag != DB)        |All Connections
+2                         |(*)                |(tag = Hufflepuff) |All Connections
 

@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections'
+        description: 'src: (tag = Gryffindor) dst: (tag = Slytherin and tag != DB) conn: All Connections'
         nsx-id: "1925"
     creationTimestamp: null
     name: policy-0
@@ -16,7 +16,10 @@ spec:
                       operator: Exists
                     - key: tag__DB
                       operator: DoesNotExist
-    podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: tag__Gryffindor
+              operator: Exists
     policyTypes:
         - Egress
 ---

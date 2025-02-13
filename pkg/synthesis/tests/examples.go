@@ -877,12 +877,22 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 			CategoryType: application,
 			Rules: []data.Rule{
 				{
-					Name:     "to-Slytherin",
-					ID:       newRuleID,
-					Source:   anyStr,
-					Dest:     slyCondDB,
-					Services: []string{anyStr},
-					Action:   data.Allow,
+					Name:      "to-Slytherin-in",
+					ID:        newRuleID,
+					Source:    anyStr,
+					Dest:      slyCondDB,
+					Services:  []string{anyStr},
+					Action:    data.Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "to-Slytherin-out",
+					ID:        newRuleID,
+					Source:    gry,
+					Dest:      slyCondDB,
+					Services:  []string{anyStr},
+					Action:    data.Allow,
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:     "to-Gryffindor",
