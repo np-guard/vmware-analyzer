@@ -25,11 +25,11 @@ type k8sPolicies struct {
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 }
 
-func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDnsPolicy bool) {
+func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
 	}
-	if createDnsPolicy {
+	if createDNSPolicy {
 		policies.addDNSAllowNetworkPolicy()
 	}
 	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)

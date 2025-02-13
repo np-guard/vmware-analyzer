@@ -11,7 +11,7 @@ type SynthesisOptions struct {
 	Hints           *symbolicexpr.Hints
 	SynthesizeAdmin bool
 	Color           bool
-	CreateDnsPolicy bool
+	CreateDNSPolicy bool
 }
 
 func NSXToK8sSynthesis(
@@ -22,7 +22,7 @@ func NSXToK8sSynthesis(
 	if err != nil {
 		return nil, err
 	}
-	return createK8sResources(abstractModel, options.CreateDnsPolicy), nil
+	return createK8sResources(abstractModel, options.CreateDNSPolicy), nil
 }
 
 func NSXToPolicy(recourses *collector.ResourcesContainerModel,
@@ -37,7 +37,9 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	preProcessingCategoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
 	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color)
 	logging.Debugf("pre processing symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", preProcessingPolicyStr)
-	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy, options.SynthesizeAdmin, options.Hints)
+	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(
+		config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy,
+		options.SynthesizeAdmin, options.Hints)
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{&allowOnlyPolicy}, defaultDenyRule: config.DefaultDenyRule()}
 	abstractPolicyStr := strAllowOnlyPolicy(&allowOnlyPolicy, options.Color)
