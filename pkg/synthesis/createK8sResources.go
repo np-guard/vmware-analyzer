@@ -21,9 +21,9 @@ type k8sResources struct {
 	pods []*core.Pod
 }
 
-func createK8sResources(model *AbstractModelSyn) *k8sResources {
+func createK8sResources(model *AbstractModelSyn, createDnsPolicy bool) *k8sResources {
 	k8sResources := &k8sResources{}
-	k8sResources.createPolicies(model)
+	k8sResources.createPolicies(model, createDnsPolicy)
 	k8sResources.createPods(model)
 	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
 		len(k8sResources.networkPolicies), len(k8sResources.adminNetworkPolicies), len(k8sResources.pods))

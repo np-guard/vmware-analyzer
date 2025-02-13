@@ -44,6 +44,7 @@ const (
 	verboseFlag                 = "verbose"
 	explainFlag                 = "explain"
 	colorFlag                   = "color"
+	createDnsPolicyFlag         = "create-policy-dns-server"
 	disjointHintsFlag           = "disjoint-hint"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
@@ -64,6 +65,7 @@ const (
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
+	createDnsPolicyHelp         = "flag to create a policy that allow access to the dns-server"
 	disjointHintsHelp           = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
@@ -88,6 +90,7 @@ type inArgs struct {
 	explain           bool
 	outputFilter      []string
 	color             bool
+	createDnsPolicy   bool
 	disjointHints     []string
 }
 
@@ -136,6 +139,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.createDnsPolicy, createDnsPolicyFlag, false, createDnsPolicyHelp)
 	rootCmd.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 	rootCmd.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
 
@@ -228,7 +232,13 @@ func runCommand(args *inArgs) error {
 		for i, hint := range args.disjointHints {
 			hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 		}
-		resources, err := synthesis.NSXToK8sSynthesis(resources, hints, args.synthesizeAdmin, args.color)
+		options := &synthesis.SynthesisOptions{
+			Hints:           hints,
+			SynthesizeAdmin: args.synthesizeAdmin,
+			CreateDnsPolicy: args.createDnsPolicy,
+			Color:           args.color,
+		}
+		resources, err := synthesis.NSXToK8sSynthesis(resources, options)
 		if err != nil {
 			return err
 		}
