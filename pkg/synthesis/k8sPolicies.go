@@ -105,11 +105,13 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", "dns-rule-id")
 	policies.networkPolicies = append(policies.networkPolicies, pol)
-	to := []networking.NetworkPolicyPeer{{PodSelector: &meta.LabelSelector{MatchLabels: map[string]string{"k8s-app": "kube-dns"}}, NamespaceSelector: &meta.LabelSelector{}}}
-	rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: dnsPorts()}}
-	pol.Spec.Egress = rules
-	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 	pol.Spec.PodSelector = meta.LabelSelector{}
+	to := []networking.NetworkPolicyPeer{{
+		PodSelector:       &meta.LabelSelector{MatchLabels: map[string]string{"k8s-app": "kube-dns"}},
+		NamespaceSelector: &meta.LabelSelector{},
+	}}
+	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
+	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: dnsPorts()}}
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
