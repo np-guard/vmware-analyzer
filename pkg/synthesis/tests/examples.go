@@ -355,13 +355,12 @@ var ExampleHogwarts = ExampleSynthesis{
 				CategoryType: "Environment",
 				Rules: []data.Rule{
 					{
-						Name:     "allow-Gryffindor-to-Gryffindor",
-						ID:       10218,
-						Source:   gry,
-						Dest:     gry,
-						Services: []string{anyStr},
-						Action:   data.JumpToApp,
-						Conn:     netset.AllTCPTransport(),
+						Name:   "allow-Gryffindor-to-Gryffindor",
+						ID:     10218,
+						Source: gry,
+						Dest:   gry,
+						Action: data.JumpToApp,
+						Conn:   netset.AllTCPTransport(),
 					},
 				},
 			},
@@ -370,12 +369,11 @@ var ExampleHogwarts = ExampleSynthesis{
 				CategoryType: "Environment",
 				Rules: []data.Rule{
 					{
-						Name:     "allow-Hufflepuff-to-Hufflepuff",
-						ID:       10219,
-						Source:   huf,
-						Dest:     huf,
-						Services: []string{anyStr},
-						Action:   data.JumpToApp,
+						Name:   "allow-Hufflepuff-to-Hufflepuff",
+						ID:     10219,
+						Source: huf,
+						Dest:   huf,
+						Action: data.JumpToApp,
 						//nolint:mnd // these are the port numbers for the test
 						Conn: netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
 					},
