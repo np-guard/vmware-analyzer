@@ -22,7 +22,7 @@ func NSXToK8sSynthesis(
 	if err != nil {
 		return nil, err
 	}
-	return createK8sResources(abstractModel,options.CreateDnsPolicy), nil
+	return createK8sResources(abstractModel, options.CreateDnsPolicy), nil
 }
 
 func NSXToPolicy(recourses *collector.ResourcesContainerModel,
