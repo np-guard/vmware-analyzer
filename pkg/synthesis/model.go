@@ -20,14 +20,15 @@ type AbstractModelSyn struct {
 	// categories before that category rules' also include pass, deny and priority (default: false - all categories are "Allow only")
 	// todo: "JumpTaoApp" -> pass. Not correct in all scenarios, but is good enough for what we need and for POC
 	synthesizeAdmin bool
-	policy          []*symbolicPolicy // with default deny todo: should be *symbolicPolicy?
+	policy          []*symbolicPolicy // with default deny todo: do we really need an array of []*symbolicPolicy?
 	defaultDenyRule *dfw.FwRule
 }
 
 // Tags map from tag's name to the tag
 type Tags map[string]*collector.Tag
 
-// symbolicRule input to synthesis. Synthesis very likely to non-prioritized only allow policy
+// symbolicRule: rule presentation abstract model. Synthesis very likely to non-prioritized only allow policy
+// each inbound and outbound have their []*symbolicRule
 //
 //nolint:all
 type symbolicRule struct { // original rule
@@ -47,6 +48,27 @@ type symbolicRule struct { // original rule
 type symbolicPolicy struct {
 	inbound  []*symbolicRule // ordered list inbound symbolicRule
 	outbound []*symbolicRule // ordered list outbound symbolicRule
+}
+
+// input to k8s synthesis (createK8sResources)
+// organized by orig rules and for each orig rule its inbound, outbound rules so that the resulting policy files
+// will be consistently ordered by orig rules
+type symbolicPolicyForK8sSynthesis []*symbolicRuleByOrig
+
+// symbolicRule: rule input to k8s synthesis (createK8sResources)
+// A single entry for each original rule (or none) with both attached inbound and outbound symbolic rules
+type symbolicRuleByOrig struct {
+	origRule *dfw.FwRule // original rule
+	// category; for reference, e.g. in the labels or documentation of the synthesized objects
+	// a pass rule is interpreted as deny for the current category
+	origRuleCategory  collector.DfwCategory
+	origSymbolicPaths *symbolicexpr.SymbolicPaths // symbolic presentation paths defined by the original rule
+	// The following refers to conversion of original allow rule to symbolic paths, as follows:
+	// Assuming there are only allow (non-prioritized, of course) policy.
+	// This is relevant only for allow policy (nil otherwise)
+	// and only for categories greater than allowOnlyFromCategory
+	allowOnlyInboundPaths  *symbolicexpr.SymbolicPaths
+	allowOnlyOutboundPaths *symbolicexpr.SymbolicPaths
 }
 
 type symbolicRulePair struct {
