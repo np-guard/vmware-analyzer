@@ -318,12 +318,13 @@ var codeToProtocol = map[int]nsx.L4PortSetServiceEntryL4Protocol{
 // and translate it to a list of services and a list of service entries,
 // which represent the union of the services and the connection.
 func calcServiceAndEntries(services []string, conn *netset.TransportSet) ([]string, collector.ServiceEntries) {
-	if slices.Contains(services, AnyStr) {
-		// the ANY string will do here:
-		services = []string{AnyStr}
-	}
-	if conn == nil || conn.IsAll() {
+	if conn == nil {
+		// we have only services
 		return services, nil
+	}
+	if conn.IsAll() || slices.Contains(services, AnyStr) {
+		// the ANY string will do here:
+		return []string{AnyStr}, nil
 	}
 	// creating entries from the conn:
 	entries := collector.ServiceEntries{}
