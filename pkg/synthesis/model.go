@@ -61,10 +61,6 @@ type symbolicPolicyK8sSynthesis []*symbolicRuleByOrig
 // A single entry for each original rule (or none) with both attached inbound and outbound symbolic rules
 type symbolicRuleByOrig struct {
 	origRule *dfw.FwRule // original rule
-	// category; for reference, e.g. in the labels or documentation of the synthesized objects
-	// a pass rule is interpreted as deny for the current category
-	origRuleCategory  collector.DfwCategory
-	origSymbolicPaths *symbolicexpr.SymbolicPaths // symbolic presentation paths defined by the original rule
 	// The following refers to conversion of original allow rule to symbolic paths, as follows:
 	// Assuming there are only allow (non-prioritized, of course) policy.
 	// This is relevant only for allow policy (nil otherwise)
