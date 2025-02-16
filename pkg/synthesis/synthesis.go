@@ -60,9 +60,9 @@ func policyToPolicyForK8s(policy *symbolicPolicy) *symbolicPolicyK8sSynthesis {
 func insertInOrOutboundByOrigRules(symbolicRules []*symbolicRule, inbound bool,
 	idToPolicyK8sSynthesis map[int]*symbolicRuleByOrig) {
 	for _, symRule := range symbolicRules {
-		origRuleId := symRule.origRule.RuleID
+		origRuleID := symRule.origRule.RuleID
 		entry := symbolicRuleByOrig{}
-		if val, ok := idToPolicyK8sSynthesis[origRuleId]; ok {
+		if val, ok := idToPolicyK8sSynthesis[origRuleID]; ok {
 			entry = *val
 		} else {
 			entry = symbolicRuleByOrig{origRule: symRule.origRule}
@@ -72,7 +72,7 @@ func insertInOrOutboundByOrigRules(symbolicRules []*symbolicRule, inbound bool,
 		} else {
 			entry.allowOnlyOutboundPaths = &symRule.allowOnlyRulePaths
 		}
-		idToPolicyK8sSynthesis[origRuleId] = &entry
+		idToPolicyK8sSynthesis[origRuleID] = &entry
 	}
 }
 
