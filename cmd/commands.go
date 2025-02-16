@@ -44,7 +44,7 @@ const (
 	verboseFlag                 = "verbose"
 	explainFlag                 = "explain"
 	colorFlag                   = "color"
-	createDNSPolicyFlag         = "create-policy-dns-server"
+	createDNSPolicyFlag         = "synth-create-dns-policy"
 	disjointHintsFlag           = "disjoint-hint"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
@@ -65,7 +65,7 @@ const (
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
-	createDNSPolicyHelp         = "flag to create a policy that allow access to the dns-server"
+	createDNSPolicyHelp         = "flag to create a policy allowing access to target env dns pod"
 	disjointHintsHelp           = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
