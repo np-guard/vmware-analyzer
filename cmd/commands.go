@@ -139,7 +139,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
-	rootCmd.PersistentFlags().BoolVar(&args.createDNSPolicy, createDNSPolicyFlag, false, createDNSPolicyHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.createDNSPolicy, createDNSPolicyFlag, true, createDNSPolicyHelp)
 	rootCmd.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 	rootCmd.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
 
