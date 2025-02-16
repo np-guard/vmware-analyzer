@@ -1,6 +1,9 @@
 package synthesis
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
@@ -36,6 +39,8 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		policyForK8sSynthesis: forK8sPolicy, defaultDenyRule: config.DefaultDenyRule()}
 	abstractPolicyStr := strAllowOnlyPolicy(&allowOnlyPolicy, color)
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", abstractPolicyStr)
+	k8sSynthesisInputStr := strPolicyForK8s(*forK8sPolicy)
+	logging.Debugf("k8sSynthesis Input\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", k8sSynthesisInputStr)
 	return abstractModel, nil
 }
 
@@ -69,4 +74,13 @@ func insertInOrOutboundByOrigRules(symbolicRules []*symbolicRule, inbound bool,
 		}
 		idToPolicyK8sSynthesis[origRuleId] = &entry
 	}
+}
+
+func strPolicyForK8s(policy symbolicPolicyK8sSynthesis) string {
+	res := make([]string, len(policy))
+	for i, rule := range policy {
+		res[i] = fmt.Sprintf("original rule: %s\n\tinbound symbolic: %v\n\toutbound symbolic: %v",
+			rule.origRule.String(), rule.allowOnlyInboundPaths.String(), rule.allowOnlyOutboundPaths.String())
+	}
+	return strings.Join(res, "\n")
 }
