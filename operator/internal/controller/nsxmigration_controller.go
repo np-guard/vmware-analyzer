@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"time"
 
-	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -40,6 +39,7 @@ import (
 	"github.com/go-logr/logr"
 	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 )
@@ -243,7 +243,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	log.Info("called nsxMigration() to fetch secret", "NamespacedName", nsName.String())
 	// get the secret from spec
 
-	secret := &core.Secret{}
+	secret := &v1.Secret{}
 	if err := r.Get(ctx, nsName, secret); err != nil {
 		log.Error(err, "Failed to get secret ref", "namespace", ref.Namespace, "name", ref.Name)
 		log.Error(err, "error is:", "errorStr", err.Error())
@@ -272,6 +272,9 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	}
 	log.Info("REST API call returned successfully", "response", res)
 
+	//Tee
+	logging.Tee("debug/log.txt")
+
 	// collector
 	collectorObj := &collector.Collector{}
 	nsxResourecs, err := collectorObj.CollectResources(url, user, password)
@@ -299,7 +302,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	}
 	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))
 
-	for _, policy := range policies {
+	/*for _, policy := range policies {
 		if policy.Namespace == "" {
 			policy.Namespace = v1.NamespaceDefault
 		}
@@ -308,7 +311,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 				"NetworkPolicy.Namespace", policy.Namespace, "NetworkPolicy.Name", policy.Name)
 			return err
 		}
-	}
+	}*/
 
 	// NetworkPolicy created successfully
 

@@ -1,0 +1,1 @@
+kubectl exec deploy/operator-controller-manager  --stdin --tty  -n operator-system -- sh
