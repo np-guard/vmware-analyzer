@@ -70,6 +70,7 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 	return &SynthesisOptions{
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
+		CreateDNSPolicy: true,
 	}
 }
 
