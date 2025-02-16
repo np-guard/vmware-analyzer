@@ -2,8 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Slytherin) conn: All Connections'
-        nsx-id: "1925"
+        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
+        nsx-id: "1926"
     creationTimestamp: null
     name: policy-0
     namespace: default
@@ -13,7 +13,7 @@ spec:
             - podSelector: {}
     podSelector:
         matchExpressions:
-            - key: tag__Slytherin
+            - key: tag__Gryffindor
               operator: Exists
     policyTypes:
         - Ingress
@@ -23,7 +23,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
-        nsx-id: "1925"
+        nsx-id: "1926"
     creationTimestamp: null
     name: policy-1
     namespace: default
@@ -88,90 +88,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
-        nsx-id: "1926"
-    creationTimestamp: null
-    name: policy-4
-    namespace: default
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: tag__Gryffindor
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (*) dst: (tag != DB) conn: All Connections'
-        nsx-id: "1926"
-    creationTimestamp: null
-    name: policy-5
-    namespace: default
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: tag__DB
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
-        nsx-id: "1926"
-    creationTimestamp: null
-    name: policy-6
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: tag__Gryffindor
-              operator: Exists
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (*) dst: (tag != DB) conn: All Connections'
-        nsx-id: "1926"
-    creationTimestamp: null
-    name: policy-7
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: tag__DB
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy-8
+    name: policy-4
     namespace: default
 spec:
     egress:
@@ -191,7 +111,7 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1927"
     creationTimestamp: null
-    name: policy-9
+    name: policy-5
     namespace: default
 spec:
     egress:
@@ -208,10 +128,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
-        nsx-id: "1927"
+        description: 'src: (*) dst: (tag = Slytherin) conn: All Connections'
+        nsx-id: "1925"
     creationTimestamp: null
-    name: policy-10
+    name: policy-6
     namespace: default
 spec:
     ingress:
@@ -219,7 +139,7 @@ spec:
             - podSelector: {}
     podSelector:
         matchExpressions:
-            - key: tag__Hufflepuff
+            - key: tag__Slytherin
               operator: Exists
     policyTypes:
         - Ingress
@@ -229,9 +149,9 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
-        nsx-id: "1927"
+        nsx-id: "1925"
     creationTimestamp: null
-    name: policy-11
+    name: policy-7
     namespace: default
 spec:
     ingress:
