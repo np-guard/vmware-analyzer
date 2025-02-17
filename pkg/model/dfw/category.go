@@ -178,7 +178,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 		IsAllDstGroups:     isAllDstGroup,
 		Conn:               conn,
 		Action:             actionFromString(action),
-		direction:          direction,
+		Direction:          direction,
 		RuleID:             ruleID,
 		OrigRuleObj:        origRule,
 		origDefaultRuleObj: origDefaultRule,

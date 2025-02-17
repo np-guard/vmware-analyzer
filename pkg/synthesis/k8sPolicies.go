@@ -27,23 +27,14 @@ type k8sPolicies struct {
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	for _, p := range model.policy {
-		policies.symbolicRulePairsToPolicies(model, p.toPairs())
+		for _, rule := range p.toPairs() {
+			policies.symbolicRulesToPolicies(model, rule, rule.inbound())
+		}
 	}
 	if createDNSPolicy {
 		policies.addDNSAllowNetworkPolicy()
 	}
 	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)
-}
-
-func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn, rulePairs []*symbolicRulePair) {
-	for _, rulePair := range rulePairs {
-		if rulePair.outbound != nil {
-			policies.symbolicRulesToPolicies(model, rulePair.outbound, false)
-		}
-		if rulePair.inbound != nil {
-			policies.symbolicRulesToPolicies(model, rulePair.inbound, true)
-		}
-	}
 }
 
 func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rule *symbolicRule, inbound bool) {

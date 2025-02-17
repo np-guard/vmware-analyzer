@@ -1,12 +1,12 @@
 package synthesis
 
 import (
-	"maps"
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -44,60 +44,47 @@ type symbolicRule struct { // original rule
 	pathsToSynthesis   *symbolicexpr.SymbolicPaths
 }
 
+// the following for methods are needed for sorting:
+func (r *symbolicRule) category() collector.DfwCategory {
+	return r.origRuleCategory
+}
+func (r *symbolicRule) priority() int {
+	return r.origRule.Priority
+}
+func (r *symbolicRule) ruleID() int {
+	return r.origRule.RuleID
+}
+func (r *symbolicRule) inbound() bool {
+	return r.origRule.Direction == string(nsx.RuleDirectionIN)
+}
+
+
 type symbolicPolicy struct {
 	inbound  []*symbolicRule // ordered list inbound symbolicRule
 	outbound []*symbolicRule // ordered list outbound symbolicRule
 }
 
-type symbolicRulePair struct {
-	inbound  *symbolicRule // inbound symbolicRule
-	outbound *symbolicRule // outbound symbolicRule
-}
-func (p *symbolicRulePair) aRule()*symbolicRule{
-	if p.inbound != nil{
-		return p.inbound
+// sort the policies.
+// the user to be as intuitive:
+// by categories, by priority, by rule Id, and outbound first
+func symbolicOrigRulesSortFunc(r1, r2 *symbolicRule) int {
+	switch {
+	case r1.category() != r2.category():
+		return int(r1.category()) - int(r2.category())
+	case r1.priority() != r2.priority():
+		return r1.priority() - r2.priority()
+	case r1.ruleID() != r2.ruleID():
+		return r1.ruleID() - r2.ruleID()
+	case r1.inbound():
+		return 1
+	default:
+		return -1
 	}
-	return p.outbound
 }
 
-func (p *symbolicRulePair) category() collector.DfwCategory{
-	return p.aRule().origRuleCategory
-}
-func (p *symbolicRulePair) priority() int{
-	return p.aRule().origRule.Priority
-}
-func (p *symbolicRulePair) ruleID() int{
-	return p.aRule().origRule.RuleID
-}
-
-// a temporary function to get pairs of rules, each pair represent an orig rule.
-// to be remove after reorg symbolicPolicy
-func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
-	ruleToPair := map[*collector.Rule]*symbolicRulePair{}
-	for _, r := range append(policy.inbound, policy.outbound...) {
-		ruleToPair[r.origRule.OrigRuleObj] = &symbolicRulePair{}
-	}
-	for _, r := range policy.inbound {
-		ruleToPair[r.origRule.OrigRuleObj].inbound = r
-	}
-	for _, r := range policy.outbound {
-		ruleToPair[r.origRule.OrigRuleObj].outbound = r
-	}
-	res := slices.Collect(maps.Values(ruleToPair))
-	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
-		switch {
-		case p1.category() != p2.category():
-			return int(p1.category()) - int(p2.category())
-		case p1.priority() != p2.priority():
-			return p1.priority() - p2.priority()
-		case p1.ruleID() != p2.ruleID():
-			return p1.ruleID() - p2.ruleID()
-		case p1.inbound != nil:
-			return 1
-		default:
-			return -1
-		}
-	})
+func (policy *symbolicPolicy) toPairs() []*symbolicRule {
+	res := append(policy.inbound, policy.outbound...)
+	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
 	return res
 }
 
