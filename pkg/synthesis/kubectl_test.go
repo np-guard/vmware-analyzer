@@ -9,6 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/stretchr/testify/require"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -83,11 +84,19 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	for i := range resources.pods {
 		ctl.waitPod(resources.pods[i].Name)
 	}
-	for i := range resources.pods {
-		for j := range resources.pods {
-			if i != j {
-				ctl.testPodsConnection(resources.pods[i].Name, resources.pods[j].Name, 0)
+
+	// get the config:
+	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
+	err = parser.RunParser()
+	require.Nil(t, err)
+	config := parser.GetConfig()
+	for src, dsts := range config.Connectivity() {
+		for dst, conn := range dsts {
+			er := 0
+			if conn.Conn.TCPUDPSet().IsEmpty() {
+				er = 1
 			}
+			ctl.testPodsConnection(strings.ToLower(src.Name()), strings.ToLower(dst.Name()), er)
 		}
 	}
 
