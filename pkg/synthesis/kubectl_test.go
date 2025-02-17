@@ -17,6 +17,8 @@ func TestKubeCTL(t *testing.T) {
 	ctl.createPod("pod-b", []string{"group__gb=true"})
 	ctl.waitPod("pod-a")
 	ctl.waitPod("pod-b")
+	ctl.testPodsConnection("pod-a", "pod-b", 1)
+	ctl.exposePod("pod-b", []string{"group__gb=true"})
 	ctl.testPodsConnection("pod-a", "pod-b", 0)
 	require.Nil(t, ctl.createDefaultDeny())
 	ctl.testPodsConnection("pod-a", "pod-b", 1)
@@ -49,6 +51,9 @@ func (ctl *kubeCTL) clean() {
 func (ctl *kubeCTL) createPod(name string, labels []string) {
 	labelsStr := strings.Join(labels, ",")
 	ctl.addCmd(fmt.Sprintf("kubectl run %s --image=ahmet/app-on-two-ports --labels=\"%s\"", name, labelsStr))
+}
+func (ctl *kubeCTL) exposePod(name string, labels []string) {
+	labelsStr := strings.Join(labels, ",")
 	ctl.addCmd(fmt.Sprintf("kubectl expose pod %s --port=5001 --target-port=5000 --selector=\"%s\" --name \"%s-service\"", name, labelsStr, name))
 	ctl.addCmd("sleep 3")
 }
@@ -61,7 +66,7 @@ func (ctl *kubeCTL) deletePod(name string) {
 }
 func (ctl *kubeCTL) testPodsConnection(from, to string, er int) {
 	ctl.addCmd(fmt.Sprintf("kubectl exec %s -- wget -qO- --timeout=2 http://%s-service:5001/metrics", from, to))
-	ctl.addCmd(fmt.Sprintf("echo Connection Test $? == %d", er))
+	ctl.addCmd(fmt.Sprintf("echo Connection Test exit status should be %d: exit status = $?", er))
 }
 
 func (ctl *kubeCTL) createCmdFile() error {
