@@ -57,7 +57,7 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 				logging.Debugf("For group %s, %s", group.Name(), synthesisUseGroup)
 			}
 		} else {
-			logging.Debugf("No expression is attached to group %s. S%s.", group.Name(), synthesisUseGroup)
+			logging.Debugf("No expression is attached to group %s; %s.", group.Name(), synthesisUseGroup)
 		}
 		groupToConjunctions[group.Name()] = groupConj
 		res = append(res, groupConj...)

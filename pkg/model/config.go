@@ -13,6 +13,10 @@ import (
 
 type ParsedNSXConfig interface {
 	AnalyzedConnectivity() connectivity.ConnMap
+	DFW() *dfw.DFW
+	DefaultDenyRule() *dfw.FwRule
+	VMs() []*endpoints.VM
+	VMToGroupsMap() map[*endpoints.VM][]*collector.Group
 }
 
 // config captures nsx config, implements NSXConfig interface
@@ -27,6 +31,15 @@ type config struct {
 
 func (c *config) AnalyzedConnectivity() connectivity.ConnMap {
 	return c.analyzedConnectivity
+}
+func (c *config) DFW() *dfw.DFW {
+	return c.Fw
+}
+func (c *config) VMs() []*endpoints.VM {
+	return c.vms
+}
+func (c *config) VMToGroupsMap() map[*endpoints.VM][]*collector.Group {
+	return c.GroupsPerVM
 }
 
 func (c *config) ComputeConnectivity(vmsFilter []string) {

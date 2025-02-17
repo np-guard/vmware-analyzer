@@ -55,6 +55,7 @@ type Runner struct {
 	generatedK8sAdminPolicies  []*v1alpha1.AdminNetworkPolicy
 	connectivityAnalysisOutput string
 	analyzedConnectivity       connectivity.ConnMap
+	parsedConfig               model.ParsedNSXConfig
 }
 
 func (r *Runner) GetGeneratedPolicies() ([]*v1.NetworkPolicy, []*v1alpha1.AdminNetworkPolicy) {
@@ -141,6 +142,7 @@ func (r *Runner) runAnalyzer() error {
 	}
 	r.connectivityAnalysisOutput = connResStr
 	r.analyzedConnectivity = parsedConfig.AnalyzedConnectivity()
+	r.parsedConfig = parsedConfig
 	// TODO: remove print?
 	fmt.Println(connResStr)
 
@@ -161,7 +163,7 @@ func (r *Runner) runSynthesis() error {
 		Color:           r.color,
 		CreateDNSPolicy: !r.suppressDNSPolicies,
 	}
-	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, opts)
+	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {
 		return err
 	}
