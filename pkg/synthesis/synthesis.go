@@ -44,7 +44,8 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		options.SynthesizeAdmin, options.Hints)
 	forK8sPolicy := policyToPolicyForK8s(&allowOnlyPolicy)
 	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
-		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{&allowOnlyPolicy}, defaultDenyRule: config.DefaultDenyRule()}
+		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{&allowOnlyPolicy},
+		policyForK8sSynthesis: forK8sPolicy, defaultDenyRule: config.DefaultDenyRule()}
 	abstractPolicyStr := strAllowOnlyPolicy(&allowOnlyPolicy, options.Color)
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", abstractPolicyStr)
 	k8sSynthesisInputStr := strPolicyForK8s(*forK8sPolicy)
