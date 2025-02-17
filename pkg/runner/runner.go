@@ -44,6 +44,7 @@ type Runner struct {
 	analysisExplain    bool
 
 	// synthesis args
+	synth               bool
 	synthesisDumpDir    string
 	disjointHints       []string
 	synthesizeAdmin     bool
@@ -150,7 +151,7 @@ func (r *Runner) runAnalyzer() error {
 }
 
 func (r *Runner) runSynthesis() error {
-	if r.synthesisDumpDir == "" {
+	if r.synthesisDumpDir == "" && !r.synth {
 		return nil
 	}
 	hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(r.disjointHints))}
@@ -169,6 +170,9 @@ func (r *Runner) runSynthesis() error {
 	}
 	r.generatedK8sPolicies = k8sResources.K8sPolicies()
 	r.generatedK8sAdminPolicies = k8sResources.K8sAdminPolicies()
+	if r.synthesisDumpDir == "" {
+		return nil
+	}
 	return k8sResources.CreateDir(r.synthesisDumpDir)
 }
 
@@ -347,6 +351,12 @@ func WithSynthesisHints(l []string) RunnerOption {
 func WithSynthAdminPolicies(enableAdmin bool) RunnerOption {
 	return func(r *Runner) {
 		r.synthesizeAdmin = enableAdmin
+	}
+}
+
+func WithSynth(synth bool) RunnerOption {
+	return func(r *Runner) {
+		r.synth = synth
 	}
 }
 
