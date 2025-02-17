@@ -71,6 +71,7 @@ type FwRule struct {
 	secPolicyCategory  string
 	categoryRef        *CategorySpec
 	dfwRef             *DFW
+	Priority           int
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 
 }
@@ -140,6 +141,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
+		Priority:       f.Priority,
 	}
 }
 
@@ -179,6 +181,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
+		Priority:       f.Priority,
 	}
 }
 

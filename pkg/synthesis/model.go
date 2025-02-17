@@ -53,36 +53,49 @@ type symbolicRulePair struct {
 	inbound  *symbolicRule // inbound symbolicRule
 	outbound *symbolicRule // outbound symbolicRule
 }
+func (p *symbolicRulePair) aRule()*symbolicRule{
+	if p.inbound != nil{
+		return p.inbound
+	}
+	return p.outbound
+}
+
+func (p *symbolicRulePair) category() collector.DfwCategory{
+	return p.aRule().origRuleCategory
+}
+func (p *symbolicRulePair) priority() int{
+	return p.aRule().origRule.Priority
+}
+func (p *symbolicRulePair) ruleID() int{
+	return p.aRule().origRule.RuleID
+}
 
 // a temporary function to get pairs of rules, each pair represent an orig rule.
 // to be remove after reorg symbolicPolicy
 func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
 	ruleToPair := map[*collector.Rule]*symbolicRulePair{}
-	getRulePair := func(r *symbolicRule) *symbolicRulePair {
-		if _, ok := ruleToPair[r.origRule.OrigRuleObj]; !ok {
-			ruleToPair[r.origRule.OrigRuleObj] = &symbolicRulePair{}
-		}
-		return ruleToPair[r.origRule.OrigRuleObj]
+	for _, r := range append(policy.inbound, policy.outbound...) {
+		ruleToPair[r.origRule.OrigRuleObj] = &symbolicRulePair{}
 	}
 	for _, r := range policy.inbound {
-		getRulePair(r).inbound = r
+		ruleToPair[r.origRule.OrigRuleObj].inbound = r
 	}
 	for _, r := range policy.outbound {
-		getRulePair(r).outbound = r
+		ruleToPair[r.origRule.OrigRuleObj].outbound = r
 	}
 	res := slices.Collect(maps.Values(ruleToPair))
 	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
-		in1 := slices.Index(policy.inbound, p1.inbound)
-		in2 := slices.Index(policy.inbound, p2.inbound)
-		out1 := slices.Index(policy.outbound, p1.outbound)
-		out2 := slices.Index(policy.outbound, p2.outbound)
 		switch {
-		case in1 >= 0 && in2 >= 0:
-			return in1 - in2
-		case out1 >= 0 && out2 >= 0:
-			return out1 - out2
+		case p1.category() != p2.category():
+			return int(p1.category()) - int(p2.category())
+		case p1.priority() != p2.priority():
+			return p1.priority() - p2.priority()
+		case p1.ruleID() != p2.ruleID():
+			return p1.ruleID() - p2.ruleID()
+		case p1.inbound != nil:
+			return 1
 		default:
-			return 0
+			return -1
 		}
 	})
 	return res
