@@ -33,6 +33,7 @@ Flags:
       --resource-dump-file string    file path to store collected resources in JSON format
   -r, --resource-input-file string   file path input JSON of NSX resources (instead of collecting from NSX host)
       --skip-analysis                flag to skip analysis, run only collector and/or synthesis (default false)
+      --synth-create-dns-policy     flag to create a policy allowing access to target env dns pod (default true)
       --synthesis-dump-dir string    apply synthesis; specify directory path to store k8s synthesis results
       --synthesize-admin-policies    include admin network policies in policy synthesis (default false)
       --topology-dump-file string    file path to store topology

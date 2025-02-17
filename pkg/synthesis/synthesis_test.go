@@ -66,6 +66,13 @@ func (synTest *synthesisTest) debugDir() string {
 func (synTest *synthesisTest) hasExpectedResults() bool {
 	return synTest.exData != nil
 }
+func (synTest *synthesisTest) options() *SynthesisOptions {
+	return &SynthesisOptions{
+		Hints:           synTest.hints(),
+		SynthesizeAdmin: synTest.synthesizeAdmin,
+		CreateDNSPolicy: true,
+	}
+}
 
 var groupsByVmsTests = []synthesisTest{
 	{
@@ -275,7 +282,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	require.Nil(t, err)
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.synthesizeAdmin, false)
+	abstractModel, err := NSXToPolicy(rc, synTest.options())
 	require.Nil(t, err)
 	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
 	// write the abstract model rules into a file, for debugging:
@@ -293,7 +300,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	// create K8S resources:
-	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.synthesizeAdmin, false)
+	resources, err := NSXToK8sSynthesis(rc, synTest.options())
 	require.Nil(t, err)
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
@@ -328,7 +335,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := NSXToPolicy(rc, synTest.hints(), synTest.synthesizeAdmin, false)
+	abstractModel, err := NSXToPolicy(rc, synTest.options())
 	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
