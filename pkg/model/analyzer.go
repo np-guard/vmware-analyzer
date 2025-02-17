@@ -6,14 +6,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-type NSXConnAnalyzer struct {
-}
-
-func (n *NSXConnAnalyzer) NSXConnectivity(recourses *collector.ResourcesContainerModel) (string, error) {
-	params := common.OutputParameters{Format: common.TextFormat}
-	return NSXConnectivityFromResourcesContainer(recourses, params)
-}
-
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
 	config, err := configFromResourcesContainer(recourses, params)
 	if err != nil {
