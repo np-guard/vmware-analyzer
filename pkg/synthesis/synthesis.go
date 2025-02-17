@@ -1,8 +1,6 @@
 package synthesis
 
 import (
-	v1 "k8s.io/api/networking/v1"
-
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
@@ -47,13 +45,4 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	abstractPolicyStr := strAllowOnlyPolicy(&allowOnlyPolicy, options.Color)
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", abstractPolicyStr)
 	return abstractModel, nil
-}
-
-type Synthesis struct {
-}
-
-func (s *Synthesis) NSXToK8sSynthesis(resources *collector.ResourcesContainerModel) ([]*v1.NetworkPolicy, error) {
-	//hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	policies, err := NSXToK8sSynthesis(resources, nil)
-	return policies.networkPolicies, err
 }

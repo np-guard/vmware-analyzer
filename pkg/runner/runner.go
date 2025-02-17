@@ -5,6 +5,9 @@ import (
 	"os"
 	"strings"
 
+	v1 "k8s.io/api/networking/v1"
+	v1alpha1 "sigs.k8s.io/network-policy-api/apis/v1alpha1"
+
 	"github.com/np-guard/vmware-analyzer/pkg/anonymizer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
@@ -12,8 +15,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
-	v1 "k8s.io/api/networking/v1"
-	v1alpha1 "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 )
 
 // Runner provides API to run NSX collection / analysis / synthesis operations.

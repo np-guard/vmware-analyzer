@@ -23,12 +23,12 @@ type k8sResources struct {
 	pods []*core.Pod
 }
 
-func (k *k8sResources) K8sPolicies() []*v1.NetworkPolicy {
-	return k.k8sPolicies.networkPolicies
+func (resources *k8sResources) K8sPolicies() []*v1.NetworkPolicy {
+	return resources.k8sPolicies.networkPolicies
 }
 
-func (k *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy {
-	return k.k8sPolicies.adminNetworkPolicies
+func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy {
+	return resources.k8sPolicies.adminNetworkPolicies
 }
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {

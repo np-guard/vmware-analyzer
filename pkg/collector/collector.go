@@ -9,7 +9,6 @@ package collector
 import (
 	"fmt"
 
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -42,15 +41,6 @@ const (
 
 	defaultForwardingUpTimer = 5
 )
-
-type Collector struct {
-	// nsxConnData *ServerData
-}
-
-func (c *Collector) CollectResources(host, user, password string) (*ResourcesContainerModel, error) {
-	logging.Init(logging.HighVerbosity, "debug/log.txt")
-	return CollectResources(NewServerData(host, user, password))
-}
 
 type ServerData struct {
 	host, user, password string

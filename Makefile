@@ -24,6 +24,11 @@ lint:
 	CGO_ENABLED=0 go vet ./...
 	golangci-lint run
 
+lint-fix:
+	@echo -- $@ --
+	CGO_ENABLED=0 go vet ./...
+	golangci-lint run --fix
+
 precommit: mod fmt lint
 
 build:
