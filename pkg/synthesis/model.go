@@ -41,7 +41,6 @@ type symbolicRule struct { // original rule
 	// This is relevant only for allow policy (nil otherwise)
 	// and only for categories greater than allowOnlyFromCategory
 	allowOnlyRulePaths symbolicexpr.SymbolicPaths
-	pathsToSynthesis   *symbolicexpr.SymbolicPaths
 }
 
 type symbolicPolicy struct {
