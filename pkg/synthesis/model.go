@@ -58,7 +58,6 @@ func (r *symbolicRule) inbound() bool {
 	return r.origRule.Direction == string(nsx.RuleDirectionIN)
 }
 
-
 type symbolicPolicy struct {
 	inbound  []*symbolicRule // ordered list inbound symbolicRule
 	outbound []*symbolicRule // ordered list outbound symbolicRule
@@ -82,7 +81,7 @@ func symbolicOrigRulesSortFunc(r1, r2 *symbolicRule) int {
 	}
 }
 
-func (policy *symbolicPolicy) toPairs() []*symbolicRule {
+func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 	res := append(policy.inbound, policy.outbound...)
 	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
 	return res
