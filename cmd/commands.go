@@ -144,7 +144,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 
 // NewPRunnerWithOptionsList
 func runCommand(args *inArgs) error {
-	runnerObj, err := runner.NewPRunnerWithOptionsList(
+	runnerObj, err := runner.NewRunnerWithOptionsList(
 		runner.WithOutputFormat(args.outputFormat.String()),
 		runner.WithOutputColor(args.color),
 		runner.WithHighVerbosity(args.verbose),

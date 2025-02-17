@@ -185,7 +185,7 @@ func (r *Runner) resourcesFromNSXEnv() error {
 	return nil
 }
 
-func NewPRunnerWithOptionsList(opts ...RunnerOption) (r *Runner, err error) {
+func NewRunnerWithOptionsList(opts ...RunnerOption) (r *Runner, err error) {
 	r = &Runner{}
 	for _, o := range opts {
 		o(r)
