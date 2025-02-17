@@ -77,10 +77,9 @@ func insertInOrOutboundByOrigRules(symbolicRules []*symbolicRule, inbound bool,
 }
 
 func strPolicyForK8s(policy symbolicPolicyK8sSynthesis) string {
-	res := make([]string, len(policy))
-	for i, rule := range policy {
-		res[i] = fmt.Sprintf("original rule: %s\n\tinbound symbolic: %v\n\toutbound symbolic: %v",
-			rule.origRule.String(), rule.allowOnlyInboundPaths.String(), rule.allowOnlyOutboundPaths.String())
+	var ruleStrFunc = func(r *symbolicRuleByOrig) string {
+		return fmt.Sprintf("original rule: %s\n\tinbound symbolic: %s\n\toutbound symbolic: %s",
+			r.origRule.String(), r.allowOnlyInboundPaths.String(), r.allowOnlyOutboundPaths.String())
 	}
-	return strings.Join(res, "\n")
+	return common.JoinCustomStrFuncSlice(policy, ruleStrFunc, common.NewLine)
 }
