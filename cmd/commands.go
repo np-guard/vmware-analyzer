@@ -7,19 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/spf13/cobra"
 
-	"github.com/np-guard/vmware-analyzer/pkg/anonymizer"
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
+	"github.com/np-guard/vmware-analyzer/pkg/runner"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
 
@@ -107,7 +97,7 @@ and generation of k8s network policies`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
 and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
-		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+		/*PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
 			verbosity := logging.MediumVerbosity
 			if args.quiet {
 				verbosity = logging.LowVerbosity
@@ -115,7 +105,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 				verbosity = logging.HighVerbosity
 			}
 			return logging.Init(verbosity, args.logFile) // initializes a thread-safe singleton logger
-		},
+		},*/
 
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
@@ -152,31 +142,37 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	return rootCmd
 }
 
-func resourcesFromInputFile(inputFile string) (*collector.ResourcesContainerModel, error) {
-	logging.Infof("reading input NSX config file %s", inputFile)
-	b, err := os.ReadFile(inputFile)
+// NewPRunnerWithOptionsList
+func runCommand(args *inArgs) error {
+	runnerObj, err := runner.NewPRunnerWithOptionsList(
+		runner.WithOutputFormat(args.outputFormat.String()),
+		runner.WithOutputColor(args.color),
+		runner.WithHighVerbosity(args.verbose),
+		runner.WithQuietVerbosity(args.quiet),
+		runner.WithLogFile(args.logFile),
+		runner.WithNSXURL(args.host),
+		runner.WithNSXUser(args.user),
+		runner.WithNSXPassword(args.password),
+		runner.WithResourcesDumpFile(args.resourceDumpFile),
+		runner.WithResourcesAnonymization(args.anonymise),
+		runner.WithResourcesInputFile(args.resourceInputFile),
+		runner.WithTopologyDumpFile(args.topologyDumpFile),
+		runner.WithSkipAnalysis(args.skipAnalysis),
+		runner.WithAnalysisOutputFile(args.outputFile),
+		runner.WithAnalysisExplain(args.explain),
+		runner.WithAnalysisVMsFilter(args.outputFilter),
+		runner.WithSynthesisDumpDir(args.synthesisDumpDir),
+		runner.WithSynthAdminPolicies(args.synthesizeAdmin),
+		runner.WithSynthesisHints(args.disjointHints),
+	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	resources, err := collector.FromJSONString(b)
-	if err != nil {
-		return nil, err
-	}
-	return resources, nil
+	runnerObj.Run()
+	return nil
 }
 
-func resourcesFromNSXEnv(args *inArgs) (*collector.ResourcesContainerModel, error) {
-	server, err := collector.GetNSXServerDate(args.host, args.user, args.password)
-	if err != nil {
-		return nil, err
-	}
-	resources, err := collector.CollectResources(server)
-	if err != nil {
-		return nil, err
-	}
-	return resources, nil
-}
-
+/*
 //nolint:gocyclo // one function with lots of options
 func runCommand(args *inArgs) error {
 	var resources *collector.ResourcesContainerModel
@@ -249,3 +245,4 @@ func runCommand(args *inArgs) error {
 	}
 	return nil
 }
+*/

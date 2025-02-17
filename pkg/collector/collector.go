@@ -9,6 +9,7 @@ package collector
 import (
 	"fmt"
 
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
@@ -47,6 +48,7 @@ type Collector struct {
 }
 
 func (c *Collector) CollectResources(host, user, password string) (*ResourcesContainerModel, error) {
+	logging.Init(logging.HighVerbosity, "debug/log.txt")
 	return CollectResources(NewServerData(host, user, password))
 }
 
