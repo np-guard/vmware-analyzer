@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -332,7 +331,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
@@ -351,7 +350,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
@@ -404,7 +403,7 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 			require.Nil(t, err)
 			actualOutput, err := os.ReadFile(filepath.Join(actualDir, file.Name()))
 			require.Nil(t, err)
-			require.Equal(t, cleanStr(string(actualOutput)), cleanStr(string(expectedOutput)),
+			require.Equal(t, common.CleanStr(string(actualOutput)), common.CleanStr(string(expectedOutput)),
 				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
 		}
 	} else if runTestMode == OutputGeneration {
@@ -420,15 +419,10 @@ func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutput
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
-		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
+		require.Equal(t, common.CleanStr(actualOutput), common.CleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
 	} else if runTestMode == OutputGeneration {
 		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}
-}
-
-// comparison should be insensitive to line comparators; cleaning strings from line comparators
-func cleanStr(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }

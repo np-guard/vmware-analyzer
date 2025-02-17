@@ -11,7 +11,11 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
-// config captures nsx config
+type ParsedNSXConfig interface {
+	AnalyzedConnectivity() connectivity.ConnMap
+}
+
+// config captures nsx config, implements NSXConfig interface
 type config struct {
 	vms                  []*endpoints.VM                      // list of all vms
 	vmsMap               map[string]*endpoints.VM             // map from uid to vm objects
@@ -19,6 +23,10 @@ type config struct {
 	GroupsPerVM          map[*endpoints.VM][]*collector.Group // map from vm to its groups
 	analyzedConnectivity connectivity.ConnMap                 // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
+}
+
+func (c *config) AnalyzedConnectivity() connectivity.ConnMap {
+	return c.analyzedConnectivity
 }
 
 func (c *config) ComputeConnectivity(vmsFilter []string) {

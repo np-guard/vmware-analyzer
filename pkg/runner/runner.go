@@ -13,6 +13,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
+	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 )
@@ -49,13 +50,23 @@ type Runner struct {
 	suppressDNSPolicies bool
 
 	// runner state
-	nsxResources              *collector.ResourcesContainerModel
-	generatedK8sPolicies      []*v1.NetworkPolicy
-	generatedK8sAdminPolicies []*v1alpha1.AdminNetworkPolicy
+	nsxResources               *collector.ResourcesContainerModel
+	generatedK8sPolicies       []*v1.NetworkPolicy
+	generatedK8sAdminPolicies  []*v1alpha1.AdminNetworkPolicy
+	connectivityAnalysisOutput string
+	analyzedConnectivity       connectivity.ConnMap
 }
 
 func (r *Runner) GetGeneratedPolicies() ([]*v1.NetworkPolicy, []*v1alpha1.AdminNetworkPolicy) {
 	return r.generatedK8sPolicies, r.generatedK8sAdminPolicies
+}
+
+func (r *Runner) GetConnectivityOutput() string {
+	return r.connectivityAnalysisOutput
+}
+
+func (r *Runner) GetAnalyzedConnectivity() connectivity.ConnMap {
+	return r.analyzedConnectivity
 }
 
 func (r *Runner) Run() error {
@@ -87,6 +98,9 @@ func (r *Runner) initLogger() error {
 // runCollector should assign collected NSX resources into r.resources
 // (possibly with anonymization, if set true)
 func (r *Runner) runCollector() error {
+	if r.nsxResources != nil {
+		return nil // skip collector
+	}
 	var err error
 	if r.resourcesInputFile != "" {
 		err = r.resourcesFromInputFile()
@@ -121,10 +135,12 @@ func (r *Runner) runAnalyzer() error {
 	}
 
 	logging.Infof("starting connectivity analysis")
-	connResStr, err := model.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
+	parsedConfig, connResStr, err := model.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
 	if err != nil {
 		return err
 	}
+	r.connectivityAnalysisOutput = connResStr
+	r.analyzedConnectivity = parsedConfig.AnalyzedConnectivity()
 	// TODO: remove print?
 	fmt.Println(connResStr)
 
@@ -336,5 +352,12 @@ func WithSynthDNSPolicies(create bool) RunnerOption {
 	return func(r *Runner) {
 		// create is true by default, so suppressDNSPolicies is false by default
 		r.suppressDNSPolicies = !create
+	}
+}
+
+// WithNSXResources will make runner skip runCollector() stage
+func WithNSXResources(rc *collector.ResourcesContainerModel) RunnerOption {
+	return func(r *Runner) {
+		r.nsxResources = rc
 	}
 }

@@ -15,8 +15,11 @@ const (
 	CommaSpaceSeparator string = ", "
 	NewLine             string = "\n"
 	Tab                 string = "\t"
+	carriageReturn      string = "\r"
 
 	AnalyzedConnectivityHeader = "Analyzed connectivity:"
+
+	AnyStr = "ANY" // ANY can specify any service or any src/dst in DFW rules
 
 	// ANSI escape codes - for colored output printed to the terminal
 	reset   = "\033[0m"
@@ -29,6 +32,11 @@ const (
 	gray    = "\033[37m"
 	white   = "\033[97m"
 )
+
+// CleanStr for comparison that should be insensitive to line comparators; cleaning strings from line comparators
+func CleanStr(str string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(str, NewLine, ""), carriageReturn, "")
+}
 
 type HasString interface {
 	String() string

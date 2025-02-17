@@ -1,10 +1,9 @@
-package model
+package model_test
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -13,6 +12,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/runner"
 )
 
 type analyzerTest struct {
@@ -60,7 +60,15 @@ func (a *analyzerTest) run(t *testing.T) {
 	err := a.exData.StoreAsJSON(overrideAll)
 	require.Nil(t, err)
 
-	res, err := NSXConnectivityFromResourcesContainerPlainText(rc)
+	runnerObj, err := runner.NewRunnerWithOptionsList(
+		runner.WithNSXResources(rc),
+		runner.WithHighVerbosity(true),
+	)
+	require.Nil(t, err)
+	err = runnerObj.Run()
+	require.Nil(t, err)
+	res := runnerObj.GetConnectivityOutput()
+
 	require.Nil(t, err)
 	fmt.Println(res)
 
@@ -70,7 +78,7 @@ func (a *analyzerTest) run(t *testing.T) {
 		expectedFileExists = false
 	}
 	if overrideAll || overrideOnlyConnOutput || !expectedFileExists {
-		err := os.WriteFile(expectedFile, []byte(res), 0o600)
+		err := common.WriteToFile(expectedFile, res)
 		require.Nil(t, err)
 	} else {
 		// compare expected with actual output
@@ -83,12 +91,9 @@ func (a *analyzerTest) run(t *testing.T) {
 			err := common.WriteToFile(actual, res)
 			require.Nil(t, err)
 		}
-		require.Equal(t, cleanStr(expectedStr), cleanStr(res))
+		require.Equal(t, common.CleanStr(expectedStr), common.CleanStr(res))
 	}
-	fmt.Println("done")
-}
-func cleanStr(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), "\r", "")
+	logging.Debugf("done")
 }
 
 func TestAnalyzer(t *testing.T) {

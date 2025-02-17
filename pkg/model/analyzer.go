@@ -6,10 +6,11 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (string, error) {
+func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (
+	ParsedNSXConfig, string, error) {
 	config, err := configFromResourcesContainer(recourses, params)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
 
 	res, err := config.analyzedConnectivity.GenConnectivityOutput(params)
@@ -35,11 +36,7 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 		)
 	}*/
 
-	return res, err
-}
-
-func NSXConnectivityFromResourcesContainerPlainText(recourses *collector.ResourcesContainerModel) (string, error) {
-	return NSXConnectivityFromResourcesContainer(recourses, common.OutputParameters{Format: common.TextFormat})
+	return config, res, err
 }
 
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {

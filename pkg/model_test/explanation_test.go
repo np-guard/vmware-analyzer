@@ -1,4 +1,4 @@
-package model
+package model_test
 
 import (
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/runner"
 )
 
 // Test connectivity analysis explanation:
@@ -45,8 +46,8 @@ func services(s ...string) []string {
 	res := []string{}
 	for _, str := range s {
 		switch str {
-		case anyStr:
-			return []string{anyStr}
+		case common.AnyStr:
+			return []string{common.AnyStr}
 		default:
 			res = append(res, fmt.Sprintf("/infra/services/%s", str))
 		}
@@ -67,7 +68,7 @@ var rulesTests = []*rulesTest{
 		testName: "one_allow_and_default_deny",
 		appRulesList: []data.Rule{
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
-			{Name: "denyRule", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRule", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -94,7 +95,7 @@ var rulesTests = []*rulesTest{
 		testName: "one_deny_and_default_allow",
 		appRulesList: []data.Rule{
 			{Name: "denyRule", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Drop},
-			{Name: "allowRule", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Allow},
+			{Name: "allowRule", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Allow},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -121,7 +122,7 @@ var rulesTests = []*rulesTest{
 		testName: "two_allow_rules",
 		appRulesList: []data.Rule{
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
-			{Name: "allowRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Allow},
+			{Name: "allowRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Allow},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -148,7 +149,7 @@ var rulesTests = []*rulesTest{
 	{
 		testName: "default_allow_first",
 		appRulesList: []data.Rule{
-			{Name: "allowRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Allow},
+			{Name: "allowRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Allow},
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
 		},
 		expectedRes: []expectedExplanation{
@@ -176,8 +177,8 @@ var rulesTests = []*rulesTest{
 	{
 		testName: "default_deny_first",
 		appRulesList: []data.Rule{
-			{Name: "denyRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
-			{Name: "allowRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Allow},
+			{Name: "denyRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
+			{Name: "allowRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Allow},
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
 		},
 		expectedRes: []expectedExplanation{
@@ -207,7 +208,7 @@ var rulesTests = []*rulesTest{
 		appRulesList: []data.Rule{
 			{Name: "allowRuleHTTP", Source: "frontend", Dest: "backend", Services: services("HTTP"), Action: data.Allow},
 			{Name: "allowRuleSMB", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
-			{Name: "denyRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -242,7 +243,7 @@ var rulesTests = []*rulesTest{
 		appRulesList: []data.Rule{
 			{Name: "allowRuleHTTP/SMB", Source: "frontend", Dest: "backend", Services: services("HTTP", "SMB"), Action: data.Allow},
 			{Name: "allowRuleSMB", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
-			{Name: "denyRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -277,7 +278,7 @@ var rulesTests = []*rulesTest{
 		appRulesList: []data.Rule{
 			{Name: "allowRuleSMB", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
 			{Name: "allowRuleHTTP/SMB", Source: "frontend", Dest: "backend", Services: services("HTTP", "SMB"), Action: data.Allow},
-			{Name: "denyRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -311,7 +312,7 @@ var rulesTests = []*rulesTest{
 		testName: "direction_in_separate_rule_res_is_drop",
 		appRulesList: []data.Rule{
 			{Name: "allowRuleSMBIngressOnly", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow, Direction: string(nsx.RuleDirectionIN)},
-			{Name: "denyRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -326,7 +327,7 @@ var rulesTests = []*rulesTest{
 		testName: "direction_in_separate_rule_res_is_allow",
 		appRulesList: []data.Rule{
 			{Name: "allowRuleSMBIngressOnly", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow, Direction: string(nsx.RuleDirectionIN)},
-			{Name: "allowRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Allow},
+			{Name: "allowRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Allow},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -342,7 +343,7 @@ var rulesTests = []*rulesTest{
 		appRulesList: []data.Rule{
 			{Name: "allowRuleSMBIngressOnly", Source: "frontend", Dest: "backend", Services: services("SMB", "HTTP"), Action: data.Allow, Direction: string(nsx.RuleDirectionIN)},
 			{Name: "allowRuleSMBEgressOnly", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow, Direction: string(nsx.RuleDirectionOUT)},
-			{Name: "denyRuleDefault", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefault", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -371,12 +372,12 @@ var rulesTests = []*rulesTest{
 		testName: "basic_jump_to_app_test",
 		envRulesList: []data.Rule{
 			{Name: "JumpToAppSMB/HTTPS", Source: "frontend", Dest: "backend", Services: services("SMB", "HTTPS"), Action: data.JumpToApp},
-			{Name: "denyRuleDefaultEnv", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefaultEnv", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 
 		appRulesList: []data.Rule{
 			{Name: "allowSMBHTTP", Source: "frontend", Dest: "backend", Services: services("SMB", "HTTP"), Action: data.Allow},
-			{Name: "denyRuleDefaultApp", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefaultApp", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -410,12 +411,12 @@ var rulesTests = []*rulesTest{
 		envRulesList: []data.Rule{
 			{Name: "JumpToAppSMB/HTTPS", Source: "frontend", Dest: "backend", Services: services("SMB", "HTTPS"), Action: data.JumpToApp},
 			{Name: "JumpToAppHTTP", Source: "frontend", Dest: "backend", Services: services("HTTP"), Action: data.JumpToApp},
-			{Name: "denyRuleDefaultEnv", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefaultEnv", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 
 		appRulesList: []data.Rule{
 			{Name: "allowSMBHTTP", Source: "frontend", Dest: "backend", Services: services("SMB", "HTTP"), Action: data.Allow},
-			{Name: "denyRuleDefaultApp", Source: anyStr, Dest: anyStr, Services: services(anyStr), Action: data.Drop},
+			{Name: "denyRuleDefaultApp", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: []expectedExplanation{
 			{
@@ -499,16 +500,20 @@ func (r *rulesTest) runTest(t *testing.T) {
 	err := example.StoreAsJSON(overrideJSON)
 	require.Nil(t, err)
 
-	connResStr, err := NSXConnectivityFromResourcesContainerPlainText(rc)
+	runnerObj, err := runner.NewRunnerWithOptionsList(
+		runner.WithNSXResources(rc),
+		runner.WithHighVerbosity(true),
+		runner.WithAnalysisExplain(true),
+	)
 	require.Nil(t, err)
-	fmt.Println(connResStr)
+	err = runnerObj.Run()
+	require.Nil(t, err)
 
-	configWithAnalysis, err := configFromResourcesContainer(rc, common.OutputParameters{})
-	require.Nil(t, err)
+	// todo: compare explain output as well
 
 	// test explanations by comparison to expectedExplanation objects
 	for i, e := range r.expectedRes {
-		isAllowed, ingress, egress := configWithAnalysis.analyzedConnectivity.GetExplanationPerConnection("A", "B", e.conn)
+		isAllowed, ingress, egress := runnerObj.GetAnalyzedConnectivity().GetExplanationPerConnection("A", "B", e.conn)
 		require.Equal(t, e.isAllowed, isAllowed, "test %s failed in isAllowed comparison of expectedRes[%d]", r.testName, i)
 		r.compareActualRulesExplanation(t, e.ingressRules, ingress,
 			fmt.Sprintf("test %s failed in ingressRules comparison of expectedRes[%d]", r.testName, i))
@@ -516,7 +521,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 			fmt.Sprintf("test %s failed in egressRules comparison of expectedRes[%d]", r.testName, i))
 	}
 
-	disjointConns := configWithAnalysis.analyzedConnectivity.GetDisjointConnecionSetsPerExplanationsForEndpoints("A", "B")
+	disjointConns := runnerObj.GetAnalyzedConnectivity().GetDisjointConnecionSetsPerExplanationsForEndpoints("A", "B")
 	fmt.Printf("res: %s", common.JoinStringifiedSlice(disjointConns, "\n"))
 
 	//nolint:gocritic // temporarily keep commented-out code
