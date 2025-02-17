@@ -39,7 +39,7 @@ type Runner struct {
 	analysisVMsFilter  []string
 	analysisExplain    bool
 
-	//synthesis args
+	// synthesis args
 	synthesisDumpDir string
 	disjointHints    []string
 	synthesizeAdmin  bool
@@ -87,13 +87,14 @@ func (r *Runner) runCollector() error {
 		return err
 	}
 	if r.anonymize {
-		if err = anonymizer.AnonymizeNsx(r.resources); err != nil {
+		if err := anonymizer.AnonymizeNsx(r.resources); err != nil {
 			return err
 		}
 	}
-	r.resourcesToFile()
-	r.resourcesTopologyToFile()
-	return nil
+	if err := r.resourcesToFile(); err != nil {
+		return err
+	}
+	return r.resourcesTopologyToFile()
 }
 
 func (r *Runner) runAnalyzer() error {

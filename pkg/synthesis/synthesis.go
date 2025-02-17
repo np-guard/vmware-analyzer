@@ -1,11 +1,12 @@
 package synthesis
 
 import (
+	v1 "k8s.io/api/networking/v1"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
-	v1 "k8s.io/api/networking/v1"
 )
 
 type SynthesisOptions struct {

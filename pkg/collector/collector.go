@@ -44,7 +44,7 @@ const (
 )
 
 type Collector struct {
-	//nsxConnData *ServerData
+	// nsxConnData *ServerData
 }
 
 func (c *Collector) CollectResources(host, user, password string) (*ResourcesContainerModel, error) {
