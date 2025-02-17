@@ -1,16 +1,14 @@
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src                                  |Dst                                  |Connection
-0                         |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
-0                         |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
-1                         |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
-1                         |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+original allow rule index |Src                                 |Dst                                  |Connection
+0                         |(group = Gryffindor)                |(group = Web and group = Gryffindor) |TCP
+0                         |(group = Slytherin)                 |(group = Web and group = Slytherin)  |TCP
+1                         |(group = Web and group = Slytherin) |(group = App and group = Slytherin)  |UDP
 
 outbound rules
-original allow rule index |Src                                  |Dst                                  |Connection
-0                         |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
-0                         |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
-1                         |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
-1                         |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+original allow rule index |Src                                 |Dst                                  |Connection
+0                         |(group = Gryffindor)                |(group = Web and group = Gryffindor) |TCP
+0                         |(group = Slytherin)                 |(group = Web and group = Slytherin)  |TCP
+1                         |(group = Web and group = Slytherin) |(group = App and group = Slytherin)  |UDP
 

@@ -2,8 +2,8 @@ category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |UDP dst-ports: 300-320
 2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
 3        |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
 4        |deny                |(*)                  |(*)                  |All Connections
@@ -11,11 +11,10 @@ Priority |Action              |Src                  |Dst                  |Conne
 
 symbolic outbound rules:
 Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
-2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-3        |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
-4        |deny                |(*)                  |(*)                  |All Connections
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+2        |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
+3        |deny                |(*)                  |(*)                  |All Connections
 
 
 category: Application

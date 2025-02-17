@@ -25,9 +25,12 @@ type k8sPolicies struct {
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 }
 
-func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn) {
+func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	for _, p := range model.policy {
 		policies.symbolicRulePairsToPolicies(model, p.toPairs())
+	}
+	if createDNSPolicy {
+		policies.addDNSAllowNetworkPolicy()
 	}
 	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)
 }
@@ -99,6 +102,18 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
+}
+
+func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
+	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", "dns-rule-id")
+	policies.networkPolicies = append(policies.networkPolicies, pol)
+	pol.Spec.PodSelector = meta.LabelSelector{}
+	to := []networking.NetworkPolicyPeer{{
+		PodSelector:       &meta.LabelSelector{MatchLabels: map[string]string{"k8s-app": "kube-dns"}},
+		NamespaceSelector: &meta.LabelSelector{},
+	}}
+	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
+	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: dnsPorts()}}
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,

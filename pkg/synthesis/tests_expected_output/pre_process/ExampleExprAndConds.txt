@@ -4,14 +4,12 @@ symbolic inbound rules:
 Priority |Action |Src |Dst                              |Connection
 0        |allow  |(*) |(tag = Slytherin and tag != DB)  |All Connections
 1        |allow  |(*) |(tag = Gryffindor and tag != DB) |All Connections
-2        |allow  |(*) |(tag = Hufflepuff and tag != DB) |All Connections
-3        |deny   |(*) |(*)                              |All Connections
+2        |deny   |(*) |(*)                              |All Connections
 
 
 symbolic outbound rules:
-Priority |Action |Src |Dst                              |Connection
-0        |allow  |(*) |(tag = Slytherin and tag != DB)  |All Connections
-1        |allow  |(*) |(tag = Gryffindor and tag != DB) |All Connections
-2        |allow  |(*) |(tag = Hufflepuff and tag != DB) |All Connections
-3        |deny   |(*) |(*)                              |All Connections
+Priority |Action |Src                |Dst                              |Connection
+0        |allow  |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
+1        |allow  |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
+2        |deny   |(*)                |(*)                              |All Connections
 
