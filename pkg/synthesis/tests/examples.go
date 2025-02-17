@@ -698,8 +698,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				CategoryType: application,
 				Rules: []data.Rule{
 					{
-						Name: "Gryffindor-not-Hufflepuff",
-						//nolint:mnd // this is the required id
+						Name:     "Gryffindor-not-Hufflepuff",
 						ID:       newRuleID + 2,
 						Source:   gry,
 						Dest:     huf,
@@ -707,8 +706,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 						Action:   data.Drop,
 					},
 					{
-						Name: "Gryffindor-All",
-						//nolint:mnd // this is the required id
+						Name:     "Gryffindor-All",
 						ID:       newRuleID + 3,
 						Source:   gry,
 						Dest:     anyStr,
@@ -722,8 +720,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				CategoryType: application,
 				Rules: []data.Rule{
 					{
-						Name: "Hufflepuff-No-Slytherin",
-						//nolint:mnd // this is the required id
+						Name:     "Hufflepuff-No-Slytherin",
 						ID:       newRuleID + 4,
 						Source:   huf,
 						Dest:     sly,
@@ -731,8 +728,7 @@ var ExampleExprSingleScope = ExampleSynthesis{
 						Action:   data.Drop,
 					},
 					{
-						Name: "Hufflepuff-All",
-						//nolint:mnd // this is the required id
+						Name:     "Hufflepuff-All",
 						ID:       newRuleID + 5,
 						Source:   huf,
 						Dest:     anyStr,
@@ -903,7 +899,8 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Direction: string(nsx.RuleDirectionIN),
 				},
 				{
-					Name:      "to-Hufflepuff-out",
+					Name: "to-Hufflepuff-out",
+					//nolint:mnd // this is the required id
 					ID:        newRuleID + 3,
 					Source:    anyStr,
 					Dest:      hufCondDB,
