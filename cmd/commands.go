@@ -168,8 +168,7 @@ func runCommand(args *inArgs) error {
 	if err != nil {
 		return err
 	}
-	runnerObj.Run()
-	return nil
+	return runnerObj.Run()
 }
 
 /*
