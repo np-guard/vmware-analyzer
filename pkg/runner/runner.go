@@ -12,6 +12,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
+	v1 "k8s.io/api/networking/v1"
+	v1alpha1 "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 )
 
 // Runner provides API to run NSX collection / analysis / synthesis operations.
@@ -46,7 +48,13 @@ type Runner struct {
 	suppressDNSPolicies bool
 
 	// runner state
-	resources *collector.ResourcesContainerModel
+	nsxResources              *collector.ResourcesContainerModel
+	generatedK8sPolicies      []*v1.NetworkPolicy
+	generatedK8sAdminPolicies []*v1alpha1.AdminNetworkPolicy
+}
+
+func (r *Runner) GetGeneratedPolicies() ([]*v1.NetworkPolicy, []*v1alpha1.AdminNetworkPolicy) {
+	return r.generatedK8sPolicies, r.generatedK8sAdminPolicies
 }
 
 func (r *Runner) Run() error {
@@ -88,7 +96,7 @@ func (r *Runner) runCollector() error {
 		return err
 	}
 	if r.anonymize {
-		if err := anonymizer.AnonymizeNsx(r.resources); err != nil {
+		if err := anonymizer.AnonymizeNsx(r.nsxResources); err != nil {
 			return err
 		}
 	}
@@ -112,7 +120,7 @@ func (r *Runner) runAnalyzer() error {
 	}
 
 	logging.Infof("starting connectivity analysis")
-	connResStr, err := model.NSXConnectivityFromResourcesContainer(r.resources, params)
+	connResStr, err := model.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
 	if err != nil {
 		return err
 	}
@@ -136,10 +144,12 @@ func (r *Runner) runSynthesis() error {
 		Color:           r.color,
 		CreateDNSPolicy: !r.suppressDNSPolicies,
 	}
-	k8sResources, err := synthesis.NSXToK8sSynthesis(r.resources, opts)
+	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, opts)
 	if err != nil {
 		return err
 	}
+	r.generatedK8sPolicies = k8sResources.K8sPolicies()
+	r.generatedK8sAdminPolicies = k8sResources.K8sAdminPolicies()
 	return k8sResources.CreateDir(r.synthesisDumpDir)
 }
 
@@ -147,7 +157,7 @@ func (r *Runner) resourcesToFile() error {
 	if r.resourcesDumpFile == "" {
 		return nil
 	}
-	jsonString, err := r.resources.ToJSONString()
+	jsonString, err := r.nsxResources.ToJSONString()
 	if err != nil {
 		return err
 	}
@@ -158,7 +168,7 @@ func (r *Runner) resourcesTopologyToFile() error {
 	if r.topologyDumpFile == "" {
 		return nil
 	}
-	topology, err := r.resources.OutputTopologyGraph(r.topologyDumpFile, r.outputFormat)
+	topology, err := r.nsxResources.OutputTopologyGraph(r.topologyDumpFile, r.outputFormat)
 	if err != nil {
 		return err
 	}
@@ -173,7 +183,7 @@ func (r *Runner) resourcesFromInputFile() error {
 	if err != nil {
 		return err
 	}
-	r.resources, err = collector.FromJSONString(b)
+	r.nsxResources, err = collector.FromJSONString(b)
 	if err != nil {
 		return err
 	}
@@ -185,7 +195,7 @@ func (r *Runner) resourcesFromNSXEnv() error {
 	if err != nil {
 		return err
 	}
-	r.resources, err = collector.CollectResources(server)
+	r.nsxResources, err = collector.CollectResources(server)
 	if err != nil {
 		return err
 	}
@@ -196,6 +206,9 @@ func NewRunnerWithOptionsList(opts ...RunnerOption) (r *Runner, err error) {
 	r = &Runner{}
 	for _, o := range opts {
 		o(r)
+	}
+	if r.outputFormat == "" {
+		r.outputFormat = common.TextFormat
 	}
 	return r, nil
 }

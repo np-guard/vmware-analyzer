@@ -18,11 +18,7 @@ package controller
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
-	"io"
-	"net/http"
-	"time"
 
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -39,9 +35,7 @@ import (
 	"github.com/go-logr/logr"
 	nsxv1alpha1 "github.com/np-guard/vmware-analyzer-operator/api/v1alpha1"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
+	"github.com/np-guard/vmware-analyzer/pkg/runner"
 )
 
 const migratensxFinalizer = "nsx.npguard.io/finalizer"
@@ -272,7 +266,38 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	}
 	log.Info("REST API call returned successfully", "response", res)
 
-	//Tee
+	runnerObj, err := runner.NewRunnerWithOptionsList(
+		// default output format
+		runner.WithHighVerbosity(true),
+		runner.WithLogFile("debug/log.txt"),
+		runner.WithNSXURL(url),
+		runner.WithNSXUser(user),
+		runner.WithNSXPassword(password),
+		//runner.WithResourcesDumpFile(args.resourceDumpFile),
+		//runner.WithResourcesAnonymization(args.anonymise),
+		//runner.WithResourcesInputFile(args.resourceInputFile),
+		//runner.WithTopologyDumpFile(args.topologyDumpFile),
+		//runner.WithSkipAnalysis(args.skipAnalysis),
+		//runner.WithAnalysisOutputFile(args.outputFile),
+		//runner.WithAnalysisExplain(args.explain),
+		//runner.WithAnalysisVMsFilter(args.outputFilter),
+		runner.WithSynthesisDumpDir("debug/synthesis"),
+		//runner.WithSynthAdminPolicies(args.synthesizeAdmin),
+		//runner.WithSynthesisHints(args.disjointHints),
+		//runner.WithSynthDNSPolicies(args.createDNSPolicy),
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := runnerObj.Run(); err != nil {
+		log.Error(err, "runner.Run() returned with error", "errStr", err.Error())
+		return err
+	}
+
+	policies, _ := runnerObj.GetGeneratedPolicies()
+
+	/*//Tee
 	logging.Tee("debug/log.txt")
 
 	// collector
@@ -299,7 +324,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	if err != nil {
 		log.Error(err, "NSXToK8sSynthesis returned with error", "errStr", err.Error())
 		return err
-	}
+	}*/
 	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))
 
 	/*for _, policy := range policies {
@@ -330,6 +355,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	return nil
 }
 
+/*
 type ServerData struct {
 	host, user, password string
 }
@@ -370,7 +396,7 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 		return nil, err
 	}
 	return b, nil
-}
+}*/
 
 // finalizeMemcached will perform the required operations before delete the CR.
 func (r *NSXMigrationReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alpha1.NSXMigration) {
