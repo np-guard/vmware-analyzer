@@ -40,9 +40,10 @@ type Runner struct {
 	analysisExplain    bool
 
 	// synthesis args
-	synthesisDumpDir string
-	disjointHints    []string
-	synthesizeAdmin  bool
+	synthesisDumpDir    string
+	disjointHints       []string
+	synthesizeAdmin     bool
+	suppressDNSPolicies bool
 
 	// runner state
 	resources *collector.ResourcesContainerModel
@@ -129,7 +130,13 @@ func (r *Runner) runSynthesis() error {
 	for i, hint := range r.disjointHints {
 		hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 	}
-	k8sResources, err := synthesis.NSXToK8sSynthesis(r.resources, hints, r.synthesizeAdmin, r.color)
+	opts := &synthesis.SynthesisOptions{
+		Hints:           hints,
+		SynthesizeAdmin: r.synthesizeAdmin,
+		Color:           r.color,
+		CreateDNSPolicy: !r.suppressDNSPolicies,
+	}
+	k8sResources, err := synthesis.NSXToK8sSynthesis(r.resources, opts)
 	if err != nil {
 		return err
 	}
@@ -308,5 +315,12 @@ func WithSynthesisHints(l []string) RunnerOption {
 func WithSynthAdminPolicies(enableAdmin bool) RunnerOption {
 	return func(r *Runner) {
 		r.synthesizeAdmin = enableAdmin
+	}
+}
+
+func WithSynthDNSPolicies(create bool) RunnerOption {
+	return func(r *Runner) {
+		// create is true by default, so suppressDNSPolicies is false by default
+		r.suppressDNSPolicies = !create
 	}
 }

@@ -53,7 +53,7 @@ type Synthesis struct {
 }
 
 func (s *Synthesis) NSXToK8sSynthesis(resources *collector.ResourcesContainerModel) ([]*v1.NetworkPolicy, error) {
-	hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
-	policies, err := NSXToK8sSynthesis(resources, hints, false, false)
+	//hints := &symbolicexpr.Hints{GroupsDisjoint: [][]string{}}
+	policies, err := NSXToK8sSynthesis(resources, nil)
 	return policies.networkPolicies, err
 }

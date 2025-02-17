@@ -142,7 +142,6 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	return rootCmd
 }
 
-// NewPRunnerWithOptionsList
 func runCommand(args *inArgs) error {
 	runnerObj, err := runner.NewRunnerWithOptionsList(
 		runner.WithOutputFormat(args.outputFormat.String()),
@@ -164,84 +163,10 @@ func runCommand(args *inArgs) error {
 		runner.WithSynthesisDumpDir(args.synthesisDumpDir),
 		runner.WithSynthAdminPolicies(args.synthesizeAdmin),
 		runner.WithSynthesisHints(args.disjointHints),
+		runner.WithSynthDNSPolicies(args.createDNSPolicy),
 	)
 	if err != nil {
 		return err
 	}
 	return runnerObj.Run()
 }
-
-/*
-//nolint:gocyclo // one function with lots of options
-func runCommand(args *inArgs) error {
-	var resources *collector.ResourcesContainerModel
-	var err error
-	if args.resourceInputFile != "" {
-		resources, err = resourcesFromInputFile(args.resourceInputFile)
-	} else {
-		resources, err = resourcesFromNSXEnv(args)
-	}
-	if err != nil {
-		return err
-	}
-
-	if args.anonymise {
-		if err := anonymizer.AnonymizeNsx(resources); err != nil {
-			return err
-		}
-	}
-	if args.resourceDumpFile != "" {
-		jsonString, err := resources.ToJSONString()
-		if err != nil {
-			return err
-		}
-		err = common.WriteToFile(args.resourceDumpFile, jsonString)
-		if err != nil {
-			return err
-		}
-	}
-	if args.topologyDumpFile != "" {
-		topology, err := resources.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat.String())
-		if err != nil {
-			return err
-		}
-		fmt.Println(topology)
-	}
-	if !args.skipAnalysis {
-		params := common.OutputParameters{
-			Format:   args.outputFormat.String(),
-			FileName: args.outputFile,
-			VMs:      args.outputFilter,
-			Explain:  args.explain,
-			Color:    args.color,
-		}
-		logging.Infof("starting connectivity analysis")
-		connResStr, err := model.NSXConnectivityFromResourcesContainer(resources, params)
-		if err != nil {
-			return err
-		}
-		fmt.Println(connResStr)
-	}
-	if args.synthesisDumpDir != "" {
-		hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(args.disjointHints))}
-		for i, hint := range args.disjointHints {
-			hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
-		}
-		options := &synthesis.SynthesisOptions{
-			Hints:           hints,
-			SynthesizeAdmin: args.synthesizeAdmin,
-			CreateDNSPolicy: args.createDNSPolicy,
-			Color:           args.color,
-		}
-		resources, err := synthesis.NSXToK8sSynthesis(resources, options)
-		if err != nil {
-			return err
-		}
-		err = resources.CreateDir(args.synthesisDumpDir)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-*/
