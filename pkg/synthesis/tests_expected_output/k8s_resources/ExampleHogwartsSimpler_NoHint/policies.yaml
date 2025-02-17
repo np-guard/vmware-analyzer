@@ -2,14 +2,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: TCP'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - protocol: TCP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__Web
@@ -27,14 +29,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections'
+        description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: TCP'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - protocol: TCP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__Web
@@ -52,7 +56,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: TCP'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy-2
@@ -64,6 +68,8 @@ spec:
                 matchExpressions:
                     - key: group__Gryffindor
                       operator: Exists
+          ports:
+            - protocol: TCP
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -77,7 +83,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections'
+        description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: TCP'
         nsx-id: "9195"
     creationTimestamp: null
     name: policy-3
@@ -89,6 +95,8 @@ spec:
                 matchExpressions:
                     - key: group__Slytherin
                       operator: Exists
+          ports:
+            - protocol: TCP
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -102,41 +110,16 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: UDP'
         nsx-id: "9196"
     creationTimestamp: null
     name: policy-4
     namespace: default
 spec:
     egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__App
-                      operator: Exists
-                    - key: group__Gryffindor
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__Web
-              operator: Exists
-            - key: group__Gryffindor
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections'
-        nsx-id: "9196"
-    creationTimestamp: null
-    name: policy-5
-    namespace: default
-spec:
-    egress:
-        - to:
+        - ports:
+            - protocol: UDP
+          to:
             - podSelector:
                 matchExpressions:
                     - key: group__App
@@ -156,37 +139,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: All Connections'
+        description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: UDP'
         nsx-id: "9196"
     creationTimestamp: null
-    name: policy-6
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: group__Web
-                      operator: Exists
-                    - key: group__Gryffindor
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__App
-              operator: Exists
-            - key: group__Gryffindor
-              operator: Exists
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections'
-        nsx-id: "9196"
-    creationTimestamp: null
-    name: policy-7
+    name: policy-5
     namespace: default
 spec:
     ingress:
@@ -197,6 +153,8 @@ spec:
                       operator: Exists
                     - key: group__Slytherin
                       operator: Exists
+          ports:
+            - protocol: UDP
     podSelector:
         matchExpressions:
             - key: group__App
