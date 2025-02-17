@@ -900,7 +900,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 				},
 				{
 					Name: "to-Hufflepuff-out",
-					//nolint:mnd // this is the required id
+					//nolint:all // this is the required id
 					ID:        newRuleID + 3,
 					Source:    anyStr,
 					Dest:      hufCondDB,
