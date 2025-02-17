@@ -698,7 +698,8 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				CategoryType: application,
 				Rules: []data.Rule{
 					{
-						Name:     "Gryffindor-not-Hufflepuff",
+						Name: "Gryffindor-not-Hufflepuff",
+						//nolint:mnd // this is the required id
 						ID:       newRuleID + 2,
 						Source:   gry,
 						Dest:     huf,
@@ -706,7 +707,8 @@ var ExampleExprSingleScope = ExampleSynthesis{
 						Action:   data.Drop,
 					},
 					{
-						Name:     "Gryffindor-All",
+						Name: "Gryffindor-All",
+						//nolint:mnd // this is the required id
 						ID:       newRuleID + 3,
 						Source:   gry,
 						Dest:     anyStr,
@@ -720,7 +722,8 @@ var ExampleExprSingleScope = ExampleSynthesis{
 				CategoryType: application,
 				Rules: []data.Rule{
 					{
-						Name:     "Hufflepuff-No-Slytherin",
+						Name: "Hufflepuff-No-Slytherin",
+						//nolint:mnd // this is the required id
 						ID:       newRuleID + 4,
 						Source:   huf,
 						Dest:     sly,
@@ -728,7 +731,8 @@ var ExampleExprSingleScope = ExampleSynthesis{
 						Action:   data.Drop,
 					},
 					{
-						Name:     "Hufflepuff-All",
+						Name: "Hufflepuff-All",
+						//nolint:mnd // this is the required id
 						ID:       newRuleID + 5,
 						Source:   huf,
 						Dest:     anyStr,
