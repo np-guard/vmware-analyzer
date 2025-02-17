@@ -41,6 +41,10 @@ type symbolicRule struct { // original rule
 	// This is relevant only for allow policy (nil otherwise)
 	// and only for categories greater than allowOnlyFromCategory
 	allowOnlyRulePaths symbolicexpr.SymbolicPaths
+	// allow only list after optimization in global scope - e.g. a path is removed if there is a path in another
+	// rule that is a super set of it.
+	// In case of two identical paths - the paths stays in the higher priority rule
+	optimizedAllowOnlyPaths symbolicexpr.SymbolicPaths
 }
 
 type symbolicPolicy struct {

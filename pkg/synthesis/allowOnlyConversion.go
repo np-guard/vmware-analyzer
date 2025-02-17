@@ -95,11 +95,61 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenie
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses, hints)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
-				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths}
+				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths,
+				optimizedAllowOnlyPaths: symbolicexpr.SymbolicPaths{}}
 			allowOnlyRules = append(allowOnlyRules, newRule)
 		}
 	}
 	return allowOnlyRules, &newGlobalDenies
+}
+
+func optimizeSymbolicPolicy(policy *symbolicPolicy, hints *symbolicexpr.Hints) *symbolicPolicy {
+	optimizedInbound := optimizeSymbolicRules(policy.inbound, hints)
+	optimizedOutbound := optimizeSymbolicRules(policy.outbound, hints)
+	return &symbolicPolicy{inbound: optimizedInbound, outbound: optimizedOutbound}
+}
+
+// given a list of inbound/outbound symbolicRules optimizes the rules in the global scope: namely, removes
+// symbolic paths that are subsets of other symbolic paths
+// if a specific symbolic path was present in multiple symbolicRules, we will keep it only in the rule with the lowest
+// index (which implies higher priority)
+func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*symbolicRule {
+	// 1. gathers all symbolicPaths, keeps a pointer from each path to its symbolic rule (or to the "lowest" one as above)
+	var allSymbolicPath symbolicexpr.SymbolicPaths
+	var symbolicPathToRule map[string]int
+	ruleInOptimize := make(map[int]bool, len(rules))
+	for i, rule := range rules {
+		for _, path := range rule.allowOnlyRulePaths {
+			key := path.String()
+			if _, exist := symbolicPathToRule[key]; exist {
+				continue // if a path appears in several rules, takes and remember the 1st
+			}
+			allSymbolicPath = append(allSymbolicPath, path)
+			symbolicPathToRule[key] = i
+			ruleInOptimize[i] = true
+		}
+	}
+	// 2. Optimizes symbolic paths
+	optimizedPaths := allSymbolicPath.RemoveIsSubsetPath(hints)
+	// 3. Updated list of optimized symbolicRules
+	var optimizedRules []*symbolicRule
+	var oldToNewIndexes map[int]int
+	// 3.1 create a list of the optimized rules, optimizedAllowOnlyPaths yet to be updated
+	for i, rule := range rules {
+		if ruleInOptimize[i] {
+			oldToNewIndexes[i] = len(optimizedRules)
+			optimizedRules = append(optimizedRules, rule)
+		}
+	}
+	// 3.2 updates optimizedAllowOnlyPaths
+	for _, path := range optimizedPaths {
+		oldIndex := symbolicPathToRule[path.String()]
+		newIndex := oldToNewIndexes[oldIndex]
+		optimizedPaths := optimizedRules[newIndex].optimizedAllowOnlyPaths
+		optimizedPaths = append(optimizedPaths, path)
+		optimizedRules[newIndex].optimizedAllowOnlyPaths = optimizedPaths
+	}
+	return optimizedRules
 }
 
 func strAllowOnlyPolicy(policy *symbolicPolicy, color bool) string {
