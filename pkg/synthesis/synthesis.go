@@ -74,7 +74,8 @@ func insertInOrOutboundByOrigRules(symbolicRules []*symbolicRule, inbound bool,
 		if val, ok := idToPolicyK8sSynthesis[origRuleID]; ok {
 			entry = *val
 		} else {
-			entry = symbolicRuleByOrig{origRule: symRule.origRule}
+			entry = symbolicRuleByOrig{origRule: symRule.origRule, allowOnlyOutboundPaths: &symbolicexpr.SymbolicPaths{},
+				allowOnlyInboundPaths: &symbolicexpr.SymbolicPaths{}}
 		}
 		if inbound {
 			entry.allowOnlyInboundPaths = &symRule.allowOnlyRulePaths
