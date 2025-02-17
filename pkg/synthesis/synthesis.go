@@ -2,9 +2,9 @@ package synthesis
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
