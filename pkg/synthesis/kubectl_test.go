@@ -46,7 +46,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
 	k8sDir := path.Join(kubeDir, k8sResourcesDir)
 	// create K8S resources:
-	resources, err := NSXToK8sSynthesis(rc, synTest.hints(), synTest.synthesizeAdmin, false)
+	resources, err := NSXToK8sSynthesis(rc, synTest.options())
 	require.Nil(t, err)
 	for i := range resources.pods {
 		name := strings.ToLower(resources.pods[i].Name)
