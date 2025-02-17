@@ -882,7 +882,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 				},
 				{
 					Name:      "to-Slytherin-out",
-					ID:        newRuleID,
+					ID:        newRuleID + 1,
 					Source:    gry,
 					Dest:      slyCondDB,
 					Services:  []string{anyStr},
@@ -891,7 +891,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 				},
 				{
 					Name:      "to-Gryffindor-in",
-					ID:        newRuleID + 1,
+					ID:        newRuleID + 2,
 					Source:    anyStr,
 					Dest:      gryCondDB,
 					Services:  []string{anyStr},
@@ -900,7 +900,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 				},
 				{
 					Name:      "to-Hufflepuff-out",
-					ID:        newRuleID + 2,
+					ID:        newRuleID + 3,
 					Source:    anyStr,
 					Dest:      hufCondDB,
 					Services:  []string{anyStr},
