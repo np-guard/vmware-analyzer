@@ -11,6 +11,17 @@ Gryffindor  |Gryffindor
 Hufflepuff  |Hufflepuff
 Slytherin   |Slytherin
 
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group           |Expression |VM
+Dumbledore      |           |Dumbledore1, Dumbledore2
+DumbledoreAll   |           |Dumbledore1
+DumbledoreNoSly |           |Dumbledore2
+Gryffindor      |           |Gryffindor
+Hufflepuff      |           |Hufflepuff
+Slytherin       |           |Slytherin
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

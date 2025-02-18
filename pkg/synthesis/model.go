@@ -100,7 +100,7 @@ func strAbstractModel(abstractModel *AbstractModelSyn, color bool) string {
 	var strArray []string
 	strArray = append(strArray)
 	return "\nAbstract Model Details\n=======================\n" + strEpsToGroups(abstractModel.epToGroups, color) +
-		strAllowOnlyPolicy(abstractModel.policy[0], color)
+		strGroupsStr(abstractModel.epToGroups, color) + strAllowOnlyPolicy(abstractModel.policy[0], color)
 }
 
 func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
@@ -129,7 +129,7 @@ func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool
 		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-func strGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
+func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
 	// 1. gets a list of groups
 	groupsMap := map[string]*collector.Group{}
 	for _, groups := range epsToGroups {
