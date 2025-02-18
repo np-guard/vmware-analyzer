@@ -1,8 +1,12 @@
 package synthesis
 
 import (
+	"maps"
 	"slices"
+	"sort"
+	"strings"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -91,3 +95,35 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 
 // Segments topology; map from segment name to the segment
 type Segments map[string]*collector.Segment
+
+func strAbstractModel(abstractModel *AbstractModelSyn, color bool) string {
+	var strArray []string
+	strArray = append(strArray)
+	return "\nAbstract Model Details\n=======================\n" + strEpsToGroups(abstractModel.epToGroups, color) +
+		strAllowOnlyPolicy(abstractModel.policy[0], color)
+}
+
+func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
+	header := []string{"Endpoint", "Groups"}
+	lines := make([][]string, len(epsToGroups))
+	j := 0
+	// 1. constructs a map from epsToGroups in which the key is a string so that it can be sorted for consistency
+	epsNamesToGroup := make(map[string][]*collector.Group, len(epsToGroups))
+	for ep, groups := range epsToGroups {
+		epsNamesToGroup[ep.Name()] = groups
+	}
+	sortedEpsNames := slices.Sorted(maps.Keys(epsNamesToGroup))
+	for _, epName := range sortedEpsNames {
+		groups := epsNamesToGroup[epName]
+		groupsStr := make([]string, len(groups))
+		for i, group := range groups {
+			groupsStr[i] = *group.DisplayName
+		}
+		sort.Strings(groupsStr)
+		newLine := []string{epName, strings.Join(groupsStr, ", ")}
+		lines[j] = newLine
+		j++
+	}
+	return "\nEndpoints to groups\n~~~~~~~~~~~~~~~~~~~~\n" +
+		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
