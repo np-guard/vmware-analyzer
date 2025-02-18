@@ -2,6 +2,7 @@ package synthesis
 
 import (
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -179,6 +180,7 @@ func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool
 		for i, group := range groups {
 			groupsStr[i] = *group.DisplayName
 		}
+		sort.Strings(groupsStr)
 		newLine := []string{ep.Name(), strings.Join(groupsStr, ", ")}
 		lines[j] = newLine
 		j++

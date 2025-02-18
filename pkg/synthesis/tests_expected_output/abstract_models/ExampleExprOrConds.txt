@@ -5,15 +5,15 @@ Abstract Model Details
 Endpoints to groups
 ~~~~~~~~~~~~~~~~~~~~
 Endpoint       |Groups
-Gryffindor-App |Hufflepuff-Or-no-DB, Gryffindor-Or-no-DB, Gryffindor, Slytherin-Or-no-DB
-Gryffindor-DB  |Gryffindor-Or-no-DB, Gryffindor
-Gryffindor-Web |Hufflepuff-Or-no-DB, Gryffindor-Or-no-DB, Gryffindor, Slytherin-Or-no-DB
-Hufflepuff-App |Hufflepuff-Or-no-DB, Gryffindor-Or-no-DB, Hufflepuff, Slytherin-Or-no-DB
-Hufflepuff-DB  |Hufflepuff-Or-no-DB, Hufflepuff
-Hufflepuff-Web |Hufflepuff-Or-no-DB, Gryffindor-Or-no-DB, Hufflepuff, Slytherin-Or-no-DB
-Slytherin-App  |Hufflepuff-Or-no-DB, Gryffindor-Or-no-DB, Slytherin, Slytherin-Or-no-DB
+Gryffindor-App |Gryffindor, Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
+Gryffindor-DB  |Gryffindor, Gryffindor-Or-no-DB
+Gryffindor-Web |Gryffindor, Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
+Hufflepuff-App |Gryffindor-Or-no-DB, Hufflepuff, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
+Hufflepuff-DB  |Hufflepuff, Hufflepuff-Or-no-DB
+Hufflepuff-Web |Gryffindor-Or-no-DB, Hufflepuff, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
+Slytherin-App  |Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin, Slytherin-Or-no-DB
 Slytherin-DB   |Slytherin, Slytherin-Or-no-DB
-Slytherin-Web  |Hufflepuff-Or-no-DB, Gryffindor-Or-no-DB, Slytherin, Slytherin-Or-no-DB
+Slytherin-Web  |Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin, Slytherin-Or-no-DB
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

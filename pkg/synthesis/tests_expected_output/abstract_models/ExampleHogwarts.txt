@@ -7,14 +7,14 @@ Endpoints to groups
 Endpoint       |Groups
 Dumbledore1    |Dumbledore
 Dumbledore2    |Dumbledore
-Gryffindor-App |Gryffindor, App
-Gryffindor-DB  |Gryffindor, DB
+Gryffindor-App |App, Gryffindor
+Gryffindor-DB  |DB, Gryffindor
 Gryffindor-Web |Gryffindor, Web
-Hufflepuff-App |Hufflepuff, App
-Hufflepuff-DB  |Hufflepuff, DB
+Hufflepuff-App |App, Hufflepuff
+Hufflepuff-DB  |DB, Hufflepuff
 Hufflepuff-Web |Hufflepuff, Web
-Slytherin-App  |Slytherin, App
-Slytherin-DB   |Slytherin, DB
+Slytherin-App  |App, Slytherin
+Slytherin-DB   |DB, Slytherin
 Slytherin-Web  |Slytherin, Web
 
 Allow Only Rules
