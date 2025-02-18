@@ -9,10 +9,10 @@ import (
 	"testing"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
 	"github.com/stretchr/testify/require"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
@@ -28,7 +28,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	setEvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
 	cleanEvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
 	// create K8S k8sResources:
-	k8sResources, err := NSXToK8sSynthesis(rc, synTest.options())
+	k8sResources, err := NSXToK8sSynthesis(rc,nil, synTest.options())
 	require.Nil(t, err)
 	fixPodsResources(k8sResources.pods)
 	fixPoliciesResources(k8sResources.networkPolicies)
@@ -93,11 +93,12 @@ func runTests(kubeDir string, rc *collector.ResourcesContainerModel) error {
 	ctl := cubeCLI{}
 	ctl.testPodsConnection()
 	ctl.createCmdFile(connTestFile)
-	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
+	parser := analyzer.NewNSXConfigParserFromResourcesContainer(rc)
 	if err := parser.RunParser(); err != nil {
 		return err
 	}
-	for src, dsts := range parser.GetConfig().Connectivity() {
+	parser.GetConfig().ComputeConnectivity(nil)
+	for src, dsts := range parser.GetConfig().AnalyzedConnectivity() {
 		for dst, conn := range dsts {
 			err := runCmdFile(connTestFile, strings.ToLower(src.Name()), strings.ToLower(dst.Name()))
 			allow := !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty()
