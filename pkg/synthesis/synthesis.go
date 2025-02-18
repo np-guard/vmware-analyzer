@@ -1,10 +1,10 @@
 package synthesis
 
 import (
+	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 type SynthesisOptions struct {
@@ -15,10 +15,11 @@ type SynthesisOptions struct {
 }
 
 func NSXToK8sSynthesis(
-	recourses *collector.ResourcesContainerModel,
+	resources *collector.ResourcesContainerModel,
+	config analyzer.ParsedNSXConfig,
 	options *SynthesisOptions,
 ) (*k8sResources, error) {
-	abstractModel, err := NSXToPolicy(recourses, options)
+	abstractModel, err := NSXToPolicy(resources, config, options)
 	if err != nil {
 		return nil, err
 	}
@@ -26,25 +27,30 @@ func NSXToK8sSynthesis(
 }
 
 func NSXToPolicy(recourses *collector.ResourcesContainerModel,
+	config analyzer.ParsedNSXConfig,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
-	parser := model.NewNSXConfigParserFromResourcesContainer(recourses)
-	err := parser.RunParser()
-	if err != nil {
-		return nil, err
+	if config == nil {
+		parser := analyzer.NewNSXConfigParserFromResourcesContainer(recourses)
+		err := parser.RunParser()
+		if err != nil {
+			return nil, err
+		}
+		config = parser.GetConfig()
 	}
-	config := parser.GetConfig()
+
 	logging.Debugf("started synthesis")
-	preProcessingCategoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color)
+	preProcessingCategoryToPolicy := preProcessing(config.DFW().CategoriesSpecs)
+	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy, options.Color)
 	logging.Debugf("pre processing symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", preProcessingPolicyStr)
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(
-		config.Fw.CategoriesSpecs, preProcessingCategoryToPolicy,
+		config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
 		options.SynthesizeAdmin, options.Hints)
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
-	abstractModel := &AbstractModelSyn{vms: parser.VMs(), epToGroups: parser.GetConfig().GroupsPerVM,
+	abstractModel := &AbstractModelSyn{vms: config.VMs(), epToGroups: config.VMToGroupsMap(),
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
 	allowOnlyPolicyStr := strAllowOnlyPolicy(allowOnlyPolicyWithOptimization, options.Color)
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", allowOnlyPolicyStr)
+	/*>>>>>>> main*/
 	return abstractModel, nil
 }

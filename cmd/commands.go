@@ -7,19 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package main
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
 	"github.com/spf13/cobra"
 
-	"github.com/np-guard/vmware-analyzer/pkg/anonymizer"
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
+	"github.com/np-guard/vmware-analyzer/pkg/runner"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
 
@@ -46,6 +36,7 @@ const (
 	colorFlag                   = "color"
 	createDNSPolicyFlag         = "synth-create-dns-policy"
 	disjointHintsFlag           = "disjoint-hint"
+	synthFlag                   = "synth"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp                    = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
@@ -58,7 +49,7 @@ const (
 	logFileHelp                 = "file path to write nsxanalyzer log"
 	outputFileHelp              = "file path to store analysis results"
 	explainHelp                 = "flag to explain connectivity output with rules explanations per allowed/denied connections (default false)"
-	synthesisDumpDirHelp        = "apply synthesis; specify directory path to store k8s synthesis results"
+	synthesisDumpDirHelp        = "run synthesis; specify directory path to store k8s synthesis results"
 	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis (default false)"
 	outputFormatHelp            = "output format; must be one of "
 	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
@@ -66,6 +57,7 @@ const (
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"
 	createDNSPolicyHelp         = "flag to create a policy allowing access to target env dns pod"
+	synthHelp                   = "flag to run synthesis, even if synthesis-dump-dir is not specified"
 	disjointHintsHelp           = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
@@ -92,6 +84,7 @@ type inArgs struct {
 	color             bool
 	createDNSPolicy   bool
 	disjointHints     []string
+	synth             bool
 }
 
 func newInArgs() *inArgs {
@@ -107,16 +100,6 @@ and generation of k8s network policies`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
 and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
-		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
-			verbosity := logging.MediumVerbosity
-			if args.quiet {
-				verbosity = logging.LowVerbosity
-			} else if args.verbose {
-				verbosity = logging.HighVerbosity
-			}
-			return logging.Init(verbosity, args.logFile) // initializes a thread-safe singleton logger
-		},
-
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
 		},
@@ -140,6 +123,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.createDNSPolicy, createDNSPolicyFlag, true, createDNSPolicyHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.synth, synthFlag, false, synthHelp)
 	rootCmd.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 	rootCmd.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
 
@@ -152,100 +136,32 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	return rootCmd
 }
 
-func resourcesFromInputFile(inputFile string) (*collector.ResourcesContainerModel, error) {
-	logging.Infof("reading input NSX config file %s", inputFile)
-	b, err := os.ReadFile(inputFile)
-	if err != nil {
-		return nil, err
-	}
-	resources, err := collector.FromJSONString(b)
-	if err != nil {
-		return nil, err
-	}
-	return resources, nil
-}
-
-func resourcesFromNSXEnv(args *inArgs) (*collector.ResourcesContainerModel, error) {
-	server, err := collector.GetNSXServerDate(args.host, args.user, args.password)
-	if err != nil {
-		return nil, err
-	}
-	resources, err := collector.CollectResources(server)
-	if err != nil {
-		return nil, err
-	}
-	return resources, nil
-}
-
-//nolint:gocyclo // one function with lots of options
 func runCommand(args *inArgs) error {
-	var resources *collector.ResourcesContainerModel
-	var err error
-	if args.resourceInputFile != "" {
-		resources, err = resourcesFromInputFile(args.resourceInputFile)
-	} else {
-		resources, err = resourcesFromNSXEnv(args)
-	}
+	runnerObj, err := runner.NewRunnerWithOptionsList(
+		runner.WithOutputFormat(args.outputFormat.String()),
+		runner.WithOutputColor(args.color),
+		runner.WithHighVerbosity(args.verbose),
+		runner.WithQuietVerbosity(args.quiet),
+		runner.WithLogFile(args.logFile),
+		runner.WithNSXURL(args.host),
+		runner.WithNSXUser(args.user),
+		runner.WithNSXPassword(args.password),
+		runner.WithResourcesDumpFile(args.resourceDumpFile),
+		runner.WithResourcesAnonymization(args.anonymise),
+		runner.WithResourcesInputFile(args.resourceInputFile),
+		runner.WithTopologyDumpFile(args.topologyDumpFile),
+		runner.WithSkipAnalysis(args.skipAnalysis),
+		runner.WithAnalysisOutputFile(args.outputFile),
+		runner.WithAnalysisExplain(args.explain),
+		runner.WithAnalysisVMsFilter(args.outputFilter),
+		runner.WithSynth(args.synth),
+		runner.WithSynthesisDumpDir(args.synthesisDumpDir),
+		runner.WithSynthAdminPolicies(args.synthesizeAdmin),
+		runner.WithSynthesisHints(args.disjointHints),
+		runner.WithSynthDNSPolicies(args.createDNSPolicy),
+	)
 	if err != nil {
 		return err
 	}
-
-	if args.anonymise {
-		if err := anonymizer.AnonymizeNsx(resources); err != nil {
-			return err
-		}
-	}
-	if args.resourceDumpFile != "" {
-		jsonString, err := resources.ToJSONString()
-		if err != nil {
-			return err
-		}
-		err = common.WriteToFile(args.resourceDumpFile, jsonString)
-		if err != nil {
-			return err
-		}
-	}
-	if args.topologyDumpFile != "" {
-		topology, err := resources.OutputTopologyGraph(args.topologyDumpFile, args.outputFormat.String())
-		if err != nil {
-			return err
-		}
-		fmt.Println(topology)
-	}
-	if !args.skipAnalysis {
-		params := common.OutputParameters{
-			Format:   args.outputFormat.String(),
-			FileName: args.outputFile,
-			VMs:      args.outputFilter,
-			Explain:  args.explain,
-			Color:    args.color,
-		}
-		logging.Infof("starting connectivity analysis")
-		connResStr, err := model.NSXConnectivityFromResourcesContainer(resources, params)
-		if err != nil {
-			return err
-		}
-		fmt.Println(connResStr)
-	}
-	if args.synthesisDumpDir != "" {
-		hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(args.disjointHints))}
-		for i, hint := range args.disjointHints {
-			hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
-		}
-		options := &synthesis.SynthesisOptions{
-			Hints:           hints,
-			SynthesizeAdmin: args.synthesizeAdmin,
-			CreateDNSPolicy: args.createDNSPolicy,
-			Color:           args.color,
-		}
-		resources, err := synthesis.NSXToK8sSynthesis(resources, options)
-		if err != nil {
-			return err
-		}
-		err = resources.CreateDir(args.synthesisDumpDir)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
+	return runnerObj.Run()
 }

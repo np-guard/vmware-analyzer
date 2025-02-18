@@ -1,0 +1,180 @@
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "annotations": {
+                    "description": "Default Deny Network Policy",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{\"description\":\"Default Deny Network Policy\",\"nsx-id\":\"1003\"},\"creationTimestamp\":null,\"name\":\"default-deny\",\"namespace\":\"default\"},\"spec\":{\"podSelector\":{},\"policyTypes\":[\"Ingress\",\"Egress\"]}}\n",
+                    "nsx-id": "1003"
+                },
+                "creationTimestamp": "2025-02-17T12:17:58Z",
+                "generation": 1,
+                "name": "default-deny",
+                "namespace": "default",
+                "resourceVersion": "1136813",
+                "uid": "6b7436c4-7277-4708-b668-753eabb8cd27"
+            },
+            "spec": {
+                "podSelector": {},
+                "policyTypes": [
+                    "Ingress",
+                    "Egress"
+                ]
+            }
+        },
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "annotations": {
+                    "description": "Network Policy To Allow Access To DNS Server",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{\"description\":\"Network Policy To Allow Access To DNS Server\",\"nsx-id\":\"dns-rule-id\"},\"creationTimestamp\":null,\"name\":\"dns-policy\",\"namespace\":\"default\"},\"spec\":{\"egress\":[{\"ports\":[{\"port\":53,\"protocol\":\"UDP\"}],\"to\":[{\"namespaceSelector\":{},\"podSelector\":{\"matchLabels\":{\"k8s-app\":\"kube-dns\"}}}]}],\"podSelector\":{},\"policyTypes\":[\"Egress\"]}}\n",
+                    "nsx-id": "dns-rule-id"
+                },
+                "creationTimestamp": "2025-02-17T12:17:58Z",
+                "generation": 1,
+                "name": "dns-policy",
+                "namespace": "default",
+                "resourceVersion": "1136811",
+                "uid": "68891700-c7ea-4968-bf64-11dff9d71d06"
+            },
+            "spec": {
+                "egress": [
+                    {
+                        "ports": [
+                            {
+                                "port": 53,
+                                "protocol": "UDP"
+                            }
+                        ],
+                        "to": [
+                            {
+                                "namespaceSelector": {},
+                                "podSelector": {
+                                    "matchLabels": {
+                                        "k8s-app": "kube-dns"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "podSelector": {},
+                "policyTypes": [
+                    "Egress"
+                ]
+            }
+        },
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "annotations": {
+                    "description": "src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{\"description\":\"src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445\",\"nsx-id\":\"1004\"},\"creationTimestamp\":null,\"name\":\"policy-0\",\"namespace\":\"default\"},\"spec\":{\"egress\":[{\"ports\":[{\"port\":5000,\"protocol\":\"TCP\"}],\"to\":[{\"podSelector\":{\"matchExpressions\":[{\"key\":\"group__backend\",\"operator\":\"Exists\"}]}}]}],\"podSelector\":{\"matchExpressions\":[{\"key\":\"group__frontend\",\"operator\":\"Exists\"}]},\"policyTypes\":[\"Egress\"]}}\n",
+                    "nsx-id": "1004"
+                },
+                "creationTimestamp": "2025-02-17T12:17:58Z",
+                "generation": 1,
+                "name": "policy-0",
+                "namespace": "default",
+                "resourceVersion": "1136809",
+                "uid": "c436b793-a7f2-45f1-aa70-7cb2f4619c03"
+            },
+            "spec": {
+                "egress": [
+                    {
+                        "ports": [
+                            {
+                                "port": 5000,
+                                "protocol": "TCP"
+                            }
+                        ],
+                        "to": [
+                            {
+                                "podSelector": {
+                                    "matchExpressions": [
+                                        {
+                                            "key": "group__backend",
+                                            "operator": "Exists"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ],
+                "podSelector": {
+                    "matchExpressions": [
+                        {
+                            "key": "group__frontend",
+                            "operator": "Exists"
+                        }
+                    ]
+                },
+                "policyTypes": [
+                    "Egress"
+                ]
+            }
+        },
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "annotations": {
+                    "description": "src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445",
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{\"description\":\"src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445\",\"nsx-id\":\"1004\"},\"creationTimestamp\":null,\"name\":\"policy-1\",\"namespace\":\"default\"},\"spec\":{\"ingress\":[{\"from\":[{\"podSelector\":{\"matchExpressions\":[{\"key\":\"group__frontend\",\"operator\":\"Exists\"}]}}],\"ports\":[{\"port\":5000,\"protocol\":\"TCP\"}]}],\"podSelector\":{\"matchExpressions\":[{\"key\":\"group__backend\",\"operator\":\"Exists\"}]},\"policyTypes\":[\"Ingress\"]}}\n",
+                    "nsx-id": "1004"
+                },
+                "creationTimestamp": "2025-02-17T12:17:58Z",
+                "generation": 1,
+                "name": "policy-1",
+                "namespace": "default",
+                "resourceVersion": "1136810",
+                "uid": "35766003-a313-47f7-b86f-01c02ea55917"
+            },
+            "spec": {
+                "ingress": [
+                    {
+                        "from": [
+                            {
+                                "podSelector": {
+                                    "matchExpressions": [
+                                        {
+                                            "key": "group__frontend",
+                                            "operator": "Exists"
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "ports": [
+                            {
+                                "port": 5000,
+                                "protocol": "TCP"
+                            }
+                        ]
+                    }
+                ],
+                "podSelector": {
+                    "matchExpressions": [
+                        {
+                            "key": "group__backend",
+                            "operator": "Exists"
+                        }
+                    ]
+                },
+                "policyTypes": [
+                    "Ingress"
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
