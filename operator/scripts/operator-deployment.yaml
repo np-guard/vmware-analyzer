@@ -1,18 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    deployment.kubernetes.io/revision: "3"
-  creationTimestamp: "2025-02-15T16:08:02Z"
-  generation: 3
   labels:
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/name: operator
     control-plane: controller-manager
   name: operator-controller-manager
   namespace: operator-system
-  resourceVersion: "932461"
-  uid: e98bd5bd-7e3c-48a2-a6cc-767104440a2c
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
