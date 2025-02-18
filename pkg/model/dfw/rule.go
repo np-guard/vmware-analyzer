@@ -71,7 +71,7 @@ type FwRule struct {
 	secPolicyCategory  string
 	categoryRef        *CategorySpec
 	dfwRef             *DFW
-	Priority           int // the priority inside the category, (the index of the rule in category rules list) 
+	Priority           int // the priority inside the category, (the index of the rule in category rules list)
 	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
 
 }
