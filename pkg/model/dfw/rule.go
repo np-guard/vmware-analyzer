@@ -63,7 +63,7 @@ type FwRule struct {
 	ScopeGroups        []*collector.Group
 	Conn               *netset.TransportSet
 	Action             RuleAction
-	Direction          string //	"IN","OUT",	"IN_OUT"
+	direction          string //	"IN","OUT",	"IN_OUT"
 	OrigRuleObj        *collector.Rule
 	origDefaultRuleObj *collector.FirewallRule
 	RuleID             int
@@ -108,7 +108,7 @@ func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
 
 func (f *FwRule) getInboundRule() *FwRule {
 	// if action is OUT -> return nil
-	if f.Direction == string(nsx.RuleDirectionOUT) {
+	if f.direction == string(nsx.RuleDirectionOUT) {
 		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
 		return nil
 	}
@@ -137,7 +137,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		ScopeGroups:    f.ScopeGroups,
 		Conn:           f.Conn,
 		Action:         f.Action,
-		Direction:      string(nsx.RuleDirectionIN),
+		direction:      string(nsx.RuleDirectionIN),
 		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
@@ -147,7 +147,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 
 func (f *FwRule) getOutboundRule() *FwRule {
 	// if action is IN -> return nil
-	if f.Direction == string(nsx.RuleDirectionIN) {
+	if f.direction == string(nsx.RuleDirectionIN) {
 		f.ruleWarning("has no effective outbound component, since its direction is IN only")
 		return nil
 	}
@@ -177,7 +177,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		ScopeGroups:    f.ScopeGroups,
 		Conn:           f.Conn,
 		Action:         f.Action,
-		Direction:      string(nsx.RuleDirectionOUT),
+		direction:      string(nsx.RuleDirectionOUT),
 		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
@@ -211,12 +211,12 @@ func vmsString(vms []*endpoints.VM) string {
 // groups are interpreted to VM members in this representation
 func (f *FwRule) String() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.Direction, vmsString(f.scope), f.secPolicyName)
+		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
 func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.Direction, f.secPolicyName)
+		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
 }
 
 func getDefaultRuleScope(r *collector.FirewallRule) string {
@@ -340,7 +340,7 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		f.getSrcString(),
 		f.getDstString(),
 		f.servicesString(),
-		string(f.Action), f.Direction,
+		string(f.Action), f.direction,
 		strings.Join(f.OrigRuleObj.Scope, common.CommaSeparator),
 		f.secPolicyName,
 		f.secPolicyCategory,

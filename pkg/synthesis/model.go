@@ -6,7 +6,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
 )
 
@@ -54,8 +53,8 @@ func (r *symbolicRule) priority() int {
 func (r *symbolicRule) ruleID() int {
 	return r.origRule.RuleID
 }
-func (r *symbolicRule) inbound() bool {
-	return r.origRule.Direction == string(nsx.RuleDirectionIN)
+func (policy *symbolicPolicy) isInbound(r *symbolicRule) bool {
+	return slices.Contains(policy.inbound,r)
 }
 
 type symbolicPolicy struct {
@@ -66,22 +65,24 @@ type symbolicPolicy struct {
 // sort the policies.
 // the user to be as intuitive:
 // by categories, by priority, by rule Id, and outbound first
-func symbolicOrigRulesSortFunc(r1, r2 *symbolicRule) int {
-	switch {
-	case r1.category() != r2.category():
-		return int(r1.category()) - int(r2.category())
-	case r1.priority() != r2.priority():
-		return r1.priority() - r2.priority()
-	case r1.ruleID() != r2.ruleID():
-		return r1.ruleID() - r2.ruleID()
-	case r1.inbound():
-		return 1
-	default:
-		return -1
-	}
-}
-
 func (policy *symbolicPolicy) sortRules() []*symbolicRule {
+
+	 symbolicOrigRulesSortFunc := func(r1, r2 *symbolicRule) int {
+		switch {
+		case r1.category() != r2.category():
+			return int(r1.category()) - int(r2.category())
+		case r1.priority() != r2.priority():
+			return r1.priority() - r2.priority()
+		case r1.ruleID() != r2.ruleID():
+			return r1.ruleID() - r2.ruleID()
+		case policy.isInbound(r1):
+			return 1
+		default:
+			return -1
+		}
+	}
+	
+
 	res := append(policy.inbound, policy.outbound...)
 	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
 	return res

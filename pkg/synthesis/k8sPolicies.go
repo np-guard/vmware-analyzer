@@ -28,7 +28,7 @@ type k8sPolicies struct {
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	for _, p := range model.policy {
 		for _, rule := range p.sortRules() {
-			policies.symbolicRulesToPolicies(model, rule, rule.inbound())
+			policies.symbolicRulesToPolicies(model, rule, p.isInbound(rule))
 		}
 	}
 	if createDNSPolicy {
