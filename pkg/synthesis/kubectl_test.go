@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -36,8 +37,9 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))
 	require.Nil(t, createCleanEvironmentFile(cleanEvironmentFile, k8sResources.pods))
 	require.Nil(t, runCmdFile(setEvironmentFile))
+	require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
 	require.Nil(t, runTests(kubeDir, rc))
-	require.Nil(t, runCmdFile(setEvironmentFile))
+	require.Nil(t, runCmdFile(cleanEvironmentFile))
 
 }
 
@@ -98,7 +100,7 @@ func runTests(kubeDir string, rc *collector.ResourcesContainerModel) error {
 	for src, dsts := range parser.GetConfig().Connectivity() {
 		for dst, conn := range dsts {
 			err := runCmdFile(connTestFile, strings.ToLower(src.Name()), strings.ToLower(dst.Name()))
-			allow := !conn.Conn.TCPUDPSet().IsEmpty()
+			allow := !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty()
 			connected := err == nil
 			reportLine := fmt.Sprintf("%s -> %s connected:%t allowed:%t", src.Name(), dst.Name(), connected, allow)
 			reportLines = append(reportLines, reportLine)
