@@ -117,7 +117,6 @@ func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*
 	// 1. gathers all symbolicPaths, keeps a pointer from each path to its symbolic rule (or to the "lowest" one as above)
 	var allSymbolicPath symbolicexpr.SymbolicPaths
 	var symbolicPathToRule map[string]int
-	ruleInOptimize := make(map[int]bool, len(rules))
 	for i, rule := range rules {
 		for _, path := range rule.allowOnlyRulePaths {
 			key := path.String()
@@ -126,15 +125,20 @@ func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*
 			}
 			allSymbolicPath = append(allSymbolicPath, path)
 			symbolicPathToRule[key] = i
-			ruleInOptimize[i] = true
 		}
 	}
 	// 2. Optimizes symbolic paths
 	optimizedPaths := allSymbolicPath.RemoveIsSubsetPath(hints)
 	// 3. Updated list of optimized symbolicRules
+	// 3.1 Creates of set of indexes of rules that have at least one path in the optimized list, and thus should be
+	// in the final list of optimized rules
+	ruleInOptimize := make(map[int]bool, len(rules))
+	for _, path := range optimizedPaths {
+		ruleInOptimize[symbolicPathToRule[path.String()]] = true
+	}
+	// 3.1 create a list of the optimized rules, optimizedAllowOnlyPaths yet to be updated
 	var optimizedRules []*symbolicRule
 	var oldToNewIndexes map[int]int
-	// 3.1 create a list of the optimized rules, optimizedAllowOnlyPaths yet to be updated
 	for i, rule := range rules {
 		if ruleInOptimize[i] {
 			oldToNewIndexes[i] = len(optimizedRules)
@@ -145,9 +149,9 @@ func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*
 	for _, path := range optimizedPaths {
 		oldIndex := symbolicPathToRule[path.String()]
 		newIndex := oldToNewIndexes[oldIndex]
-		optimizedPaths := optimizedRules[newIndex].optimizedAllowOnlyPaths
-		optimizedPaths = append(optimizedPaths, path)
-		optimizedRules[newIndex].optimizedAllowOnlyPaths = optimizedPaths
+		pathsOfOptimizedRule := optimizedRules[newIndex].optimizedAllowOnlyPaths
+		pathsOfOptimizedRule = append(pathsOfOptimizedRule, path)
+		optimizedRules[newIndex].optimizedAllowOnlyPaths = pathsOfOptimizedRule
 	}
 	return optimizedRules
 }
