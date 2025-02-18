@@ -1,7 +1,7 @@
 package synthesis
 
 import (
-		"slices"
+	"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
