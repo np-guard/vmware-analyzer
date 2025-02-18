@@ -161,6 +161,12 @@ func optimizeSymbolicRules(rules []*symbolicRule, options *SynthesisOptions) []*
 	return optimizedRules
 }
 
+func strAbstractModel(abstractModel AbstractModelSyn, color bool) string {
+	var strArray []string
+	strArray = append(strArray)
+	return "\nAbstract Model Details\n~~~~~~~~~~~~~~~~~~~~~~~\n"
+}
+
 func strAllowOnlyPolicy(policy *symbolicPolicy, color bool) string {
 	return "Allow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n" +
 		strAllowOnlyPathsOfRules(policy.inbound, color) + "outbound rules\n" +
