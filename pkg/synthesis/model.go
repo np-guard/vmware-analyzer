@@ -43,7 +43,6 @@ type symbolicRule struct { // original rule
 	pathsToSynthesis   *symbolicexpr.SymbolicPaths
 }
 
-// the following for methods are needed for sorting:
 func (r *symbolicRule) category() collector.DfwCategory {
 	return r.origRuleCategory
 }
@@ -54,7 +53,7 @@ func (r *symbolicRule) ruleID() int {
 	return r.origRule.RuleID
 }
 func (policy *symbolicPolicy) isInbound(r *symbolicRule) bool {
-	return slices.Contains(policy.inbound,r)
+	return slices.Contains(policy.inbound, r)
 }
 
 type symbolicPolicy struct {
@@ -63,11 +62,10 @@ type symbolicPolicy struct {
 }
 
 // sort the policies.
-// the user to be as intuitive:
-// by categories, by priority, by rule Id, and outbound first
+// for the user to be as intuitive:
+// by categories, by priority, by rule Id, ect...
 func (policy *symbolicPolicy) sortRules() []*symbolicRule {
-
-	 symbolicOrigRulesSortFunc := func(r1, r2 *symbolicRule) int {
+	symbolicOrigRulesSortFunc := func(r1, r2 *symbolicRule) int {
 		switch {
 		case r1.category() != r2.category():
 			return int(r1.category()) - int(r2.category())
@@ -81,7 +79,6 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 			return -1
 		}
 	}
-	
 
 	res := append(policy.inbound, policy.outbound...)
 	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
