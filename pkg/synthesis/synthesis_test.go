@@ -9,12 +9,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
 
@@ -256,7 +256,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
+	parser := analyzer.NewNSXConfigParserFromResourcesContainer(rc)
 	err = parser.RunParser()
 	require.Nil(t, err)
 	config := parser.GetConfig()
@@ -331,7 +331,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
@@ -350,7 +350,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)

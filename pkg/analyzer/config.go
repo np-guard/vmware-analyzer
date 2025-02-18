@@ -3,12 +3,12 @@ package model
 import (
 	"strings"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 type ParsedNSXConfig interface {

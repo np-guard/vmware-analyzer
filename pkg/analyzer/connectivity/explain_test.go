@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 )
 
 func newVM(name string) *endpoints.VM {

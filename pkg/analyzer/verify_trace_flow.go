@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 type vmFilter func(vm *endpoints.VM) bool

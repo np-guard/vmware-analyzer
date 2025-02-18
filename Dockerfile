@@ -7,6 +7,7 @@ WORKDIR /go/src/github.com/vmware-analyzer/
 
 COPY pkg/    pkg/
 COPY cmd/    cmd/
+COPY internal/ internal/
 COPY go.mod go.sum Makefile ./
 
 RUN make mod

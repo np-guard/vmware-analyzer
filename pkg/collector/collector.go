@@ -9,7 +9,7 @@ package collector
 import (
 	"fmt"
 
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+	resources "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 )
 
 const (

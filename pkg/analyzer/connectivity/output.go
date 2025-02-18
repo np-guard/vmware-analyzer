@@ -3,7 +3,7 @@ package connectivity
 import (
 	"fmt"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 func (c ConnMap) GenTextualConnectivityOutput() (res string, err error) {
