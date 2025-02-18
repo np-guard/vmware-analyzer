@@ -121,7 +121,7 @@ issues:
   exclude-dirs:
     - pkg/nsx
   exclude-files:
-    - pkg/model/dfw_old.go
+    - pkg/analyzer/dfw_old.go
   exclude-rules:
     - path: _test\.go
       linters:
