@@ -1,7 +1,7 @@
 package synthesis
 
 import (
-	"slices"
+		"slices"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
@@ -52,18 +52,19 @@ func (r *symbolicRule) priority() int {
 func (r *symbolicRule) ruleID() int {
 	return r.origRule.RuleID
 }
-func (policy *symbolicPolicy) isInbound(r *symbolicRule) bool {
-	return slices.Contains(policy.inbound, r)
-}
 
 type symbolicPolicy struct {
 	inbound  []*symbolicRule // ordered list inbound symbolicRule
 	outbound []*symbolicRule // ordered list outbound symbolicRule
 }
 
+func (policy *symbolicPolicy) isInbound(r *symbolicRule) bool {
+	return slices.Contains(policy.inbound, r)
+}
+
 // sort the policies.
 // for the user to be as intuitive:
-// by categories, by priority, by rule Id, ect...
+// by categories, by priority, by rule Id, etc...
 func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 	symbolicOrigRulesSortFunc := func(r1, r2 *symbolicRule) int {
 		switch {
@@ -79,8 +80,7 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 			return -1
 		}
 	}
-
-	res := append(policy.inbound, policy.outbound...)
+	res := slices.Concat(policy.inbound, policy.outbound)
 	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
 	return res
 }
