@@ -48,7 +48,7 @@ func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn
 
 func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rule *symbolicRule, inbound bool) {
 	isAdmin := model.synthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory()
-	paths := &rule.allowOnlyRulePaths
+	paths := &rule.optimizedAllowOnlyPaths
 	if isAdmin {
 		paths = rule.origSymbolicPaths
 	}

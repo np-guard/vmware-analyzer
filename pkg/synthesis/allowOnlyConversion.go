@@ -171,7 +171,7 @@ func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
 	header := []string{"original allow rule index", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	for i, rule := range rules {
-		if rule.allowOnlyRulePaths == nil {
+		if rule.optimizedAllowOnlyPaths == nil {
 			continue
 		}
 		for _, path := range rule.optimizedAllowOnlyPaths {
