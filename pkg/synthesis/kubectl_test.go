@@ -1,7 +1,9 @@
 package synthesis
 
 import (
+	"errors"
 	"fmt"
+	"os/exec"
 	"path"
 	"strings"
 	"testing"
@@ -15,6 +17,29 @@ import (
 	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+
+func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	err := logging.Tee(path.Join(synTest.debugDir(), "runK8STraceFlow.log"))
+	require.Nil(t, err)
+	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
+	k8sDir := path.Join(kubeDir, k8sResourcesDir)
+	setEvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
+	cleanEvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
+	// create K8S k8sResources:
+	k8sResources, err := NSXToK8sSynthesis(rc, synTest.options())
+	require.Nil(t, err)
+	fixPodsResources(k8sResources.pods)
+	fixPoliciesResources(k8sResources.networkPolicies)
+
+	require.Nil(t, k8sResources.CreateDir(kubeDir))
+	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))
+	require.Nil(t, createCleanEvironmentFile(cleanEvironmentFile, k8sResources.pods))
+	require.Nil(t, runCmdFile(setEvironmentFile))
+	require.Nil(t, runTests(kubeDir, rc))
+	require.Nil(t, runCmdFile(setEvironmentFile))
+
+}
 
 func fixPodsResources(pods []*core.Pod) {
 	for i := range pods {
@@ -45,40 +70,59 @@ func fixPoliciesResources(networkPolicies []*networking.NetworkPolicy) {
 }
 
 func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
-	ctl := kubeCTL{}
+	ctl := cubeCLI{}
 	ctl.clean()
-	ctl.addCmd("kubectl apply -f " + path.Join(k8sDir, "pods.yaml"))
+	ctl.applyResourceFile(path.Join(k8sDir, "pods.yaml"))
 	for i := range pods {
 		ctl.exposePod(pods[i].Name)
 	}
-	ctl.addCmd("kubectl apply -f " + path.Join(k8sDir, "policies.yaml"))
+	ctl.applyResourceFile(path.Join(k8sDir, "policies.yaml"))
 	for i := range pods {
 		ctl.waitPod(pods[i].Name)
 	}
 	return ctl.createCmdFile(fileName)
 }
 
-func createTestEvironmentFile(fileName string, rc *collector.ResourcesContainerModel) error {
-	ctl := kubeCTL{}
+func runTests(kubeDir string, rc *collector.ResourcesContainerModel) error {
+	connTestFile := path.Join(kubeDir, "connTest.sh")
+	connReportFile := path.Join(kubeDir, "connTestReport.txt")
+	errorLines := []string{}
+	reportLines := []string{}
+	ctl := cubeCLI{}
+	ctl.testPodsConnection()
+	ctl.createCmdFile(connTestFile)
 	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
-	if err := parser.RunParser(); err != nil{
+	if err := parser.RunParser(); err != nil {
 		return err
 	}
-	config := parser.GetConfig()
-	for src, dsts := range config.Connectivity() {
+	for src, dsts := range parser.GetConfig().Connectivity() {
 		for dst, conn := range dsts {
-			er := 0
-			if conn.Conn.TCPUDPSet().IsEmpty() {
-				er = 1
+			err := runCmdFile(connTestFile, strings.ToLower(src.Name()), strings.ToLower(dst.Name()))
+			allow := !conn.Conn.TCPUDPSet().IsEmpty()
+			connected := err == nil
+			reportLine := fmt.Sprintf("%s -> %s connected:%t allowed:%t", src.Name(), dst.Name(), connected, allow)
+			reportLines = append(reportLines, reportLine)
+			if allow != connected {
+				logging.Warn(reportLine)
+				errorLines = append(errorLines, reportLine)
 			}
-			ctl.testPodsConnection(strings.ToLower(src.Name()), strings.ToLower(dst.Name()), er)
 		}
 	}
-	return ctl.createCmdFile(fileName)
+	reportLines = append(reportLines, "Errors:")
+	reportLines = append(reportLines, errorLines...)
+	err := common.WriteToFile(connReportFile, strings.Join(reportLines, "\n"))
+	if len(errorLines) > 0 {
+		if err != nil {
+			return err
+		}
+		errorLine := fmt.Sprintf("found %d connections missmatches, see file %s for details", len(errorLines), connReportFile)
+		return errors.New(errorLine)
+	}
+	return nil
 }
 
 func createCleanEvironmentFile(fileName string, pods []*core.Pod) error {
-	ctl := kubeCTL{}
+	ctl := cubeCLI{}
 	ctl.clean()
 	for i := range pods {
 		ctl.deletePod(pods[i].Name)
@@ -86,54 +130,36 @@ func createCleanEvironmentFile(fileName string, pods []*core.Pod) error {
 	return ctl.createCmdFile(fileName)
 }
 
-func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	err := logging.Tee(path.Join(synTest.debugDir(), "runK8STraceFlow.log"))
-	require.Nil(t, err)
-	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
-	k8sDir := path.Join(kubeDir, k8sResourcesDir)
-	setEvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
-	cleanEvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
-	testEvironmentFile := path.Join(kubeDir, "testEnvironment.sh")
-	// create K8S k8sResources:
-	k8sResources, err := NSXToK8sSynthesis(rc, synTest.options())
-	require.Nil(t, err)
-	fixPodsResources(k8sResources.pods)
-	fixPoliciesResources(k8sResources.networkPolicies)
-	
-	require.Nil(t, k8sResources.CreateDir(kubeDir))
-	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))
-	require.Nil(t, createTestEvironmentFile(testEvironmentFile, rc))
-	require.Nil(t, createCleanEvironmentFile(cleanEvironmentFile, k8sResources.pods))
-}
-
-type kubeCTL struct {
+/////////////////////////////////////////////////////////////////////////////////////////////
+type cubeCLI struct {
 	cmdLines []string
 }
-
-func (ctl *kubeCTL) addCmd(cmd string) {
-	ctl.cmdLines = append(ctl.cmdLines, cmd)
+func (cli *cubeCLI) addCmd(cmd string) {
+	cli.cmdLines = append(cli.cmdLines, cmd)
 }
-func (ctl *kubeCTL) clean() {
-	ctl.addCmd("kubectl delete networkpolicy --all")
-	ctl.addCmd("kubectl delete service --all")
+func (cli *cubeCLI) clean() {
+	cli.addCmd("kubectl delete networkpolicy --all")
+	cli.addCmd("kubectl delete service --all")
 }
-
-func (ctl *kubeCTL) exposePod(name string) {
-	ctl.addCmd(fmt.Sprintf("kubectl expose pod %s --port=5001 --target-port=5000 --name \"%s-service\"", name, name))
+func (cli *cubeCLI) exposePod(name string) {
+	cli.addCmd(fmt.Sprintf("kubectl expose pod %s --port=5001 --target-port=5000 --name \"%s-service\"", name, name))
 }
-
-func (ctl *kubeCTL) waitPod(name string) {
-	ctl.addCmd(fmt.Sprintf("kubectl wait --timeout=3m --for=condition=Ready pod/%s", name))
+func (cli *cubeCLI) waitPod(name string) {
+	cli.addCmd(fmt.Sprintf("kubectl wait --timeout=3m --for=condition=Ready pod/%s", name))
 }
-func (ctl *kubeCTL) deletePod(name string) {
-	ctl.addCmd(fmt.Sprintf("kubectl delete pod %s", name))
+func (cli *cubeCLI) applyResourceFile(resourceFile string){
+	cli.addCmd("kubectl apply -f " + resourceFile)
 }
-func (ctl *kubeCTL) testPodsConnection(from, to string, er int) {
-	ctl.addCmd(fmt.Sprintf("kubectl exec %s -- wget -qO- --timeout=2 http://%s-service:5001/metrics", from, to))
-	ctl.addCmd(fmt.Sprintf("echo Connection Test from %s to %s, exit status should be %d: exit status = $?", from, to, er))
+func (cli *cubeCLI) deletePod(name string) {
+	cli.addCmd(fmt.Sprintf("kubectl delete pod %s", name))
 }
-
-func (ctl *kubeCTL) createCmdFile(fileName string) error {
-	return common.WriteToFile(fileName, strings.Join(ctl.cmdLines, "\n"))
+func (cli *cubeCLI) testPodsConnection() {
+	cli.addCmd("kubectl exec ${1} -- wget -qO- --timeout=2 http://${2}-service:5001/metrics")
+	cli.addCmd("exit $?")
 }
-
+func (cli *cubeCLI) createCmdFile(fileName string) error {
+	return common.WriteToFile(fileName, strings.Join(cli.cmdLines, "\n"))
+}
+func runCmdFile(fileName string, arg ...string) error{
+	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()	
+}
