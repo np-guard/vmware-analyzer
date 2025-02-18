@@ -1,0 +1,13 @@
+apiVersion: nsx.npguard.io/v1alpha1
+kind: NSXMigration
+metadata:
+  labels:
+    app.kubernetes.io/name: operator
+    app.kubernetes.io/managed-by: kustomize
+  name: nsxmigration-sample-4
+spec:
+  # TODO(user): Add fields here
+  url: ''
+  secret:
+    name: 'my-nsx'
+    namespace: 'default'
