@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 // outFormat is a custom flag type.

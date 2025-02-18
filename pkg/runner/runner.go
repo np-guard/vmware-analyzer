@@ -8,11 +8,11 @@ import (
 	v1 "k8s.io/api/networking/v1"
 	v1alpha1 "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	model "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/anonymizer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/pkg/collector/anonymizer"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"

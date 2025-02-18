@@ -5,7 +5,7 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 type containmentRes int
