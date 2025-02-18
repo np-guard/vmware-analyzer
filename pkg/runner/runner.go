@@ -9,7 +9,7 @@ import (
 	v1alpha1 "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	model "github.com/np-guard/vmware-analyzer/pkg/analyzer"
+	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/anonymizer"
@@ -56,7 +56,7 @@ type Runner struct {
 	generatedK8sAdminPolicies  []*v1alpha1.AdminNetworkPolicy
 	connectivityAnalysisOutput string
 	analyzedConnectivity       connectivity.ConnMap
-	parsedConfig               model.ParsedNSXConfig
+	parsedConfig               analyzer.ParsedNSXConfig
 }
 
 func (r *Runner) GetGeneratedPolicies() ([]*v1.NetworkPolicy, []*v1alpha1.AdminNetworkPolicy) {
@@ -137,7 +137,7 @@ func (r *Runner) runAnalyzer() error {
 	}
 
 	logging.Infof("starting connectivity analysis")
-	parsedConfig, connResStr, err := model.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
+	parsedConfig, connResStr, err := analyzer.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
 	if err != nil {
 		return err
 	}
