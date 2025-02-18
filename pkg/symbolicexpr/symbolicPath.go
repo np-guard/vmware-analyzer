@@ -55,8 +55,8 @@ func (paths *SymbolicPaths) removeRedundant(hints *Hints) *SymbolicPaths {
 	return &newPaths
 }
 
-// remove any path that is a subset of another part in paths
-func (paths SymbolicPaths) removeIsSubsetPath(hints *Hints) SymbolicPaths {
+// RemoveIsSubsetPath remove any path that is a subset of another part in paths
+func (paths SymbolicPaths) RemoveIsSubsetPath(hints *Hints) SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for outerIndex, outerPath := range paths {
 		addPath := true
@@ -114,14 +114,14 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
 				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
-				thisComputed = thisComputed.removeIsSubsetPath(hints)
+				thisComputed = thisComputed.RemoveIsSubsetPath(hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
-			computedAllowPaths = newComputedAllowPaths.removeIsSubsetPath(hints)
+			computedAllowPaths = newComputedAllowPaths.RemoveIsSubsetPath(hints)
 		}
 		res = append(res, computedAllowPaths...)
 	}
-	res = res.removeIsSubsetPath(hints)
+	res = res.RemoveIsSubsetPath(hints)
 	return &res
 }
 
