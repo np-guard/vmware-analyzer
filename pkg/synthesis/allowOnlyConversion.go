@@ -146,7 +146,7 @@ func optimizeSymbolicRules(rules []*symbolicRule, options *SynthesisOptions) []*
 			optimizedRules = append(optimizedRules, rule)
 			// keep admin policy rules, which are not part of the optimization
 		} else if options.SynthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory() {
-
+			optimizedRules = append(optimizedRules, rule)
 		}
 		oldToNewIndexes[i] = newIndx
 	}
