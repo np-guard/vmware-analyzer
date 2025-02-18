@@ -150,7 +150,7 @@ func optimizeSymbolicRules(rules []*symbolicRule, options *SynthesisOptions) []*
 		}
 		oldToNewIndexes[i] = newIndx
 	}
-	// 3.2 updates optimizedAllowOnlyPaths
+	// 3.2 updates optimizedAllowOnlyPaths in their rules
 	for _, path := range optimizedPaths {
 		oldIndex := symbolicPathToRule[path.String()]
 		newIndex := oldToNewIndexes[oldIndex]
