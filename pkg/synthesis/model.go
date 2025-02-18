@@ -104,15 +104,16 @@ func strAbstractModel(abstractModel *AbstractModelSyn, color bool) string {
 }
 
 func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
-	header := []string{"Endpoint", "Groups"}
-	lines := make([][]string, len(epsToGroups))
-	j := 0
 	// 1. constructs a map from epsToGroups in which the key is a string so that it can be sorted for consistency
 	epsNamesToGroup := make(map[string][]*collector.Group, len(epsToGroups))
 	for ep, groups := range epsToGroups {
 		epsNamesToGroup[ep.Name()] = groups
 	}
+	i := 0
 	sortedEpsNames := slices.Sorted(maps.Keys(epsNamesToGroup))
+	// 2. gathers the data
+	header := []string{"Endpoint", "Groups"}
+	lines := make([][]string, len(epsToGroups))
 	for _, epName := range sortedEpsNames {
 		groups := epsNamesToGroup[epName]
 		groupsStr := make([]string, len(groups))
@@ -121,9 +122,42 @@ func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool
 		}
 		sort.Strings(groupsStr)
 		newLine := []string{epName, strings.Join(groupsStr, ", ")}
-		lines[j] = newLine
-		j++
+		lines[i] = newLine
+		i++
 	}
 	return "\nEndpoints to groups\n~~~~~~~~~~~~~~~~~~~~\n" +
+		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func strGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
+	// 1. gets a list of groups
+	groupsMap := map[string]*collector.Group{}
+	for _, groups := range epsToGroups {
+		for _, group := range groups {
+			if _, ok := groupsMap[*group.DisplayName]; ok {
+				continue
+			}
+			groupsMap[*group.DisplayName] = group
+		}
+	}
+	// 2. gathers the data
+	// todo: identify here cases in which we were unable to process expr
+	header := []string{"Group", "Expression", "VM"}
+	lines := make([][]string, len(groupsMap))
+	i := 0
+	for name, group := range groupsMap {
+		groupExprStr := ""
+		groupVmNames := make([]string, len(group.VMMembers))
+		if len(group.Expression) > 0 {
+			groupExprStr = group.Expression.String()
+		}
+		for j, vm := range group.VMMembers {
+			groupVmNames[j] = *vm.DisplayName
+		}
+		newLine := []string{name, groupExprStr, strings.Join(groupVmNames, ", ")}
+		lines[i] = newLine
+		i++
+	}
+	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" +
 		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
