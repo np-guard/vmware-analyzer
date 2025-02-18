@@ -4,10 +4,10 @@ import (
 	"slices"
 	"strconv"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -95,11 +95,70 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenie
 			symbolicDeniesAndPasses = append(symbolicDeniesAndPasses, categoryPasses...)
 			newSymbolicPaths := symbolicexpr.ComputeAllowGivenDenies(rule.origSymbolicPaths, &symbolicDeniesAndPasses, hints)
 			newRule := &symbolicRule{origRule: rule.origRule, origRuleCategory: rule.origRuleCategory,
-				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths}
+				origSymbolicPaths: rule.origSymbolicPaths, allowOnlyRulePaths: *newSymbolicPaths,
+				optimizedAllowOnlyPaths: symbolicexpr.SymbolicPaths{}}
 			allowOnlyRules = append(allowOnlyRules, newRule)
 		}
 	}
 	return allowOnlyRules, &newGlobalDenies
+}
+
+func optimizeSymbolicPolicy(policy *symbolicPolicy, options *SynthesisOptions) *symbolicPolicy {
+	optimizedInbound := optimizeSymbolicRules(policy.inbound, options)
+	optimizedOutbound := optimizeSymbolicRules(policy.outbound, options)
+	return &symbolicPolicy{inbound: optimizedInbound, outbound: optimizedOutbound}
+}
+
+// given a list of inbound/outbound symbolicRules optimizes the rules in the global scope: namely, removes
+// symbolic paths that are subsets of other symbolic paths
+// if a specific symbolic path was present in multiple symbolicRules, we will keep it only in the rule with the lowest
+// index (which implies higher priority)
+func optimizeSymbolicRules(rules []*symbolicRule, options *SynthesisOptions) []*symbolicRule {
+	// 1. gathers all symbolicPaths, keeps a pointer from each path to its symbolic rule (or to the "lowest" one as above)
+	var allSymbolicPath symbolicexpr.SymbolicPaths
+	var symbolicPathToRule = map[string]int{}
+	for i, rule := range rules {
+		for _, path := range rule.allowOnlyRulePaths {
+			key := path.String()
+			if _, exist := symbolicPathToRule[key]; exist {
+				continue // if a path appears in several rules, takes and remember the 1st
+			}
+			allSymbolicPath = append(allSymbolicPath, path)
+			symbolicPathToRule[key] = i
+		}
+	}
+	// 2. Optimizes symbolic paths
+	optimizedPaths := allSymbolicPath.RemoveIsSubsetPath(options.Hints)
+	// 3. Updated list of optimized symbolicRules
+	// 3.1 Creates of set of indexes of rules that have at least one path in the optimized list, and thus should be
+	// in the final list of optimized rules
+	ruleInOptimize := make(map[int]bool, len(rules))
+	for _, path := range optimizedPaths {
+		ruleInOptimize[symbolicPathToRule[path.String()]] = true
+	}
+	// 3.1 create a list of the optimized rules, optimizedAllowOnlyPaths yet to be updated
+	var optimizedRules []*symbolicRule
+	var oldToNewIndexes = make(map[int]int, len(rules))
+	for i, rule := range rules {
+		newIndx := -1
+		if ruleInOptimize[i] {
+			newIndx = len(optimizedRules)
+			optimizedRules = append(optimizedRules, rule)
+			// keep admin policy rules, which are not part of the optimization
+		} else if options.SynthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory() {
+			optimizedRules = append(optimizedRules, rule)
+		}
+		oldToNewIndexes[i] = newIndx
+	}
+	// 3.2 updates optimizedAllowOnlyPaths in their rules
+	for _, path := range optimizedPaths {
+		oldIndex := symbolicPathToRule[path.String()]
+		newIndex := oldToNewIndexes[oldIndex]
+		pathsOfOptimizedRule := optimizedRules[newIndex].optimizedAllowOnlyPaths
+		pathsOfOptimizedRule = append(pathsOfOptimizedRule, path)
+		optimizedRules[newIndex].optimizedAllowOnlyPaths = pathsOfOptimizedRule
+	}
+	return optimizedRules
 }
 
 func strAllowOnlyPolicy(policy *symbolicPolicy, color bool) string {
@@ -112,10 +171,10 @@ func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
 	header := []string{"original allow rule index", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	for i, rule := range rules {
-		if rule.allowOnlyRulePaths == nil {
+		if rule.optimizedAllowOnlyPaths == nil {
 			continue
 		}
-		for _, path := range rule.allowOnlyRulePaths {
+		for _, path := range rule.optimizedAllowOnlyPaths {
 			newLine := append([]string{strconv.Itoa(i)}, path.TableString()...)
 			lines = append(lines, newLine)
 		}

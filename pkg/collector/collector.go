@@ -9,7 +9,7 @@ package collector
 import (
 	"fmt"
 
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+	resources "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 )
 
 const (
@@ -48,6 +48,16 @@ type ServerData struct {
 
 func NewServerData(host, user, password string) ServerData {
 	return ServerData{host, user, password}
+}
+
+func ValidateNSXConnection(host, user, password string) (string, error) {
+	res := NewResourcesContainerModel()
+	// vms:
+	err := collectResultList(NewServerData(host, user, password), virtualMachineQuery, &res.VirtualMachineList)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("found %d vms", len(res.VirtualMachineList)), nil
 }
 
 //nolint:funlen,gocyclo // just a long function

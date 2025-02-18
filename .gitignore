@@ -33,7 +33,7 @@ cmd/examples/output/*
 # For temporary examples and pkgs
 examples/
 pkg/nsx
-pkg/model/*_old.go
+*_old.go
 out/
 
 # empty files to be edited for testing:

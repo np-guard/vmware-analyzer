@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 const firstRuleID = 3984
@@ -86,7 +86,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy, synthesizeAdmin boo
 						a.pathToRule(p, dir, fwRuleToDataRuleAction[rule.origRule.Action], rule.origRuleCategory.String())
 					}
 				} else {
-					for _, p := range rule.allowOnlyRulePaths {
+					for _, p := range rule.optimizedAllowOnlyPaths {
 						a.pathToRule(p, dir, data.Allow, collector.LastCategory().String())
 					}
 				}

@@ -7,11 +7,11 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
@@ -27,7 +27,9 @@ type k8sPolicies struct {
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	for _, p := range model.policy {
-		policies.symbolicRulePairsToPolicies(model, p.toPairs())
+		for _, rule := range p.sortRules() {
+			policies.symbolicRulesToPolicies(model, rule, p.isInbound(rule))
+		}
 	}
 	if createDNSPolicy {
 		policies.addDNSAllowNetworkPolicy()
@@ -35,20 +37,9 @@ func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPo
 	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)
 }
 
-func (policies *k8sPolicies) symbolicRulePairsToPolicies(model *AbstractModelSyn, rulePairs []*symbolicRulePair) {
-	for _, rulePair := range rulePairs {
-		if rulePair.outbound != nil {
-			policies.symbolicRulesToPolicies(model, rulePair.outbound, false)
-		}
-		if rulePair.inbound != nil {
-			policies.symbolicRulesToPolicies(model, rulePair.inbound, true)
-		}
-	}
-}
-
 func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, rule *symbolicRule, inbound bool) {
 	isAdmin := model.synthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory()
-	paths := &rule.allowOnlyRulePaths
+	paths := &rule.optimizedAllowOnlyPaths
 	if isAdmin {
 		paths = rule.origSymbolicPaths
 	}

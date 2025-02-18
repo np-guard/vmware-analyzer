@@ -5,17 +5,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
 
@@ -260,7 +259,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	parser := model.NewNSXConfigParserFromResourcesContainer(rc)
+	parser := analyzer.NewNSXConfigParserFromResourcesContainer(rc)
 	err = parser.RunParser()
 	require.Nil(t, err)
 	config := parser.GetConfig()
@@ -285,7 +284,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	require.Nil(t, err)
-	abstractModel, err := NSXToPolicy(rc, synTest.options())
+	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
 	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
 	// write the abstract model rules into a file, for debugging:
@@ -303,7 +302,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
 	// create K8S resources:
-	resources, err := NSXToK8sSynthesis(rc, synTest.options())
+	resources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
@@ -313,10 +312,6 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)
-	// todo: WA until https://github.com/np-guard/vmware-analyzer/issues/235 is fixed
-	if synTest.name == "ExampleExprAndConds" || synTest.name == "ExampleExprOrConds" {
-		return
-	}
 	// compare to expected results:
 	if synTest.hasExpectedResults() {
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
@@ -335,14 +330,14 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	connectivity, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := NSXToPolicy(rc, synTest.options())
+	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
@@ -354,7 +349,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	analyzed, err := model.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
@@ -407,7 +402,7 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 			require.Nil(t, err)
 			actualOutput, err := os.ReadFile(filepath.Join(actualDir, file.Name()))
 			require.Nil(t, err)
-			require.Equal(t, cleanStr(string(actualOutput)), cleanStr(string(expectedOutput)),
+			require.Equal(t, common.CleanStr(string(actualOutput)), common.CleanStr(string(expectedOutput)),
 				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
 		}
 	} else if runTestMode == OutputGeneration {
@@ -423,15 +418,10 @@ func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutput
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
-		require.Equal(t, cleanStr(actualOutput), cleanStr(expectedOutputStr),
+		require.Equal(t, common.CleanStr(actualOutput), common.CleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
 	} else if runTestMode == OutputGeneration {
 		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}
-}
-
-// comparison should be insensitive to line comparators; cleaning strings from line comparators
-func cleanStr(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), carriageReturn, "")
 }

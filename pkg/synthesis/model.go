@@ -1,13 +1,12 @@
 package synthesis
 
 import (
-	"maps"
 	"slices"
 
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
@@ -41,7 +40,20 @@ type symbolicRule struct { // original rule
 	// This is relevant only for allow policy (nil otherwise)
 	// and only for categories greater than allowOnlyFromCategory
 	allowOnlyRulePaths symbolicexpr.SymbolicPaths
-	pathsToSynthesis   *symbolicexpr.SymbolicPaths
+	// allow only list after optimization in global scope - e.g. a path is removed if there is a path in another
+	// rule that is a super set of it.
+	// In case of two identical paths - the paths stays in the higher priority rule
+	optimizedAllowOnlyPaths symbolicexpr.SymbolicPaths
+}
+
+func (r *symbolicRule) category() collector.DfwCategory {
+	return r.origRuleCategory
+}
+func (r *symbolicRule) priority() int {
+	return r.origRule.Priority
+}
+func (r *symbolicRule) ruleID() int {
+	return r.origRule.RuleID
 }
 
 type symbolicPolicy struct {
@@ -49,42 +61,29 @@ type symbolicPolicy struct {
 	outbound []*symbolicRule // ordered list outbound symbolicRule
 }
 
-type symbolicRulePair struct {
-	inbound  *symbolicRule // inbound symbolicRule
-	outbound *symbolicRule // outbound symbolicRule
+func (policy *symbolicPolicy) isInbound(r *symbolicRule) bool {
+	return slices.Contains(policy.inbound, r)
 }
 
-// a temporary function to get pairs of rules, each pair represent an orig rule.
-// to be remove after reorg symbolicPolicy
-func (policy *symbolicPolicy) toPairs() []*symbolicRulePair {
-	ruleToPair := map[*collector.Rule]*symbolicRulePair{}
-	getRulePair := func(r *symbolicRule) *symbolicRulePair {
-		if _, ok := ruleToPair[r.origRule.OrigRuleObj]; !ok {
-			ruleToPair[r.origRule.OrigRuleObj] = &symbolicRulePair{}
-		}
-		return ruleToPair[r.origRule.OrigRuleObj]
-	}
-	for _, r := range policy.inbound {
-		getRulePair(r).inbound = r
-	}
-	for _, r := range policy.outbound {
-		getRulePair(r).outbound = r
-	}
-	res := slices.Collect(maps.Values(ruleToPair))
-	slices.SortStableFunc(res, func(p1, p2 *symbolicRulePair) int {
-		in1 := slices.Index(policy.inbound, p1.inbound)
-		in2 := slices.Index(policy.inbound, p2.inbound)
-		out1 := slices.Index(policy.outbound, p1.outbound)
-		out2 := slices.Index(policy.outbound, p2.outbound)
+// sorting the policies before synthesis, for the user to be intuitive:
+// by categories, by priority, by rule Id, etc...
+func (policy *symbolicPolicy) sortRules() []*symbolicRule {
+	symbolicOrigRulesSortFunc := func(r1, r2 *symbolicRule) int {
 		switch {
-		case in1 >= 0 && in2 >= 0:
-			return in1 - in2
-		case out1 >= 0 && out2 >= 0:
-			return out1 - out2
+		case r1.category() != r2.category():
+			return int(r1.category()) - int(r2.category())
+		case r1.priority() != r2.priority():
+			return r1.priority() - r2.priority()
+		case r1.ruleID() != r2.ruleID():
+			return r1.ruleID() - r2.ruleID()
+		case policy.isInbound(r1):
+			return 1
 		default:
-			return 0
+			return -1
 		}
-	})
+	}
+	res := slices.Concat(policy.inbound, policy.outbound)
+	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
 	return res
 }
 

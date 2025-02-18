@@ -7,11 +7,13 @@ import (
 	"path/filepath"
 
 	core "k8s.io/api/core/v1"
+	v1 "k8s.io/api/networking/v1"
+	"sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 const k8sResourcesDir = "k8s_resources"
@@ -19,6 +21,14 @@ const k8sResourcesDir = "k8s_resources"
 type k8sResources struct {
 	k8sPolicies
 	pods []*core.Pod
+}
+
+func (resources *k8sResources) K8sPolicies() []*v1.NetworkPolicy {
+	return resources.k8sPolicies.networkPolicies
+}
+
+func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy {
+	return resources.k8sPolicies.adminNetworkPolicies
 }
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
