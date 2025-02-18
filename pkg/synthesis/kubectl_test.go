@@ -19,16 +19,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-
 func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	err := logging.Tee(path.Join(synTest.debugDir(), "runK8STraceFlow.log"))
-	require.Nil(t, err)
+	if !hasKubectl() {
+		return
+	}
 	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
+	err := logging.Tee(path.Join(kubeDir, "runK8STraceFlow.log"))
+	require.Nil(t, err)
 	k8sDir := path.Join(kubeDir, k8sResourcesDir)
 	setEvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
 	cleanEvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
 	// create K8S k8sResources:
-	k8sResources, err := NSXToK8sSynthesis(rc,nil, synTest.options())
+	k8sResources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
 	fixPodsResources(k8sResources.pods)
 	fixPoliciesResources(k8sResources.networkPolicies)
@@ -133,10 +135,16 @@ func createCleanEvironmentFile(fileName string, pods []*core.Pod) error {
 	return ctl.createCmdFile(fileName)
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////
+// ///////////////////////////////////////////////////////////////////////////////////////////
+func hasKubectl() bool {
+	_, err := exec.LookPath("kubectl")
+	return err == nil
+}
+
 type cubeCLI struct {
 	cmdLines []string
 }
+
 func (cli *cubeCLI) addCmd(cmd string) {
 	cli.cmdLines = append(cli.cmdLines, cmd)
 }
@@ -150,7 +158,7 @@ func (cli *cubeCLI) exposePod(name string) {
 func (cli *cubeCLI) waitPod(name string) {
 	cli.addCmd(fmt.Sprintf("kubectl wait --timeout=3m --for=condition=Ready pod/%s", name))
 }
-func (cli *cubeCLI) applyResourceFile(resourceFile string){
+func (cli *cubeCLI) applyResourceFile(resourceFile string) {
 	cli.addCmd("kubectl apply -f " + resourceFile)
 }
 func (cli *cubeCLI) deletePod(name string) {
@@ -163,6 +171,6 @@ func (cli *cubeCLI) testPodsConnection() {
 func (cli *cubeCLI) createCmdFile(fileName string) error {
 	return common.WriteToFile(fileName, strings.Join(cli.cmdLines, "\n"))
 }
-func runCmdFile(fileName string, arg ...string) error{
-	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()	
+func runCmdFile(fileName string, arg ...string) error {
+	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()
 }
