@@ -62,8 +62,7 @@ func (policy *symbolicPolicy) isInbound(r *symbolicRule) bool {
 	return slices.Contains(policy.inbound, r)
 }
 
-// sort the policies.
-// for the user to be as intuitive:
+// sorting the policies before synthesis, for the user to be intuitive:
 // by categories, by priority, by rule Id, etc...
 func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 	symbolicOrigRulesSortFunc := func(r1, r2 *symbolicRule) int {
