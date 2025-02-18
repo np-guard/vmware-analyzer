@@ -103,9 +103,9 @@ func computeAllowOnlyForCategory(inboundOrOutbound *[]*symbolicRule, globalDenie
 	return allowOnlyRules, &newGlobalDenies
 }
 
-func optimizeSymbolicPolicy(policy *symbolicPolicy, hints *symbolicexpr.Hints) *symbolicPolicy {
-	optimizedInbound := optimizeSymbolicRules(policy.inbound, hints)
-	optimizedOutbound := optimizeSymbolicRules(policy.outbound, hints)
+func optimizeSymbolicPolicy(policy *symbolicPolicy, options *SynthesisOptions) *symbolicPolicy {
+	optimizedInbound := optimizeSymbolicRules(policy.inbound, options)
+	optimizedOutbound := optimizeSymbolicRules(policy.outbound, options)
 	return &symbolicPolicy{inbound: optimizedInbound, outbound: optimizedOutbound}
 }
 
@@ -113,7 +113,7 @@ func optimizeSymbolicPolicy(policy *symbolicPolicy, hints *symbolicexpr.Hints) *
 // symbolic paths that are subsets of other symbolic paths
 // if a specific symbolic path was present in multiple symbolicRules, we will keep it only in the rule with the lowest
 // index (which implies higher priority)
-func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*symbolicRule {
+func optimizeSymbolicRules(rules []*symbolicRule, options *SynthesisOptions) []*symbolicRule {
 	// 1. gathers all symbolicPaths, keeps a pointer from each path to its symbolic rule (or to the "lowest" one as above)
 	var allSymbolicPath symbolicexpr.SymbolicPaths
 	var symbolicPathToRule = map[string]int{}
@@ -128,7 +128,7 @@ func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*
 		}
 	}
 	// 2. Optimizes symbolic paths
-	optimizedPaths := allSymbolicPath.RemoveIsSubsetPath(hints)
+	optimizedPaths := allSymbolicPath.RemoveIsSubsetPath(options.Hints)
 	// 3. Updated list of optimized symbolicRules
 	// 3.1 Creates of set of indexes of rules that have at least one path in the optimized list, and thus should be
 	// in the final list of optimized rules
@@ -144,6 +144,9 @@ func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*
 		if ruleInOptimize[i] {
 			newIndx = len(optimizedRules)
 			optimizedRules = append(optimizedRules, rule)
+			// keep admin policy rules, which are not part of the optimization
+		} else if options.SynthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory() {
+
 		}
 		oldToNewIndexes[i] = newIndx
 	}
