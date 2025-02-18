@@ -1,3 +1,16 @@
+
+Abstract Model Details
+=======================
+
+Endpoints to groups
+~~~~~~~~~~~~~~~~~~~~
+Endpoint    |Groups
+Dumbledore1 |Dumbledore, Dumbledore1
+Dumbledore2 |Dumbledore2, Dumbledore
+Gryffindor  |Gryffindor
+Hufflepuff  |Hufflepuff
+Slytherin   |Slytherin
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

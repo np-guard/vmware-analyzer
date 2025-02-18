@@ -3,9 +3,11 @@ package synthesis
 import (
 	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
@@ -161,10 +163,28 @@ func optimizeSymbolicRules(rules []*symbolicRule, options *SynthesisOptions) []*
 	return optimizedRules
 }
 
-func strAbstractModel(abstractModel AbstractModelSyn, color bool) string {
+func strAbstractModel(abstractModel *AbstractModelSyn, color bool) string {
 	var strArray []string
 	strArray = append(strArray)
-	return "\nAbstract Model Details\n~~~~~~~~~~~~~~~~~~~~~~~\n"
+	return "\nAbstract Model Details\n=======================\n" + strEpsToGroups(abstractModel.epToGroups, color) +
+		strAllowOnlyPolicy(abstractModel.policy[0], color)
+}
+
+func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
+	header := []string{"Endpoint", "Groups"}
+	lines := make([][]string, len(epsToGroups))
+	j := 0
+	for ep, groups := range epsToGroups {
+		groupsStr := make([]string, len(groups))
+		for i, group := range groups {
+			groupsStr[i] = *group.DisplayName
+		}
+		newLine := []string{ep.Name(), strings.Join(groupsStr, ", ")}
+		lines[j] = newLine
+		j++
+	}
+	return "\nEndpoints to groups\n~~~~~~~~~~~~~~~~~~~~\n" +
+		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 func strAllowOnlyPolicy(policy *symbolicPolicy, color bool) string {

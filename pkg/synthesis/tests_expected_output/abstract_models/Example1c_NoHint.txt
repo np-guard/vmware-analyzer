@@ -1,3 +1,14 @@
+
+Abstract Model Details
+=======================
+
+Endpoints to groups
+~~~~~~~~~~~~~~~~~~~~
+Endpoint |Groups
+A        |frontend
+B        |backend
+C        |frontend1
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

@@ -1,3 +1,20 @@
+
+Abstract Model Details
+=======================
+
+Endpoints to groups
+~~~~~~~~~~~~~~~~~~~~
+Endpoint       |Groups
+Gryffindor-App |Gryffindor, Gryffindor-And-no-DB
+Gryffindor-DB  |Gryffindor
+Gryffindor-Web |Gryffindor, Gryffindor-And-no-DB
+Hufflepuff-App |Hufflepuff, Hufflepuff-And-no-DB
+Hufflepuff-DB  |Hufflepuff
+Hufflepuff-Web |Hufflepuff, Hufflepuff-And-no-DB
+Slytherin-App  |Slytherin, Slytherin-And-no-DB
+Slytherin-DB   |Slytherin
+Slytherin-Web  |Slytherin, Slytherin-And-no-DB
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

@@ -49,7 +49,7 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	abstractModel := &AbstractModelSyn{vms: config.VMs(), epToGroups: config.VMToGroupsMap(),
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
-	allowOnlyPolicyStr := strAllowOnlyPolicy(allowOnlyPolicyWithOptimization, options.Color)
+	allowOnlyPolicyStr := strAbstractModel(abstractModel, options.Color)
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", allowOnlyPolicyStr)
 	/*>>>>>>> main*/
 	return abstractModel, nil
