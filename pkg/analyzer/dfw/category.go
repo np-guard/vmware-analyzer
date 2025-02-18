@@ -9,8 +9,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
-	"github.com/np-guard/vmware-analyzer/pkg/model/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html

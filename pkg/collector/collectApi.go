@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
+	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const rateTimeLimit = 200 * time.Millisecond

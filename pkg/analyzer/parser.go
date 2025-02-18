@@ -5,12 +5,12 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 )
 
 const (

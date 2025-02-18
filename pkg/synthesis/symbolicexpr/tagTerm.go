@@ -3,9 +3,9 @@ package symbolicexpr
 import (
 	"fmt"
 
+	resources "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const tagConst = "tag"

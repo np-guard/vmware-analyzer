@@ -13,8 +13,8 @@ import (
 
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/common"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 const (

@@ -2,8 +2,8 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/models/pkg/netset"
+	resources "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	resources "github.com/np-guard/vmware-analyzer/pkg/model/generated"
 )
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF

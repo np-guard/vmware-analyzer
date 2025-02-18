@@ -3,8 +3,8 @@ package connectivity
 import (
 	"slices"
 
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/model/endpoints"
 )
 
 // ConnMap captures permitted connections between endpoints in the input config

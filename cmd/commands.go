@@ -100,16 +100,6 @@ and generation of k8s network policies`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
 and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
-		/*PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
-			verbosity := logging.MediumVerbosity
-			if args.quiet {
-				verbosity = logging.LowVerbosity
-			} else if args.verbose {
-				verbosity = logging.HighVerbosity
-			}
-			return logging.Init(verbosity, args.logFile) // initializes a thread-safe singleton logger
-		},*/
-
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args)
 		},
