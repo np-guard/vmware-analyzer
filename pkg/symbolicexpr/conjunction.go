@@ -127,11 +127,11 @@ func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
 // this is the case if any term in c either exists in other or is a subset of it, or
 // c is tautology
 func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
-	if len(*c) == 0 && !other.isTautology() { // nil Conjunction is equiv to tautology
-		return false
-	}
-	if c.isTautology() {
+	if c.isTautology() || len(*c) == 0 { // tautology superset of everything;  nil Conjunction is equiv to tautology
 		return true
+	}
+	if other.isTautology() { // tautology is a subset only of tautology
+		return false
 	}
 	for _, atom := range *c {
 		if !other.contains(atom) && !conjSupersetOfAtom(other, atom, hints) {
