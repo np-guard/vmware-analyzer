@@ -188,6 +188,7 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 		secPolicyCategory:  c.Category.String(),
 		categoryRef:        c,
 		dfwRef:             c.dfwRef,
+		Priority:           len(c.Rules),
 	}
 	c.Rules = append(c.Rules, newRule)
 

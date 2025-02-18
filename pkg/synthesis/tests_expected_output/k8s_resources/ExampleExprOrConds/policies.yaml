@@ -42,50 +42,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
-        nsx-id: "1927"
-    creationTimestamp: null
-    name: policy-2
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: tag__Gryffindor
-              operator: Exists
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (*) dst: (tag != DB) conn: All Connections'
-        nsx-id: "1927"
-    creationTimestamp: null
-    name: policy-3
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: tag__DB
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (tag = Gryffindor) dst: (tag = Slytherin) conn: All Connections'
         nsx-id: "1926"
     creationTimestamp: null
-    name: policy-4
+    name: policy-2
     namespace: default
 spec:
     egress:
@@ -105,24 +65,21 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (tag = Gryffindor) dst: (tag != DB) conn: All Connections'
-        nsx-id: "1926"
+        description: 'src: (*) dst: (tag = Gryffindor) conn: All Connections'
+        nsx-id: "1927"
     creationTimestamp: null
-    name: policy-5
+    name: policy-3
     namespace: default
 spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: tag__DB
-                      operator: DoesNotExist
+    ingress:
+        - from:
+            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: tag__Gryffindor
               operator: Exists
     policyTypes:
-        - Egress
+        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -131,7 +88,7 @@ metadata:
         description: 'src: (*) dst: (tag = Hufflepuff) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
-    name: policy-6
+    name: policy-4
     namespace: default
 spec:
     egress:
@@ -151,7 +108,7 @@ metadata:
         description: 'src: (*) dst: (tag != DB) conn: All Connections'
         nsx-id: "1928"
     creationTimestamp: null
-    name: policy-7
+    name: policy-5
     namespace: default
 spec:
     egress:

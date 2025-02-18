@@ -86,7 +86,7 @@ func (a *absToNXS) convertPolicies(policy []*symbolicPolicy, synthesizeAdmin boo
 						a.pathToRule(p, dir, fwRuleToDataRuleAction[rule.origRule.Action], rule.origRuleCategory.String())
 					}
 				} else {
-					for _, p := range rule.allowOnlyRulePaths {
+					for _, p := range rule.optimizedAllowOnlyPaths {
 						a.pathToRule(p, dir, data.Allow, collector.LastCategory().String())
 					}
 				}
