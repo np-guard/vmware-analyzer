@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
@@ -62,6 +63,7 @@ type NSXMigrationReconciler struct {
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=events,verbs=create;patch
 // +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -296,6 +298,41 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	}
 
 	policies, _ := runnerObj.GetGeneratedPolicies()
+
+	// build policies as map for configmap
+	dataPolicies := map[string]string{}
+	for _, policy := range policies {
+		pKey := policy.Name
+		buf, err := json.Marshal(policy)
+		if err != nil {
+			return err
+		}
+
+		pValue := string(buf)
+		dataPolicies[pKey] = pValue
+	}
+
+	// test create configmap
+	cm := &v1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "my-config-map", // generated policies
+			Namespace: "default",
+		},
+		Data: dataPolicies,
+	}
+	if err = r.Create(ctx, cm); err != nil {
+		log.Error(err, "Failed to create ConfigMap",
+			"ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+		return err
+	}
+
+	log.Info("generated configmap")
+
+	//clientset.CoreV1().ConfigMaps("my-namespace").Create(&cm)
 
 	/*//Tee
 	logging.Tee("debug/log.txt")
