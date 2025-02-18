@@ -116,7 +116,7 @@ func optimizeSymbolicPolicy(policy *symbolicPolicy, hints *symbolicexpr.Hints) *
 func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*symbolicRule {
 	// 1. gathers all symbolicPaths, keeps a pointer from each path to its symbolic rule (or to the "lowest" one as above)
 	var allSymbolicPath symbolicexpr.SymbolicPaths
-	var symbolicPathToRule map[string]int
+	var symbolicPathToRule = map[string]int{}
 	for i, rule := range rules {
 		for _, path := range rule.allowOnlyRulePaths {
 			key := path.String()
@@ -138,12 +138,14 @@ func optimizeSymbolicRules(rules []*symbolicRule, hints *symbolicexpr.Hints) []*
 	}
 	// 3.1 create a list of the optimized rules, optimizedAllowOnlyPaths yet to be updated
 	var optimizedRules []*symbolicRule
-	var oldToNewIndexes map[int]int
+	var oldToNewIndexes = make(map[int]int, len(rules))
 	for i, rule := range rules {
+		newIndx := -1
 		if ruleInOptimize[i] {
-			oldToNewIndexes[i] = len(optimizedRules)
+			newIndx = len(optimizedRules)
 			optimizedRules = append(optimizedRules, rule)
 		}
+		oldToNewIndexes[i] = newIndx
 	}
 	// 3.2 updates optimizedAllowOnlyPaths
 	for _, path := range optimizedPaths {
