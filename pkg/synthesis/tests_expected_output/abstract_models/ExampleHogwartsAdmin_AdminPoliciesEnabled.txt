@@ -2,13 +2,13 @@ Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
 original allow rule index |Src           |Dst           |Connection
-5                         |(*)           |(group = Web) |All Connections
-6                         |(group = Web) |(group = App) |All Connections
-7                         |(group = App) |(group = DB)  |All Connections
+0                         |(*)           |(group = Web) |All Connections
+1                         |(group = Web) |(group = App) |All Connections
+2                         |(group = App) |(group = DB)  |All Connections
 
 outbound rules
 original allow rule index |Src           |Dst           |Connection
-4                         |(*)           |(group = Web) |All Connections
-5                         |(group = Web) |(group = App) |All Connections
-6                         |(group = App) |(group = DB)  |All Connections
+0                         |(*)           |(group = Web) |All Connections
+1                         |(group = Web) |(group = App) |All Connections
+2                         |(group = App) |(group = DB)  |All Connections
 

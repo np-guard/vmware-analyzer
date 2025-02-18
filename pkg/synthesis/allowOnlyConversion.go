@@ -171,7 +171,7 @@ func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
 		if rule.allowOnlyRulePaths == nil {
 			continue
 		}
-		for _, path := range rule.allowOnlyRulePaths {
+		for _, path := range rule.optimizedAllowOnlyPaths {
 			newLine := append([]string{strconv.Itoa(i)}, path.TableString()...)
 			lines = append(lines, newLine)
 		}

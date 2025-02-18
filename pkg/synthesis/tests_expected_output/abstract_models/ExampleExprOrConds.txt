@@ -4,7 +4,6 @@ inbound rules
 original allow rule index |Src |Dst                |Connection
 0                         |(*) |(tag != DB)        |All Connections
 0                         |(*) |(tag = Slytherin)  |All Connections
-1                         |(*) |(tag != DB)        |All Connections
 1                         |(*) |(tag = Gryffindor) |All Connections
 
 outbound rules
