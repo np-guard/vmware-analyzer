@@ -1,7 +1,7 @@
 package symbolicexpr
 
 import (
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 const emptySet = "empty set "

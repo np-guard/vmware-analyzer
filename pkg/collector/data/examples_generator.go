@@ -8,9 +8,9 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 )
 

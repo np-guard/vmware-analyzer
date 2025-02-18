@@ -10,7 +10,7 @@ import (
 	v1 "k8s.io/api/networking/v1"
 	"sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
-	"github.com/np-guard/vmware-analyzer/pkg/common"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
