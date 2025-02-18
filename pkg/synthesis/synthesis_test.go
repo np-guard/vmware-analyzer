@@ -310,10 +310,6 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)
-	// todo: WA until https://github.com/np-guard/vmware-analyzer/issues/235 is fixed
-	if synTest.name == "ExampleExprAndConds" || synTest.name == "ExampleExprOrConds" {
-		return
-	}
 	// compare to expected results:
 	if synTest.hasExpectedResults() {
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
