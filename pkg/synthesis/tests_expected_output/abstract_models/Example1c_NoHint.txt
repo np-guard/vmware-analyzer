@@ -2,14 +2,6 @@
 Abstract Model Details
 =======================
 
-Endpoints to groups
-~~~~~~~~~~~~~~~~~~~~
-Endpoint |Groups
-A        |frontend
-B        |backend
-C        |frontend1
-
-
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
 Group     |Expression |VM

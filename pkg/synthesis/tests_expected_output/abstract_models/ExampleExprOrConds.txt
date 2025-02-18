@@ -2,20 +2,6 @@
 Abstract Model Details
 =======================
 
-Endpoints to groups
-~~~~~~~~~~~~~~~~~~~~
-Endpoint       |Groups
-Gryffindor-App |Gryffindor, Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
-Gryffindor-DB  |Gryffindor, Gryffindor-Or-no-DB
-Gryffindor-Web |Gryffindor, Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
-Hufflepuff-App |Gryffindor-Or-no-DB, Hufflepuff, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
-Hufflepuff-DB  |Hufflepuff, Hufflepuff-Or-no-DB
-Hufflepuff-Web |Gryffindor-Or-no-DB, Hufflepuff, Hufflepuff-Or-no-DB, Slytherin-Or-no-DB
-Slytherin-App  |Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin, Slytherin-Or-no-DB
-Slytherin-DB   |Slytherin, Slytherin-Or-no-DB
-Slytherin-Web  |Gryffindor-Or-no-DB, Hufflepuff-Or-no-DB, Slytherin, Slytherin-Or-no-DB
-
-
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
 Group               |Expression                                                                          |VM

@@ -2,15 +2,6 @@
 Abstract Model Details
 =======================
 
-Endpoints to groups
-~~~~~~~~~~~~~~~~~~~~
-Endpoint       |Groups
-Gryffindor-App |App, Gryffindor
-Gryffindor-Web |Gryffindor, Web
-Slytherin-App  |App, Slytherin
-Slytherin-Web  |Slytherin, Web
-
-
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
 Group      |Expression |VM

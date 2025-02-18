@@ -1,9 +1,7 @@
 package synthesis
 
 import (
-	"maps"
 	"slices"
-	"sort"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -99,34 +97,8 @@ type Segments map[string]*collector.Segment
 func strAbstractModel(abstractModel *AbstractModelSyn, color bool) string {
 	var strArray []string
 	strArray = append(strArray)
-	return "\nAbstract Model Details\n=======================\n" + strEpsToGroups(abstractModel.epToGroups, color) +
+	return "\nAbstract Model Details\n=======================\n" +
 		strGroupsStr(abstractModel.epToGroups, color) + strAllowOnlyPolicy(abstractModel.policy[0], color)
-}
-
-func strEpsToGroups(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
-	// 1. constructs a map from epsToGroups in which the key is a string so that it can be sorted for consistency
-	epsNamesToGroup := make(map[string][]*collector.Group, len(epsToGroups))
-	for ep, groups := range epsToGroups {
-		epsNamesToGroup[ep.Name()] = groups
-	}
-	i := 0
-	sortedEpsNames := slices.Sorted(maps.Keys(epsNamesToGroup))
-	// 2. gathers the data
-	header := []string{"Endpoint", "Groups"}
-	lines := make([][]string, len(epsToGroups))
-	for _, epName := range sortedEpsNames {
-		groups := epsNamesToGroup[epName]
-		groupsStr := make([]string, len(groups))
-		for i, group := range groups {
-			groupsStr[i] = *group.DisplayName
-		}
-		sort.Strings(groupsStr)
-		newLine := []string{epName, strings.Join(groupsStr, ", ")}
-		lines[i] = newLine
-		i++
-	}
-	return "\nEndpoints to groups\n~~~~~~~~~~~~~~~~~~~~\n" +
-		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
