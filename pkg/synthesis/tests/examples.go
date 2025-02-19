@@ -870,7 +870,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 	return []data.Category{
 		{
 			Name:         "Protect-DBs",
-			CategoryType: application,
+			CategoryType: environment,
 			Rules: []data.Rule{
 				{
 					Name:      "to-Slytherin-in",
@@ -913,7 +913,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 		},
 		{
 			Name:         defaultL3,
-			CategoryType: application,
+			CategoryType: environment,
 			Rules: []data.Rule{
 				data.DefaultDenyRule(denyRuleIDEnv),
 			},
