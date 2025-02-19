@@ -94,11 +94,22 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 // Segments topology; map from segment name to the segment
 type Segments map[string]*collector.Segment
 
-func strAbstractModel(abstractModel *AbstractModelSyn, color bool) string {
+func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	var strArray []string
 	strArray = append(strArray)
+	adminPolicyStr := strAdminPolicy(abstractModel.policy[0], options)
+	_ = adminPolicyStr
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroupsStr(abstractModel.epToGroups, color) + strAllowOnlyPolicy(abstractModel.policy[0], color)
+		strGroupsStr(abstractModel.epToGroups, options.Color) + strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
+}
+
+func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
+	if !options.SynthesizeAdmin {
+		return ""
+	}
+	return "Admin policy rules\n~~~~~~~~~~~~~~~~~~\ninbound rules\n" +
+		strOrigSymbolicRules(policy.inbound, true, options.Color) + "outbound rules\n" +
+		strOrigSymbolicRules(policy.outbound, true, options.Color)
 }
 
 func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
