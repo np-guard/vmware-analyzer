@@ -283,7 +283,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 	require.Nil(t, err)
 	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	abstractModelStr := strAbstractModel(abstractModel, false)
+	abstractModelStr := strAbstractModel(abstractModel, synTest.options())
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
 	require.Nil(t, err)
