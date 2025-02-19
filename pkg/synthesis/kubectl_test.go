@@ -36,7 +36,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	fixPodsResources(synTest.name, k8sResources.pods)
 	fixPoliciesResources(k8sResources.networkPolicies)
-	// fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
+	fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
 	// run netpol-analizer:
 	require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
@@ -133,6 +133,7 @@ func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
 		ctl.exposePod(pods[i].Name)
 	}
 	ctl.applyResourceFile(path.Join(k8sDir, "policies.yaml"))
+	ctl.applyResourceFile(path.Join(k8sDir, "adminPolicies.yaml"))
 	for i := range pods {
 		ctl.waitPod(pods[i].Name)
 	}
@@ -169,7 +170,7 @@ type connTest struct {
 
 func (test *connTest) String() string {
 	miss := ""
-	if test.ok() {
+	if !test.ok() {
 		miss = "MISSMATCH: "
 	}
 	return fmt.Sprintf("%s%s -> %s connected:%t allowed:%t", miss, test.src, test.dst, test.connectResult, test.allowed)
