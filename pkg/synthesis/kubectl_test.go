@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/np-guard/models/pkg/netset"
@@ -37,15 +38,17 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	fixPoliciesResources(k8sResources.networkPolicies)
 	// fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
-	// require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
+	// run netpol-analizer:
+	require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
 
 	// create the kubectl files:
 	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))
 	require.Nil(t, createCleanEvironmentFile(cleanEvironmentFile, k8sResources.pods))
 
 	// crreate environment:
+	logging.Debugf("creating environment from file %s", setEvironmentFile)
 	require.Nil(t, runCmdFile(setEvironmentFile))
-	logging.Debugf("environment created from file %s", setEvironmentFile)
+	logging.Debug("environment created")
 
 	// check connections:
 	checkErr := testConnections(kubeDir, rc)
@@ -124,9 +127,9 @@ func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
 func createCleanEvironmentFile(fileName string, pods []*core.Pod) error {
 	ctl := kubeCTLFile{}
 	ctl.clean()
-	for i := range pods {
-		ctl.deletePod(pods[i].Name)
-	}
+	// for i := range pods {
+	// 	ctl.deletePod(pods[i].Name)
+	// }
 	return ctl.createCmdFile(fileName)
 }
 
@@ -143,6 +146,7 @@ func sliceCountFunc[v any](s []v, f func(v) bool) int {
 }
 
 type connTest struct {
+	connTestFile  string
 	allowed       bool
 	connectResult bool
 	src, dst      string
@@ -157,6 +161,13 @@ func (test *connTest) String() string {
 }
 func (test *connTest) ok() bool {
 	return test.connectResult == test.allowed
+}
+func (test *connTest) run() {
+	err := runCmdFile(test.connTestFile, test.src, test.dst)
+	test.connectResult = err == nil
+	if !test.ok() {
+		logging.Warn(test.String())
+	}
 }
 
 func testConnections(kubeDir string, rc *collector.ResourcesContainerModel) error {
@@ -173,25 +184,30 @@ func testConnections(kubeDir string, rc *collector.ResourcesContainerModel) erro
 	}
 	parser.GetConfig().ComputeConnectivity(nil)
 	connMap := parser.GetConfig().AnalyzedConnectivity()
-	// iterate over the connections, test each connection:
+	// iterate over the connections, create test for each connection:
 	tests := []*connTest{}
 	for src, dsts := range connMap {
 		for dst, conn := range dsts {
 			test := &connTest{
-				src:     strings.ToLower(src.Name()),
-				dst:     strings.ToLower(dst.Name()),
-				allowed: !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
+				connTestFile: connTestFile,
+				src:          strings.ToLower(src.Name()),
+				dst:          strings.ToLower(dst.Name()),
+				allowed:      !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
 			}
 			tests = append(tests, test)
 		}
 	}
+	// run the tests:
+	var wg sync.WaitGroup
 	for _, test := range tests {
-		err := runCmdFile(connTestFile, test.src, test.dst)
-		test.connectResult = err == nil
-		if !test.ok() {
-			logging.Warn(test.String())
-		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			test.run()
+		}()
 	}
+	wg.Wait()
+
 	// summarize the result:
 	logging.Debugf("checked %d connections, see file %s for details", len(tests), connReportFile)
 	err := common.WriteToFile(connReportFile, common.JoinStringifiedSlice(tests, "\n"))
@@ -216,6 +232,7 @@ func (ctl *kubeCTLFile) clean() {
 	ctl.addCmd("kubectl delete networkpolicy --all")
 	ctl.addCmd("kubectl delete adminnetworkpolicies --all")
 	ctl.addCmd("kubectl delete service --all")
+	ctl.addCmd("kubectl delete pods --all")
 
 }
 func (ctl *kubeCTLFile) exposePod(name string) {
