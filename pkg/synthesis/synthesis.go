@@ -40,7 +40,8 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 
 	logging.Debugf("started synthesis")
 	preProcessingCategoryToPolicy := preProcessing(config.DFW().CategoriesSpecs)
-	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy, options.Color)
+	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
+		false, options.Color)
 	logging.Debugf("pre processing symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", preProcessingPolicyStr)
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(
 		config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,

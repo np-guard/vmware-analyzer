@@ -61,11 +61,15 @@ func strSymbolicRules(rules []*symbolicRule, color bool) string {
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-// prints pre-processing symbolic rules by ordered category
+// prints pre-processing symbolic rules by ordered category;
+// with an option to print only the subset that will be synthesized to admin rules
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
 func printPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, color bool) string {
+	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, printOnlyAdminPolicy, color bool) string {
 	var categoryToStr = func(c *dfw.CategorySpec) string {
+		if printOnlyAdminPolicy && c.Category < collector.MinNonAdminCategory() {
+			return ""
+		}
 		policy := categoryToPolicy[c.Category]
 		if policy == nil {
 			return ""
