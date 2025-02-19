@@ -1,3 +1,17 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression                                  |VM
+App        |((Tag Of VirtualMachine EQUALS App))        |Slytherin-App, Hufflepuff-App, Gryffindor-App
+DB         |((Tag Of VirtualMachine EQUALS DB))         |Slytherin-DB, Hufflepuff-DB, Gryffindor-DB
+Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor)) |Gryffindor-DB, Gryffindor-Web, Gryffindor-App
+Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff)) |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
+Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |Slytherin-DB, Slytherin-Web, Slytherin-App
+Web        |((Tag Of VirtualMachine EQUALS Web))        |Slytherin-Web, Hufflepuff-Web, Gryffindor-Web
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
