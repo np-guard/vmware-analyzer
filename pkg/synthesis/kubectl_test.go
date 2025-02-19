@@ -101,7 +101,7 @@ func fixAdminPoliciesResources(adminNetworkPolicies []*admin.AdminNetworkPolicy)
 func fixAdminPort(port *admin.AdminNetworkPolicyPort) {
 	if port.PortNumber != nil && port.PortNumber.Protocol == core.ProtocolTCP ||
 		port.PortRange != nil && port.PortRange.Protocol == core.ProtocolTCP {
-		port.PortNumber = &admin.Port{ Protocol: core.ProtocolTCP, Port: 5000}
+		port.PortNumber = &admin.Port{Protocol: core.ProtocolTCP, Port: 5000}
 		port.PortRange = nil
 	}
 }
@@ -131,11 +131,37 @@ func createCleanEvironmentFile(fileName string, pods []*core.Pod) error {
 }
 
 // ////////////////////////////////////////////////////////////////////////////////////////
+
+func sliceCountFunc[v any](s []v, f func(v) bool) int {
+	c := 0
+	for _, e := range s {
+		if f(e) {
+			c++
+		}
+	}
+	return c
+}
+
+type connTest struct {
+	allowed       bool
+	connectResult bool
+	src, dst      string
+}
+
+func (test *connTest) String() string {
+	miss := ""
+	if test.ok() {
+		miss = "MISSMATCH: "
+	}
+	return fmt.Sprintf("%s%s -> %s connected:%t allowed:%t", miss, test.src, test.dst, test.connectResult, test.allowed)
+}
+func (test *connTest) ok() bool {
+	return test.connectResult == test.allowed
+}
+
 func testConnections(kubeDir string, rc *collector.ResourcesContainerModel) error {
 	connTestFile := path.Join(kubeDir, "connTest.sh")
 	connReportFile := path.Join(kubeDir, "connTestReport.txt")
-	errorLines := []string{}
-	reportLines := []string{}
 	// create test generic file:
 	ctl := kubeCTLFile{}
 	ctl.testPodsConnection()
@@ -148,32 +174,33 @@ func testConnections(kubeDir string, rc *collector.ResourcesContainerModel) erro
 	parser.GetConfig().ComputeConnectivity(nil)
 	connMap := parser.GetConfig().AnalyzedConnectivity()
 	// iterate over the connections, test each connection:
+	tests := []*connTest{}
 	for src, dsts := range connMap {
 		for dst, conn := range dsts {
-			err := runCmdFile(connTestFile, strings.ToLower(src.Name()), strings.ToLower(dst.Name()))
-			allow := !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty()
-			connected := err == nil
-			reportLine := fmt.Sprintf("%s -> %s connected:%t allowed:%t", src.Name(), dst.Name(), connected, allow)
-			reportLines = append(reportLines, reportLine)
-			if allow != connected {
-				logging.Warn(reportLine)
-				errorLines = append(errorLines, reportLine)
+			test := &connTest{
+				src:     strings.ToLower(src.Name()),
+				dst:     strings.ToLower(dst.Name()),
+				allowed: !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
 			}
+			tests = append(tests, test)
+		}
+	}
+	for _, test := range tests {
+		err := runCmdFile(connTestFile, test.src, test.dst)
+		test.connectResult = err == nil
+		if !test.ok() {
+			logging.Warn(test.String())
 		}
 	}
 	// summarize the result:
-	logging.Debugf("checked %d connections, see file %s for details", len(reportLines), connReportFile)
-	reportLines = append(reportLines, "Errors:")
-	reportLines = append(reportLines, errorLines...)
-	err := common.WriteToFile(connReportFile, strings.Join(reportLines, "\n"))
-	if len(errorLines) > 0 {
-		if err != nil {
-			return err
-		}
-		errorLine := fmt.Sprintf("found %d connections missmatches, see file %s for details", len(errorLines), connReportFile)
+	logging.Debugf("checked %d connections, see file %s for details", len(tests), connReportFile)
+	err := common.WriteToFile(connReportFile, common.JoinStringifiedSlice(tests, "\n"))
+	nErrors := sliceCountFunc(tests, func(t *connTest) bool { return !t.ok() })
+	if nErrors > 0 {
+		errorLine := fmt.Sprintf("found %d connections missmatches, see file %s for details", nErrors, connReportFile)
 		return errors.New(errorLine)
 	}
-	return nil
+	return err
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////
