@@ -27,18 +27,16 @@ type absToNXS struct {
 	allVMs     []*endpoints.VM
 	vmResource map[*endpoints.VM]collector.RealizedVirtualMachine
 
-	categories       []data.Category
-	typeToCategories map[string]*data.Category
-	groups           []collector.Group
-	ruleIDCounter    int
+	categories    []data.Category
+	groups        []collector.Group
+	ruleIDCounter int
 }
 
 func newAbsToNXS() *absToNXS {
 	return &absToNXS{
-		typeToCategories: map[string]*data.Category{},
-		vmLabels:         map[*endpoints.VM][]string{},
-		labelsVMs:        map[string][]*endpoints.VM{},
-		vmResource:       map[*endpoints.VM]collector.RealizedVirtualMachine{},
+		vmLabels:   map[*endpoints.VM][]string{},
+		labelsVMs:  map[string][]*endpoints.VM{},
+		vmResource: map[*endpoints.VM]collector.RealizedVirtualMachine{},
 	}
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
@@ -119,15 +117,16 @@ func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, c
 }
 
 func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
-	if _, ok := a.typeToCategories[categoryType]; !ok {
+	categoryIndex := slices.IndexFunc(a.categories, func(c data.Category) bool { return categoryType == c.CategoryType })
+	if categoryIndex < 0 {
+		categoryIndex = len(a.categories)
 		a.categories = append(a.categories, data.Category{
 			Name:         categoryType + "_name",
 			CategoryType: categoryType,
 			Rules:        []data.Rule{},
 		})
-		a.typeToCategories[categoryType] = &a.categories[len(a.categories)-1]
 	}
-	category := a.typeToCategories[categoryType]
+	category := &a.categories[categoryIndex]
 	id := firstRuleID + a.ruleIDCounter
 	a.ruleIDCounter++
 	rule := data.Rule{
