@@ -29,6 +29,11 @@ func dnsPorts() []networking.NetworkPolicyPort {
 	conn := netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
 	return connToPolicyPort(conn)
 }
+func dnsAdminPorts() []admin.AdminNetworkPolicyPort {
+	const dnsPort = 53
+	conn := netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
+	return connToAdminPolicyPort(conn)
+}
 
 // here we have two derived classes: k8sNetworkPorts and k8sAdminNetworkPorts.
 // the base class is k8sPorts, which has code that calls methods of the derived classes.

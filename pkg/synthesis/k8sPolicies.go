@@ -26,13 +26,19 @@ type k8sPolicies struct {
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
+	if createDNSPolicy {
+		if model.synthesizeAdmin {
+			policies.addDNSEgressAllowAdminNetworkPolicy()
+			policies.addDNSIngressAllowAdminNetworkPolicy()
+		} else {
+			policies.addDNSAllowNetworkPolicy()
+
+		}
+	}
 	for _, p := range model.policy {
 		for _, rule := range p.sortRules() {
 			policies.symbolicRulesToPolicies(model, rule, p.isInbound(rule))
 		}
-	}
-	if createDNSPolicy {
-		policies.addDNSAllowNetworkPolicy()
 	}
 	policies.addDefaultDenyNetworkPolicy(model.defaultDenyRule)
 }
@@ -105,6 +111,39 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	}}
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: dnsPorts()}}
+}
+
+func (policies *k8sPolicies) addDNSEgressAllowAdminNetworkPolicy() {
+	pol := newAdminNetworkPolicy("egress-dns-policy", "Admin Network Policy To Allow Egress Access To DNS Server", "egress-dns-rule-id")
+	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
+	//nolint:gosec // priority should fit int32:
+	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
+	pol.Spec.Subject = admin.AdminNetworkPolicySubject{
+		Pods: &admin.NamespacedPod{},
+	}
+	to := []admin.AdminNetworkPolicyEgressPeer{{Pods: &admin.NamespacedPod{
+		PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
+		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
+	}}}
+	rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: admin.AdminNetworkPolicyRuleActionAllow, Ports: common.PointerTo(dnsAdminPorts())}}
+	pol.Spec.Egress = rules
+}
+
+func (policies *k8sPolicies) addDNSIngressAllowAdminNetworkPolicy() {
+	pol := newAdminNetworkPolicy("ingress-dns-policy", "Admin Network Policy To Allow Ingress Access To DNS Server", "ingress-dns-rule-id")
+	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
+	//nolint:gosec // priority should fit int32:
+	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
+	pol.Spec.Subject = admin.AdminNetworkPolicySubject{
+		Pods: &admin.NamespacedPod{
+			PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
+			NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
+		}}
+	from := []admin.AdminNetworkPolicyIngressPeer{
+		{Pods: &admin.NamespacedPod{}},
+	}
+	rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: admin.AdminNetworkPolicyRuleActionAllow, Ports: common.PointerTo(dnsAdminPorts())}}
+	pol.Spec.Ingress = rules
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
