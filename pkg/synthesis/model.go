@@ -95,8 +95,6 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
-	var strArray []string
-	strArray = append(strArray)
 	return "\nAbstract Model Details\n=======================\n" +
 		strGroupsStr(abstractModel.epToGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
 		strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
@@ -129,14 +127,14 @@ func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) 
 	i := 0
 	for name, group := range groupsMap {
 		groupExprStr := ""
-		groupVmNames := make([]string, len(group.VMMembers))
+		groupVMNames := make([]string, len(group.VMMembers))
 		if len(group.Expression) > 0 {
 			groupExprStr = group.Expression.String()
 		}
-		for j, vm := range group.VMMembers {
-			groupVmNames[j] = *vm.DisplayName
+		for j := range group.VMMembers {
+			groupVMNames[j] = *group.VMMembers[j].DisplayName
 		}
-		newLine := []string{name, groupExprStr, strings.Join(groupVmNames, ", ")}
+		newLine := []string{name, groupExprStr, strings.Join(groupVMNames, ", ")}
 		lines[i] = newLine
 		i++
 	}

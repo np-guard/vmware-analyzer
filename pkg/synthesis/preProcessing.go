@@ -54,7 +54,7 @@ func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) str
 	lines := [][]string{}
 	for i, rule := range rules {
 		for _, path := range *rule.origSymbolicPaths {
-			if printOnlyAdmin && !(rule.origRuleCategory < collector.MinNonAdminCategory()) {
+			if printOnlyAdmin && rule.origRuleCategory >= collector.MinNonAdminCategory() {
 				continue
 			}
 			newLine := append([]string{strconv.Itoa(i), string(rule.origRule.Action)},
