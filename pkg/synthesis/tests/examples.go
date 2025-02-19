@@ -901,8 +901,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Direction: string(nsx.RuleDirectionIN),
 				},
 				{
-					Name: "to-Hufflepuff-out",
-					//nolint:all // this is the required id
+					Name:      "to-Hufflepuff-out",
 					ID:        newRuleID + 3,
 					Source:    anyStr,
 					Dest:      hufCondDB,
@@ -911,7 +910,8 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
-					Name:     "default-deny-env",
+					Name: "default-deny-env",
+					//nolint:all // this is the required id
 					ID:       10300,
 					Source:   anyStr,
 					Dest:     anyStr,
