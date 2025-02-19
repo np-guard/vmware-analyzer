@@ -1,0 +1,125 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (*) dst: (group = Web) conn: All Connections'
+        nsx-id: "11000"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (*) dst: (group = Web) conn: TCP,UDP'
+        nsx-id: "11001"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    egress:
+        - to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Web
+                      operator: Exists
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Web) dst: (group = App) conn: TCP,UDP'
+        nsx-id: "11002"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Web
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__App
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Web) dst: (group = App) conn: TCP'
+        nsx-id: "11004"
+    creationTimestamp: null
+    name: policy-3
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - protocol: TCP
+          to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__App
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: dns-rule-id
+    creationTimestamp: null
+    name: dns-policy
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "2144"
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
