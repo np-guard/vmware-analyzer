@@ -901,7 +901,8 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Direction: string(nsx.RuleDirectionIN),
 				},
 				{
-					Name:      "to-Hufflepuff-out",
+					Name: "to-Hufflepuff-out",
+					//nolint:all // this is the required id
 					ID:        newRuleID + 3,
 					Source:    anyStr,
 					Dest:      hufCondDB,
