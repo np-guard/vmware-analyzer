@@ -24,15 +24,13 @@ func connToAdminPolicyPort(conn *netset.TransportSet) []admin.AdminNetworkPolicy
 	return ports.ports
 }
 
+const dnsPort = 53
+var dnsPortConn = netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
 func dnsPorts() []networking.NetworkPolicyPort {
-	const dnsPort = 53
-	conn := netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
-	return connToPolicyPort(conn)
+	return connToPolicyPort(dnsPortConn)
 }
 func dnsAdminPorts() []admin.AdminNetworkPolicyPort {
-	const dnsPort = 53
-	conn := netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
-	return connToAdminPolicyPort(conn)
+	return connToAdminPolicyPort(dnsPortConn)
 }
 
 // here we have two derived classes: k8sNetworkPorts and k8sAdminNetworkPorts.
