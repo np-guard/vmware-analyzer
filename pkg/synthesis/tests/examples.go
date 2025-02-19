@@ -40,6 +40,7 @@ const (
 const (
 	anyStr      = "ANY"
 	application = "Application"
+	environment = "Environment"
 	defaultL3   = "Default-L3-Section"
 )
 
@@ -191,7 +192,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 		Policies: []data.Category{
 			{
 				Name:         "Env-pass-and-deny",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:     "pass-all-to-dumb",
@@ -352,7 +353,7 @@ var ExampleHogwarts = ExampleSynthesis{
 		Policies: []data.Category{
 			{
 				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:   "allow-Gryffindor-to-Gryffindor",
@@ -366,7 +367,7 @@ var ExampleHogwarts = ExampleSynthesis{
 			},
 			{
 				Name:         "Hufflepuff-to-Hufflepuff-allow",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:   "allow-Hufflepuff-to-Hufflepuff",
@@ -382,7 +383,7 @@ var ExampleHogwarts = ExampleSynthesis{
 			},
 			{
 				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Slytherin-to-Slytherin",
@@ -396,7 +397,7 @@ var ExampleHogwarts = ExampleSynthesis{
 			},
 			{
 				Name:         "Dumbledore-connection",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:     "allow-Dumbledore-to-all",
@@ -481,7 +482,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 		Policies: []data.Category{
 			{
 				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:   "allow-Gryffindor-to-Gryffindor",
@@ -495,7 +496,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 			},
 			{
 				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: "Environment",
+				CategoryType: environment,
 				Rules: []data.Rule{
 					{
 						Name:   "allow-Slytherin-to-Slytherin",
@@ -552,7 +553,7 @@ var ExampleHogwartsSimpler = ExampleSynthesis{
 var hogwartsAppToHousesPolicy = []data.Category{
 	{
 		Name:         "Gryffindor-to-Gryffindor-allow",
-		CategoryType: "Environment",
+		CategoryType: environment,
 		Rules: []data.Rule{
 			{
 				Name:     "allow-Gryffindor-to-Gryffindor",
@@ -566,7 +567,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 	},
 	{
 		Name:         "Hufflepuff-to-Hufflepuff-allow",
-		CategoryType: "Environment",
+		CategoryType: environment,
 		Rules: []data.Rule{
 			{
 				Name:     "allow-Hufflepuff-to-Hufflepuff",
@@ -580,7 +581,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 	},
 	{
 		Name:         "Slytherin-to-Slytherin-allow",
-		CategoryType: "Environment",
+		CategoryType: environment,
 		Rules: []data.Rule{
 			{
 				Name:     "allow-Slytherin-to-Slytherin",
