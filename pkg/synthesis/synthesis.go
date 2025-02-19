@@ -40,7 +40,8 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 
 	logging.Debugf("started synthesis")
 	preProcessingCategoryToPolicy := preProcessing(config.DFW().CategoriesSpecs)
-	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy, options.Color)
+	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
+		options.Color)
 	logging.Debugf("pre processing symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", preProcessingPolicyStr)
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(
 		config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
@@ -49,7 +50,7 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	abstractModel := &AbstractModelSyn{vms: config.VMs(), epToGroups: config.VMToGroupsMap(),
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
-	allowOnlyPolicyStr := strAllowOnlyPolicy(allowOnlyPolicyWithOptimization, options.Color)
+	allowOnlyPolicyStr := strAbstractModel(abstractModel, options)
 	logging.Debugf("allow only symbolic rules\n~~~~~~~~~~~~~~~~~~~~~~~~~\n%v", allowOnlyPolicyStr)
 	/*>>>>>>> main*/
 	return abstractModel, nil

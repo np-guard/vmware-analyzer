@@ -1,3 +1,15 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression |VM
+App        |           |Slytherin-App, Gryffindor-App
+Gryffindor |           |Gryffindor-Web, Gryffindor-App
+Slytherin  |           |Slytherin-Web, Slytherin-App
+Web        |           |Slytherin-Web, Gryffindor-Web
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
