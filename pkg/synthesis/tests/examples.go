@@ -909,13 +909,14 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 					Action:    data.Allow,
 					Direction: string(nsx.RuleDirectionOUT),
 				},
-			},
-		},
-		{
-			Name:         defaultL3,
-			CategoryType: environment,
-			Rules: []data.Rule{
-				data.DefaultDenyRule(denyRuleIDEnv),
+				{
+					Name:     "default-deny-env",
+					ID:       10300,
+					Source:   anyStr,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
 			},
 		},
 	}
