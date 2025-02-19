@@ -149,7 +149,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: Default Deny Network Policy
-        nsx-id: "2144"
+        nsx-id: no-nsx-id
     creationTimestamp: null
     name: default-deny
     namespace: default
