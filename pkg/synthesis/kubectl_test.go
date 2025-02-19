@@ -34,7 +34,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	// create K8S k8sResources, and adjust them for the tests:
 	k8sResources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
-	fixPodsResources(k8sResources.pods)
+	fixPodsResources(synTest.name, k8sResources.pods)
 	fixPoliciesResources(k8sResources.networkPolicies)
 	// fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
@@ -51,7 +51,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	logging.Debug("environment created")
 
 	// check connections:
-	checkErr := testConnections(kubeDir, rc)
+	checkErr := testConnections(synTest.name, kubeDir, rc)
 	// clean environmaent, we must clean before we checks for errors:
 	cleanErr := runCmdFile(cleanEvironmentFile)
 	require.Nil(t, checkErr)
@@ -60,10 +60,14 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 }
 
 // /////////////////////////////////////////////////////////////////////
-func fixPodsResources(pods []*core.Pod) {
+func podTestName(testName, vmName string) string {
+	return strings.ToLower(fmt.Sprintf("%s-%s", testName, vmName))
+}
+
+func fixPodsResources(testName string, pods []*core.Pod) {
 	for i := range pods {
 		pods[i].Spec.Containers = []core.Container{{Name: "app-on-two-ports", Image: "ahmet/app-on-two-ports"}}
-		pods[i].Name = strings.ToLower(pods[i].Name)
+		pods[i].Name = podTestName(testName, pods[i].Name)
 	}
 }
 
@@ -110,10 +114,21 @@ func fixAdminPort(port *admin.AdminNetworkPolicyPort) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////
+func checkPodsExist(kubeDir string, pods []*core.Pod) bool {
+	testFile := path.Join(kubeDir, "checkPods.sh")
+	names := common.CustomStrSliceToStrings(pods, func(pod *core.Pod) string { return pod.Name })
+	ctl := kubeCTLFile{}
+	ctl.testPodsExist(names)
+	ctl.createCmdFile(testFile)
+	return runCmdFile(testFile) == nil
+}
+
 func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
 	ctl := kubeCTLFile{}
 	ctl.clean()
-	ctl.applyResourceFile(path.Join(k8sDir, "pods.yaml"))
+	if !checkPodsExist(k8sDir, pods) {
+		ctl.applyResourceFile(path.Join(k8sDir, "pods.yaml"))
+	}
 	for i := range pods {
 		ctl.exposePod(pods[i].Name)
 	}
@@ -170,7 +185,7 @@ func (test *connTest) run() {
 	}
 }
 
-func testConnections(kubeDir string, rc *collector.ResourcesContainerModel) error {
+func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerModel) error {
 	connTestFile := path.Join(kubeDir, "connTest.sh")
 	connReportFile := path.Join(kubeDir, "connTestReport.txt")
 	// create test generic file:
@@ -190,8 +205,8 @@ func testConnections(kubeDir string, rc *collector.ResourcesContainerModel) erro
 		for dst, conn := range dsts {
 			test := &connTest{
 				connTestFile: connTestFile,
-				src:          strings.ToLower(src.Name()),
-				dst:          strings.ToLower(dst.Name()),
+				src:          podTestName(testName, src.Name()),
+				dst:          podTestName(testName, dst.Name()),
 				allowed:      !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
 			}
 			tests = append(tests, test)
@@ -232,7 +247,7 @@ func (ctl *kubeCTLFile) clean() {
 	ctl.addCmd("kubectl delete networkpolicy --all")
 	ctl.addCmd("kubectl delete adminnetworkpolicies --all")
 	ctl.addCmd("kubectl delete service --all")
-	ctl.addCmd("kubectl delete pods --all")
+	// ctl.addCmd("kubectl delete pods --all")
 
 }
 func (ctl *kubeCTLFile) exposePod(name string) {
@@ -249,6 +264,10 @@ func (ctl *kubeCTLFile) deletePod(name string) {
 }
 func (ctl *kubeCTLFile) testPodsConnection() {
 	ctl.addCmd("kubectl exec ${1} -- wget -qO- --timeout=2 http://${2}-service:5001/metrics")
+	ctl.addCmd("exit $?")
+}
+func (ctl *kubeCTLFile) testPodsExist(names []string) {
+	ctl.addCmd("kubectl get pods " + strings.Join(names, " "))
 	ctl.addCmd("exit $?")
 }
 func (ctl *kubeCTLFile) createCmdFile(fileName string) error {
