@@ -128,6 +128,12 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
+		exData:          &tests.ExampleHogwartsSimplerNonSymInOut,
+		synthesizeAdmin: true,
+		noHint:          false,
+	},
 }
 
 var groupsByExprTests = []synthesisTest{

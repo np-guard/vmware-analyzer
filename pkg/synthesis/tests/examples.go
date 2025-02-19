@@ -470,15 +470,16 @@ var disjointHousesAndFunctionality = [][]string{
 	{sly, huf, gry, dum},
 	{web, app, db}}
 
+var simpleHogwartsGroups = map[string][]string{
+	sly: {slyWeb, slyApp},
+	gry: {gryWeb, gryApp},
+	web: {slyWeb, gryWeb},
+	app: {slyApp, gryApp}}
+
 var ExampleHogwartsSimpler = ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
-		GroupsByVMs: map[string][]string{
-			sly: {slyWeb, slyApp},
-			gry: {gryWeb, gryApp},
-			web: {slyWeb, gryWeb},
-			app: {slyApp, gryApp},
-		},
+		GroupsByVMs: simpleHogwartsGroups,
 		Policies: []data.Category{
 			{
 				Name:         "Gryffindor-to-Gryffindor-allow",
@@ -920,4 +921,119 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 			},
 		},
 	}
+}
+
+var ExampleHogwartsSimplerNonSymInOut = ExampleSynthesis{
+	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
+		gryWeb, gryApp, gryDB},
+		GroupsByVMs: simpleHogwartsGroups,
+		Policies: []data.Category{
+			{
+				Name:         "Gryffindor-to-Gryffindor-allow",
+				CategoryType: environment,
+				Rules: []data.Rule{
+					{
+						Name:      "allow-Gryffindor-to-Gryffindor-in",
+						ID:        10218,
+						Source:    gry,
+						Dest:      gry,
+						Action:    data.JumpToApp,
+						Conn:      netset.AllTransports(),
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "allow-Gryffindor-to-Gryffindor-out",
+						ID:        10219,
+						Source:    gry,
+						Dest:      gry,
+						Action:    data.JumpToApp,
+						Conn:      netset.AllTCPTransport(),
+						Direction: string(nsx.RuleDirectionOUT),
+					},
+				},
+			},
+			{
+				Name:         "Slytherin-to-Slytherin-allow",
+				CategoryType: environment,
+				Rules: []data.Rule{
+					{
+						Name:      "allow-Slytherin-to-Slytherin-in",
+						ID:        10220,
+						Source:    sly,
+						Dest:      sly,
+						Action:    data.JumpToApp,
+						Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "allow-Slytherin-to-Slytherin-out",
+						ID:        10221,
+						Source:    sly,
+						Dest:      sly,
+						Action:    data.JumpToApp,
+						Conn:      netset.AllUDPTransport(),
+						Direction: string(nsx.RuleDirectionOUT),
+					},
+					{
+						Name:     "default-deny-env",
+						ID:       10231,
+						Source:   anyStr,
+						Dest:     anyStr,
+						Services: []string{anyStr},
+						Action:   data.Drop,
+					},
+				},
+			},
+			{
+				Name:         "Intra-App-Policy",
+				CategoryType: application,
+				Rules: []data.Rule{
+					{
+						Name:      "Client-Access-in",
+						ID:        11000,
+						Source:    anyStr,
+						Dest:      web,
+						Action:    data.Allow,
+						Conn:      netset.AllTransports(),
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "Client-Access-out",
+						ID:        11001,
+						Source:    anyStr,
+						Dest:      web,
+						Action:    data.Allow,
+						Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+						Direction: string(nsx.RuleDirectionOUT),
+					},
+					{
+						Name:      "Web-To-App-Access-in",
+						ID:        11002,
+						Source:    web,
+						Dest:      app,
+						Action:    data.Allow,
+						Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "Web-To-App-Access-out",
+						ID:        11004,
+						Source:    web,
+						Dest:      app,
+						Action:    data.Allow,
+						Conn:      netset.AllTCPTransport(),
+						Direction: string(nsx.RuleDirectionOUT),
+					},
+				},
+			},
+			{
+				Name:         defaultL3,
+				CategoryType: application,
+				Rules: []data.Rule{
+					data.DefaultDenyRule(denyRuleIDEnv),
+				},
+			},
+		},
+	},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
