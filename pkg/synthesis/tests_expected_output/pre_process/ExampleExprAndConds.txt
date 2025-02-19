@@ -1,4 +1,4 @@
-category: Application
+category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Action |Src |Dst                              |Connection
