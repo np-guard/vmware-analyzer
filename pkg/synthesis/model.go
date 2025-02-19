@@ -97,10 +97,9 @@ type Segments map[string]*collector.Segment
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	var strArray []string
 	strArray = append(strArray)
-	adminPolicyStr := strAdminPolicy(abstractModel.policy[0], options)
-	_ = adminPolicyStr
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroupsStr(abstractModel.epToGroups, options.Color) + strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
+		strGroupsStr(abstractModel.epToGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
+		strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
 }
 
 func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
