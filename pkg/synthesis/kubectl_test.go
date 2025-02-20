@@ -9,17 +9,18 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	core "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/models/pkg/netset"
+
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/stretchr/testify/require"
 )
 
 // This test is creating pods and policies and check the connections, using kubectl API.
@@ -281,6 +282,7 @@ func (ctl *kubeCTLFile) createCmdFile(fileName string) error {
 
 // ////////////////////////////////////////////////////////////////////////
 func runCmdFile(fileName string, arg ...string) error {
+	//nolint:gosec //its a save run
 	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()
 }
 func hasKubectlExec() bool {
