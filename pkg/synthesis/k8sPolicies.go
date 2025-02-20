@@ -74,6 +74,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	}
 }
 
+// //////////////////////////////////////////////////////////////////////////////////////////
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []networking.NetworkPolicyPort, inbound bool,
 	description, nsxRuleID string) {
@@ -116,6 +117,7 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
 }
 
+// //////////////////////////////////////////////////////////////////////////////////////////
 var namespaceNameKey = path.Join("kubernetes.io", meta.ObjectNameField)
 var defaultNamespaceSelector = meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}
 
@@ -126,6 +128,7 @@ func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *met
 	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector, NamespaceSelector: defaultNamespaceSelector}
 	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector)
 }
+
 func (policies *k8sPolicies) setAdminNetworkPolicy(
 	pol *admin.AdminNetworkPolicy, ports []admin.AdminNetworkPolicyPort,
 	inbound bool, action admin.AdminNetworkPolicyRuleAction,
@@ -163,6 +166,7 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
+// //////////////////////////////////////////////////////////////////////////////////////////
 const annotationDescription = "description"
 const annotationUID = "nsx-id"
 
