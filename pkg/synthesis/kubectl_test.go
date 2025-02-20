@@ -21,6 +21,12 @@ import (
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 )
 
+// This test is creating pods and policies and check the connections, using kubectl API.
+// The pods are created with a container that listen to TCP port 5000
+// The test is adjusted to this container:
+//   1. all TCP ports at the netpols are changed to tcp:5000
+//   2. connection between two pods is allowed iff the analyzed connection contains TCP
+
 func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	if !hasKubectlExec() {
 		return
@@ -31,17 +37,18 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	k8sDir := path.Join(kubeDir, k8sResourcesDir)
 	setEvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
 	cleanEvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
-	// create K8S k8sResources, and adjust them for the tests:
+	// create K8S k8sResources
 	k8sResources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
+	// adjust k8sResources for the tests:
 	fixPodsResources(synTest.name, k8sResources.pods)
 	fixPoliciesResources(k8sResources.networkPolicies)
 	fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
-	// run netpol-analizer:
+	// run netpol-analizer, for debugging:
 	require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
 
-	// create the kubectl files:
+	// create the kubectl bash files:
 	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))
 	require.Nil(t, createCleanEvironmentFile(cleanEvironmentFile, k8sResources.pods))
 
@@ -114,19 +121,11 @@ func fixAdminPort(port *admin.AdminNetworkPolicyPort) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////
-func checkPodsExist(kubeDir string, pods []*core.Pod) bool {
-	testFile := path.Join(kubeDir, "checkPods.sh")
-	names := common.CustomStrSliceToStrings(pods, func(pod *core.Pod) string { return pod.Name })
-	ctl := kubeCTLFile{}
-	ctl.testPodsExist(names)
-	ctl.createCmdFile(testFile)
-	return runCmdFile(testFile) == nil
-}
-
 func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
 	ctl := kubeCTLFile{}
 	ctl.clean()
 	if !checkPodsExist(k8sDir, pods) {
+		// to save time, we create the pods only if it is not exist:
 		ctl.applyResourceFile(path.Join(k8sDir, "pods.yaml"))
 	}
 	for i := range pods {
@@ -140,31 +139,81 @@ func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
 	return ctl.createCmdFile(fileName)
 }
 
+func checkPodsExist(kubeDir string, pods []*core.Pod) bool {
+	testFile := path.Join(kubeDir, "checkPods.sh")
+	names := common.CustomStrSliceToStrings(pods, func(pod *core.Pod) string { return pod.Name })
+	ctl := kubeCTLFile{}
+	ctl.testPodsExist(names)
+	ctl.createCmdFile(testFile)
+	return runCmdFile(testFile) == nil
+}
+
 func createCleanEvironmentFile(fileName string, pods []*core.Pod) error {
 	ctl := kubeCTLFile{}
 	ctl.clean()
-	// for i := range pods {
-	// 	ctl.deletePod(pods[i].Name)
-	// }
 	return ctl.createCmdFile(fileName)
 }
 
-// ////////////////////////////////////////////////////////////////////////////////////////
-
-func sliceCountFunc[v any](s []v, f func(v) bool) int {
-	c := 0
-	for _, e := range s {
-		if f(e) {
-			c++
+// ///////////////////////////////////////////////////////////////
+func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerModel) error {
+	connTestFile := path.Join(kubeDir, "connTest.sh")
+	connReportFile := path.Join(kubeDir, "connTestReport.txt")
+	// create one bash file for all tests:
+	createConnTestFile(connTestFile)
+	// get analized connectivity:
+	config, err := analyzer.ConfigFromResourcesContainer(rc, common.OutputParameters{})
+	if err != nil {
+		return err
+	}
+	connMap := config.AnalyzedConnectivity()
+	// iterate over the connMap, create test for each connection:
+	tests := []*connTest{}
+	for src, dsts := range connMap {
+		for dst, conn := range dsts {
+			test := &connTest{
+				connTestFile: connTestFile,
+				src:          podTestName(testName, src.Name()),
+				dst:          podTestName(testName, dst.Name()),
+				allowed:      !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
+			}
+			tests = append(tests, test)
 		}
 	}
-	return c
+	// run the tests, concurently, to save time:
+	var wg sync.WaitGroup
+	for _, test := range tests {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			test.run()
+		}()
+	}
+	wg.Wait()
+
+	// summarize the result into a file:
+	nConnected := common.SliceCountFunc(tests, func(t *connTest) bool { return !t.connectResult })
+	logging.Debugf("checked %d connections, %d succeed to connect, see file %s for details", len(tests), nConnected, connReportFile)
+	err = common.WriteToFile(connReportFile, common.JoinStringifiedSlice(tests, "\n"))
+	nErrors := common.SliceCountFunc(tests, func(t *connTest) bool { return !t.ok() })
+	if nErrors > 0 {
+		errorLine := fmt.Sprintf("found %d connections missmatches, see file %s for details", nErrors, connReportFile)
+		return errors.New(errorLine)
+	}
+	return err
 }
 
+func createConnTestFile(connTestFile string) {
+	ctl := kubeCTLFile{}
+	ctl.testPodsConnection()
+	ctl.createCmdFile(connTestFile)
+}
+
+// ////////////////////////////////////////////////////////////////////////////////////////
+// a struct repersent one connction:
 type connTest struct {
-	connTestFile  string
-	allowed       bool
-	connectResult bool
+	connTestFile  string // the bash file to test with
+	allowed       bool   // is the connection allowed by analysis
+	connectResult bool   // doed kubectl succeed to connect
 	src, dst      string
 }
 
@@ -184,55 +233,6 @@ func (test *connTest) run() {
 	if !test.ok() {
 		logging.Warn(test.String())
 	}
-}
-
-func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerModel) error {
-	connTestFile := path.Join(kubeDir, "connTest.sh")
-	connReportFile := path.Join(kubeDir, "connTestReport.txt")
-	// create test generic file:
-	ctl := kubeCTLFile{}
-	ctl.testPodsConnection()
-	ctl.createCmdFile(connTestFile)
-	// get analized connectivity:
-	parser := analyzer.NewNSXConfigParserFromResourcesContainer(rc)
-	if err := parser.RunParser(); err != nil {
-		return err
-	}
-	parser.GetConfig().ComputeConnectivity(nil)
-	connMap := parser.GetConfig().AnalyzedConnectivity()
-	// iterate over the connections, create test for each connection:
-	tests := []*connTest{}
-	for src, dsts := range connMap {
-		for dst, conn := range dsts {
-			test := &connTest{
-				connTestFile: connTestFile,
-				src:          podTestName(testName, src.Name()),
-				dst:          podTestName(testName, dst.Name()),
-				allowed:      !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
-			}
-			tests = append(tests, test)
-		}
-	}
-	// run the tests:
-	var wg sync.WaitGroup
-	for _, test := range tests {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			test.run()
-		}()
-	}
-	wg.Wait()
-
-	// summarize the result:
-	logging.Debugf("checked %d connections, see file %s for details", len(tests), connReportFile)
-	err := common.WriteToFile(connReportFile, common.JoinStringifiedSlice(tests, "\n"))
-	nErrors := sliceCountFunc(tests, func(t *connTest) bool { return !t.ok() })
-	if nErrors > 0 {
-		errorLine := fmt.Sprintf("found %d connections missmatches, see file %s for details", nErrors, connReportFile)
-		return errors.New(errorLine)
-	}
-	return err
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////////
