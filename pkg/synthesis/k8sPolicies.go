@@ -97,7 +97,7 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
-		ruleID := noNSXRuleID
+	ruleID := noNSXRuleID
 	if defaultRule != nil {
 		ruleID = defaultRule.RuleIDStr()
 	}
