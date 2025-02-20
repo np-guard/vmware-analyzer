@@ -15,12 +15,12 @@ Slytherin-And-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) AND (Tag Of Virt
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src |Dst                              |Connection
-0                         |(*) |(tag = Slytherin and tag != DB)  |All Connections
-1                         |(*) |(tag = Gryffindor and tag != DB) |All Connections
+Original allow rule priority |Rule id |Src |Dst                              |Connection
+0                            |1925    |(*) |(tag = Slytherin and tag != DB)  |All Connections
+1                            |1927    |(*) |(tag = Gryffindor and tag != DB) |All Connections
 
 outbound rules
-original allow rule index |Src                |Dst                              |Connection
-0                         |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
-1                         |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
+Original allow rule priority |Rule id |Src                |Dst                              |Connection
+0                            |1926    |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
+1                            |1928    |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
 

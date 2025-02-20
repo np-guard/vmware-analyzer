@@ -15,24 +15,24 @@ Slytherin-And-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) AND (Tag Of Virt
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
-Priority |Action |Src |Dst                              |Connection
-0        |allow  |(*) |(tag = Slytherin and tag != DB)  |All Connections
-1        |allow  |(*) |(tag = Gryffindor and tag != DB) |All Connections
-2        |deny   |(*) |(*)                              |All Connections
+Priority |Rule Id |Action |Src |Dst                              |Connection
+0        |1925    |allow  |(*) |(tag = Slytherin and tag != DB)  |All Connections
+1        |1927    |allow  |(*) |(tag = Gryffindor and tag != DB) |All Connections
+2        |10300   |deny   |(*) |(*)                              |All Connections
 
 outbound rules
-Priority |Action |Src                |Dst                              |Connection
-0        |allow  |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
-1        |allow  |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
-2        |deny   |(*)                |(*)                              |All Connections
+Priority |Rule Id |Action |Src                |Dst                              |Connection
+0        |1926    |allow  |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
+1        |1928    |allow  |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
+2        |10300   |deny   |(*)                |(*)                              |All Connections
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src |Dst |Connection
+Original allow rule priority |Rule id |Src |Dst |Connection
 
 
 outbound rules
-original allow rule index |Src |Dst |Connection
+Original allow rule priority |Rule id |Src |Dst |Connection
 
 

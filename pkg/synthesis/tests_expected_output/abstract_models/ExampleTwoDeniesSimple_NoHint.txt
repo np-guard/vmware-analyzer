@@ -15,12 +15,12 @@ Slytherin   |           |Slytherin
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src                  |Dst                                             |Connection
-0                         |(group = Slytherin)  |(group != Dumbledore1 and group != Dumbledore2) |All Connections
-1                         |(group = Gryffindor) |(group != Dumbledore1 and group != Dumbledore2) |All Connections
+Original allow rule priority |Rule id |Src                  |Dst                                             |Connection
+0                            |3       |(group = Slytherin)  |(group != Dumbledore1 and group != Dumbledore2) |All Connections
+1                            |4       |(group = Gryffindor) |(group != Dumbledore1 and group != Dumbledore2) |All Connections
 
 outbound rules
-original allow rule index |Src                  |Dst                                             |Connection
-0                         |(group = Slytherin)  |(group != Dumbledore1 and group != Dumbledore2) |All Connections
-1                         |(group = Gryffindor) |(group != Dumbledore1 and group != Dumbledore2) |All Connections
+Original allow rule priority |Rule id |Src                  |Dst                                             |Connection
+0                            |3       |(group = Slytherin)  |(group != Dumbledore1 and group != Dumbledore2) |All Connections
+1                            |4       |(group = Gryffindor) |(group != Dumbledore1 and group != Dumbledore2) |All Connections
 

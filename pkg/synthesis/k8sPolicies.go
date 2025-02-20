@@ -2,6 +2,7 @@ package synthesis
 
 import (
 	"fmt"
+	"path"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +33,7 @@ type k8sPolicies struct {
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	if createDNSPolicy {
 		if model.synthesizeAdmin {
-			policies.addDNSAllowAdminNetworkPolicies()
+			policies.addDNSAllowAdminNetworkPolicy()
 		} else {
 			policies.addDNSAllowNetworkPolicy()
 		}
@@ -114,12 +115,14 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
 }
+var namespaceNameKey = path.Join("kubernetes.io",meta.ObjectNameField)
+var defaultNamespaceSelector = meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
-	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector}
-	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector}
+	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector, NamespaceSelector: defaultNamespaceSelector}
+	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector, NamespaceSelector: defaultNamespaceSelector}
 	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector)
 }
 func (policies *k8sPolicies) setAdminNetworkPolicy(
@@ -142,7 +145,7 @@ func (policies *k8sPolicies) setAdminNetworkPolicy(
 	}
 }
 
-func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicies() {
+func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 	dnsSelector := &admin.NamespacedPod{
 		PodSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{
 			Key:      dnsLabelKey,
@@ -151,16 +154,12 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicies() {
 		}},
 		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
 	}
-	allSelector := &admin.NamespacedPod{}
+	allSelector := &admin.NamespacedPod{NamespaceSelector:defaultNamespaceSelector}
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPol := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
 		"egress-dns-rule-id")
 	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
-	ingressPol := newAdminNetworkPolicy("ingress-dns-policy",
-		"Admin Network Policy To Allow Ingress Access To DNS Server",
-		"ingress-dns-rule-id")
-	policies.setAdminNetworkPolicy(ingressPol, ports, true, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
 const annotationDescription = "description"
