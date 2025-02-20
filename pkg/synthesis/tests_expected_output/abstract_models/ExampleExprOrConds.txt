@@ -15,14 +15,14 @@ Slytherin-Or-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) OR (Tag Of Virtua
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src |Dst                |Connection
-0                         |(*) |(tag != DB)        |All Connections
-0                         |(*) |(tag = Slytherin)  |All Connections
-1                         |(*) |(tag = Gryffindor) |All Connections
+original allow rule priority |original rule id |Src |Dst                |Connection
+0                            |1925             |(*) |(tag != DB)        |All Connections
+0                            |1925             |(*) |(tag = Slytherin)  |All Connections
+1                            |1927             |(*) |(tag = Gryffindor) |All Connections
 
 outbound rules
-original allow rule index |Src                |Dst                |Connection
-0                         |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
-1                         |(*)                |(tag != DB)        |All Connections
-1                         |(*)                |(tag = Hufflepuff) |All Connections
+original allow rule priority |original rule id |Src                |Dst                |Connection
+0                            |1926             |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
+1                            |1928             |(*)                |(tag != DB)        |All Connections
+1                            |1928             |(*)                |(tag = Hufflepuff) |All Connections
 

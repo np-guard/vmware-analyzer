@@ -1,36 +1,36 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
-1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |UDP dst-ports: 300-320
-2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-3        |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
-4        |deny                |(*)                  |(*)                  |All Connections
+Priority |Origin Id |Action              |Src                  |Dst                  |Connection
+0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |10219     |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |UDP dst-ports: 300-320
+2        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+3        |10221     |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
+4        |10300     |deny                |(*)                  |(*)                  |All Connections
 
 
 symbolic outbound rules:
-Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
-1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-2        |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
-3        |deny                |(*)                  |(*)                  |All Connections
+Priority |Origin Id |Action              |Src                  |Dst                  |Connection
+0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+2        |10221     |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
+3        |10300     |deny                |(*)                  |(*)                  |All Connections
 
 
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action |Src           |Dst           |Connection
-0        |allow  |(*)           |(group = Web) |All Connections
-1        |allow  |(group = Web) |(group = App) |All Connections
-2        |allow  |(group = App) |(group = DB)  |All Connections
-3        |deny   |(*)           |(*)           |All Connections
+Priority |Origin Id |Action |Src           |Dst           |Connection
+0        |10400     |allow  |(*)           |(group = Web) |All Connections
+1        |10401     |allow  |(group = Web) |(group = App) |All Connections
+2        |10405     |allow  |(group = App) |(group = DB)  |All Connections
+3        |2144      |deny   |(*)           |(*)           |All Connections
 
 
 symbolic outbound rules:
-Priority |Action |Src           |Dst           |Connection
-0        |allow  |(*)           |(group = Web) |All Connections
-1        |allow  |(group = Web) |(group = App) |All Connections
-2        |allow  |(group = App) |(group = DB)  |All Connections
-3        |deny   |(*)           |(*)           |All Connections
+Priority |Origin Id |Action |Src           |Dst           |Connection
+0        |10400     |allow  |(*)           |(group = Web) |All Connections
+1        |10401     |allow  |(group = Web) |(group = App) |All Connections
+2        |10405     |allow  |(group = App) |(group = DB)  |All Connections
+3        |2144      |deny   |(*)           |(*)           |All Connections
 

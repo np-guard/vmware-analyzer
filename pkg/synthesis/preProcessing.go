@@ -2,8 +2,6 @@ package synthesis
 
 import (
 	"fmt"
-	"strconv"
-
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -50,15 +48,16 @@ func (policy symbolicPolicy) strOrigSymbolicPolicy(printOnlyAdmin, color bool) s
 }
 
 func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) string {
-	header := []string{"Priority", "Action", "Src", "Dst", "Connection"}
+	header := []string{"Priority", "Origin Id", "Action", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	for i, rule := range rules {
 		for _, path := range *rule.origSymbolicPaths {
 			if printOnlyAdmin && rule.origRuleCategory >= collector.MinNonAdminCategory() {
 				continue
 			}
-			newLine := append([]string{strconv.Itoa(i), string(rule.origRule.Action)},
-				path.TableString()...)
+			linePrefix := []string{fmt.Sprintf("%v", i), fmt.Sprintf("%v", rule.origRule.RuleID),
+				fmt.Sprintf("%v", rule.origRule.Action)}
+			newLine := append(linePrefix, path.TableString()...)
 			lines = append(lines, newLine)
 		}
 	}

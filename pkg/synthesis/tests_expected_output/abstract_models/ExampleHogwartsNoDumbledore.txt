@@ -15,26 +15,26 @@ Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src                                  |Dst                                  |Connection
-0                         |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
-0                         |(group = Hufflepuff)                 |(group = Web and group = Hufflepuff) |All Connections
-0                         |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
-1                         |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
-1                         |(group = Web and group = Hufflepuff) |(group = App and group = Hufflepuff) |All Connections
-1                         |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
-2                         |(group = App and group = Gryffindor) |(group = DB and group = Gryffindor)  |All Connections
-2                         |(group = App and group = Hufflepuff) |(group = DB and group = Hufflepuff)  |All Connections
-2                         |(group = App and group = Slytherin)  |(group = DB and group = Slytherin)   |All Connections
+original allow rule priority |original rule id |Src                                  |Dst                                  |Connection
+0                            |9195             |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
+0                            |9195             |(group = Hufflepuff)                 |(group = Web and group = Hufflepuff) |All Connections
+0                            |9195             |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
+1                            |9196             |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
+1                            |9196             |(group = Web and group = Hufflepuff) |(group = App and group = Hufflepuff) |All Connections
+1                            |9196             |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+2                            |9197             |(group = App and group = Gryffindor) |(group = DB and group = Gryffindor)  |All Connections
+2                            |9197             |(group = App and group = Hufflepuff) |(group = DB and group = Hufflepuff)  |All Connections
+2                            |9197             |(group = App and group = Slytherin)  |(group = DB and group = Slytherin)   |All Connections
 
 outbound rules
-original allow rule index |Src                                  |Dst                                  |Connection
-0                         |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
-0                         |(group = Hufflepuff)                 |(group = Web and group = Hufflepuff) |All Connections
-0                         |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
-1                         |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
-1                         |(group = Web and group = Hufflepuff) |(group = App and group = Hufflepuff) |All Connections
-1                         |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
-2                         |(group = App and group = Gryffindor) |(group = DB and group = Gryffindor)  |All Connections
-2                         |(group = App and group = Hufflepuff) |(group = DB and group = Hufflepuff)  |All Connections
-2                         |(group = App and group = Slytherin)  |(group = DB and group = Slytherin)   |All Connections
+original allow rule priority |original rule id |Src                                  |Dst                                  |Connection
+0                            |9195             |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |All Connections
+0                            |9195             |(group = Hufflepuff)                 |(group = Web and group = Hufflepuff) |All Connections
+0                            |9195             |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
+1                            |9196             |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |All Connections
+1                            |9196             |(group = Web and group = Hufflepuff) |(group = App and group = Hufflepuff) |All Connections
+1                            |9196             |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+2                            |9197             |(group = App and group = Gryffindor) |(group = DB and group = Gryffindor)  |All Connections
+2                            |9197             |(group = App and group = Hufflepuff) |(group = DB and group = Hufflepuff)  |All Connections
+2                            |9197             |(group = App and group = Slytherin)  |(group = DB and group = Slytherin)   |All Connections
 

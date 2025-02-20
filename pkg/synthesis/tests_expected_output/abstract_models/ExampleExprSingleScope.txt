@@ -13,16 +13,16 @@ Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |Slytherin
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule index |Src                |Dst                 |Connection
-0                         |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
-1                         |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
-2                         |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
-3                         |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
+original allow rule priority |original rule id |Src                |Dst                 |Connection
+0                            |1926             |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
+1                            |1928             |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
+2                            |1930             |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
+3                            |1932             |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
 
 outbound rules
-original allow rule index |Src                |Dst                 |Connection
-0                         |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
-1                         |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
-2                         |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
-3                         |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
+original allow rule priority |original rule id |Src                |Dst                 |Connection
+0                            |1926             |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
+1                            |1928             |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
+2                            |1930             |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
+3                            |1932             |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
 

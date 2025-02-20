@@ -1,35 +1,35 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
-2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-3        |deny                |(*)                  |(*)                  |All Connections
+Priority |Origin Id |Action              |Src                  |Dst                  |Connection
+0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |10219     |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
+2        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+3        |10230     |deny                |(*)                  |(*)                  |All Connections
 
 
 symbolic outbound rules:
-Priority |Action              |Src                  |Dst                  |Connection
-0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
-2        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-3        |deny                |(*)                  |(*)                  |All Connections
+Priority |Origin Id |Action              |Src                  |Dst                  |Connection
+0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |10219     |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |All Connections
+2        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+3        |10230     |deny                |(*)                  |(*)                  |All Connections
 
 
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action |Src           |Dst           |Connection
-0        |allow  |(*)           |(group = Web) |All Connections
-1        |allow  |(group = Web) |(group = App) |All Connections
-2        |allow  |(group = App) |(group = DB)  |All Connections
-3        |deny   |(*)           |(*)           |All Connections
+Priority |Origin Id |Action |Src           |Dst           |Connection
+0        |9195      |allow  |(*)           |(group = Web) |All Connections
+1        |9196      |allow  |(group = Web) |(group = App) |All Connections
+2        |9197      |allow  |(group = App) |(group = DB)  |All Connections
+3        |2144      |deny   |(*)           |(*)           |All Connections
 
 
 symbolic outbound rules:
-Priority |Action |Src           |Dst           |Connection
-0        |allow  |(*)           |(group = Web) |All Connections
-1        |allow  |(group = Web) |(group = App) |All Connections
-2        |allow  |(group = App) |(group = DB)  |All Connections
-3        |deny   |(*)           |(*)           |All Connections
+Priority |Origin Id |Action |Src           |Dst           |Connection
+0        |9195      |allow  |(*)           |(group = Web) |All Connections
+1        |9196      |allow  |(group = Web) |(group = App) |All Connections
+2        |9197      |allow  |(group = App) |(group = DB)  |All Connections
+3        |2144      |deny   |(*)           |(*)           |All Connections
 
