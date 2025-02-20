@@ -112,19 +112,6 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
 }
 
-func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicies() {
-	dnsSelector := &admin.NamespacedPod{
-		PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
-		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
-	}
-	allSelector := &admin.NamespacedPod{}
-	ports := connToAdminPolicyPort(dnsPortConn)
-	egressPol := newAdminNetworkPolicy("egress-dns-policy", "Admin Network Policy To Allow Egress Access To DNS Server", "egress-dns-rule-id")
-	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
-	ingressPol := newAdminNetworkPolicy("ingress-dns-policy", "Admin Network Policy To Allow Ingress Access To DNS Server", "ingress-dns-rule-id")
-	policies.setAdminNetworkPolicy(ingressPol, ports, true, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
-}
-
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
@@ -150,6 +137,19 @@ func (policies *k8sPolicies) setAdminNetworkPolicy(
 		pol.Spec.Egress = rules
 		pol.Spec.Subject = admin.AdminNetworkPolicySubject{Pods: srcPodsSelector}
 	}
+}
+
+func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicies() {
+	dnsSelector := &admin.NamespacedPod{
+		PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
+		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
+	}
+	allSelector := &admin.NamespacedPod{}
+	ports := connToAdminPolicyPort(dnsPortConn)
+	egressPol := newAdminNetworkPolicy("egress-dns-policy", "Admin Network Policy To Allow Egress Access To DNS Server", "egress-dns-rule-id")
+	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
+	ingressPol := newAdminNetworkPolicy("ingress-dns-policy", "Admin Network Policy To Allow Ingress Access To DNS Server", "ingress-dns-rule-id")
+	policies.setAdminNetworkPolicy(ingressPol, ports, true, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
 const annotationDescription = "description"
