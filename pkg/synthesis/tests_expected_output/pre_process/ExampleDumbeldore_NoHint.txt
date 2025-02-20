@@ -1,17 +1,17 @@
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action |Src                       |Dst                 |Connection
-0        |allow  |(group = DumbledoreAll)   |(*)                 |All Connections
-1        |deny   |(group = DumbledoreNoSly) |(group = Slytherin) |All Connections
-2        |allow  |(group = DumbledoreNoSly) |(*)                 |All Connections
-3        |deny   |(*)                       |(*)                 |All Connections
+Priority |Rule Id |Action |Src                       |Dst                 |Connection
+0        |1925    |allow  |(group = DumbledoreAll)   |(*)                 |All Connections
+1        |1926    |deny   |(group = DumbledoreNoSly) |(group = Slytherin) |All Connections
+2        |1927    |allow  |(group = DumbledoreNoSly) |(*)                 |All Connections
+3        |2144    |deny   |(*)                       |(*)                 |All Connections
 
 
 symbolic outbound rules:
-Priority |Action |Src                       |Dst                 |Connection
-0        |allow  |(group = DumbledoreAll)   |(*)                 |All Connections
-1        |deny   |(group = DumbledoreNoSly) |(group = Slytherin) |All Connections
-2        |allow  |(group = DumbledoreNoSly) |(*)                 |All Connections
-3        |deny   |(*)                       |(*)                 |All Connections
+Priority |Rule Id |Action |Src                       |Dst                 |Connection
+0        |1925    |allow  |(group = DumbledoreAll)   |(*)                 |All Connections
+1        |1926    |deny   |(group = DumbledoreNoSly) |(group = Slytherin) |All Connections
+2        |1927    |allow  |(group = DumbledoreNoSly) |(*)                 |All Connections
+3        |2144    |deny   |(*)                       |(*)                 |All Connections
 

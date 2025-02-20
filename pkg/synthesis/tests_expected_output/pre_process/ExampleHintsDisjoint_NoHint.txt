@@ -1,19 +1,19 @@
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action |Src                   |Dst                  |Connection
-0        |deny   |(group = Dumbledore1) |(group = Slytherin)  |All Connections
-1        |deny   |(group = Dumbledore2) |(group = Gryffindor) |All Connections
-2        |allow  |(group = Dumbledore1) |(*)                  |All Connections
-3        |allow  |(group = Dumbledore2) |(*)                  |All Connections
-4        |deny   |(*)                   |(*)                  |All Connections
+Priority |Rule Id |Action |Src                   |Dst                  |Connection
+0        |1925    |deny   |(group = Dumbledore1) |(group = Slytherin)  |All Connections
+1        |1926    |deny   |(group = Dumbledore2) |(group = Gryffindor) |All Connections
+2        |1927    |allow  |(group = Dumbledore1) |(*)                  |All Connections
+3        |1928    |allow  |(group = Dumbledore2) |(*)                  |All Connections
+4        |2144    |deny   |(*)                   |(*)                  |All Connections
 
 
 symbolic outbound rules:
-Priority |Action |Src                   |Dst                  |Connection
-0        |deny   |(group = Dumbledore1) |(group = Slytherin)  |All Connections
-1        |deny   |(group = Dumbledore2) |(group = Gryffindor) |All Connections
-2        |allow  |(group = Dumbledore1) |(*)                  |All Connections
-3        |allow  |(group = Dumbledore2) |(*)                  |All Connections
-4        |deny   |(*)                   |(*)                  |All Connections
+Priority |Rule Id |Action |Src                   |Dst                  |Connection
+0        |1925    |deny   |(group = Dumbledore1) |(group = Slytherin)  |All Connections
+1        |1926    |deny   |(group = Dumbledore2) |(group = Gryffindor) |All Connections
+2        |1927    |allow  |(group = Dumbledore1) |(*)                  |All Connections
+3        |1928    |allow  |(group = Dumbledore2) |(*)                  |All Connections
+4        |2144    |deny   |(*)                   |(*)                  |All Connections
 

@@ -1,8 +1,8 @@
 package synthesis
 
 import (
+	"fmt"
 	"slices"
-	"strconv"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
@@ -168,14 +168,15 @@ func strAllowOnlyPolicy(policy *symbolicPolicy, color bool) string {
 }
 
 func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
-	header := []string{"original allow rule index", "Src", "Dst", "Connection"}
+	header := []string{"Original allow rule priority", "Rule id", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	for i, rule := range rules {
 		if rule.optimizedAllowOnlyPaths == nil {
 			continue
 		}
 		for _, path := range rule.optimizedAllowOnlyPaths {
-			newLine := append([]string{strconv.Itoa(i)}, path.TableString()...)
+			newLine := []string{fmt.Sprintf("%v", i), rule.origRule.RuleIDStr()}
+			newLine = append(newLine, path.TableString()...)
 			lines = append(lines, newLine)
 		}
 	}
