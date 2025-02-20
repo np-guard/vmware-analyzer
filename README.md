@@ -118,7 +118,7 @@ spec:
         - Egress
 ```
 
-
+More details [here](README_Synthesis.md)
 
 
 ## NSX Supported API versions and resources

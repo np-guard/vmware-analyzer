@@ -50,7 +50,7 @@ const (
 	outputFileHelp              = "file path to store analysis results"
 	explainHelp                 = "flag to explain connectivity output with rules explanations per allowed/denied connections (default false)"
 	synthesisDumpDirHelp        = "run synthesis; specify directory path to store k8s synthesis results"
-	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis (default false)"
+	synthesizeAdminPoliciesHelp = "synthesize category environment into admin network policies (which included deny, pass and priority) (default false)"
 	outputFormatHelp            = "output format; must be one of "
 	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
