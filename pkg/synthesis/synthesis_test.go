@@ -254,6 +254,7 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 	runPreprocessing(synTest, t, rc)
 	runConvertToAbstract(synTest, t, rc)
 	runK8SSynthesis(synTest, t, rc)
+	runK8STraceFlow(synTest, t, rc)
 	runCompareNSXConnectivity(synTest, t, rc)
 }
 

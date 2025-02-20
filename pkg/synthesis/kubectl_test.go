@@ -68,7 +68,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 // /////////////////////////////////////////////////////////////////////
 func podTestName(testName, vmName string) string {
-	return strings.ToLower(fmt.Sprintf("%s-%s", testName, vmName))
+	return strings.ReplaceAll(strings.ToLower(fmt.Sprintf("%s-%s", testName, vmName)), " ", "-")
 }
 
 func fixPodsResources(testName string, pods []*core.Pod) {
