@@ -30,7 +30,7 @@ import (
 //   2. connection between two pods is allowed iff the analyzed connection contains TCP
 
 func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	if !hasKubectlExec() {
+	if !hasKubectl() {
 		return
 	}
 	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
@@ -285,7 +285,6 @@ func runCmdFile(fileName string, arg ...string) error {
 	//nolint:gosec //its a save run
 	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()
 }
-func hasKubectlExec() bool {
-	_, err := exec.LookPath("kubectl")
-	return err == nil
+func hasKubectl() bool {
+	return exec.Command("kubectl", "get", "pods").Run() == nil
 }
