@@ -43,16 +43,20 @@ func convertRulesToSymbolicPaths(rules []*dfw.FwRule, category collector.DfwCate
 	return res
 }
 
-func (policy symbolicPolicy) string(color bool) string {
-	return fmt.Sprintf("symbolic inbound rules:\n%v\nsymbolic outbound rules:\n%v", strSymbolicRules(policy.inbound, color),
-		strSymbolicRules(policy.outbound, color))
+func (policy symbolicPolicy) strOrigSymbolicPolicy(printOnlyAdmin, color bool) string {
+	return fmt.Sprintf("symbolic inbound rules:\n%v\nsymbolic outbound rules:\n%v",
+		strOrigSymbolicRules(policy.inbound, printOnlyAdmin, color),
+		strOrigSymbolicRules(policy.outbound, printOnlyAdmin, color))
 }
 
-func strSymbolicRules(rules []*symbolicRule, color bool) string {
+func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) string {
 	header := []string{"Priority", "Action", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	for i, rule := range rules {
 		for _, path := range *rule.origSymbolicPaths {
+			if printOnlyAdmin && rule.origRuleCategory >= collector.MinNonAdminCategory() {
+				continue
+			}
 			newLine := append([]string{strconv.Itoa(i), string(rule.origRule.Action)},
 				path.TableString()...)
 			lines = append(lines, newLine)
@@ -61,7 +65,8 @@ func strSymbolicRules(rules []*symbolicRule, color bool) string {
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-// prints pre-processing symbolic rules by ordered category
+// prints pre-processing symbolic rules by ordered category;
+// with an option to print only the subset that will be synthesized to admin rules
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
 func printPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
 	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, color bool) string {
@@ -70,7 +75,8 @@ func printPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
 		if policy == nil {
 			return ""
 		}
-		return fmt.Sprintf("category: %s\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%s", c.Category.String(), policy.string(color))
+		return fmt.Sprintf("category: %s\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n%s", c.Category.String(),
+			policy.strOrigSymbolicPolicy(false, color))
 	}
 	return common.JoinCustomStrFuncSlice(categoriesSpecs, categoryToStr, common.NewLine)
 }

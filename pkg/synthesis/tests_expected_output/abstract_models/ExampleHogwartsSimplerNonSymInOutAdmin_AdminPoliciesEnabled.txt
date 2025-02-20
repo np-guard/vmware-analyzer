@@ -1,0 +1,38 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression |VM
+App        |           |Slytherin-App, Gryffindor-App
+Gryffindor |           |Gryffindor-Web, Gryffindor-App
+Slytherin  |           |Slytherin-Web, Slytherin-App
+Web        |           |Slytherin-Web, Gryffindor-Web
+
+Admin policy rules
+~~~~~~~~~~~~~~~~~~
+inbound rules
+Priority |Action              |Src                  |Dst                  |Connection
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |TCP,UDP
+2        |deny                |(*)                  |(*)                  |All Connections
+
+outbound rules
+Priority |Action              |Src                  |Dst                  |Connection
+0        |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |UDP
+2        |deny                |(*)                  |(*)                  |All Connections
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+original allow rule index |Src           |Dst           |Connection
+3                         |(*)           |(group = Web) |All Connections
+4                         |(group = Web) |(group = App) |TCP,UDP
+
+outbound rules
+original allow rule index |Src           |Dst           |Connection
+3                         |(*)           |(group = Web) |TCP,UDP
+4                         |(group = Web) |(group = App) |TCP
+

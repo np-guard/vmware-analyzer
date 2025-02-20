@@ -128,6 +128,12 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
+		exData:          &tests.ExampleHogwartsSimplerNonSymInOut,
+		synthesizeAdmin: true,
+		noHint:          false,
+	},
 }
 
 var groupsByExprTests = []synthesisTest{
@@ -150,6 +156,18 @@ var groupsByExprTests = []synthesisTest{
 		name:   "ExampleExprOrConds",
 		exData: &tests.ExampleExprOrConds,
 		noHint: false,
+	},
+	{
+		name:            "ExampleExprAndCondsAdmin",
+		exData:          &tests.ExampleExprAndConds,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
+	{
+		name:            "ExampleExprOrCondsAdmin",
+		exData:          &tests.ExampleExprOrConds,
+		noHint:          false,
+		synthesizeAdmin: true,
 	},
 }
 var liveNsxTest = synthesisTest{
@@ -286,7 +304,7 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 	require.Nil(t, err)
 	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	abstractModelStr := strAllowOnlyPolicy(abstractModel.policy[0], false)
+	abstractModelStr := strAbstractModel(abstractModel, synTest.options())
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
 	require.Nil(t, err)
