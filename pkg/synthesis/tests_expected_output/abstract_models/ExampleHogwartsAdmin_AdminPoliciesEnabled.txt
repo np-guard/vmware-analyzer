@@ -16,31 +16,31 @@ Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
-Priority |Origin Id |Action              |Src                  |Dst                  |Connection
-0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
-1        |10219     |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |UDP dst-ports: 300-320
-2        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-3        |10221     |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
-4        |10300     |deny                |(*)                  |(*)                  |All Connections
+Priority |Rule Id |Action              |Src                  |Dst                  |Connection
+0        |10218   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |10219   |jump_to_application |(group = Hufflepuff) |(group = Hufflepuff) |UDP dst-ports: 300-320
+2        |10220   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+3        |10221   |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
+4        |10300   |deny                |(*)                  |(*)                  |All Connections
 
 outbound rules
-Priority |Origin Id |Action              |Src                  |Dst                  |Connection
-0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
-1        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
-2        |10221     |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
-3        |10300     |deny                |(*)                  |(*)                  |All Connections
+Priority |Rule Id |Action              |Src                  |Dst                  |Connection
+0        |10218   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |10220   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
+2        |10221   |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
+3        |10300   |deny                |(*)                  |(*)                  |All Connections
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule priority |original rule id |Src           |Dst           |Connection
-5                            |10400            |(*)           |(group = Web) |All Connections
-6                            |10401            |(group = Web) |(group = App) |All Connections
-7                            |10405            |(group = App) |(group = DB)  |All Connections
+Original allow rule priority |Rule id |Src           |Dst           |Connection
+5                            |10400   |(*)           |(group = Web) |All Connections
+6                            |10401   |(group = Web) |(group = App) |All Connections
+7                            |10405   |(group = App) |(group = DB)  |All Connections
 
 outbound rules
-original allow rule priority |original rule id |Src           |Dst           |Connection
-4                            |10400            |(*)           |(group = Web) |All Connections
-5                            |10401            |(group = Web) |(group = App) |All Connections
-6                            |10405            |(group = App) |(group = DB)  |All Connections
+Original allow rule priority |Rule id |Src           |Dst           |Connection
+4                            |10400   |(*)           |(group = Web) |All Connections
+5                            |10401   |(group = Web) |(group = App) |All Connections
+6                            |10405   |(group = App) |(group = DB)  |All Connections
 

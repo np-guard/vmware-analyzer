@@ -13,14 +13,14 @@ Web        |           |Slytherin-Web, Gryffindor-Web
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule priority |original rule id |Src                                 |Dst                                  |Connection
-0                            |9195             |(group = Gryffindor)                |(group = Web and group = Gryffindor) |TCP
-0                            |9195             |(group = Slytherin)                 |(group = Web and group = Slytherin)  |TCP
-1                            |9196             |(group = Web and group = Slytherin) |(group = App and group = Slytherin)  |UDP
+Original allow rule priority |Rule id |Src                                 |Dst                                  |Connection
+0                            |9195    |(group = Gryffindor)                |(group = Web and group = Gryffindor) |TCP
+0                            |9195    |(group = Slytherin)                 |(group = Web and group = Slytherin)  |TCP
+1                            |9196    |(group = Web and group = Slytherin) |(group = App and group = Slytherin)  |UDP
 
 outbound rules
-original allow rule priority |original rule id |Src                                 |Dst                                  |Connection
-0                            |9195             |(group = Gryffindor)                |(group = Web and group = Gryffindor) |TCP
-0                            |9195             |(group = Slytherin)                 |(group = Web and group = Slytherin)  |TCP
-1                            |9196             |(group = Web and group = Slytherin) |(group = App and group = Slytherin)  |UDP
+Original allow rule priority |Rule id |Src                                 |Dst                                  |Connection
+0                            |9195    |(group = Gryffindor)                |(group = Web and group = Gryffindor) |TCP
+0                            |9195    |(group = Slytherin)                 |(group = Web and group = Slytherin)  |TCP
+1                            |9196    |(group = Web and group = Slytherin) |(group = App and group = Slytherin)  |UDP
 

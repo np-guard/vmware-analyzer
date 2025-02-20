@@ -48,14 +48,14 @@ func (policy symbolicPolicy) strOrigSymbolicPolicy(printOnlyAdmin, color bool) s
 }
 
 func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) string {
-	header := []string{"Priority", "Origin Id", "Action", "Src", "Dst", "Connection"}
+	header := []string{"Priority", "Rule Id", "Action", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	for i, rule := range rules {
 		for _, path := range *rule.origSymbolicPaths {
 			if printOnlyAdmin && rule.origRuleCategory >= collector.MinNonAdminCategory() {
 				continue
 			}
-			linePrefix := []string{fmt.Sprintf("%v", i), fmt.Sprintf("%v", rule.origRule.RuleID),
+			linePrefix := []string{fmt.Sprintf("%v", i), rule.origRule.RuleIDStr(),
 				fmt.Sprintf("%v", rule.origRule.Action)}
 			newLine := append(linePrefix, path.TableString()...)
 			lines = append(lines, newLine)

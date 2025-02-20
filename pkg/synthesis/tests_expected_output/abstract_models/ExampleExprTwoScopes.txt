@@ -15,26 +15,26 @@ Web        |((Tag Of VirtualMachine EQUALS Web))        |Slytherin-Web, Hufflepu
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-original allow rule priority |original rule id |Src                              |Dst                              |Connection
-0                            |9195             |(tag = Gryffindor)               |(tag = Web and tag = Gryffindor) |All Connections
-0                            |9195             |(tag = Hufflepuff)               |(tag = Web and tag = Hufflepuff) |All Connections
-0                            |9195             |(tag = Slytherin)                |(tag = Web and tag = Slytherin)  |All Connections
-1                            |9196             |(tag = Web and tag = Gryffindor) |(tag = App and tag = Gryffindor) |All Connections
-1                            |9196             |(tag = Web and tag = Hufflepuff) |(tag = App and tag = Hufflepuff) |All Connections
-1                            |9196             |(tag = Web and tag = Slytherin)  |(tag = App and tag = Slytherin)  |All Connections
-2                            |9197             |(tag = App and tag = Gryffindor) |(tag = DB and tag = Gryffindor)  |All Connections
-2                            |9197             |(tag = App and tag = Hufflepuff) |(tag = DB and tag = Hufflepuff)  |All Connections
-2                            |9197             |(tag = App and tag = Slytherin)  |(tag = DB and tag = Slytherin)   |All Connections
+Original allow rule priority |Rule id |Src                              |Dst                              |Connection
+0                            |9195    |(tag = Gryffindor)               |(tag = Web and tag = Gryffindor) |All Connections
+0                            |9195    |(tag = Hufflepuff)               |(tag = Web and tag = Hufflepuff) |All Connections
+0                            |9195    |(tag = Slytherin)                |(tag = Web and tag = Slytherin)  |All Connections
+1                            |9196    |(tag = Web and tag = Gryffindor) |(tag = App and tag = Gryffindor) |All Connections
+1                            |9196    |(tag = Web and tag = Hufflepuff) |(tag = App and tag = Hufflepuff) |All Connections
+1                            |9196    |(tag = Web and tag = Slytherin)  |(tag = App and tag = Slytherin)  |All Connections
+2                            |9197    |(tag = App and tag = Gryffindor) |(tag = DB and tag = Gryffindor)  |All Connections
+2                            |9197    |(tag = App and tag = Hufflepuff) |(tag = DB and tag = Hufflepuff)  |All Connections
+2                            |9197    |(tag = App and tag = Slytherin)  |(tag = DB and tag = Slytherin)   |All Connections
 
 outbound rules
-original allow rule priority |original rule id |Src                              |Dst                              |Connection
-0                            |9195             |(tag = Gryffindor)               |(tag = Web and tag = Gryffindor) |All Connections
-0                            |9195             |(tag = Hufflepuff)               |(tag = Web and tag = Hufflepuff) |All Connections
-0                            |9195             |(tag = Slytherin)                |(tag = Web and tag = Slytherin)  |All Connections
-1                            |9196             |(tag = Web and tag = Gryffindor) |(tag = App and tag = Gryffindor) |All Connections
-1                            |9196             |(tag = Web and tag = Hufflepuff) |(tag = App and tag = Hufflepuff) |All Connections
-1                            |9196             |(tag = Web and tag = Slytherin)  |(tag = App and tag = Slytherin)  |All Connections
-2                            |9197             |(tag = App and tag = Gryffindor) |(tag = DB and tag = Gryffindor)  |All Connections
-2                            |9197             |(tag = App and tag = Hufflepuff) |(tag = DB and tag = Hufflepuff)  |All Connections
-2                            |9197             |(tag = App and tag = Slytherin)  |(tag = DB and tag = Slytherin)   |All Connections
+Original allow rule priority |Rule id |Src                              |Dst                              |Connection
+0                            |9195    |(tag = Gryffindor)               |(tag = Web and tag = Gryffindor) |All Connections
+0                            |9195    |(tag = Hufflepuff)               |(tag = Web and tag = Hufflepuff) |All Connections
+0                            |9195    |(tag = Slytherin)                |(tag = Web and tag = Slytherin)  |All Connections
+1                            |9196    |(tag = Web and tag = Gryffindor) |(tag = App and tag = Gryffindor) |All Connections
+1                            |9196    |(tag = Web and tag = Hufflepuff) |(tag = App and tag = Hufflepuff) |All Connections
+1                            |9196    |(tag = Web and tag = Slytherin)  |(tag = App and tag = Slytherin)  |All Connections
+2                            |9197    |(tag = App and tag = Gryffindor) |(tag = DB and tag = Gryffindor)  |All Connections
+2                            |9197    |(tag = App and tag = Hufflepuff) |(tag = DB and tag = Hufflepuff)  |All Connections
+2                            |9197    |(tag = App and tag = Slytherin)  |(tag = DB and tag = Slytherin)   |All Connections
 

@@ -1,15 +1,15 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Origin Id |Action |Src |Dst                              |Connection
-0        |1925      |allow  |(*) |(tag = Slytherin and tag != DB)  |All Connections
-1        |1927      |allow  |(*) |(tag = Gryffindor and tag != DB) |All Connections
-2        |10300     |deny   |(*) |(*)                              |All Connections
+Priority |Rule Id |Action |Src |Dst                              |Connection
+0        |1925    |allow  |(*) |(tag = Slytherin and tag != DB)  |All Connections
+1        |1927    |allow  |(*) |(tag = Gryffindor and tag != DB) |All Connections
+2        |10300   |deny   |(*) |(*)                              |All Connections
 
 
 symbolic outbound rules:
-Priority |Origin Id |Action |Src                |Dst                              |Connection
-0        |1926      |allow  |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
-1        |1928      |allow  |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
-2        |10300     |deny   |(*)                |(*)                              |All Connections
+Priority |Rule Id |Action |Src                |Dst                              |Connection
+0        |1926    |allow  |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
+1        |1928    |allow  |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
+2        |10300   |deny   |(*)                |(*)                              |All Connections
 

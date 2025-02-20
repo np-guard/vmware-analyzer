@@ -1,31 +1,31 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Origin Id |Action              |Src                  |Dst                  |Connection
-0        |10218     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
-1        |10220     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |TCP,UDP
-2        |10231     |deny                |(*)                  |(*)                  |All Connections
+Priority |Rule Id |Action              |Src                  |Dst                  |Connection
+0        |10218   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |10220   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |TCP,UDP
+2        |10231   |deny                |(*)                  |(*)                  |All Connections
 
 
 symbolic outbound rules:
-Priority |Origin Id |Action              |Src                  |Dst                  |Connection
-0        |10219     |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
-1        |10221     |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |UDP
-2        |10231     |deny                |(*)                  |(*)                  |All Connections
+Priority |Rule Id |Action              |Src                  |Dst                  |Connection
+0        |10219   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |10221   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |UDP
+2        |10231   |deny                |(*)                  |(*)                  |All Connections
 
 
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Origin Id |Action |Src           |Dst           |Connection
-0        |11000     |allow  |(*)           |(group = Web) |All Connections
-1        |11002     |allow  |(group = Web) |(group = App) |TCP,UDP
-2        |2144      |deny   |(*)           |(*)           |All Connections
+Priority |Rule Id |Action |Src           |Dst           |Connection
+0        |11000   |allow  |(*)           |(group = Web) |All Connections
+1        |11002   |allow  |(group = Web) |(group = App) |TCP,UDP
+2        |2144    |deny   |(*)           |(*)           |All Connections
 
 
 symbolic outbound rules:
-Priority |Origin Id |Action |Src           |Dst           |Connection
-0        |11001     |allow  |(*)           |(group = Web) |TCP,UDP
-1        |11004     |allow  |(group = Web) |(group = App) |TCP
-2        |2144      |deny   |(*)           |(*)           |All Connections
+Priority |Rule Id |Action |Src           |Dst           |Connection
+0        |11001   |allow  |(*)           |(group = Web) |TCP,UDP
+1        |11004   |allow  |(group = Web) |(group = App) |TCP
+2        |2144    |deny   |(*)           |(*)           |All Connections
 
