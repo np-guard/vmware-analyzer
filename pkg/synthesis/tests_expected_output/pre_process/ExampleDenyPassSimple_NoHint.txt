@@ -1,29 +1,29 @@
 category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action              |Src |Dst                  |Connection
-0        |jump_to_application |(*) |(group = Dumbledore) |All Connections
-1        |deny                |(*) |(group = Hufflepuff) |All Connections
-2        |deny                |(*) |(group = Slytherin)  |All Connections
+Priority |Rule Id |Action              |Src |Dst                  |Connection
+0        |10218   |jump_to_application |(*) |(group = Dumbledore) |All Connections
+1        |10219   |deny                |(*) |(group = Hufflepuff) |All Connections
+2        |10220   |deny                |(*) |(group = Slytherin)  |All Connections
 
 
 symbolic outbound rules:
-Priority |Action              |Src |Dst                  |Connection
-0        |jump_to_application |(*) |(group = Dumbledore) |All Connections
-1        |deny                |(*) |(group = Hufflepuff) |All Connections
-2        |deny                |(*) |(group = Slytherin)  |All Connections
+Priority |Rule Id |Action              |Src |Dst                  |Connection
+0        |10218   |jump_to_application |(*) |(group = Dumbledore) |All Connections
+1        |10219   |deny                |(*) |(group = Hufflepuff) |All Connections
+2        |10220   |deny                |(*) |(group = Slytherin)  |All Connections
 
 
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Action |Src |Dst |Connection
-0        |allow  |(*) |(*) |All Connections
-1        |deny   |(*) |(*) |All Connections
+Priority |Rule Id |Action |Src |Dst |Connection
+0        |10230   |allow  |(*) |(*) |All Connections
+1        |2144    |deny   |(*) |(*) |All Connections
 
 
 symbolic outbound rules:
-Priority |Action |Src |Dst |Connection
-0        |allow  |(*) |(*) |All Connections
-1        |deny   |(*) |(*) |All Connections
+Priority |Rule Id |Action |Src |Dst |Connection
+0        |10230   |allow  |(*) |(*) |All Connections
+1        |2144    |deny   |(*) |(*) |All Connections
 
