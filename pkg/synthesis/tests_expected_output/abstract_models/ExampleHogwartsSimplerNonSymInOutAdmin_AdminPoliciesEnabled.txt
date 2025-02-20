@@ -1,0 +1,38 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression |VM
+App        |           |Slytherin-App, Gryffindor-App
+Gryffindor |           |Gryffindor-Web, Gryffindor-App
+Slytherin  |           |Slytherin-Web, Slytherin-App
+Web        |           |Slytherin-Web, Gryffindor-Web
+
+Admin policy rules
+~~~~~~~~~~~~~~~~~~
+inbound rules
+Priority |Rule Id |Action              |Src                  |Dst                  |Connection
+0        |10218   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |All Connections
+1        |10220   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |TCP,UDP
+2        |10231   |deny                |(*)                  |(*)                  |All Connections
+
+outbound rules
+Priority |Rule Id |Action              |Src                  |Dst                  |Connection
+0        |10219   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
+1        |10221   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |UDP
+2        |10231   |deny                |(*)                  |(*)                  |All Connections
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src           |Dst           |Connection
+3                            |11000   |(*)           |(group = Web) |All Connections
+4                            |11002   |(group = Web) |(group = App) |TCP,UDP
+
+outbound rules
+Original allow rule priority |Rule id |Src           |Dst           |Connection
+3                            |11001   |(*)           |(group = Web) |TCP,UDP
+4                            |11004   |(group = Web) |(group = App) |TCP
+

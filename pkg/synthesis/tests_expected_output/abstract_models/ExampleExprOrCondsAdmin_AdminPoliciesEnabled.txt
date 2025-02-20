@@ -12,17 +12,31 @@ Hufflepuff-Or-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) OR (Tag Of Virtu
 Slytherin           |((Tag Of VirtualMachine EQUALS Slytherin))                                          |Slytherin-DB, Slytherin-Web, Slytherin-App
 Slytherin-Or-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) OR (Tag Of VirtualMachine NOTEQUALS DB))  |Slytherin-DB, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App, Gryffindor-Web, Gryffindor-App
 
+Admin policy rules
+~~~~~~~~~~~~~~~~~~
+inbound rules
+Priority |Rule Id |Action |Src |Dst                |Connection
+0        |1925    |allow  |(*) |(tag != DB)        |All Connections
+0        |1925    |allow  |(*) |(tag = Slytherin)  |All Connections
+1        |1927    |allow  |(*) |(tag != DB)        |All Connections
+1        |1927    |allow  |(*) |(tag = Gryffindor) |All Connections
+2        |10300   |deny   |(*) |(*)                |All Connections
+
+outbound rules
+Priority |Rule Id |Action |Src                |Dst                |Connection
+0        |1926    |allow  |(tag = Gryffindor) |(tag != DB)        |All Connections
+0        |1926    |allow  |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
+1        |1928    |allow  |(*)                |(tag != DB)        |All Connections
+1        |1928    |allow  |(*)                |(tag = Hufflepuff) |All Connections
+2        |10300   |deny   |(*)                |(*)                |All Connections
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-Original allow rule priority |Rule id |Src |Dst                |Connection
-0                            |1925    |(*) |(tag != DB)        |All Connections
-0                            |1925    |(*) |(tag = Slytherin)  |All Connections
-1                            |1927    |(*) |(tag = Gryffindor) |All Connections
+Original allow rule priority |Rule id |Src |Dst |Connection
+
 
 outbound rules
-Original allow rule priority |Rule id |Src                |Dst                |Connection
-0                            |1926    |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
-1                            |1928    |(*)                |(tag != DB)        |All Connections
-1                            |1928    |(*)                |(tag = Hufflepuff) |All Connections
+Original allow rule priority |Rule id |Src |Dst |Connection
+
 
