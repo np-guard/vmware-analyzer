@@ -28,8 +28,7 @@ type k8sPolicies struct {
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	if createDNSPolicy {
 		if model.synthesizeAdmin {
-			policies.addDNSEgressAllowAdminNetworkPolicy()
-			policies.addDNSIngressAllowAdminNetworkPolicy()
+			policies.addDNSAllowAdminNetworkPolicies()
 		} else {
 			policies.addDNSAllowNetworkPolicy()
 
@@ -113,53 +112,33 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
 }
 
-func (policies *k8sPolicies) addDNSEgressAllowAdminNetworkPolicy() {
-	pol := newAdminNetworkPolicy("egress-dns-policy", "Admin Network Policy To Allow Egress Access To DNS Server", "egress-dns-rule-id")
-	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
-	//nolint:gosec // priority should fit int32:
-	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
-	pol.Spec.Subject = admin.AdminNetworkPolicySubject{
-		Pods: &admin.NamespacedPod{},
-	}
-	to := []admin.AdminNetworkPolicyEgressPeer{{Pods: &admin.NamespacedPod{
+func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicies() {
+	dnsSelector := &admin.NamespacedPod{
 		PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
 		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
-	}}}
-	rules := []admin.AdminNetworkPolicyEgressRule{{To: to, Action: admin.AdminNetworkPolicyRuleActionAllow, Ports: common.PointerTo(connToAdminPolicyPort(dnsPortConn))}}
-	pol.Spec.Egress = rules
-}
-
-func (policies *k8sPolicies) addDNSIngressAllowAdminNetworkPolicy() {
-	pol := newAdminNetworkPolicy("ingress-dns-policy", "Admin Network Policy To Allow Ingress Access To DNS Server", "ingress-dns-rule-id")
-	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
-	//nolint:gosec // priority should fit int32:
-	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
-	pol.Spec.Subject = admin.AdminNetworkPolicySubject{
-		Pods: &admin.NamespacedPod{
-			PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
-			NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
-		}}
-	from := []admin.AdminNetworkPolicyIngressPeer{
-		{Pods: &admin.NamespacedPod{}},
 	}
-	rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: admin.AdminNetworkPolicyRuleActionAllow, Ports: common.PointerTo(connToAdminPolicyPort(dnsPortConn))}}
-	pol.Spec.Ingress = rules
+	allSelector := &admin.NamespacedPod{}
+	ports := connToAdminPolicyPort(dnsPortConn)
+	egressPol := newAdminNetworkPolicy("egress-dns-policy", "Admin Network Policy To Allow Egress Access To DNS Server", "egress-dns-rule-id")
+	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
+	ingressPol := newAdminNetworkPolicy("ingress-dns-policy", "Admin Network Policy To Allow Ingress Access To DNS Server", "ingress-dns-rule-id")
+	policies.setAdminNetworkPolicy(ingressPol, ports, true, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
-	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector}
 	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector}
-	setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector, len(policies.adminNetworkPolicies))
+	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector)
 }
-func setAdminNetworkPolicy(
+func (policies *k8sPolicies) setAdminNetworkPolicy(
 	pol *admin.AdminNetworkPolicy, ports []admin.AdminNetworkPolicyPort,
 	inbound bool, action admin.AdminNetworkPolicyRuleAction,
-	srcPodsSelector, dstPodsSelector *admin.NamespacedPod, priority int) {
+	srcPodsSelector, dstPodsSelector *admin.NamespacedPod) {
+	policies.adminNetworkPolicies = append(policies.adminNetworkPolicies, pol)
 	//nolint:gosec // priority should fit int32:
-	pol.Spec.Priority = int32(priority)
+	pol.Spec.Priority = int32(len(policies.adminNetworkPolicies))
 	if inbound {
 		from := []admin.AdminNetworkPolicyIngressPeer{{Pods: srcPodsSelector}}
 		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: common.PointerTo(ports)}}
