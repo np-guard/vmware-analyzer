@@ -3,7 +3,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: Network Policy To Allow Access To DNS Server
-        nsx-id: dns-rule-id
+        nsx-id: none
     creationTimestamp: null
     name: dns-policy
     namespace: default
@@ -117,7 +117,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: Default Deny Network Policy
-        nsx-id: no-nsx-id
+        nsx-id: none
     creationTimestamp: null
     name: default-deny
     namespace: default

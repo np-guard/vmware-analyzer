@@ -3,10 +3,9 @@ kind: AdminNetworkPolicy
 metadata:
     annotations:
         description: Admin Network Policy To Allow Egress Access To DNS Server
-        nsx-id: egress-dns-rule-id
+        nsx-id: none
     creationTimestamp: null
     name: egress-dns-policy
-    namespace: default
 spec:
     egress:
         - action: Allow
@@ -41,7 +40,6 @@ metadata:
         nsx-id: "10218"
     creationTimestamp: null
     name: admin-policy-1
-    namespace: default
 spec:
     egress:
         - action: Pass
@@ -80,7 +78,6 @@ metadata:
         nsx-id: "10218"
     creationTimestamp: null
     name: admin-policy-2
-    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -119,7 +116,6 @@ metadata:
         nsx-id: "10219"
     creationTimestamp: null
     name: admin-policy-3
-    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -158,7 +154,6 @@ metadata:
         nsx-id: "10220"
     creationTimestamp: null
     name: admin-policy-4
-    namespace: default
 spec:
     egress:
         - action: Pass
@@ -193,7 +188,6 @@ metadata:
         nsx-id: "10220"
     creationTimestamp: null
     name: admin-policy-5
-    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -228,7 +222,6 @@ metadata:
         nsx-id: "10221"
     creationTimestamp: null
     name: admin-policy-6
-    namespace: default
 spec:
     egress:
         - action: Pass
@@ -263,7 +256,6 @@ metadata:
         nsx-id: "10221"
     creationTimestamp: null
     name: admin-policy-7
-    namespace: default
 spec:
     ingress:
         - action: Pass
@@ -298,7 +290,6 @@ metadata:
         nsx-id: "10300"
     creationTimestamp: null
     name: admin-policy-8
-    namespace: default
 spec:
     egress:
         - action: Deny
@@ -327,7 +318,6 @@ metadata:
         nsx-id: "10300"
     creationTimestamp: null
     name: admin-policy-9
-    namespace: default
 spec:
     ingress:
         - action: Deny

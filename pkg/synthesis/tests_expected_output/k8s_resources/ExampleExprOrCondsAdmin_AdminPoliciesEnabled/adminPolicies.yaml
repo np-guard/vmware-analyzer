@@ -3,10 +3,9 @@ kind: AdminNetworkPolicy
 metadata:
     annotations:
         description: Admin Network Policy To Allow Egress Access To DNS Server
-        nsx-id: egress-dns-rule-id
+        nsx-id: none
     creationTimestamp: null
     name: egress-dns-policy
-    namespace: default
 spec:
     egress:
         - action: Allow
@@ -41,7 +40,6 @@ metadata:
         nsx-id: "1925"
     creationTimestamp: null
     name: admin-policy-1
-    namespace: default
 spec:
     ingress:
         - action: Allow
@@ -73,7 +71,6 @@ metadata:
         nsx-id: "1925"
     creationTimestamp: null
     name: admin-policy-2
-    namespace: default
 spec:
     ingress:
         - action: Allow
@@ -105,7 +102,6 @@ metadata:
         nsx-id: "1926"
     creationTimestamp: null
     name: admin-policy-3
-    namespace: default
 spec:
     egress:
         - action: Allow
@@ -140,7 +136,6 @@ metadata:
         nsx-id: "1926"
     creationTimestamp: null
     name: admin-policy-4
-    namespace: default
 spec:
     egress:
         - action: Allow
@@ -175,7 +170,6 @@ metadata:
         nsx-id: "1927"
     creationTimestamp: null
     name: admin-policy-5
-    namespace: default
 spec:
     ingress:
         - action: Allow
@@ -207,7 +201,6 @@ metadata:
         nsx-id: "1927"
     creationTimestamp: null
     name: admin-policy-6
-    namespace: default
 spec:
     ingress:
         - action: Allow
@@ -239,7 +232,6 @@ metadata:
         nsx-id: "1928"
     creationTimestamp: null
     name: admin-policy-7
-    namespace: default
 spec:
     egress:
         - action: Allow
@@ -271,7 +263,6 @@ metadata:
         nsx-id: "1928"
     creationTimestamp: null
     name: admin-policy-8
-    namespace: default
 spec:
     egress:
         - action: Allow
@@ -303,7 +294,6 @@ metadata:
         nsx-id: "10300"
     creationTimestamp: null
     name: admin-policy-9
-    namespace: default
 spec:
     egress:
         - action: Deny
@@ -332,7 +322,6 @@ metadata:
         nsx-id: "10300"
     creationTimestamp: null
     name: admin-policy-10
-    namespace: default
 spec:
     ingress:
         - action: Deny

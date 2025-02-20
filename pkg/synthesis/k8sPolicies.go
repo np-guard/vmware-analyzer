@@ -24,6 +24,7 @@ var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleA
 const dnsPort = 53
 const dnsLabelKey = "k8s-app"
 const dnsLabelVal = "kube-dns"
+const noNSXRuleID = "none"
 
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
@@ -96,7 +97,7 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.Lab
 }
 
 func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
-	ruleID := "no-nsx-id"
+		ruleID := noNSXRuleID
 	if defaultRule != nil {
 		ruleID = defaultRule.RuleIDStr()
 	}
@@ -106,7 +107,7 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 }
 
 func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
-	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", "dns-rule-id")
+	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", noNSXRuleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PodSelector = meta.LabelSelector{}
 	to := []networking.NetworkPolicyPeer{{
@@ -162,7 +163,7 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPol := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
-		"egress-dns-rule-id")
+		noNSXRuleID)
 	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
@@ -188,7 +189,6 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 	pol.TypeMeta.Kind = "AdminNetworkPolicy"
 	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
 	pol.ObjectMeta.Name = name
-	pol.ObjectMeta.Namespace = meta.NamespaceDefault
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
