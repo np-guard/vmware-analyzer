@@ -26,7 +26,9 @@ spec:
     priority: 1
     subject:
         pods:
-            namespaceSelector: {}
+            namespaceSelector:
+                matchLabels:
+                    kubernetes.io/metadata.name: default
             podSelector: {}
 status:
     conditions: null

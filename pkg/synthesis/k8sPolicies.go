@@ -116,13 +116,13 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
 }
 var namespaceNameKey = path.Join("kubernetes.io",meta.ObjectNameField)
-var defaultNamespceSelector = meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}
+var defaultNamespaceSelector = meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
-	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector, NamespaceSelector: defaultNamespceSelector}
-	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector, NamespaceSelector: defaultNamespceSelector}
+	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector, NamespaceSelector: defaultNamespaceSelector}
+	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector, NamespaceSelector: defaultNamespaceSelector}
 	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector)
 }
 func (policies *k8sPolicies) setAdminNetworkPolicy(
@@ -154,7 +154,7 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 		}},
 		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
 	}
-	allSelector := &admin.NamespacedPod{}
+	allSelector := &admin.NamespacedPod{NamespaceSelector:defaultNamespaceSelector}
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPol := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
