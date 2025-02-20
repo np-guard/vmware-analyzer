@@ -141,7 +141,11 @@ func (policies *k8sPolicies) setAdminNetworkPolicy(
 
 func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicies() {
 	dnsSelector := &admin.NamespacedPod{
-		PodSelector:       meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{"k8s-app", meta.LabelSelectorOpIn, []string{"kube-dns"}}}},
+		PodSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{
+			Key:      "k8s-app",
+			Operator: meta.LabelSelectorOpIn,
+			Values:   []string{"kube-dns"}},
+		}},
 		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
 	}
 	allSelector := &admin.NamespacedPod{}
