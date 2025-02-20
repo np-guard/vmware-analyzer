@@ -74,6 +74,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	}
 }
 
+// //////////////////////////////////////////////////////////////////////////////////////////
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
 	ports []networking.NetworkPolicyPort, inbound bool,
 	description, nsxRuleID string) {
@@ -115,7 +116,9 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
 	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
 }
-var namespaceNameKey = path.Join("kubernetes.io",meta.ObjectNameField)
+
+// //////////////////////////////////////////////////////////////////////////////////////////
+var namespaceNameKey = path.Join("kubernetes.io", meta.ObjectNameField)
 var defaultNamespaceSelector = meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}
 
 func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
@@ -125,6 +128,7 @@ func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *met
 	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector, NamespaceSelector: defaultNamespaceSelector}
 	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector)
 }
+
 func (policies *k8sPolicies) setAdminNetworkPolicy(
 	pol *admin.AdminNetworkPolicy, ports []admin.AdminNetworkPolicyPort,
 	inbound bool, action admin.AdminNetworkPolicyRuleAction,
@@ -154,7 +158,7 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 		}},
 		NamespaceSelector: meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}},
 	}
-	allSelector := &admin.NamespacedPod{NamespaceSelector:defaultNamespaceSelector}
+	allSelector := &admin.NamespacedPod{NamespaceSelector: defaultNamespaceSelector}
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPol := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
@@ -162,6 +166,7 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
+// //////////////////////////////////////////////////////////////////////////////////////////
 const annotationDescription = "description"
 const annotationUID = "nsx-id"
 
