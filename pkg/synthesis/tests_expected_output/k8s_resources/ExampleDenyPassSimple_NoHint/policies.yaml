@@ -2,10 +2,33 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: dns-rule-id
+    creationTimestamp: null
+    name: dns-policy
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
         description: 'src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy-0
+    name: policy-1
     namespace: default
 spec:
     egress:
@@ -27,7 +50,7 @@ metadata:
         description: 'src: (*) dst: (group = Dumbledore) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy-1
+    name: policy-2
     namespace: default
 spec:
     egress:
@@ -47,7 +70,7 @@ metadata:
         description: 'src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy-2
+    name: policy-3
     namespace: default
 spec:
     ingress:
@@ -69,7 +92,7 @@ metadata:
         description: 'src: (*) dst: (group = Dumbledore) conn: All Connections'
         nsx-id: "10230"
     creationTimestamp: null
-    name: policy-3
+    name: policy-4
     namespace: default
 spec:
     ingress:
@@ -81,29 +104,6 @@ spec:
               operator: Exists
     policyTypes:
         - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: dns-rule-id
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

@@ -2,10 +2,76 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
+        description: Admin Network Policy To Allow Egress Access To DNS Server
+        nsx-id: egress-dns-rule-id
+    creationTimestamp: null
+    name: egress-dns-policy
+    namespace: default
+spec:
+    egress:
+        - action: Allow
+          ports:
+            - portNumber:
+                port: 53
+                protocol: UDP
+          to:
+            - pods:
+                namespaceSelector: {}
+                podSelector:
+                    matchExpressions:
+                        - key: k8s-app
+                          operator: In
+                          values:
+                            - kube-dns
+    priority: 1
+    subject:
+        pods:
+            namespaceSelector: {}
+            podSelector: {}
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
+        description: Admin Network Policy To Allow Ingress Access To DNS Server
+        nsx-id: ingress-dns-rule-id
+    creationTimestamp: null
+    name: ingress-dns-policy
+    namespace: default
+spec:
+    ingress:
+        - action: Allow
+          from:
+            - pods:
+                namespaceSelector: {}
+                podSelector: {}
+          ports:
+            - portNumber:
+                port: 53
+                protocol: UDP
+    priority: 2
+    subject:
+        pods:
+            namespaceSelector: {}
+            podSelector:
+                matchExpressions:
+                    - key: k8s-app
+                      operator: In
+                      values:
+                        - kube-dns
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: TCP)'
         nsx-id: "10218"
     creationTimestamp: null
-    name: admin-policy-0
+    name: admin-policy-2
     namespace: default
 spec:
     egress:
@@ -22,7 +88,7 @@ spec:
                     matchExpressions:
                         - key: group__Gryffindor
                           operator: Exists
-    priority: 1
+    priority: 3
     subject:
         pods:
             namespaceSelector: {}
@@ -40,7 +106,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: TCP)'
         nsx-id: "10218"
     creationTimestamp: null
-    name: admin-policy-1
+    name: admin-policy-3
     namespace: default
 spec:
     ingress:
@@ -57,7 +123,7 @@ spec:
                 end: 65535
                 protocol: TCP
                 start: 1
-    priority: 2
+    priority: 4
     subject:
         pods:
             namespaceSelector: {}
@@ -75,7 +141,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Hufflepuff) dst: (group = Hufflepuff) conn: UDP dst-ports: 300-320)'
         nsx-id: "10219"
     creationTimestamp: null
-    name: admin-policy-2
+    name: admin-policy-4
     namespace: default
 spec:
     ingress:
@@ -92,7 +158,7 @@ spec:
                 end: 320
                 protocol: UDP
                 start: 300
-    priority: 3
+    priority: 5
     subject:
         pods:
             namespaceSelector: {}
@@ -110,7 +176,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections)'
         nsx-id: "10220"
     creationTimestamp: null
-    name: admin-policy-3
+    name: admin-policy-5
     namespace: default
 spec:
     egress:
@@ -123,7 +189,7 @@ spec:
                     matchExpressions:
                         - key: group__Slytherin
                           operator: Exists
-    priority: 4
+    priority: 6
     subject:
         pods:
             namespaceSelector: {}
@@ -141,7 +207,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: All Connections)'
         nsx-id: "10220"
     creationTimestamp: null
-    name: admin-policy-4
+    name: admin-policy-6
     namespace: default
 spec:
     ingress:
@@ -154,7 +220,7 @@ spec:
                         - key: group__Slytherin
                           operator: Exists
           ports: null
-    priority: 5
+    priority: 7
     subject:
         pods:
             namespaceSelector: {}
@@ -172,7 +238,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Dumbledore) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10221"
     creationTimestamp: null
-    name: admin-policy-5
+    name: admin-policy-7
     namespace: default
 spec:
     egress:
@@ -185,7 +251,7 @@ spec:
                     matchExpressions:
                         - key: group__Gryffindor
                           operator: Exists
-    priority: 6
+    priority: 8
     subject:
         pods:
             namespaceSelector: {}
@@ -203,7 +269,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Dumbledore) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10221"
     creationTimestamp: null
-    name: admin-policy-6
+    name: admin-policy-8
     namespace: default
 spec:
     ingress:
@@ -216,7 +282,7 @@ spec:
                         - key: group__Dumbledore
                           operator: Exists
           ports: null
-    priority: 7
+    priority: 9
     subject:
         pods:
             namespaceSelector: {}
@@ -234,7 +300,7 @@ metadata:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
-    name: admin-policy-7
+    name: admin-policy-9
     namespace: default
 spec:
     egress:
@@ -244,7 +310,7 @@ spec:
             - pods:
                 namespaceSelector: {}
                 podSelector: {}
-    priority: 8
+    priority: 10
     subject:
         pods:
             namespaceSelector: {}
@@ -259,7 +325,7 @@ metadata:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
-    name: admin-policy-8
+    name: admin-policy-10
     namespace: default
 spec:
     ingress:
@@ -269,7 +335,7 @@ spec:
                 namespaceSelector: {}
                 podSelector: {}
           ports: null
-    priority: 9
+    priority: 11
     subject:
         pods:
             namespaceSelector: {}
