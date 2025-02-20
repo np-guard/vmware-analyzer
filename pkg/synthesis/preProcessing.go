@@ -56,9 +56,9 @@ func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) str
 			if printOnlyAdmin && rule.origRuleCategory >= collector.MinNonAdminCategory() {
 				continue
 			}
-			linePrefix := []string{fmt.Sprintf(formatV, i), rule.origRule.RuleIDStr(),
+			newLine := []string{fmt.Sprintf(formatV, i), rule.origRule.RuleIDStr(),
 				fmt.Sprintf(formatV, rule.origRule.Action)}
-			newLine := append(linePrefix, path.TableString()...)
+			newLine = append(newLine, path.TableString()...)
 			lines = append(lines, newLine)
 		}
 	}

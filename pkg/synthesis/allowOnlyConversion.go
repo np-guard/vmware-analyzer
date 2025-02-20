@@ -175,8 +175,8 @@ func strAllowOnlyPathsOfRules(rules []*symbolicRule, color bool) string {
 			continue
 		}
 		for _, path := range rule.optimizedAllowOnlyPaths {
-			linePrefix := []string{fmt.Sprintf("%v", i), rule.origRule.RuleIDStr()}
-			newLine := append(linePrefix, path.TableString()...)
+			newLine := []string{fmt.Sprintf("%v", i), rule.origRule.RuleIDStr()}
+			newLine = append(newLine, path.TableString()...)
 			lines = append(lines, newLine)
 		}
 	}
