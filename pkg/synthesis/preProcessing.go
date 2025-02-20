@@ -2,6 +2,7 @@ package synthesis
 
 import (
 	"fmt"
+
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
