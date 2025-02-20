@@ -12,6 +12,9 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 )
 
+const dnsPort = 53
+var dnsPortConn = netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
+
 func connToPolicyPort(conn *netset.TransportSet) []networking.NetworkPolicyPort {
 	ports := &k8sNetworkPorts{}
 	connToPorts(ports, conn)
@@ -22,15 +25,6 @@ func connToAdminPolicyPort(conn *netset.TransportSet) []admin.AdminNetworkPolicy
 	ports := &k8sAdminNetworkPorts{}
 	connToPorts(ports, conn)
 	return ports.ports
-}
-
-const dnsPort = 53
-var dnsPortConn = netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
-func dnsPorts() []networking.NetworkPolicyPort {
-	return connToPolicyPort(dnsPortConn)
-}
-func dnsAdminPorts() []admin.AdminNetworkPolicyPort {
-	return connToAdminPolicyPort(dnsPortConn)
 }
 
 // here we have two derived classes: k8sNetworkPorts and k8sAdminNetworkPorts.
