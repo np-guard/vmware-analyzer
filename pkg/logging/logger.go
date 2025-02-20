@@ -16,6 +16,8 @@ import (
 	"sync"
 )
 
+const stringFormat = "%s"
+
 var logger DefaultLogger
 var once sync.Once
 
@@ -76,7 +78,7 @@ func WarningVerbosity() bool { return logger.verbosity >= MediumVerbosity }
 
 // Debug/Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
 func Debug(msg string) {
-	debugCommonf("%s", msg)
+	debugCommonf(stringFormat, msg)
 }
 func Debugf(format string, o ...interface{}) {
 	debugCommonf(format, o...)
@@ -98,8 +100,9 @@ func Infof(format string, o ...interface{}) {
 }
 
 func Warn(msg string) {
-	debugCommonf("%s", msg)
+	Warnf(stringFormat, msg)
 }
+
 // Warnf writes a warning message to the log (unless DefaultLogger verbosity is set to LowVerbosity)
 func Warnf(format string, o ...interface{}) {
 	if WarningVerbosity() {
