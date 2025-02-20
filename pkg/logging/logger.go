@@ -97,6 +97,9 @@ func Infof(format string, o ...interface{}) {
 	}
 }
 
+func Warn(msg string) {
+	debugCommonf("%s", msg)
+}
 // Warnf writes a warning message to the log (unless DefaultLogger verbosity is set to LowVerbosity)
 func Warnf(format string, o ...interface{}) {
 	if WarningVerbosity() {

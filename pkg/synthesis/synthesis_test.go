@@ -206,6 +206,9 @@ func TestConvertToAbsract(t *testing.T) {
 func TestK8SSynthesis(t *testing.T) {
 	parallelTestsRun(t, runK8SSynthesis)
 }
+func TestK8STraceFlow(t *testing.T) {
+	parallelTestsRun(t, runK8STraceFlow)
+}
 func TestCompareNSXConnectivity(t *testing.T) {
 	parallelTestsRun(t, runCompareNSXConnectivity)
 }
