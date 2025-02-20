@@ -12,8 +12,6 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 )
 
-const dnsPort = 53
-
 var dnsPortConn = netset.NewTCPorUDPTransport(netp.ProtocolStringUDP, netp.MinPort, netp.MaxPort, dnsPort, dnsPort)
 
 func connToPolicyPort(conn *netset.TransportSet) []networking.NetworkPolicyPort {
