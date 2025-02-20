@@ -2,8 +2,8 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections'
-        nsx-id: "1925"
+        description: 'src: (*) dst: (group = Web) conn: All Connections'
+        nsx-id: "11000"
     creationTimestamp: null
     name: policy-0
     namespace: default
@@ -13,10 +13,8 @@ spec:
             - podSelector: {}
     podSelector:
         matchExpressions:
-            - key: tag__Slytherin
+            - key: group__Web
               operator: Exists
-            - key: tag__DB
-              operator: DoesNotExist
     policyTypes:
         - Ingress
 ---
@@ -24,8 +22,8 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (tag = Gryffindor) dst: (tag = Slytherin and tag != DB) conn: All Connections'
-        nsx-id: "1926"
+        description: 'src: (*) dst: (group = Web) conn: TCP,UDP'
+        nsx-id: "11001"
     creationTimestamp: null
     name: policy-1
     namespace: default
@@ -34,14 +32,9 @@ spec:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: tag__Slytherin
+                    - key: group__Web
                       operator: Exists
-                    - key: tag__DB
-                      operator: DoesNotExist
-    podSelector:
-        matchExpressions:
-            - key: tag__Gryffindor
-              operator: Exists
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -49,21 +42,22 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections'
-        nsx-id: "1927"
+        description: 'src: (group = Web) dst: (group = App) conn: TCP,UDP'
+        nsx-id: "11002"
     creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
     ingress:
         - from:
-            - podSelector: {}
+            - podSelector:
+                matchExpressions:
+                    - key: group__Web
+                      operator: Exists
     podSelector:
         matchExpressions:
-            - key: tag__Gryffindor
+            - key: group__App
               operator: Exists
-            - key: tag__DB
-              operator: DoesNotExist
     policyTypes:
         - Ingress
 ---
@@ -71,21 +65,24 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (tag = Hufflepuff and tag != DB) conn: All Connections'
-        nsx-id: "1928"
+        description: 'src: (group = Web) dst: (group = App) conn: TCP'
+        nsx-id: "11004"
     creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
     egress:
-        - to:
+        - ports:
+            - protocol: TCP
+          to:
             - podSelector:
                 matchExpressions:
-                    - key: tag__Hufflepuff
+                    - key: group__App
                       operator: Exists
-                    - key: tag__DB
-                      operator: DoesNotExist
-    podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: group__Web
+              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -117,7 +114,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: Default Deny Network Policy
-        nsx-id: no-nsx-id
+        nsx-id: "2144"
     creationTimestamp: null
     name: default-deny
     namespace: default

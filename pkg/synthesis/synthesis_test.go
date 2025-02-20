@@ -128,6 +128,12 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
+		exData:          &tests.ExampleHogwartsSimplerNonSymInOut,
+		synthesizeAdmin: true,
+		noHint:          false,
+	},
 }
 
 var groupsByExprTests = []synthesisTest{
@@ -150,6 +156,18 @@ var groupsByExprTests = []synthesisTest{
 		name:   "ExampleExprOrConds",
 		exData: &tests.ExampleExprOrConds,
 		noHint: false,
+	},
+	{
+		name:            "ExampleExprAndCondsAdmin",
+		exData:          &tests.ExampleExprAndConds,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
+	{
+		name:            "ExampleExprOrCondsAdmin",
+		exData:          &tests.ExampleExprOrConds,
+		noHint:          false,
+		synthesizeAdmin: true,
 	},
 }
 var liveNsxTest = synthesisTest{
