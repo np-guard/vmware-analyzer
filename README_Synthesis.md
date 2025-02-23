@@ -14,21 +14,22 @@ Flags:
 ```
 
 ## Overview
-Synthesize a given NSX DFW configuration, specifically firewall rules, into an equivalent k8s network policy.
+Synthesize a given NSX DFW policy into an equivalent k8s network policy.
 There are two main challenges here: 
-* *The flattening challenge*: translating allow/deny/pass with priorities into flat allow rules (which is what k8s network policies support)
+* *The flattening challenge*: translating prioritize _allow/deny/pass_ into flat allow rules (which is what k8s network policies support)
 * *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just synthesis a snapshot. 
-This is important since once new e.g. VMs are added with the relevant tags/labels they should be granted the desired communication permissions and the 
-desired protection.
+This is important since e.g. once a new VM as added with the relevant tags/labels it be granted the desired connectivity.
 
 ### The flattening challenge
 The translation of priortized allow/deny/pass rules into flat allow rules is exponential in the number of terms of the
 original rules (to be accurate, the number of allow rules generated for each original allow rule is
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
-1. Ask the user to provide the tool with lists - _hints_ -  of disjoint tags/groups. In the future it is planned to "guess" these
+1. Ask the user to provide the tool with _hints_ -  lists of disjoint tags/groups.
+E.g., tags _{frontend, backend}_ are disjoint.
+In the future it is planned to "guess" these
 disjoint sets, and ask the user to approve them.
 2. Apply various optimization to simplify the resulting rules and to rid redundant rules; the more accurate hints the
-tool is provided, the more efficient the hints are 
+tool is provided, the more concise and readable rules it will synthesize.  
 
 ### The policy preserving challenge
 To preserve the original intent of the policy, the synthesized policy refers, where possible, to permanent labeling such
@@ -37,17 +38,45 @@ as tags - e.g. _front-end_ - and not to temporarily labeling such as _VM_ names.
 of the tag.
 
 ## Currently supported
-Currently the tool supports groups defined by expressions over tags; nested expression are not supported at the moment.
+Currently, the tool supports groups defined by expressions over tags; nested expression are not yet supported.
 If a group is defined 
 by an expression that we do not yet support, then the synthesized policy will refer just to the group, and the 
 relevant *VM*s will be granted labels of this group. In the following releases we will expend our expressions support. 
 
-## Debuging
-The tool first translates the priortized allow/deny/pass rules into an abstract model that 
-contains the rules to be syntactically translated to k8s policies; if _synthesize-admin-policies_  is off then all rules must 
-be flat allow rules, and so all the rules in the abstract model are allow rules;
-otherwise rules originating from _environment_ category are translated to admin policies and as such may also contain
-priorties, allow, deny and pass; other rules are flat allow rules. Each rule is defined over
-_src_, _dst_ and a _connection_. The rules are "Or"ed. 
-The _src_ and the _dst_ are _Conjunction_, and the _connection_ contains a protocol and potentially _src/dst_ ports.
-The synthesis dump directory contains the abstract model, in addition to other debug data, such as the connectivity map.   
+## Output
+_k8s_resources_ dir under the dir specified in _synthesis-dump-dir_ contains the following files:
+* **pods.yaml** the list of synthesized _VM's_ _pods_ with the labels of each pos  
+* **policies.yaml** the k8s policies
+
+The combination of the policies and the pods' labels:
+1. Satisfies the snapshot of the connectivity at the time of the synthesis
+2. Preserve the policy's intent, as expressed e.g. by *tags*, for future changes 
+(e.g. adding a _VM_ or changing its functionality and thus its labeling)
+
+## Debugging
+The synthesize process is a complex one. Along it, in order to have the intent preserving synthesis as explained above,
+we use a *symbolic* representation of the *rules*: each *symbolic rule* is a _priority_, an _action_, a
+_src_, a _dst_ and a _connection_; The priority in a natural number; the action is _allow/deny/pass_; The _src_ and the _dst_ are _Conjunctions_ of simple expressions 
+(equal/not equal) over e.g. _tags_;  the _connection_ is a protocol and potentially _src/dst_ min and max ports.
+
+The synthesis dump directory (specified in _synthesis-dump-dir_) contains (among others) the following files:
+* under subdirectory **debug_dir**
+  * **config.txt** Contains the NSX config as being read by the tool; this includes _VMs_, _groups_ and _firewall rules_.
+  * **pre_processing.txt** Contains the translation of the firewall rule into _symbolic rules_ ; e.g., if a specific 
+src is a group which is an expression over tags, then this file will have this rule's _src_ defined over tags.
+  * **abstract_model.txt** The tool translates the *allow/deny/pass* rules from _pre_processing.txt_ into an abstract model that
+    contains the rules to be syntactically translated to _k8s policies_. If _synthesize-admin-policies_  is off then all rules must
+    be _flat allow rules_, and so all the rules in the abstract model are non-prioritized with action _allow_;
+    otherwise rules originating from the _environment_ category are translated to admin policies with
+    a priority and an allow/deny/pass action; rules that originate from the other categories are flat allow rules.
+  _abstract_model.txt_ contains these rules and a list of the groups, each groups with the expression that defined
+  it and the snapshot of the *VMs* in the group. 
+
+ The following log files contain warning messages and various debug printing of the different stages
+ of the synthesis, as following:
+
+  * **runPreprocessing.log** Log of the stage in which the NSX rules are translated to symbolic rules.
+  * **runConvertToAbstract.log** Log of the stage in which the symbolic rules from the preprocessing stage 
+are translated to the abstract model's rules.  
+  * **runK8SSynthesis.log** Log of the stage in which the k8s yaml pods and polices files are synthesized from 
+the abstract model.
