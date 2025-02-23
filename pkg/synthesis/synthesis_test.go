@@ -339,7 +339,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 	if k8sConnectivityFileCreated {
-		compareToNetpol(t,rc,k8sConnectivityFile)
+		compareToNetpol(t, rc, k8sConnectivityFile)
 	}
 }
 func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
