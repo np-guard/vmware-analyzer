@@ -478,7 +478,8 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]*endpoints.VM, *colle
 			}
 		}
 	}
-	return nil, nil // could not find given groupPath (add warning)
+	logging.Warnf("could not find VMS of group path %s\n", groupPath)
+	return nil, nil // could not find given groupPath
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

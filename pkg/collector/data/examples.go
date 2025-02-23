@@ -129,6 +129,45 @@ var Example1d = Example{
 	},
 }
 
+var Example1External = Example{
+	Name:        "Example1External",
+	VMs:         Example1d.VMs,
+	GroupsByVMs: Example1d.GroupsByVMs,
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "allow_ftp_from_123",
+					ID:       1004,
+					Source:   "1.2.3.0/8",
+					Dest:     "frontend",
+					Services: []string{"/infra/services/FTP"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1005,
+					Source:   "frontend",
+					Dest:     "backend",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_https_db_incoming",
+					ID:       1006,
+					Source:   "backend",
+					Dest:     "db",
+					Services: []string{"/infra/services/HTTPS"},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
 /*
 Example 2 with macro and micro segmentation
 
