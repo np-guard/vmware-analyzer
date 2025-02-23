@@ -335,9 +335,6 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 	if k8sConnectivityFileCreated {
-		// getting the vmware connectivity
-		_, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
-		require.Nil(t, err)
 		netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
 		require.Nil(t, err)
 		netpolConnLines := strings.Split(string(netpolConnBytes), "\n")
@@ -347,8 +344,13 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 			require.Equal(t, len(namesAndConn), 2)
 			netpolConn[namesAndConn[0]] = namesAndConn[1]
 		}
-		for src, srcConn := range connectivity {
-			for dst, conn := range srcConn {
+		// get analized connectivity:
+		config, err := analyzer.ConfigFromResourcesContainer(rc, common.OutputParameters{})
+		require.Nil(t, err)
+		connMap := config.AnalyzedConnectivity()
+		// iterate over the connMap, create test for each connection:
+		for src, dsts := range connMap {
+			for dst, conn := range dsts {
 			}
 		}
 	}
