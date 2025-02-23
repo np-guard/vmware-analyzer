@@ -37,9 +37,8 @@ func (groupTerm groupAtomicTerm) name() string {
 }
 
 func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction,
-	ruleId int) []*Conjunction {
+	ruleID int) []*Conjunction {
 	res := []*Conjunction{}
-	const synthesisUseGroup = "synthesis will be based only on group name"
 	for _, group := range groups {
 		// todo: treat negation properly
 		if cachedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
@@ -50,7 +49,7 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 		// default: Conjunction defined via group only
 		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
 		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %v, "+
-			"synthesis will be based only on its name", group.Name(), ruleId)
+			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
 			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
