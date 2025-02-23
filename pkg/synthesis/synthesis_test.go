@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -325,12 +326,31 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
 	require.Nil(t, err)
-	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
+	k8sConnectivityFile := path.Join(synTest.debugDir(), "k8s_connectivity.txt")
+	k8sConnectivityFileCreated, err := k8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
 	require.Nil(t, err)
-	// compare to expected results:
+	// compare k8s resources to expected results:
 	if synTest.hasExpectedResults() {
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	}
+	if k8sConnectivityFileCreated {
+		// getting the vmware connectivity
+		_, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+		require.Nil(t, err)
+		netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
+		require.Nil(t, err)
+		netpolConnLines := strings.Split(string(netpolConnBytes), "\n")
+		netpolConn := map[string]string{}
+		for _, line := range netpolConnLines {
+			namesAndConn := strings.Split(line, ":")
+			require.Equal(t, len(namesAndConn), 2)
+			netpolConn[namesAndConn[0]] = namesAndConn[1]
+		}
+		for src, srcConn := range connectivity {
+			for dst, conn := range srcConn {
+			}
+		}
 	}
 }
 
