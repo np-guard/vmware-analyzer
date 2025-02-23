@@ -31,7 +31,7 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
 		parser := analyzer.NewNSXConfigParserFromResourcesContainer(recourses)
-		err := parser.RunParser()
+		err := parser.RunParser(true)
 		if err != nil {
 			return nil, err
 		}

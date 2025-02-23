@@ -168,7 +168,8 @@ func (c *CategorySpec) outboundEffectiveRules() string {
 
 func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
-	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
+	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string,
+	origDefaultRule *collector.FirewallRule, alsoNonEffectRules bool) {
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
@@ -192,7 +193,8 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	}
 	c.Rules = append(c.Rules, newRule)
 
-	inbound, outbound := newRule.effectiveRules()
+	inbound, outbound := newRule.effectiveRules(alsoNonEffectRules)
+
 	if c.Category != collector.EthernetCategory {
 		c.ProcessedRules.addInboundRule(inbound, c.dfwRef)
 		c.ProcessedRules.addOutboundRule(outbound, c.dfwRef)

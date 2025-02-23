@@ -94,8 +94,10 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 	logging.Debugf("%s %s", f.ruleDescriptionStr(), warnMsg)
 }
 
-func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
-	if len(f.scope) == 0 {
+func (f *FwRule) effectiveRules(alsoNonEffectRules bool) (inbound, outbound *FwRule) {
+	// in analysis, we ignore rules with no VMs in src, dst. But not in synthesize - in the future the same src
+	// may have VMs in it
+	if len(f.scope) == 0 && !alsoNonEffectRules {
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
 		return nil, nil
 	}
