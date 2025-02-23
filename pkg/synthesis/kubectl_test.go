@@ -48,7 +48,8 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
 	// run netpol-analizer, for debugging:
-	require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
+	_, err = k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt")
+	require.Nil(t, err)
 
 	// create the kubectl bash files:
 	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))

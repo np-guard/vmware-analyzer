@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -342,11 +343,12 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
 		require.Nil(t, err)
 		netpolConnLines := strings.Split(string(netpolConnBytes), "\n")
-		netpolConn := map[string]string{}
+		netpolConnLines = slices.DeleteFunc(netpolConnLines, func(s string) bool { return s == "" })
+		netpolConnMap := map[string]string{}
 		for _, line := range netpolConnLines {
-			namesAndConn := strings.Split(line, ":")
+			namesAndConn := strings.Split(line, " : ")
 			require.Equal(t, len(namesAndConn), 2)
-			netpolConn[namesAndConn[0]] = namesAndConn[1]
+			netpolConnMap[namesAndConn[0]] = namesAndConn[1]
 		}
 		// get analized connectivity:
 		config, err := analyzer.ConfigFromResourcesContainer(rc, common.OutputParameters{})
@@ -355,9 +357,24 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		// iterate over the connMap, create test for each connection:
 		for src, dsts := range connMap {
 			for dst, conn := range dsts {
+				names := fmt.Sprintf("default/%s[Pod] => default/%s[Pod]", src.Name(), dst.Name())
+				netpolConn, ok := netpolConnMap[names]
+				require.Equal(t, ok, !conn.Conn.IsEmpty())
+				if ok {
+					compareConns(t, conn.Conn.String(), netpolConn)
+				}
 			}
 		}
 	}
+}
+func compareConns(t *testing.T, vmFormat, k8sFormat string) {
+	vmFormat = strings.ReplaceAll(vmFormat, "dst-ports: ", "")
+	vmFormat = strings.ReplaceAll(vmFormat, "ICMP;", "")
+	if vmFormat == "TCP,UDP"{
+		vmFormat = "All Connections"
+	}
+	k8sFormat = strings.ReplaceAll(k8sFormat, " 1-65535", "")
+	require.Equal(t, vmFormat, k8sFormat)
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
