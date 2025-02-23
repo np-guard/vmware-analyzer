@@ -8,7 +8,7 @@ import (
 
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (
 	ParsedNSXConfig, string, error) {
-	config, err := configFromResourcesContainer(recourses, params)
+	config, err := ConfigFromResourcesContainer(recourses, params)
 	if err != nil {
 		return nil, "", err
 	}
@@ -39,7 +39,7 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	return config, res, err
 }
 
-func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
+func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
