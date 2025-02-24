@@ -12,9 +12,9 @@ import (
 )
 
 type DFW struct {
-	CategoriesSpecs   []*CategorySpec // ordered list of categories
-	totalIngressRules int
-	totalEgressRules  int
+	CategoriesSpecs            []*CategorySpec // ordered list of categories
+	totalEffectiveIngressRules int
+	totalEffectiveEgressRules  int
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
@@ -62,9 +62,9 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	allDeniedConns = emptyConnectionsAndRules()
 	allNotDeterminedConns := emptyConnectionsAndRules()
 	delegatedConns = emptyConnectionsAndRules()
-	remainingRulesNum := d.totalEgressRules
+	remainingRulesNum := d.totalEffectiveEgressRules
 	if isIngress {
-		remainingRulesNum = d.totalIngressRules
+		remainingRulesNum = d.totalEffectiveIngressRules
 	}
 
 	for _, dfwCategory := range d.CategoriesSpecs {

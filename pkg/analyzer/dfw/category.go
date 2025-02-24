@@ -25,14 +25,14 @@ type EvaluatedRules struct {
 func (e *EvaluatedRules) addInboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Inbound = append(e.Inbound, r)
-		d.totalIngressRules += 1
+		d.totalEffectiveIngressRules += 1
 	}
 }
 
 func (e *EvaluatedRules) addOutboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Outbound = append(e.Outbound, r)
-		d.totalEgressRules += 1
+		d.totalEffectiveEgressRules += 1
 	}
 }
 
