@@ -57,9 +57,9 @@ var Example1c = ExampleSynthesis{
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
 var ExampleDumbeldore = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
+	FromNSX: data.Example{VMs: []string{huf, gry, dum1, dum2},
 		GroupsByVMs: map[string][]string{
-			sly:               {sly},
+			sly:               {}, // no VMs in src/dst in snapshot should not affect synthesis
 			huf:               {huf},
 			gry:               {gry},
 			dum:               {dum1, dum2},
