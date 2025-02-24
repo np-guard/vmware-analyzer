@@ -351,7 +351,7 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 	}
 	res := netset.NoTransports()
 	for _, s := range rule.Services {
-		// currenrly ignoring services "ANY", if ServiceEntries is not empty..
+		// currently, ignoring services "ANY", if ServiceEntries is not empty..
 		if s == anyStr {
 			logging.Debugf("warning: for rule %d, found rule.Services containing ANY, with non empty serviceEntries. ignoring ANY for this rule.",
 				*rule.RuleId)
