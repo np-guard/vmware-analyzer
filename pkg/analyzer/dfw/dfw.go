@@ -184,11 +184,11 @@ func (d *DFW) AllEffectiveRules() string {
 func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string,
-	origDefaultRule *collector.FirewallRule, forSynthesis bool) {
+	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {
 		if fwCategory.Category.String() == categoryStr {
 			fwCategory.addRule(src, dst, srcGroups, dstGroups, scopeGroups, isAllSrcGroups, isAllDstGroups, conn,
-				actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule, forSynthesis)
+				actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
 		}
 	}
 }

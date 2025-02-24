@@ -22,17 +22,21 @@ type EvalRules struct {
 	Outbound []*FwRule
 }
 
-func (e *EvalRules) addInboundRule(r *FwRule, d *DFW) {
+func (e *EvalRules) addInboundRule(r *FwRule, d *DFW, incCntr bool) {
 	if r != nil {
 		e.Inbound = append(e.Inbound, r)
-		d.totalEffectiveIngressRules += 1
+		if incCntr {
+			d.totalEffectiveIngressRules += 1
+		}
 	}
 }
 
-func (e *EvalRules) addOutboundRule(r *FwRule, d *DFW) {
+func (e *EvalRules) addOutboundRule(r *FwRule, d *DFW, incCntr bool) {
 	if r != nil {
 		e.Outbound = append(e.Outbound, r)
-		d.totalEffectiveEgressRules += 1
+		if incCntr {
+			d.totalEffectiveEgressRules += 1
+		}
 	}
 }
 
@@ -170,7 +174,7 @@ func (c *CategorySpec) outboundEffectiveRules() string {
 func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
 	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string,
-	origDefaultRule *collector.FirewallRule, forSynthesis bool) {
+	origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,
@@ -194,11 +198,17 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	}
 	c.Rules = append(c.Rules, newRule)
 
-	inbound, outbound := newRule.effectiveRules(forSynthesis)
+	// Effective inbound and outbound: rules that affect the current cfg. specifically src and dst has vms. For analysis
+	inboundEffective, outboundEffective := newRule.effectiveRules(false)
+	// Effective inbound and outbound: all evaluated rules, also that do not affect the current cfg.
+	// specifically src and dst may not have vms in the current cfg. For synthesis
+	inboundEvaluated, outboundEvaluated := newRule.effectiveRules(true)
 
 	if c.Category != collector.EthernetCategory {
-		c.EffectiveRules.addInboundRule(inbound, c.dfwRef)
-		c.EffectiveRules.addOutboundRule(outbound, c.dfwRef)
+		c.EffectiveRules.addInboundRule(inboundEffective, c.dfwRef, true)
+		c.EffectiveRules.addOutboundRule(outboundEffective, c.dfwRef, true)
+		c.EvaluatedRules.addInboundRule(inboundEvaluated, c.dfwRef, false)
+		c.EvaluatedRules.addOutboundRule(outboundEvaluated, c.dfwRef, false)
 	} else {
 		logging.Debugf(
 			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)

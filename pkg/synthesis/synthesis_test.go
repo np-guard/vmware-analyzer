@@ -280,7 +280,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	require.Nil(t, err)
 	// get the config:
 	parser := analyzer.NewNSXConfigParserFromResourcesContainer(rc)
-	err = parser.RunParser(true)
+	err = parser.RunParser()
 	require.Nil(t, err)
 	config := parser.GetConfig()
 	// write the config summary into a file, for debugging:

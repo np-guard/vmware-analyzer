@@ -94,18 +94,21 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 	logging.Debugf("%s %s", f.ruleDescriptionStr(), warnMsg)
 }
 
-// forSynthesis used to return non-nil also if current snapshot has no VMs in src or in dst
+// in the following 3 functions:
+// forSynthesis = true: returns non-nil also if current snapshot has no VMs in src or in dst; omit wanring which will be
+// given for the execution of the functions for analysis with forSynthesis = false
+
 func (f *FwRule) effectiveRules(forSynthesis bool) (inbound, outbound *FwRule) {
 	// in analysis, we ignore rules with no VMs in src, dst. But not in synthesize - in the future the same src
 	// may have VMs in it
-	if len(f.scope) == 0 {
+	if !forSynthesis && len(f.scope) == 0 {
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
-		if !forSynthesis {
-			return nil, nil
-		}
+		return nil, nil
 	}
 	if f.Conn.IsEmpty() {
-		f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
+		if !forSynthesis {
+			f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
+		}
 		return nil, nil
 	}
 	return f.getInboundRule(forSynthesis), f.getOutboundRule(forSynthesis)
@@ -114,27 +117,26 @@ func (f *FwRule) effectiveRules(forSynthesis bool) (inbound, outbound *FwRule) {
 func (f *FwRule) getInboundRule(forSynthesis bool) *FwRule {
 	// if action is OUT -> return nil
 	if f.direction == string(nsx.RuleDirectionOUT) {
-		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
+		if !forSynthesis {
+			f.ruleWarning("has no effective inbound component, since its direction is OUT only")
+		}
 		return nil
 	}
-	noVMsSrcOrDst := false
-	if len(f.dstVMs) == 0 {
-		f.ruleWarning("has no effective inbound component, since its dest-vms component is empty")
-		noVMsSrcOrDst = true
-	}
-	if len(f.srcVMs) == 0 {
-		f.ruleWarning("hs no effective inbound component, since its target src-vms component is empty")
-		noVMsSrcOrDst = true
-	}
-
 	// inbound rule operates on intersection(dest, scope)
 	newDest := endpoints.Intersection(f.dstVMs, f.scope)
-	if len(newDest) == 0 {
-		f.ruleWarning("has no effective inbound component, since its intersction for dest & scope is empty")
-		noVMsSrcOrDst = true
-	}
-	if !forSynthesis && noVMsSrcOrDst {
-		return nil
+	if !forSynthesis {
+		if len(f.dstVMs) == 0 {
+			f.ruleWarning("has no effective inbound component, since its dest-vms component is empty")
+			return nil
+		}
+		if len(f.srcVMs) == 0 {
+			f.ruleWarning("hs no effective inbound component, since its target src-vms component is empty")
+			return nil
+		}
+		if len(newDest) == 0 {
+			f.ruleWarning("has no effective inbound component, since its intersection for dest & scope is empty")
+			return nil
+		}
 	}
 	return &FwRule{
 		srcVMs:         f.srcVMs,

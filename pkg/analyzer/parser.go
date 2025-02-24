@@ -60,15 +60,13 @@ func (p *NSXConfigParser) init() {
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
 }
 
-func (p *NSXConfigParser) RunParser(forSynthesis bool) error {
+func (p *NSXConfigParser) RunParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
 	p.getVMs()    // get vms config
 	p.getGroups() // get groups config
-	if !forSynthesis {
-		p.removeVMsWithoutGroups()
-	}
-	p.getDFW(forSynthesis) // get distributed firewall config
+	p.removeVMsWithoutGroups()
+	p.getDFW() // get distributed firewall config
 	p.addPathsToDisplayNames()
 	return nil
 }
@@ -154,7 +152,7 @@ func (p *NSXConfigParser) getVMs() {
 	}
 }
 
-func (p *NSXConfigParser) getDFW(forSynthesis bool) {
+func (p *NSXConfigParser) getDFW() {
 	p.configRes.Fw = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
@@ -180,7 +178,7 @@ func (p *NSXConfigParser) getDFW(forSynthesis bool) {
 					r.scope, r.scopeGroups = p.getEndpointsFromGroupsPaths(rule.Scope, false)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
-				p.addFWRule(r, category, rule, forSynthesis)
+				p.addFWRule(r, category, rule)
 			}
 
 			// add default rule if such is configured
@@ -196,17 +194,16 @@ func (p *NSXConfigParser) getDFW(forSynthesis bool) {
 				} else {
 					defaultRule.scope = scope
 					defaultRule.secPolicyName = *secPolicy.DisplayName
-					p.addFWRule(defaultRule, category, nil, forSynthesis)
+					p.addFWRule(defaultRule, category, nil)
 				}
 			}
 		}
 	}
 }
 
-func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule, forSynthesis bool) {
+func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
 	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
-		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj,
-		forSynthesis)
+		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
 func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {

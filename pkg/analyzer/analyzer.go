@@ -41,7 +41,7 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 
 func configFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
 	parser := NewNSXConfigParserFromResourcesContainer(recourses)
-	err := parser.RunParser(false)
+	err := parser.RunParser()
 	if err != nil {
 		return nil, err
 	}
