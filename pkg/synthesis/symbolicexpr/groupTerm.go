@@ -36,9 +36,9 @@ func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
 
-func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction) []*Conjunction {
+func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction,
+	ruleID int) []*Conjunction {
 	res := []*Conjunction{}
-	const synthesisUseGroup = "synthesis will be based only on group name"
 	for _, group := range groups {
 		// todo: treat negation properly
 		if cachedGroupConj, ok := groupToConjunctions[group.Name()]; ok {
@@ -48,16 +48,18 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 		// not in cache
 		// default: Conjunction defined via group only
 		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
+		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
+			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
 			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
-				logging.Debugf("For group %s, %s", group.Name(), synthesisUseGroup)
+				logging.Debugf("for %s", synthesisUseGroup)
 			}
 		} else {
-			logging.Debugf("No expression is attached to group %s; %s.", group.Name(), synthesisUseGroup)
+			logging.Debugf("No expression is attached to %s", synthesisUseGroup)
 		}
 		groupToConjunctions[group.Name()] = groupConj
 		res = append(res, groupConj...)
