@@ -113,13 +113,13 @@ var ExampleDumbeldore = ExampleSynthesis{
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
 var ExampleTwoDeniesSimple = ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
+	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum2},
 		GroupsByVMs: map[string][]string{
 			sly:  {sly},
 			huf:  {huf},
 			gry:  {gry},
-			dum:  {dum1, dum2},
-			dum1: {dum1},
+			dum:  {dum2},
+			dum1: {},
 			dum2: {dum2},
 		},
 		Policies: []data.Category{
@@ -663,10 +663,9 @@ var disjointHouses = [][]string{{sly, huf, gry, dum}}
 
 var ExampleExprSingleScope = ExampleSynthesis{
 	FromNSX: data.Example{
-		Name: "ExampleExprSingleScope",
-		VMs:  []string{sly, huf, gry, dum},
-		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
-			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
+		Name:    "ExampleExprSingleScope",
+		VMs:     []string{huf, gry, dum},
+		VMsTags: map[string][]nsx.Tag{huf: {{Tag: huf}}, gry: {{Tag: gry}}, dum: {{Tag: dum}}},
 		GroupsByExpr: map[string]data.ExampleExpr{
 			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}},
 			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}},
