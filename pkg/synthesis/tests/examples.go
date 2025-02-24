@@ -800,6 +800,23 @@ var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
+// ExampleExprTwoScopesAbstract is like ExampleExprTwoScopes expect it has no VMs
+var ExampleExprTwoScopesAbstract = ExampleSynthesis{FromNSX: data.Example{
+	Name:    "ExampleExprTwoScopes",
+	VMs:     []string{},
+	VMsTags: map[string][]nsx.Tag{},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
+	Policies: hogwartsAppToHousesPolicy,
+},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+}
+
 var vmsHouses = []string{slyDB, slyWeb, slyApp,
 	hufDB, hufWeb, hufApp,
 	gryDB, gryWeb, gryApp}
