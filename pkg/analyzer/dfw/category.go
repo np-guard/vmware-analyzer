@@ -39,7 +39,7 @@ func (e *EvaluatedRules) addOutboundRule(r *FwRule, d *DFW) {
 type CategorySpec struct {
 	Category       collector.DfwCategory
 	Rules          []*FwRule       // ordered list of rules
-	ProcessedRules *EvaluatedRules // ordered list of effective rules
+	EffectiveRules *EvaluatedRules // ordered list of effective rules
 	dfwRef         *DFW
 }
 
@@ -101,9 +101,9 @@ func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
 ) {
 	// logging.Debugf("category: %s", c.Category.String())
 	allowedConns, jumpToAppConns, deniedConns = emptyConnectionsAndRules(), emptyConnectionsAndRules(), emptyConnectionsAndRules()
-	rules := c.ProcessedRules.Inbound // inbound effective rules
+	rules := c.EffectiveRules.Inbound // inbound effective rules
 	if !isIngress {
-		rules = c.ProcessedRules.Outbound // outbound effective rules
+		rules = c.EffectiveRules.Outbound // outbound effective rules
 	}
 	// logging.Debugf("num of rules: %d", len(rules))
 	for _, rule := range rules {
@@ -155,13 +155,13 @@ func (c *CategorySpec) String() string {
 }
 
 func (c *CategorySpec) inboundEffectiveRules() string {
-	return common.JoinCustomStrFuncSlice(c.ProcessedRules.Inbound,
+	return common.JoinCustomStrFuncSlice(c.EffectiveRules.Inbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
 		common.NewLine)
 }
 
 func (c *CategorySpec) outboundEffectiveRules() string {
-	return common.JoinCustomStrFuncSlice(c.ProcessedRules.Outbound,
+	return common.JoinCustomStrFuncSlice(c.EffectiveRules.Outbound,
 		func(f *FwRule) string { return f.effectiveRuleStr() },
 		common.NewLine)
 }
@@ -196,8 +196,8 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	inbound, outbound := newRule.effectiveRules(forSynthesis)
 
 	if c.Category != collector.EthernetCategory {
-		c.ProcessedRules.addInboundRule(inbound, c.dfwRef)
-		c.ProcessedRules.addOutboundRule(outbound, c.dfwRef)
+		c.EffectiveRules.addInboundRule(inbound, c.dfwRef)
+		c.EffectiveRules.addOutboundRule(outbound, c.dfwRef)
 	} else {
 		logging.Debugf(
 			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)
@@ -208,6 +208,6 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
-		ProcessedRules: &EvaluatedRules{},
+		EffectiveRules: &EvaluatedRules{},
 	}
 }

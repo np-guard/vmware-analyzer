@@ -89,9 +89,9 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 
 		// update counter of total remaining rules to analyze
 		if isIngress {
-			remainingRulesNum -= len(dfwCategory.ProcessedRules.Inbound)
+			remainingRulesNum -= len(dfwCategory.EffectiveRules.Inbound)
 		} else {
-			remainingRulesNum -= len(dfwCategory.ProcessedRules.Outbound)
+			remainingRulesNum -= len(dfwCategory.EffectiveRules.Outbound)
 		}
 
 		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
