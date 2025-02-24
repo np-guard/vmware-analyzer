@@ -48,7 +48,7 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 		// not in cache
 		// default: Conjunction defined via group only
 		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
-		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %v, "+
+		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
