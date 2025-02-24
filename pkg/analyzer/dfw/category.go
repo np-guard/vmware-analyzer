@@ -15,21 +15,21 @@ import (
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
 
-// EvaluatedRules are built from original rules, split to separate Inbound & Outbound rules
+// EvalRules are built from original rules, split to separate Inbound & Outbound rules
 // consider already the scope from the original rules
-type EvaluatedRules struct {
+type EvalRules struct {
 	Inbound  []*FwRule
 	Outbound []*FwRule
 }
 
-func (e *EvaluatedRules) addInboundRule(r *FwRule, d *DFW) {
+func (e *EvalRules) addInboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Inbound = append(e.Inbound, r)
 		d.totalEffectiveIngressRules += 1
 	}
 }
 
-func (e *EvaluatedRules) addOutboundRule(r *FwRule, d *DFW) {
+func (e *EvalRules) addOutboundRule(r *FwRule, d *DFW) {
 	if r != nil {
 		e.Outbound = append(e.Outbound, r)
 		d.totalEffectiveEgressRules += 1
@@ -38,8 +38,9 @@ func (e *EvaluatedRules) addOutboundRule(r *FwRule, d *DFW) {
 
 type CategorySpec struct {
 	Category       collector.DfwCategory
-	Rules          []*FwRule       // ordered list of rules
-	EffectiveRules *EvaluatedRules // ordered list of effective rules
+	Rules          []*FwRule  // ordered list of rules
+	EvaluatedRules *EvalRules // ordered list of all evaluated rules
+	EffectiveRules *EvalRules // ordered list of effective rules
 	dfwRef         *DFW
 }
 
@@ -208,6 +209,7 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
-		EffectiveRules: &EvaluatedRules{},
+		EvaluatedRules: &EvalRules{},
+		EffectiveRules: &EvalRules{},
 	}
 }
