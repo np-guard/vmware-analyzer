@@ -97,7 +97,7 @@ type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroupsStr(abstractModel.allGroups, abstractModel.epToGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
+		strGroups(abstractModel.allGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
 		strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
 }
 
@@ -110,7 +110,7 @@ func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
 		strOrigSymbolicRules(policy.outbound, true, options.Color)
 }
 
-func strGroupsStr(allGroups []*collector.Group, epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
+func strGroups(allGroups []*collector.Group, color bool) string {
 	// todo: identify here cases in which we were unable to process expr
 	header := []string{"Group", "Expression", "VM"}
 	lines := make([][]string, len(allGroups))
