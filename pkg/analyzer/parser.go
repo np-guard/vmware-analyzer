@@ -60,13 +60,13 @@ func (p *NSXConfigParser) init() {
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
 }
 
-func (p *NSXConfigParser) RunParser(alsoNonEffectRules bool) error {
+func (p *NSXConfigParser) RunParser(forSynthesis bool) error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
 	p.getVMs()    // get vms config
 	p.getGroups() // get groups config
 	p.removeVMsWithoutGroups()
-	p.getDFW(alsoNonEffectRules) // get distributed firewall config
+	p.getDFW(forSynthesis) // get distributed firewall config
 	p.addPathsToDisplayNames()
 	return nil
 }
@@ -151,7 +151,7 @@ func (p *NSXConfigParser) getVMs() {
 	}
 }
 
-func (p *NSXConfigParser) getDFW(alsoNonEffectRules bool) {
+func (p *NSXConfigParser) getDFW(forSynthesis bool) {
 	p.configRes.Fw = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
@@ -177,7 +177,7 @@ func (p *NSXConfigParser) getDFW(alsoNonEffectRules bool) {
 					r.scope, r.scopeGroups = p.getEndpointsFromGroupsPaths(rule.Scope, false)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
-				p.addFWRule(r, category, rule, alsoNonEffectRules)
+				p.addFWRule(r, category, rule, forSynthesis)
 			}
 
 			// add default rule if such is configured
@@ -193,17 +193,17 @@ func (p *NSXConfigParser) getDFW(alsoNonEffectRules bool) {
 				} else {
 					defaultRule.scope = scope
 					defaultRule.secPolicyName = *secPolicy.DisplayName
-					p.addFWRule(defaultRule, category, nil, alsoNonEffectRules)
+					p.addFWRule(defaultRule, category, nil, forSynthesis)
 				}
 			}
 		}
 	}
 }
 
-func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule, alsoNonEffectRules bool) {
+func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule, forSynthesis bool) {
 	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj,
-		alsoNonEffectRules)
+		forSynthesis)
 }
 
 func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
