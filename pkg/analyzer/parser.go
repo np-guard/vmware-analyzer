@@ -65,7 +65,9 @@ func (p *NSXConfigParser) RunParser(forSynthesis bool) error {
 	p.init()
 	p.getVMs()    // get vms config
 	p.getGroups() // get groups config
-	p.removeVMsWithoutGroups()
+	if !forSynthesis {
+		p.removeVMsWithoutGroups()
+	}
 	p.getDFW(forSynthesis) // get distributed firewall config
 	p.addPathsToDisplayNames()
 	return nil
