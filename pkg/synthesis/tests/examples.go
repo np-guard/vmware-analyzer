@@ -782,37 +782,33 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryWeb: {{Scope: house, Tag: gry}, {Scope: funct, Tag: web}},
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
+var twoScopeGroupsByExpr = map[string]data.ExampleExpr{
+	sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+	gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+	huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+	db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+	web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+	app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
+
 var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprTwoScopes",
 	VMs: []string{slyDB, slyWeb, slyApp,
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
-	VMsTags: vmsHousesTags,
-	GroupsByExpr: map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
-		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
-		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
-	Policies: hogwartsAppToHousesPolicy,
+	VMsTags:      vmsHousesTags,
+	GroupsByExpr: twoScopeGroupsByExpr,
+	Policies:     hogwartsAppToHousesPolicy,
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
 // ExampleExprTwoScopesAbstract is like ExampleExprTwoScopes expect it has no VMs
 var ExampleExprTwoScopesAbstract = ExampleSynthesis{FromNSX: data.Example{
-	Name:    "ExampleExprTwoScopes",
-	VMs:     []string{},
-	VMsTags: map[string][]nsx.Tag{},
-	GroupsByExpr: map[string]data.ExampleExpr{
-		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
-		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
-		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
-	Policies: hogwartsAppToHousesPolicy,
+	Name:         "ExampleExprTwoScopes",
+	VMs:          []string{},
+	VMsTags:      map[string][]nsx.Tag{},
+	GroupsByExpr: twoScopeGroupsByExpr,
+	Policies:     hogwartsAppToHousesPolicy,
 },
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
