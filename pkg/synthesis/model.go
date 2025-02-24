@@ -14,6 +14,7 @@ import (
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
 	vms        []*endpoints.VM
+	allGroups  []*collector.Group
 	epToGroups map[*endpoints.VM][]*collector.Group
 	// todo: add similar maps to OS, hostname
 
@@ -96,7 +97,7 @@ type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroupsStr(abstractModel.epToGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
+		strGroupsStr(abstractModel.allGroups, abstractModel.epToGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
 		strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
 }
 
@@ -109,23 +110,12 @@ func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
 		strOrigSymbolicRules(policy.outbound, true, options.Color)
 }
 
-func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
-	// 1. gets a list of groups
-	groupsMap := map[string]*collector.Group{}
-	for _, groups := range epsToGroups {
-		for _, group := range groups {
-			if _, ok := groupsMap[*group.DisplayName]; ok {
-				continue
-			}
-			groupsMap[*group.DisplayName] = group
-		}
-	}
-	// 2. gathers the data
+func strGroupsStr(allGroups []*collector.Group, epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
 	// todo: identify here cases in which we were unable to process expr
 	header := []string{"Group", "Expression", "VM"}
-	lines := make([][]string, len(groupsMap))
+	lines := make([][]string, len(allGroups))
 	i := 0
-	for name, group := range groupsMap {
+	for _, group := range allGroups {
 		groupExprStr := ""
 		groupVMNames := make([]string, len(group.VMMembers))
 		if len(group.Expression) > 0 {
@@ -134,7 +124,7 @@ func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) 
 		for j := range group.VMMembers {
 			groupVMNames[j] = *group.VMMembers[j].DisplayName
 		}
-		newLine := []string{name, groupExprStr, strings.Join(groupVMNames, ", ")}
+		newLine := []string{*group.DisplayName, groupExprStr, strings.Join(groupVMNames, ", ")}
 		lines[i] = newLine
 		i++
 	}

@@ -17,15 +17,18 @@ type ParsedNSXConfig interface {
 	DefaultDenyRule() *dfw.FwRule
 	VMs() []*endpoints.VM
 	VMToGroupsMap() map[*endpoints.VM][]*collector.Group
+	GetGroups() []*collector.Group
 }
 
 // config captures nsx config, implements NSXConfig interface
 type config struct {
-	vms                  []*endpoints.VM                      // list of all vms
-	vmsMap               map[string]*endpoints.VM             // map from uid to vm objects
-	Fw                   *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
-	GroupsPerVM          map[*endpoints.VM][]*collector.Group // map from vm to its groups
-	analyzedConnectivity connectivity.ConnMap                 // the resulting connectivity map from analyzing this configuration
+	vms         []*endpoints.VM                      // list of all vms
+	vmsMap      map[string]*endpoints.VM             // map from uid to vm objects
+	Fw          *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups      []*collector.Group                   // list of all groups (also these with no vms)
+	GroupsPerVM map[*endpoints.VM][]*collector.Group // map from vm to its groups
+	// todo: does this belong here? https://github.com/np-guard/vmware-analyzer/issues/145
+	analyzedConnectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
 
@@ -40,6 +43,9 @@ func (c *config) VMs() []*endpoints.VM {
 }
 func (c *config) VMToGroupsMap() map[*endpoints.VM][]*collector.Group {
 	return c.GroupsPerVM
+}
+func (c *config) GetGroups() []*collector.Group {
+	return c.Groups
 }
 
 func (c *config) ComputeConnectivity(vmsFilter []string) {

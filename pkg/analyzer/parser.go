@@ -126,6 +126,7 @@ func (p *NSXConfigParser) addPathsToDisplayNames() {
 
 func (p *NSXConfigParser) getGroups() {
 	p.getAllGroups()
+	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
 }
 
