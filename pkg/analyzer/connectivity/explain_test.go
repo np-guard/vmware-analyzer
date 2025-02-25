@@ -9,7 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 )
 
-func newVM(name string) *endpoints.VM {
+func newVM(name string) endpoints.EP {
 	return endpoints.NewVM(name, name)
 }
 

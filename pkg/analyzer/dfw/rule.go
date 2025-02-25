@@ -192,7 +192,7 @@ func (f *FwRule) processedRuleCapturesPair(src, dst endpoints.EP) bool {
 }
 
 // return whether the rule captures the input src,dst VMs on the given direction
-/*func (f *FwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
+/*func (f *FwRule) capturesPair(src, dst endpoints.EP, isIngress bool) bool {
 	vmsCaptured := slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 	if !vmsCaptured {
 		return false

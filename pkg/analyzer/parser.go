@@ -129,7 +129,7 @@ func (p *NSXConfigParser) getGroups() {
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *NSXConfigParser) getVMs() {
-	p.configRes.vmsMap = map[string]*endpoints.VM{}
+	p.configRes.vmsMap = map[string]endpoints.EP{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
