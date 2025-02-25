@@ -22,7 +22,7 @@ type ParsedNSXConfig interface {
 // config captures nsx config, implements NSXConfig interface
 type config struct {
 	vms                  []endpoints.EP                      // list of all vms
-	vmsMap               map[string]endpoints.EP            // map from uid to vm objects
+	vmsMap               map[string]endpoints.EP             // map from uid to vm objects
 	Fw                   *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
 	GroupsPerVM          map[endpoints.EP][]*collector.Group // map from vm to its groups
 	analyzedConnectivity connectivity.ConnMap                // the resulting connectivity map from analyzing this configuration

@@ -60,4 +60,3 @@ func NewVM(name, uid string) *VM {
 		tags: []string{},
 	}
 }
-
