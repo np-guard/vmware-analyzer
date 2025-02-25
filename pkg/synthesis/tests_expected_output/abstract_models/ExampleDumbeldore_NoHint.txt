@@ -16,11 +16,11 @@ Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
 Original allow rule priority |Rule id |Src                       |Dst                  |Connection
-0                            |1925    |(group = DumbledoreAll)   |(*)                  |All Connections
-1                            |1927    |(group = DumbledoreNoSly) |(group != Slytherin) |All Connections
+0                            |9198    |(group = DumbledoreAll)   |(*)                  |All Connections
+1                            |9200    |(group = DumbledoreNoSly) |(group != Slytherin) |All Connections
 
 outbound rules
 Original allow rule priority |Rule id |Src                       |Dst                  |Connection
-0                            |1925    |(group = DumbledoreAll)   |(*)                  |All Connections
-1                            |1927    |(group = DumbledoreNoSly) |(group != Slytherin) |All Connections
+0                            |9198    |(group = DumbledoreAll)   |(*)                  |All Connections
+1                            |9200    |(group = DumbledoreNoSly) |(group != Slytherin) |All Connections
 
