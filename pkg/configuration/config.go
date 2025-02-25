@@ -37,11 +37,14 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 // Config captures nsx Config, implements NSXConfig interface
 type Config struct {
-	Vms         []topology.Endpoint                      // list of all Vms
-	VmsMap      map[string]topology.Endpoint             // map from uid to vm objects
-	Fw          *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups      []*collector.Group                       // list of all groups (also these with no Vms)
-	GroupsPerVM map[topology.Endpoint][]*collector.Group // map from vm to its groups
+	Vms              []topology.Endpoint // list of all Vms
+	segments         []*topology.Segment
+	VmsMap           map[string]topology.Endpoint             // map from uid to vm objects
+	Fw               *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups           []*collector.Group                       // list of all groups (also these with no Vms)
+	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
+	configSummary    *configInfo
+	origNSXResources *collector.ResourcesContainerModel
 }
 
 func (c *Config) DFW() *dfw.DFW {
@@ -59,6 +62,19 @@ func (c *Config) VMToGroupsMap() map[topology.Endpoint][]*collector.Group {
 }
 func (c *Config) GetGroups() []*collector.Group {
 	return c.Groups
+}
+
+func (c *Config) GetVMs(collectorVMs []*collector.VirtualMachine) (res []*topology.VM) {
+	for _, vm := range collectorVMs {
+		if vm.ExternalId == nil {
+			return nil
+		}
+		id := *vm.ExternalId
+		if vmObj, ok := c.VmsMap[id]; ok {
+			res = append(res, vmObj.(*topology.VM))
+		}
+	}
+	return res
 }
 
 // GetConfigInfoStr returns string describing the captured configuration content

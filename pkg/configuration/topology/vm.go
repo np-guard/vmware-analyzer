@@ -7,13 +7,12 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
-// VM intenal modeling for vmware endpoints
+// VM captures vmware VM with its relevant properties
 type VM struct {
 	name        string
-	uid         string
-	tags        []string
-	ipAddresses []string
-	// address string
+	uid         string   // NSX UID of this VM
+	tags        []string // NSX tags attached to this VM
+	ipAddresses []string // list of IP addresses of this VM's interfaces
 }
 
 func (v *VM) ID() string {
@@ -29,7 +28,7 @@ func (v *VM) String() string {
 }
 
 func (v *VM) Kind() string {
-	return "vm"
+	return "VM"
 }
 
 func (v *VM) InfoStr() []string {
@@ -44,12 +43,17 @@ func (v *VM) IPAddresses() []string {
 	return v.ipAddresses
 }
 
+func (v *VM) IPAddressesStr() string {
+	return strings.Join(v.ipAddresses, common.CommaSeparator)
+}
+
 func (v *VM) AddTag(t string) {
 	if slices.Contains(v.tags, t) {
 		return
 	}
 	v.tags = append(v.tags, t)
 }
+
 func (v *VM) Tags() []string {
 	return v.tags
 }

@@ -505,7 +505,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 		runner.WithAnalysisExplain(true),
 	)
 	require.Nil(t, err)
-	err = runnerObj.Run()
+	_, err = runnerObj.Run()
 	require.Nil(t, err)
 
 	// todo: compare explain output as well

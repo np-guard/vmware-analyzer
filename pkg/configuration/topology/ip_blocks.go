@@ -18,12 +18,12 @@ func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
 	return &RuleIPBlock{origIP: ip, ipBlock: ipBlock{Block: block}}
 }
 
-type Segment struct {
+type SegmentNew struct {
 	ipBlock
 	name string
 	VMs  []Endpoint
 }
 
-func NewSegment(name string, block *netset.IPBlock) *Segment {
-	return &Segment{name: name, ipBlock: ipBlock{Block: block}}
+func NewSegmentNew(name string, block *netset.IPBlock) *SegmentNew {
+	return &SegmentNew{name: name, ipBlock: ipBlock{Block: block}}
 }

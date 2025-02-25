@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 package common
 
 import (
-	"encoding/json"
 	"fmt"
 	"maps"
 	"os"
@@ -138,7 +137,7 @@ func (eg *EdgesGraph) JSONString() (string, error) {
 			asMaps[i]["conn"] = e.label.String()
 		}
 	}
-	return indentMarshal(asMaps)
+	return MarshalJSON(asMaps)
 }
 
 // ////////////////////////////////////////////////////////////////
@@ -182,7 +181,7 @@ func (tn *treeNode) addChild(cType string, c *treeNode) {
 }
 
 func (tg *TreeGraph) JSONString() (string, error) {
-	return indentMarshal(tg.root)
+	return MarshalJSON(tg.root)
 }
 func (tg *TreeGraph) String() string {
 	// todo - implement if needed
@@ -263,10 +262,4 @@ func (dotGraph *DotGraph) String() string {
 
 func (dotGraph *DotGraph) JSONString() (string, error) {
 	return "", nil
-}
-
-// //////////////////////////////////////////////////////////////////////////////////////
-func indentMarshal(v any) (string, error) {
-	toPrint, err := json.MarshalIndent(v, "", "    ")
-	return string(toPrint), err
 }

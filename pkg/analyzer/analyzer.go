@@ -27,7 +27,7 @@ func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivi
 }
 
 func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params common.OutputParameters) (
-	configuration.ParsedNSXConfig,
+	*configuration.Config,
 	connectivity.ConnMap,
 	string,
 	error) {

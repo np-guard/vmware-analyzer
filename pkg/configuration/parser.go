@@ -57,7 +57,7 @@ type nsxConfigParser struct {
 }
 
 func (p *nsxConfigParser) init() {
-	p.configRes = &Config{}
+	p.configRes = &Config{origNSXResources: p.rc}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
@@ -67,18 +67,89 @@ func (p *nsxConfigParser) init() {
 
 func (p *nsxConfigParser) runParser() error {
 	logging.Debugf("started parsing the given NSX config")
-	p.init()
-	p.getVMs() // get vms config
+	p.init() // initialize relevant maps objects
+
+	// the parsing of relevant NSX objects is done here
+	p.storeParsedVMs() // get vms config
 	if err := p.getTopology(); err != nil {
 		return err
 	}
-	p.getGroups() // get groups config
+	p.storeParsedSegments() // get NSX segments config
+	p.storeParsedGroups()   // get groups config
 	p.removeVMsWithoutGroups()
-	p.getDFW() // get distributed firewall config
+	p.storeParsedDFW() // get distributed firewall config
+
+	// additional mappings for more details on log and config fields
 	p.addPathsToDisplayNames()
 	return nil
 }
 
+// storeParsedVMs assigns the parsed VM objects from the NSX resources container into the res config object
+func (p *nsxConfigParser) storeParsedVMs() {
+	p.configRes.VmsMap = map[string]topology.Endpoint{}
+	for i := range p.rc.VirtualMachineList {
+		vm := &p.rc.VirtualMachineList[i]
+		if vm.DisplayName == nil || vm.ExternalId == nil {
+			// skip vm without name
+			logging.Debugf("warning: skipped vm without name/uid at index %d", i)
+			continue
+		}
+		vmObj := topology.NewVM(*vm.DisplayName, *vm.ExternalId)
+		vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
+		for _, tag := range vm.Tags {
+			vmObj.AddTag(tag.Tag)
+			// currently ignoring tag scope
+			if tag.Scope != "" {
+				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
+			}
+		}
+		p.configRes.Vms = append(p.configRes.Vms, vmObj)
+		p.configRes.VmsMap[vmObj.ID()] = vmObj
+	}
+}
+
+func (p *nsxConfigParser) storeParsedSegments() {
+	for i := range p.rc.SegmentList {
+		segment := &p.rc.SegmentList[i]
+		vms := p.configRes.GetVMs(p.rc.GetVMsOfSegment(segment))
+		p.configRes.segments = append(p.configRes.segments, topology.NewSegment(segment, vms))
+	}
+}
+
+/*
+// storeParsedVMs assigns the parsed VM objects from the NSX resources container into the res config object
+
+	func (p *nsxConfigParser) storeParsedVMs() {
+		p.configRes.vmsMap = map[string]*endpoints.VM{}
+		for i := range p.rc.VirtualMachineList {
+			vm := &p.rc.VirtualMachineList[i]
+			if vm.DisplayName == nil || vm.ExternalId == nil {
+				// skip vm without name
+				logging.Debugf("warning: skipped vm without name/uid at index %d", i)
+				continue
+			}
+			vmObj := endpoints.NewVM(*vm.DisplayName, *vm.ExternalId)
+			vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
+			for _, tag := range vm.Tags {
+				vmObj.AddTag(tag.Tag)
+				// currently ignoring tag scope
+				if tag.Scope != "" {
+					logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
+				}
+			}
+			p.configRes.vms = append(p.configRes.vms, vmObj)
+			p.configRes.vmsMap[vmObj.ID()] = vmObj
+		}
+	}
+
+	func (p *NSXConfigParser) storeParsedSegments() {
+		for i := range p.rc.SegmentList {
+			segment := &p.rc.SegmentList[i]
+			vms := p.configRes.getVMs(p.rc.GetVMsOfSegment(segment))
+			p.configRes.segments = append(p.configRes.segments, endpoints.NewSegment(segment, vms))
+		}
+	}
+*/
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
@@ -130,7 +201,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	p.configRes.Fw.SetPathsToDisplayNames(res)
 }
 
-func (p *nsxConfigParser) getGroups() {
+func (p *nsxConfigParser) storeParsedGroups() {
 	p.getAllGroups()
 	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
@@ -160,7 +231,8 @@ func (p *nsxConfigParser) getVMs() {
 	}
 }
 
-func (p *nsxConfigParser) getDFW() {
+// func (p *nsxConfigParser) getDFW() {}
+func (p *nsxConfigParser) storeParsedDFW() {
 	p.configRes.Fw = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources

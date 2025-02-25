@@ -8,13 +8,13 @@ import (
 )
 
 type nsxTopology struct {
-	segments      []*topology.Segment
-	vmSegments    map[topology.Endpoint][]*topology.Segment
+	segments      []*topology.SegmentNew
+	vmSegments    map[topology.Endpoint][]*topology.SegmentNew
 	externalBlock *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
-	return &nsxTopology{vmSegments: map[topology.Endpoint][]*topology.Segment{}, externalBlock: netset.GetCidrAll()}
+	return &nsxTopology{vmSegments: map[topology.Endpoint][]*topology.SegmentNew{}, externalBlock: netset.GetCidrAll()}
 }
 
 func (p *nsxConfigParser) getTopology() (err error) {
@@ -29,7 +29,7 @@ func (p *nsxConfigParser) getTopology() (err error) {
 		if err != nil {
 			return err
 		}
-		segment := topology.NewSegment(*segResource.DisplayName, block)
+		segment := topology.NewSegmentNew(*segResource.DisplayName, block)
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)
