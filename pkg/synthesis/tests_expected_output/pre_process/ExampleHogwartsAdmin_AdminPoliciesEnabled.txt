@@ -24,7 +24,7 @@ Priority |Rule Id |Action |Src           |Dst           |Connection
 0        |10400   |allow  |(*)           |(group = Web) |All Connections
 1        |10401   |allow  |(group = Web) |(group = App) |All Connections
 2        |10405   |allow  |(group = App) |(group = DB)  |All Connections
-3        |2144    |deny   |(*)           |(*)           |All Connections
+3        |10230   |deny   |(*)           |(*)           |All Connections
 
 
 symbolic outbound rules:
@@ -32,5 +32,5 @@ Priority |Rule Id |Action |Src           |Dst           |Connection
 0        |10400   |allow  |(*)           |(group = Web) |All Connections
 1        |10401   |allow  |(group = Web) |(group = App) |All Connections
 2        |10405   |allow  |(group = App) |(group = DB)  |All Connections
-3        |2144    |deny   |(*)           |(*)           |All Connections
+3        |10230   |deny   |(*)           |(*)           |All Connections
 

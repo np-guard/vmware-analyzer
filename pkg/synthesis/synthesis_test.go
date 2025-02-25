@@ -15,13 +15,11 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/tests"
 )
 
 const (
 	expectedOutput = "tests_expected_output"
 	actualOutput   = "tests_actual_output"
-	carriageReturn = "\r"
 )
 
 type synthesisTest struct {
@@ -82,55 +80,55 @@ var groupsByVmsTests = []synthesisTest{
 	},
 	{
 		name:            "ExampleDumbeldore",
-		exData:          &tests.ExampleDumbeldore,
+		exData:          &data.ExampleDumbeldore,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleTwoDeniesSimple",
-		exData:          &tests.ExampleTwoDeniesSimple,
+		exData:          &data.ExampleTwoDeniesSimple,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleDenyPassSimple",
-		exData:          &tests.ExampleDenyPassSimple,
+		exData:          &data.ExampleDenyPassSimple,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHintsDisjoint",
-		exData:          &tests.ExampleHintsDisjoint,
+		exData:          &data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHogwartsSimpler",
-		exData:          &tests.ExampleHogwartsSimpler,
+		exData:          &data.ExampleHogwartsSimpler,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHogwartsNoDumbledore",
-		exData:          &tests.ExampleHogwartsNoDumbledore,
+		exData:          &data.ExampleHogwartsNoDumbledore,
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwarts",
-		exData:          &tests.ExampleHogwarts,
+		exData:          &data.ExampleHogwarts,
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsAdmin",
-		exData:          &tests.ExampleHogwarts,
+		exData:          &data.ExampleHogwarts,
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
-		exData:          &tests.ExampleHogwartsSimplerNonSymInOut,
+		exData:          &data.ExampleHogwartsSimplerNonSymInOut,
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
@@ -139,33 +137,33 @@ var groupsByVmsTests = []synthesisTest{
 var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
-		exData: &tests.ExampleExprSingleScope,
+		exData: &data.ExampleExprSingleScope,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprTwoScopes",
-		exData: &tests.ExampleExprTwoScopes,
+		exData: &data.ExampleExprTwoScopes,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprAndConds",
-		exData: &tests.ExampleExprAndConds,
+		exData: &data.ExampleExprAndConds,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprOrConds",
-		exData: &tests.ExampleExprOrConds,
+		exData: &data.ExampleExprOrConds,
 		noHint: false,
 	},
 	{
 		name:            "ExampleExprAndCondsAdmin",
-		exData:          &tests.ExampleExprAndConds,
+		exData:          &data.ExampleExprAndConds,
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
 	{
 		name:            "ExampleExprOrCondsAdmin",
-		exData:          &tests.ExampleExprOrConds,
+		exData:          &data.ExampleExprOrConds,
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
