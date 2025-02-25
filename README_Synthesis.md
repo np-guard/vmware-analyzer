@@ -1,4 +1,4 @@
-# Synthesize k8s policy
+# Synthesize k8s network policy resources from NSX DFW config
 
 Synthesize a given NSX DFW configuration into an equivalent k8s network policy. 
 
@@ -16,19 +16,19 @@ Flags:
 ## Overview
 Synthesize a given NSX DFW policy into k8s network policy.
 There are two main challenges here: 
-* *The flattening challenge*: translating prioritize _allow/deny/pass_ into flat allow rules (which is what k8s network policies support)
+* *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
 * *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just synthesis a snapshot. 
-This is important since e.g. once a new VM as added with the relevant tags/labels it be granted the desired connectivity.
+This is important since e.g. once a new VM is added with the relevant tags/labels in the target env, it will be granted the desired connectivity.
 
 ### The flattening challenge
-The translation of priortized allow/deny/pass rules into flat allow rules is exponential in the number of terms of the
+The translation of priortized `allow,deny,jump-to-app` rules into flat `allow` rules is exponential in the number of terms of the
 original rules (to be accurate, the number of allow rules generated for each original allow rule is
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
 1. Ask the user to provide the tool with _hints_ -  lists of disjoint tags/groups.
 E.g., tags _{frontend, backend}_ are disjoint.
 In the future it is planned to "guess" these
 disjoint sets, and ask the user to approve them.
-2. Apply various optimization to simplify the resulting rules and to rid redundant rules; the more accurate hints the
+2. Apply various optimization to simplify the resulting rules and to delete redundant rules; the more accurate hints the
 tool is provided, the more concise and readable rules it will synthesize.  
 
 ### The policy preserving challenge
@@ -45,7 +45,8 @@ relevant *VM*s will be granted labels of this group. In the following releases w
 
 ## Output
 _k8s_resources_ dir under the dir specified in _synthesis-dump-dir_ contains the following files:
-* **pods.yaml** the list of synthesized _VM's_ _pods_ with the labels of each pos  
+* **pods.yaml** the list pods (as place holder for VMs resources for now) with the relevant labels of each pod.
+The labels are added based on original VMs' tags and groups in NSX env. 
 * **policies.yaml** the k8s policies
 
 The combination of the policies and the pods' labels:
