@@ -1,4 +1,4 @@
-# Synthesize k8s policy
+# Synthesize k8s network policy resources from NSX DFW config
 
 Synthesize a given NSX DFW configuration into an equivalent k8s network policy. 
 
