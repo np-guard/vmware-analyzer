@@ -28,7 +28,7 @@ exponential in the number of term in this allow rule and in higher priority deny
 E.g., tags _{frontend, backend}_ are disjoint.
 In the future it is planned to "guess" these
 disjoint sets, and ask the user to approve them.
-2. Apply various optimization to simplify the resulting rules and to rid redundant rules; the more accurate hints the
+2. Apply various optimization to simplify the resulting rules and to delete redundant rules; the more accurate hints the
 tool is provided, the more concise and readable rules it will synthesize.  
 
 ### The policy preserving challenge
