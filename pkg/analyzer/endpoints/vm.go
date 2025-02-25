@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"maps"
 	"slices"
 	"strings"
 
@@ -12,9 +11,8 @@ import (
 type VM struct {
 	name        string
 	uid         string
-	tags        []string //todo: implement
+	tags        []string
 	ipAddresses []string
-	// address string
 }
 
 func (v *VM) ID() string {
@@ -22,7 +20,6 @@ func (v *VM) ID() string {
 }
 
 func (v *VM) Name() string {
-	_ = v.tags // todo tmp
 	return v.name
 }
 
@@ -60,43 +57,7 @@ func NewVM(name, uid string) *VM {
 	return &VM{
 		name: name,
 		uid:  uid,
-		tags: []string{}, // todo tmp
+		tags: []string{},
 	}
 }
 
-// todo = move to endpoint.go:
-func Intersection(a, b []EP) []EP {
-	res := []EP{}
-	aKeys := map[string]bool{}
-	for _, aVM := range a {
-		aKeys[aVM.Name()] = true
-	}
-	for _, bVM := range b {
-		if aKeys[bVM.Name()] {
-			res = append(res, bVM)
-		}
-	}
-	return res
-}
-
-func Subtract(a, b []EP) []EP {
-	res := []EP{}
-	bKeys := map[string]bool{}
-	for _, bVM := range b {
-		bKeys[bVM.Name()] = true
-	}
-	for _, aVM := range a {
-		if !bKeys[aVM.Name()] {
-			res = append(res, aVM)
-		}
-	}
-	return res
-}
-
-func Compact(a []EP) []EP {
-	set := map[EP]bool{}
-	for _, aVM := range a {
-		set[aVM] = true
-	}
-	return slices.Collect(maps.Keys(set))
-}

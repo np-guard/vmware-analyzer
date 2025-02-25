@@ -1,7 +1,6 @@
 package model
 
 import (
-	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -23,7 +22,6 @@ type ParsedNSXConfig interface {
 // config captures nsx config, implements NSXConfig interface
 type config struct {
 	vms                  []endpoints.EP                      // list of all vms
-	externalIPBlocks     []endpoints.EP                      // list of all external blocks
 	vmsMap               map[string]endpoints.EP            // map from uid to vm objects
 	Fw                   *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
 	GroupsPerVM          map[endpoints.EP][]*collector.Group // map from vm to its groups
@@ -40,10 +38,6 @@ func (c *config) DFW() *dfw.DFW {
 func (c *config) VMs() []endpoints.EP {
 	return c.vms
 }
-func (c *config) EPs() []endpoints.EP {
-	return slices.Concat(c.vms, c.externalIPBlocks)
-}
-
 func (c *config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
 	return c.GroupsPerVM
 }
@@ -52,7 +46,7 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connectivity.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.InitPairs(false, c.EPs(), vmsFilter)
+	res.InitPairs(false, c.VMs(), vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
