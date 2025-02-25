@@ -29,7 +29,10 @@ import (
 //  1. all TCP ports at the netpols are changed to tcp:5000
 //  2. connection between two pods is allowed iff the analyzed connection contains TCP
 //
-// At the end of the tests, services and policies are deleted, pods are are not deleted, to save time to the next test run
+// At the end of the tests, services, pods and policies are deleted,
+// if you wish not to delete the pods pods, to save time to the next test run, set this flag to false:
+const deletePodsAtCleanup = true
+
 func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	if !hasKubectl() {
 		return
@@ -53,7 +56,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 	// create the kubectl bash files:
 	require.Nil(t, createSetEnvironmentFile(k8sDir, setEnvironmentFile, k8sResources.pods))
-	require.Nil(t, createCleanEnvironmentFile(cleanEnvironmentFile))
+	require.Nil(t, createCleanEnvironmentFile(cleanEnvironmentFile, k8sResources.pods))
 
 	// create environment:
 	logging.Debugf("creating environment from file %s", setEnvironmentFile)
@@ -157,9 +160,14 @@ func checkPodsExist(kubeDir string, pods []*core.Pod) (bool, error) {
 	return runCmdFile(testFile) == nil, nil
 }
 
-func createCleanEnvironmentFile(fileName string) error {
+func createCleanEnvironmentFile(fileName string, pods []*core.Pod) error {
 	ctl := kubectlFile{}
 	ctl.clean()
+	if deletePodsAtCleanup {
+		for _, pod := range pods {
+			ctl.deletePod(pod.Name)
+		}
+	}
 	return ctl.createCmdFile(fileName)
 }
 
@@ -266,6 +274,9 @@ func (ctl *kubectlFile) exposePod(name string) {
 }
 func (ctl *kubectlFile) waitPod(name string) {
 	ctl.addCmd(fmt.Sprintf("kubectl wait --timeout=3m --for=condition=Ready pod/%s", name))
+}
+func (ctl *kubectlFile) deletePod(name string) {
+	ctl.addCmd(fmt.Sprintf("kubectl delete pod %s", name))
 }
 func (ctl *kubectlFile) applyResourceFile(resourceFile string) {
 	ctl.addCmd("kubectl apply -f " + resourceFile)
