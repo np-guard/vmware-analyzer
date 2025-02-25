@@ -136,19 +136,15 @@ type ExampleExpr struct {
 // Example is in s single domain
 type Example struct {
 	// config spec fields below
-	VMs          []string
-	VMsTags      map[string][]nsx.Tag
-	GroupsByVMs  map[string][]string
-	GroupsByExpr map[string]ExampleExpr // map from group name to its expr
-	Policies     []Category
+	VMs                []string
+	VMsTags            map[string][]nsx.Tag
+	GroupsByVMs        map[string][]string
+	GroupsByExpr       map[string]ExampleExpr // map from group name to its expr
+	Policies           []Category
+	DisjointGroupsTags [][]string // disjoint groups and tags; used by synthesis
 
 	// JSON generation fields below
 	Name string // example name for JSON file name
-}
-
-type ExampleSynthesis struct {
-	FromNSX            Example
-	DisjointGroupsTags [][]string
 }
 
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "data")

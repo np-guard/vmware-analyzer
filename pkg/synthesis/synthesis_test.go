@@ -26,7 +26,7 @@ const (
 
 type synthesisTest struct {
 	name            string
-	exData          *data.ExampleSynthesis
+	exData          *data.Example
 	synthesizeAdmin bool
 	noHint          bool // run also with no hint
 }
@@ -76,7 +76,7 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 var groupsByVmsTests = []synthesisTest{
 	{
 		name:            "Example1c",
-		exData:          &tests.Example1c,
+		exData:          &data.Example1c,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
@@ -258,7 +258,7 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		rc := data.ExamplesGeneration(&test.exData.FromNSX)
+		rc := data.ExamplesGeneration(test.exData)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
 		},

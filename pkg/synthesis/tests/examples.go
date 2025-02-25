@@ -44,60 +44,55 @@ const (
 	defaultL3   = "Default-L3-Section"
 )
 
-var Example1c = data.ExampleSynthesis{
-	FromNSX: data.Example1c,
-}
-
 // ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
-var ExampleDumbeldore = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
-		GroupsByVMs: map[string][]string{
-			sly:               {sly},
-			huf:               {huf},
-			gry:               {gry},
-			dum:               {dum1, dum2},
-			"DumbledoreAll":   {dum1},
-			"DumbledoreNoSly": {dum2},
-		},
-		Policies: []data.Category{
-			{
-				Name:         "From-Dumbledore-connection",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Dumb1-To-All",
-						ID:       newRuleID,
-						Source:   "DumbledoreAll",
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "Dumb2-Not-Sly",
-						ID:       newRuleID + 1,
-						Source:   "DumbledoreNoSly",
-						Dest:     sly,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Dumb2-To-All",
-						ID:       newRuleID + 2,
-						Source:   "DumbledoreNoSly",
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+var ExampleDumbeldore = data.Example{
+	VMs: []string{sly, huf, gry, dum1, dum2},
+	GroupsByVMs: map[string][]string{
+		sly:               {sly},
+		huf:               {huf},
+		gry:               {gry},
+		dum:               {dum1, dum2},
+		"DumbledoreAll":   {dum1},
+		"DumbledoreNoSly": {dum2},
+	},
+	Policies: []data.Category{
+		{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Dumb1-To-All",
+					ID:       newRuleID,
+					Source:   "DumbledoreAll",
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "Dumb2-Not-Sly",
+					ID:       newRuleID + 1,
+					Source:   "DumbledoreNoSly",
+					Dest:     sly,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Dumb2-To-All",
+					ID:       newRuleID + 2,
+					Source:   "DumbledoreNoSly",
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -107,61 +102,60 @@ var ExampleDumbeldore = data.ExampleSynthesis{
 // Simple example with two denies
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
-var ExampleTwoDeniesSimple = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
-		GroupsByVMs: map[string][]string{
-			sly:  {sly},
-			huf:  {huf},
-			gry:  {gry},
-			dum:  {dum1, dum2},
-			dum1: {dum1},
-			dum2: {dum2},
-		},
-		Policies: []data.Category{
-			{
-				Name:         "Two-Denys-Simple-Test",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "no-conn-to-dumb1",
-						ID:       1,
-						Source:   anyStr,
-						Dest:     dum1,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "no-conn-to-dumb2",
-						ID:       2,
-						Source:   anyStr,
-						Dest:     dum2,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Slytherin-to-all",
-						ID:       3,
-						Source:   sly,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "Gryffindor-to-all",
-						ID:       4,
-						Source:   gry,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+var ExampleTwoDeniesSimple = data.Example{
+	VMs: []string{sly, huf, gry, dum1, dum2},
+	GroupsByVMs: map[string][]string{
+		sly:  {sly},
+		huf:  {huf},
+		gry:  {gry},
+		dum:  {dum1, dum2},
+		dum1: {dum1},
+		dum2: {dum2},
+	},
+	Policies: []data.Category{
+		{
+			Name:         "Two-Denys-Simple-Test",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "no-conn-to-dumb1",
+					ID:       1,
+					Source:   anyStr,
+					Dest:     dum1,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "no-conn-to-dumb2",
+					ID:       2,
+					Source:   anyStr,
+					Dest:     dum2,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Slytherin-to-all",
+					ID:       3,
+					Source:   sly,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "Gryffindor-to-all",
+					ID:       4,
+					Source:   gry,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -174,67 +168,66 @@ var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, dum1, dum2}}
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
-var ExampleDenyPassSimple = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
-		GroupsByVMs: map[string][]string{
-			sly:  {sly},
-			huf:  {huf},
-			gry:  {gry},
-			dum:  {dum1, dum2},
-			dum1: {dum1},
-			dum2: {dum2},
+var ExampleDenyPassSimple = data.Example{
+	VMs: []string{sly, huf, gry, dum1, dum2},
+	GroupsByVMs: map[string][]string{
+		sly:  {sly},
+		huf:  {huf},
+		gry:  {gry},
+		dum:  {dum1, dum2},
+		dum1: {dum1},
+		dum2: {dum2},
+	},
+	Policies: []data.Category{
+		{
+			Name:         "Env-pass-and-deny",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:     "pass-all-to-dumb",
+					ID:       10218,
+					Source:   anyStr,
+					Dest:     dum,
+					Services: []string{anyStr},
+					Action:   data.JumpToApp,
+				},
+				{
+					Name:     "deny-all-to-Hufflepuff",
+					ID:       10219,
+					Source:   anyStr,
+					Dest:     huf,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "deny-all-to-Slytherin",
+					ID:       10220,
+					Source:   anyStr,
+					Dest:     sly,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+			},
 		},
-		Policies: []data.Category{
-			{
-				Name:         "Env-pass-and-deny",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:     "pass-all-to-dumb",
-						ID:       10218,
-						Source:   anyStr,
-						Dest:     dum,
-						Services: []string{anyStr},
-						Action:   data.JumpToApp,
-					},
-					{
-						Name:     "deny-all-to-Hufflepuff",
-						ID:       10219,
-						Source:   anyStr,
-						Dest:     huf,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "deny-all-to-Slytherin",
-						ID:       10220,
-						Source:   anyStr,
-						Dest:     sly,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
+		{
+			Name:         "App-Allow-All",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "allow-all-to-all",
+					ID:       10230,
+					Source:   anyStr,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         "App-Allow-All",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "allow-all-to-all",
-						ID:       10230,
-						Source:   anyStr,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
-				},
-			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -244,60 +237,59 @@ var ExampleDenyPassSimple = data.ExampleSynthesis{
 // ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
-var ExampleHintsDisjoint = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
-		GroupsByVMs: map[string][]string{
-			sly:  {sly},
-			huf:  {huf},
-			gry:  {gry},
-			dum1: {dum1},
-			dum2: {dum2},
-		},
-		Policies: []data.Category{
-			{
-				Name:         "From-Dumbledore-connection",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Dumb1-Not-Sly",
-						ID:       newRuleID,
-						Source:   dum1,
-						Dest:     sly,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Dumb2-Not-Gryf",
-						ID:       newRuleID + 1,
-						Source:   dum2,
-						Dest:     gry,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Dumb1-To-All",
-						ID:       newRuleID + 2,
-						Source:   dum1,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "Dumb2-To-All",
-						ID:       newRuleID + 3,
-						Source:   dum2,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+var ExampleHintsDisjoint = data.Example{
+	VMs: []string{sly, huf, gry, dum1, dum2},
+	GroupsByVMs: map[string][]string{
+		sly:  {sly},
+		huf:  {huf},
+		gry:  {gry},
+		dum1: {dum1},
+		dum2: {dum2},
+	},
+	Policies: []data.Category{
+		{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Dumb1-Not-Sly",
+					ID:       newRuleID,
+					Source:   dum1,
+					Dest:     sly,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Dumb2-Not-Gryf",
+					ID:       newRuleID + 1,
+					Source:   dum2,
+					Dest:     gry,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Dumb1-To-All",
+					ID:       newRuleID + 2,
+					Source:   dum1,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "Dumb2-To-All",
+					ID:       newRuleID + 3,
+					Source:   dum2,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -333,122 +325,121 @@ micro segmentation
 
 */
 
-var ExampleHogwarts = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+var ExampleHogwarts = data.Example{
+	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
-		GroupsByVMs: map[string][]string{
-			sly: {slyWeb, slyApp, slyDB},
-			huf: {hufWeb, hufApp, hufDB},
-			gry: {gryWeb, gryApp, gryDB},
-			dum: {dum1, dum2},
-			web: {slyWeb, gryWeb, hufWeb},
-			app: {slyApp, gryApp, hufApp},
-			db:  {slyDB, gryDB, hufDB},
+	GroupsByVMs: map[string][]string{
+		sly: {slyWeb, slyApp, slyDB},
+		huf: {hufWeb, hufApp, hufDB},
+		gry: {gryWeb, gryApp, gryDB},
+		dum: {dum1, dum2},
+		web: {slyWeb, gryWeb, hufWeb},
+		app: {slyApp, gryApp, hufApp},
+		db:  {slyDB, gryDB, hufDB},
+	},
+	Policies: []data.Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:   "allow-Gryffindor-to-Gryffindor",
+					ID:     10218,
+					Source: gry,
+					Dest:   gry,
+					Action: data.JumpToApp,
+					Conn:   netset.AllTCPTransport(),
+				},
+			},
 		},
-		Policies: []data.Category{
-			{
-				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:   "allow-Gryffindor-to-Gryffindor",
-						ID:     10218,
-						Source: gry,
-						Dest:   gry,
-						Action: data.JumpToApp,
-						Conn:   netset.AllTCPTransport(),
-					},
+		{
+			Name:         "Hufflepuff-to-Hufflepuff-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:   "allow-Hufflepuff-to-Hufflepuff",
+					ID:     10219,
+					Source: huf,
+					Dest:   huf,
+					Action: data.JumpToApp,
+					//nolint:mnd // these are the port numbers for the test
+					Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+					Direction: string(nsx.RuleDirectionIN),
 				},
 			},
-			{
-				Name:         "Hufflepuff-to-Hufflepuff-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:   "allow-Hufflepuff-to-Hufflepuff",
-						ID:     10219,
-						Source: huf,
-						Dest:   huf,
-						Action: data.JumpToApp,
-						//nolint:mnd // these are the port numbers for the test
-						Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
-						Direction: string(nsx.RuleDirectionIN),
-					},
+		},
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:     "allow-Slytherin-to-Slytherin",
+					ID:       10220,
+					Source:   sly,
+					Dest:     sly,
+					Services: []string{anyStr},
+					Action:   data.JumpToApp,
 				},
 			},
-			{
-				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:     "allow-Slytherin-to-Slytherin",
-						ID:       10220,
-						Source:   sly,
-						Dest:     sly,
-						Services: []string{anyStr},
-						Action:   data.JumpToApp,
-					},
+		},
+		{
+			Name:         "Dumbledore-connection",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:     "allow-Dumbledore-to-all",
+					ID:       10221,
+					Source:   dum,
+					Dest:     gry,
+					Services: []string{anyStr},
+					Action:   data.JumpToApp,
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10300,
+					Source:   anyStr,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Drop,
 				},
 			},
-			{
-				Name:         "Dumbledore-connection",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:     "allow-Dumbledore-to-all",
-						ID:       10221,
-						Source:   dum,
-						Dest:     gry,
-						Services: []string{anyStr},
-						Action:   data.JumpToApp,
-					},
-					{
-						Name:     "default-deny-env",
-						ID:       10300,
-						Source:   anyStr,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-				},
-			},
+		},
 
-			{
-				Name:         "Intra-App-Policy",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Client-Access",
-						ID:       10400,
-						Source:   anyStr,
-						Dest:     web,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "Web-To-App-Access",
-						ID:       10401,
-						Source:   web,
-						Dest:     app,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
-					{
-						Name:     "App-To-DB-Access",
-						ID:       10405,
-						Source:   app,
-						Dest:     db,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Client-Access",
+					ID:       10400,
+					Source:   anyStr,
+					Dest:     web,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "Web-To-App-Access",
+					ID:       10401,
+					Source:   web,
+					Dest:     app,
+					Services: []string{anyStr},
+					Action:   data.Allow,
+				},
+				{
+					Name:     "App-To-DB-Access",
+					ID:       10405,
+					Source:   app,
+					Dest:     db,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -471,75 +462,74 @@ var simpleHogwartsGroups = map[string][]string{
 	web: {slyWeb, gryWeb},
 	app: {slyApp, gryApp}}
 
-var ExampleHogwartsSimpler = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
+var ExampleHogwartsSimpler = data.Example{
+	VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
-		GroupsByVMs: simpleHogwartsGroups,
-		Policies: []data.Category{
-			{
-				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:   "allow-Gryffindor-to-Gryffindor",
-						ID:     10218,
-						Source: gry,
-						Dest:   gry,
-						Action: data.JumpToApp,
-						Conn:   netset.AllTCPTransport(),
-					},
+	GroupsByVMs: simpleHogwartsGroups,
+	Policies: []data.Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:   "allow-Gryffindor-to-Gryffindor",
+					ID:     10218,
+					Source: gry,
+					Dest:   gry,
+					Action: data.JumpToApp,
+					Conn:   netset.AllTCPTransport(),
 				},
 			},
-			{
-				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:   "allow-Slytherin-to-Slytherin",
-						ID:     10220,
-						Source: sly,
-						Dest:   sly,
-						Action: data.JumpToApp,
-						Conn:   netset.AllUDPTransport().Union(netset.AllTCPTransport()),
-					},
-					{
-						Name:     "default-deny-env",
-						ID:       10221,
-						Source:   anyStr,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
+		},
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:   "allow-Slytherin-to-Slytherin",
+					ID:     10220,
+					Source: sly,
+					Dest:   sly,
+					Action: data.JumpToApp,
+					Conn:   netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10221,
+					Source:   anyStr,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Drop,
 				},
 			},
-			{
-				Name:         "Intra-App-Policy",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:   "Client-Access",
-						ID:     9195,
-						Source: anyStr,
-						Dest:   web,
-						Action: data.Allow,
-						Conn:   netset.AllTCPTransport(),
-					},
-					{
-						Name:   "Web-To-App-Access",
-						ID:     9196,
-						Source: web,
-						Dest:   app,
-						Action: data.Allow,
-						Conn:   netset.AllUDPTransport(),
-					},
+		},
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:   "Client-Access",
+					ID:     9195,
+					Source: anyStr,
+					Dest:   web,
+					Action: data.Allow,
+					Conn:   netset.AllTCPTransport(),
+				},
+				{
+					Name:   "Web-To-App-Access",
+					ID:     9196,
+					Source: web,
+					Dest:   app,
+					Action: data.Allow,
+					Conn:   netset.AllUDPTransport(),
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -636,19 +626,18 @@ var hogwartsAppToHousesPolicy = []data.Category{
 	},
 }
 
-var ExampleHogwartsNoDumbledore = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+var ExampleHogwartsNoDumbledore = data.Example{
+	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB},
-		GroupsByVMs: map[string][]string{
-			sly: {slyWeb, slyApp, slyDB},
-			huf: {hufWeb, hufApp, hufDB},
-			gry: {gryWeb, gryApp, gryDB},
-			web: {slyWeb, gryWeb, hufWeb},
-			app: {slyApp, gryApp, hufApp},
-			db:  {slyDB, gryDB, hufDB},
-		},
-		Policies: hogwartsAppToHousesPolicy,
+	GroupsByVMs: map[string][]string{
+		sly: {slyWeb, slyApp, slyDB},
+		huf: {hufWeb, hufApp, hufDB},
+		gry: {gryWeb, gryApp, gryDB},
+		web: {slyWeb, gryWeb, hufWeb},
+		app: {slyApp, gryApp, hufApp},
+		db:  {slyDB, gryDB, hufDB},
 	},
+	Policies:           hogwartsAppToHousesPolicy,
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
@@ -656,112 +645,110 @@ var ExampleHogwartsNoDumbledore = data.ExampleSynthesis{
 
 var disjointHouses = [][]string{{sly, huf, gry, dum}}
 
-var ExampleExprSingleScope = data.ExampleSynthesis{
-	FromNSX: data.Example{
-		Name: "ExampleExprSingleScope",
-		VMs:  []string{sly, huf, gry, dum},
-		VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
-			gry: {{Tag: gry}}, dum: {{Tag: dum}}},
-		GroupsByExpr: map[string]data.ExampleExpr{
-			sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}},
-			gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}},
-			huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}},
-			dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
-		Policies: []data.Category{
-			{
-				Name:         "From-Dumbledore-connection",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Dumb-No-Slytherin",
-						ID:       newRuleID,
-						Source:   dum,
-						Dest:     sly,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Dumb-All",
-						ID:       newRuleID + 1,
-						Source:   dum,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+var ExampleExprSingleScope = data.Example{
+	Name: "ExampleExprSingleScope",
+	VMs:  []string{sly, huf, gry, dum},
+	VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
+		gry: {{Tag: gry}}, dum: {{Tag: dum}}},
+	GroupsByExpr: map[string]data.ExampleExpr{
+		sly: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: sly}}},
+		gry: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: gry}}},
+		huf: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: huf}}},
+		dum: {Cond1: data.ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
+	Policies: []data.Category{
+		{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Dumb-No-Slytherin",
+					ID:       newRuleID,
+					Source:   dum,
+					Dest:     sly,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Dumb-All",
+					ID:       newRuleID + 1,
+					Source:   dum,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         "Gryffindor-connections",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Gryffindor-not-Hufflepuff",
-						ID:       newRuleID + 2,
-						Source:   gry,
-						Dest:     huf,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Gryffindor-All",
-						ID:       newRuleID + 3,
-						Source:   gry,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+		},
+		{
+			Name:         "Gryffindor-connections",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Gryffindor-not-Hufflepuff",
+					ID:       newRuleID + 2,
+					Source:   gry,
+					Dest:     huf,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Gryffindor-All",
+					ID:       newRuleID + 3,
+					Source:   gry,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         "Hufflepuff-connection",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Hufflepuff-No-Slytherin",
-						ID:       newRuleID + 4,
-						Source:   huf,
-						Dest:     sly,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Hufflepuff-All",
-						ID:       newRuleID + 5,
-						Source:   huf,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+		},
+		{
+			Name:         "Hufflepuff-connection",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Hufflepuff-No-Slytherin",
+					ID:       newRuleID + 4,
+					Source:   huf,
+					Dest:     sly,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Hufflepuff-All",
+					ID:       newRuleID + 5,
+					Source:   huf,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         "Slytherin-connection",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:     "Slytherin-no-Gryffindor",
-						ID:       newRuleID + 6,
-						Source:   sly,
-						Dest:     gry,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
-					{
-						Name:     "Slytherin-All",
-						ID:       newRuleID + 7,
-						Source:   sly,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Allow,
-					},
+		},
+		{
+			Name:         "Slytherin-connection",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:     "Slytherin-no-Gryffindor",
+					ID:       newRuleID + 6,
+					Source:   sly,
+					Dest:     gry,
+					Services: []string{anyStr},
+					Action:   data.Drop,
+				},
+				{
+					Name:     "Slytherin-All",
+					ID:       newRuleID + 7,
+					Source:   sly,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Allow,
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
@@ -778,7 +765,7 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryWeb: {{Scope: house, Tag: gry}, {Scope: funct, Tag: web}},
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
-var ExampleExprTwoScopes = data.ExampleSynthesis{FromNSX: data.Example{
+var ExampleExprTwoScopes = data.Example{
 	Name: "ExampleExprTwoScopes",
 	VMs: []string{slyDB, slyWeb, slyApp,
 		hufDB, hufWeb, hufApp,
@@ -791,8 +778,7 @@ var ExampleExprTwoScopes = data.ExampleSynthesis{FromNSX: data.Example{
 		db:  {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
 		web: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
 		app: {Cond1: data.ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
-	Policies: hogwartsAppToHousesPolicy,
-},
+	Policies:           hogwartsAppToHousesPolicy,
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
@@ -801,24 +787,22 @@ var vmsHouses = []string{slyDB, slyWeb, slyApp,
 	gryDB, gryWeb, gryApp}
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
-var ExampleExprAndConds = data.ExampleSynthesis{FromNSX: data.Example{
-	Name:         "ExampleExprAndConds",
-	VMs:          vmsHouses,
-	VMsTags:      vmsHousesTags,
-	GroupsByExpr: getAndOrOrExpr(data.And),
-	Policies:     getAndOrOrPolicies(data.And),
-},
+var ExampleExprAndConds = data.Example{
+	Name:               "ExampleExprAndConds",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       getAndOrOrExpr(data.And),
+	Policies:           getAndOrOrPolicies(data.And),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
-var ExampleExprOrConds = data.ExampleSynthesis{FromNSX: data.Example{
-	Name:         "ExampleOrSimple",
-	VMs:          vmsHouses,
-	VMsTags:      vmsHousesTags,
-	GroupsByExpr: getAndOrOrExpr(data.Or),
-	Policies:     getAndOrOrPolicies(data.Or),
-},
+var ExampleExprOrConds = data.Example{
+	Name:               "ExampleOrSimple",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       getAndOrOrExpr(data.Or),
+	Policies:           getAndOrOrPolicies(data.Or),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
@@ -919,115 +903,114 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 	}
 }
 
-var ExampleHogwartsSimplerNonSymInOut = data.ExampleSynthesis{
-	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
+var ExampleHogwartsSimplerNonSymInOut = data.Example{
+	VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
-		GroupsByVMs: simpleHogwartsGroups,
-		Policies: []data.Category{
-			{
-				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:      "allow-Gryffindor-to-Gryffindor-in",
-						ID:        10218,
-						Source:    gry,
-						Dest:      gry,
-						Action:    data.JumpToApp,
-						Conn:      netset.AllTransports(),
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "allow-Gryffindor-to-Gryffindor-out",
-						ID:        10219,
-						Source:    gry,
-						Dest:      gry,
-						Action:    data.JumpToApp,
-						Conn:      netset.AllTCPTransport(),
-						Direction: string(nsx.RuleDirectionOUT),
-					},
+	GroupsByVMs: simpleHogwartsGroups,
+	Policies: []data.Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:      "allow-Gryffindor-to-Gryffindor-in",
+					ID:        10218,
+					Source:    gry,
+					Dest:      gry,
+					Action:    data.JumpToApp,
+					Conn:      netset.AllTransports(),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow-Gryffindor-to-Gryffindor-out",
+					ID:        10219,
+					Source:    gry,
+					Dest:      gry,
+					Action:    data.JumpToApp,
+					Conn:      netset.AllTCPTransport(),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 			},
-			{
-				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: environment,
-				Rules: []data.Rule{
-					{
-						Name:      "allow-Slytherin-to-Slytherin-in",
-						ID:        10220,
-						Source:    sly,
-						Dest:      sly,
-						Action:    data.JumpToApp,
-						Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "allow-Slytherin-to-Slytherin-out",
-						ID:        10221,
-						Source:    sly,
-						Dest:      sly,
-						Action:    data.JumpToApp,
-						Conn:      netset.AllUDPTransport(),
-						Direction: string(nsx.RuleDirectionOUT),
-					},
-					{
-						Name:     "default-deny-env",
-						ID:       10231,
-						Source:   anyStr,
-						Dest:     anyStr,
-						Services: []string{anyStr},
-						Action:   data.Drop,
-					},
+		},
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: environment,
+			Rules: []data.Rule{
+				{
+					Name:      "allow-Slytherin-to-Slytherin-in",
+					ID:        10220,
+					Source:    sly,
+					Dest:      sly,
+					Action:    data.JumpToApp,
+					Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow-Slytherin-to-Slytherin-out",
+					ID:        10221,
+					Source:    sly,
+					Dest:      sly,
+					Action:    data.JumpToApp,
+					Conn:      netset.AllUDPTransport(),
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10231,
+					Source:   anyStr,
+					Dest:     anyStr,
+					Services: []string{anyStr},
+					Action:   data.Drop,
 				},
 			},
-			{
-				Name:         "Intra-App-Policy",
-				CategoryType: application,
-				Rules: []data.Rule{
-					{
-						Name:      "Client-Access-in",
-						ID:        11000,
-						Source:    anyStr,
-						Dest:      web,
-						Action:    data.Allow,
-						Conn:      netset.AllTransports(),
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "Client-Access-out",
-						ID:        11001,
-						Source:    anyStr,
-						Dest:      web,
-						Action:    data.Allow,
-						Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
-						Direction: string(nsx.RuleDirectionOUT),
-					},
-					{
-						Name:      "Web-To-App-Access-in",
-						ID:        11002,
-						Source:    web,
-						Dest:      app,
-						Action:    data.Allow,
-						Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "Web-To-App-Access-out",
-						ID:        11004,
-						Source:    web,
-						Dest:      app,
-						Action:    data.Allow,
-						Conn:      netset.AllTCPTransport(),
-						Direction: string(nsx.RuleDirectionOUT),
-					},
+		},
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: application,
+			Rules: []data.Rule{
+				{
+					Name:      "Client-Access-in",
+					ID:        11000,
+					Source:    anyStr,
+					Dest:      web,
+					Action:    data.Allow,
+					Conn:      netset.AllTransports(),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "Client-Access-out",
+					ID:        11001,
+					Source:    anyStr,
+					Dest:      web,
+					Action:    data.Allow,
+					Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "Web-To-App-Access-in",
+					ID:        11002,
+					Source:    web,
+					Dest:      app,
+					Action:    data.Allow,
+					Conn:      netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "Web-To-App-Access-out",
+					ID:        11004,
+					Source:    web,
+					Dest:      app,
+					Action:    data.Allow,
+					Conn:      netset.AllTCPTransport(),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []data.Rule{
-					data.DefaultDenyRule(denyRuleIDEnv),
-				},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []data.Rule{
+				data.DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
