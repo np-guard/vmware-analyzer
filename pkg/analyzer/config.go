@@ -1,4 +1,4 @@
-package model
+package analyzer
 
 import (
 	"strings"
@@ -17,16 +17,20 @@ type ParsedNSXConfig interface {
 	DefaultDenyRule() *dfw.FwRule
 	VMs() []*endpoints.VM
 	VMToGroupsMap() map[*endpoints.VM][]*collector.Group
+	TopologyToJSON() (string, error)
 }
 
 // config captures nsx config, implements NSXConfig interface
 type config struct {
-	vms                  []*endpoints.VM                      // list of all vms
+	vms                  []*endpoints.VM // list of all vms
+	segments             []*endpoints.Segment
 	vmsMap               map[string]*endpoints.VM             // map from uid to vm objects
 	Fw                   *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
 	GroupsPerVM          map[*endpoints.VM][]*collector.Group // map from vm to its groups
 	analyzedConnectivity connectivity.ConnMap                 // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
+	configSummary        *configInfo
+	origNSXResources     *collector.ResourcesContainerModel
 }
 
 func (c *config) AnalyzedConnectivity() connectivity.ConnMap {
@@ -40,6 +44,19 @@ func (c *config) VMs() []*endpoints.VM {
 }
 func (c *config) VMToGroupsMap() map[*endpoints.VM][]*collector.Group {
 	return c.GroupsPerVM
+}
+
+func (c *config) getVMs(collectorVMs []*collector.VirtualMachine) (res []*endpoints.VM) {
+	for _, vm := range collectorVMs {
+		if vm.ExternalId == nil {
+			return nil
+		}
+		id := *vm.ExternalId
+		if vmObj, ok := c.vmsMap[id]; ok {
+			res = append(res, vmObj)
+		}
+	}
+	return res
 }
 
 func (c *config) ComputeConnectivity(vmsFilter []string) {
@@ -68,12 +85,20 @@ func (c *config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Segments:\n")
+	sb.WriteString(c.getSegmentsInfoStr(color))
+
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Segments ports:\n")
+	sb.WriteString(c.getSegmentsPortsInfoStr(color))
+
 	// groups
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Groups:\n")
 	sb.WriteString(c.getVMGroupsStr(color))
-	sb.WriteString(common.OutputSectionSep)
 
+	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("DFW:\n")
 	sb.WriteString(c.Fw.OriginalRulesStrFormatted(color))
 	sb.WriteString(common.ShortSep)
@@ -83,6 +108,32 @@ func (c *config) GetConfigInfoStr(color bool) string {
 	sb.WriteString(common.OutputSectionSep)
 
 	return sb.String()
+}
+
+const (
+	vmNameTitle      = "VM Name"
+	segmentNameTitle = "Segment Name"
+)
+
+func (c *config) getSegmentsPortsInfoStr(color bool) string {
+	header := []string{segmentNameTitle, "Port Name", "Port UID", vmNameTitle}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		for _, p := range s.PortsDetails() {
+			lines = append(lines, p.ToStrSlice())
+		}
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *config) getSegmentsInfoStr(color bool) string {
+	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", "VMs"}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
+		lines = append(lines, []string{s.SegmentType(), s.OverlayOrVlan(), s.Name(), s.ID(), s.CIDRs(), s.VlanIDs(), vmsStr})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 func (c *config) getVMGroupsStr(color bool) string {
@@ -96,7 +147,7 @@ func (c *config) getVMGroupsStr(color bool) string {
 }
 
 func (c *config) getVMsInfoStr(color bool) string {
-	header := []string{"VM Name", "VM ID", "VM Addresses"}
+	header := []string{vmNameTitle, "VM ID", "VM Addresses"}
 	lines := [][]string{}
 	for _, vm := range c.vms {
 		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})

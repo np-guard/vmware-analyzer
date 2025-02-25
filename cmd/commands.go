@@ -163,5 +163,6 @@ func runCommand(args *inArgs) error {
 	if err != nil {
 		return err
 	}
-	return runnerObj.Run()
+	_, err = runnerObj.Run()
+	return err
 }

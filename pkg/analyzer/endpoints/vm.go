@@ -3,15 +3,24 @@ package endpoints
 import (
 	"maps"
 	"slices"
+	"strings"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
-// VM intenal modeling for vmware endpoints
+// VM captures vmware VM with its relevant properties
 type VM struct {
 	name        string
-	uid         string
-	tags        []string //todo: implement
-	ipAddresses []string
-	// address string
+	uid         string   // NSX UID of this VM
+	tags        []string // NSX tags attached to this VM
+	ipAddresses []string // list of IP addresses of this VM's interfaces
+}
+
+func NewVM(name, uid string) *VM {
+	return &VM{
+		name: name,
+		uid:  uid,
+	}
 }
 
 func (v *VM) ID() string {
@@ -19,7 +28,6 @@ func (v *VM) ID() string {
 }
 
 func (v *VM) Name() string {
-	_ = v.tags // todo tmp
 	return v.name
 }
 
@@ -28,7 +36,7 @@ func (v *VM) String() string {
 }
 
 func (v *VM) Kind() string {
-	return "vm"
+	return "VM"
 }
 
 func (v *VM) SetIPAddresses(ips []string) {
@@ -39,22 +47,19 @@ func (v *VM) IPAddresses() []string {
 	return v.ipAddresses
 }
 
+func (v *VM) IPAddressesStr() string {
+	return strings.Join(v.ipAddresses, common.CommaSeparator)
+}
+
 func (v *VM) AddTag(t string) {
 	if slices.Contains(v.tags, t) {
 		return
 	}
 	v.tags = append(v.tags, t)
 }
+
 func (v *VM) Tags() []string {
 	return v.tags
-}
-
-func NewVM(name, uid string) *VM {
-	return &VM{
-		name: name,
-		uid:  uid,
-		tags: []string{}, // todo tmp
-	}
 }
 
 func Intersection(a, b []*VM) []*VM {
