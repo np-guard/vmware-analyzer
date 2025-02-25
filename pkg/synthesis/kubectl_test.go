@@ -28,7 +28,7 @@ import (
 // The test is adjusted to this container:
 //   1. all TCP ports at the netpols are changed to tcp:5000
 //   2. connection between two pods is allowed iff the analyzed connection contains TCP
-
+// At the end of the tests, services and policies are deleted, pods are are not deleted, to save time to the next test run
 func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	if !hasKubectl() {
 		return
@@ -37,8 +37,8 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	err := logging.Tee(path.Join(kubeDir, "runK8STraceFlow.log"))
 	require.Nil(t, err)
 	k8sDir := path.Join(kubeDir, k8sResourcesDir)
-	setEvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
-	cleanEvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
+	setEnvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
+	cleanEnvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
 	// create K8S k8sResources
 	k8sResources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
@@ -47,22 +47,23 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	fixPoliciesResources(k8sResources.networkPolicies)
 	fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
-	// run netpol-analizer, for debugging:
+	// run netpol-analyzer, for debugging:
 	require.Nil(t, k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt"))
 
 	// create the kubectl bash files:
-	require.Nil(t, createSetEvironmentFile(k8sDir, setEvironmentFile, k8sResources.pods))
-	require.Nil(t, createCleanEvironmentFile(cleanEvironmentFile))
+	require.Nil(t, createSetEnvironmentFile(k8sDir, setEnvironmentFile, k8sResources.pods))
+	require.Nil(t, createCleanEnvironmentFile(cleanEnvironmentFile))
 
-	// crreate environment:
-	logging.Debugf("creating environment from file %s", setEvironmentFile)
-	require.Nil(t, runCmdFile(setEvironmentFile))
+	// create environment:
+	logging.Debugf("creating environment from file %s", setEnvironmentFile)
+	require.Nil(t, runCmdFile(setEnvironmentFile))
 	logging.Debug("environment created")
 
 	// check connections:
 	checkErr := testConnections(synTest.name, kubeDir, rc)
-	// clean environmaent, we must clean before we checks for errors:
-	cleanErr := runCmdFile(cleanEvironmentFile)
+	// clean environment - services and policies are deleted
+	// we must clean before we checks for errors:
+	cleanErr := runCmdFile(cleanEnvironmentFile)
 	require.Nil(t, checkErr)
 	require.Nil(t, cleanErr)
 }
@@ -122,8 +123,8 @@ func fixAdminPort(port *admin.AdminNetworkPolicyPort) {
 }
 
 // ///////////////////////////////////////////////////////////////////////////////////////
-func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
-	ctl := kubeCTLFile{}
+func createSetEnvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
+	ctl := kubectlFile{}
 	ctl.clean()
 	podsExist, err := checkPodsExist(k8sDir, pods)
 	if err != nil {
@@ -147,7 +148,7 @@ func createSetEvironmentFile(k8sDir, fileName string, pods []*core.Pod) error {
 func checkPodsExist(kubeDir string, pods []*core.Pod) (bool, error) {
 	testFile := path.Join(kubeDir, "checkPods.sh")
 	names := common.CustomStrSliceToStrings(pods, func(pod *core.Pod) string { return pod.Name })
-	ctl := kubeCTLFile{}
+	ctl := kubectlFile{}
 	ctl.testPodsExist(names)
 	if err := ctl.createCmdFile(testFile); err != nil {
 		return false, err
@@ -155,8 +156,8 @@ func checkPodsExist(kubeDir string, pods []*core.Pod) (bool, error) {
 	return runCmdFile(testFile) == nil, nil
 }
 
-func createCleanEvironmentFile(fileName string) error {
-	ctl := kubeCTLFile{}
+func createCleanEnvironmentFile(fileName string) error {
+	ctl := kubectlFile{}
 	ctl.clean()
 	return ctl.createCmdFile(fileName)
 }
@@ -170,7 +171,7 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 	if err != nil {
 		return err
 	}
-	// get analized connectivity:
+	// get analyzed connectivity:
 	config, err := analyzer.ConfigFromResourcesContainer(rc, common.OutputParameters{})
 	if err != nil {
 		return err
@@ -213,7 +214,7 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 }
 
 func createConnTestFile(connTestFile string) error {
-	ctl := kubeCTLFile{}
+	ctl := kubectlFile{}
 	ctl.testPodsConnection()
 	return ctl.createCmdFile(connTestFile)
 }
@@ -247,36 +248,36 @@ func (test *connTest) run() {
 
 // ///////////////////////////////////////////////////////////////////////////////////////////
 // interface to create bash files with kubectl commands to run:
-type kubeCTLFile struct {
+type kubectlFile struct {
 	cmdLines []string
 }
 
-func (ctl *kubeCTLFile) addCmd(cmd string) {
+func (ctl *kubectlFile) addCmd(cmd string) {
 	ctl.cmdLines = append(ctl.cmdLines, cmd)
 }
-func (ctl *kubeCTLFile) clean() {
+func (ctl *kubectlFile) clean() {
 	ctl.addCmd("kubectl delete networkpolicy --all")
 	ctl.addCmd("kubectl delete adminnetworkpolicies --all")
 	ctl.addCmd("kubectl delete service --all")
 }
-func (ctl *kubeCTLFile) exposePod(name string) {
+func (ctl *kubectlFile) exposePod(name string) {
 	ctl.addCmd(fmt.Sprintf("kubectl expose pod %s --port=5001 --target-port=5000 --name \"%s-service\"", name, name))
 }
-func (ctl *kubeCTLFile) waitPod(name string) {
+func (ctl *kubectlFile) waitPod(name string) {
 	ctl.addCmd(fmt.Sprintf("kubectl wait --timeout=3m --for=condition=Ready pod/%s", name))
 }
-func (ctl *kubeCTLFile) applyResourceFile(resourceFile string) {
+func (ctl *kubectlFile) applyResourceFile(resourceFile string) {
 	ctl.addCmd("kubectl apply -f " + resourceFile)
 }
-func (ctl *kubeCTLFile) testPodsConnection() {
+func (ctl *kubectlFile) testPodsConnection() {
 	ctl.addCmd("kubectl exec ${1} -- wget -qO- --timeout=2 http://${2}-service:5001/metrics")
 	ctl.addCmd("exit $?")
 }
-func (ctl *kubeCTLFile) testPodsExist(names []string) {
+func (ctl *kubectlFile) testPodsExist(names []string) {
 	ctl.addCmd("kubectl get pods " + strings.Join(names, " "))
 	ctl.addCmd("exit $?")
 }
-func (ctl *kubeCTLFile) createCmdFile(fileName string) error {
+func (ctl *kubectlFile) createCmdFile(fileName string) error {
 	return common.WriteToFile(fileName, strings.Join(ctl.cmdLines, "\n"))
 }
 
