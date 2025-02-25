@@ -43,8 +43,8 @@ func (e *EvalRules) addOutboundRule(r *FwRule, d *DFW, incCntr bool) {
 type CategorySpec struct {
 	Category       collector.DfwCategory
 	Rules          []*FwRule  // ordered list of rules
-	EvaluatedRules *EvalRules // ordered list of all evaluated rules
-	EffectiveRules *EvalRules // ordered list of effective rules
+	AllRules       *EvalRules // ordered list of all inbound and outbound rules
+	EffectiveRules *EvalRules // ordered list of effective inbound and outbound rules
 	dfwRef         *DFW
 }
 
@@ -199,16 +199,16 @@ func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, s
 	c.Rules = append(c.Rules, newRule)
 
 	// Effective inbound and outbound: rules that affect the current cfg. specifically src and dst has vms. For analysis
-	inboundEffective, outboundEffective := newRule.effectiveRules(false)
-	// Effective inbound and outbound: all evaluated rules, also that do not affect the current cfg.
-	// specifically src and dst may not have vms in the current cfg. For synthesis
-	inboundEvaluated, outboundEvaluated := newRule.effectiveRules(true)
+	inboundEffective, outboundEffective := newRule.getEffectiveDirectedRules()
+	// All inbound and outbound: also that do not affect the current cfg.
+	// Specifically src and dst may not have vms in the current cfg. For synthesis
+	inboundAll, outboundAll := newRule.getAllDirectedRules()
 
 	if c.Category != collector.EthernetCategory {
 		c.EffectiveRules.addInboundRule(inboundEffective, c.dfwRef, true)
 		c.EffectiveRules.addOutboundRule(outboundEffective, c.dfwRef, true)
-		c.EvaluatedRules.addInboundRule(inboundEvaluated, c.dfwRef, false)
-		c.EvaluatedRules.addOutboundRule(outboundEvaluated, c.dfwRef, false)
+		c.AllRules.addInboundRule(inboundAll, c.dfwRef, false)
+		c.AllRules.addOutboundRule(outboundAll, c.dfwRef, false)
 	} else {
 		logging.Debugf(
 			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective rules", ruleID)
@@ -219,7 +219,7 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
 		Category:       c,
 		dfwRef:         d,
-		EvaluatedRules: &EvalRules{},
+		AllRules:       &EvalRules{},
 		EffectiveRules: &EvalRules{},
 	}
 }

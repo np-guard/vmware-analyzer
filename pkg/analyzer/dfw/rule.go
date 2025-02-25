@@ -94,97 +94,137 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 	logging.Debugf("%s %s", f.ruleDescriptionStr(), warnMsg)
 }
 
-// in the following 3 functions:
-// forSynthesis = true: returns non-nil also if current snapshot has no VMs in src or in dst; omit wanring which will be
-// given for the execution of the functions for analysis with forSynthesis = false
+//////////////////////////////////////////////////////////////////////////////////////////
+// computation of inbound and outbound rules
+// 1. for analysis: inbound and outbound rules which effects the current topology
+// 2. for synthesis: inbound and outbound rules which may not have effect on the current topology
+//////////////////////////////////////////////////////////////////////////////////////////
 
-func (f *FwRule) effectiveRules(forSynthesis bool) (inbound, outbound *FwRule) {
-	// in analysis, we ignore rules with no VMs in src, dst. But not in synthesize - in the future the same src
-	// may have VMs in it
-	if !forSynthesis && len(f.scope) == 0 {
+// to avoid dup warning messages, messages are generated only in the analysis computation phase
+
+// effective rules: computes inbound and outbound rules which effect the current topology (for analysis)
+func (f *FwRule) getEffectiveDirectedRules() (inbound, outbound *FwRule) {
+	// ignore rules with no VMs in src, dst.
+	if len(f.scope) == 0 {
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
 		return nil, nil
 	}
 	if f.Conn.IsEmpty() {
-		if !forSynthesis {
-			f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
-		}
+		f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
 		return nil, nil
 	}
-	return f.getInboundRule(forSynthesis), f.getOutboundRule(forSynthesis)
+	return f.getEffectiveInboundRule(), f.getEffectiveOutboundRule()
 }
 
-func (f *FwRule) getInboundRule(forSynthesis bool) *FwRule {
+func (f *FwRule) getEffectiveInboundRule() *FwRule {
 	// if action is OUT -> return nil
-	if f.direction == string(nsx.RuleDirectionOUT) {
-		if !forSynthesis {
-			f.ruleWarning("has no effective inbound component, since its direction is OUT only")
-		}
+	if !f.hasInboundComponent() {
+		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
+		return nil
+	}
+	ruleWarningMsg := f.checkInboundEffectiveRuleValidity()
+	if ruleWarningMsg != "" {
+		f.ruleWarning(ruleWarningMsg)
 		return nil
 	}
 	// inbound rule operates on intersection(dest, scope)
-	newDest := endpoints.Intersection(f.dstVMs, f.scope)
-	if !forSynthesis {
-		if len(f.dstVMs) == 0 {
-			f.ruleWarning("has no effective inbound component, since its dest-vms component is empty")
-			return nil
-		}
-		if len(f.srcVMs) == 0 {
-			f.ruleWarning("hs no effective inbound component, since its target src-vms component is empty")
-			return nil
-		}
-		if len(newDest) == 0 {
-			f.ruleWarning("has no effective inbound component, since its intersection for dest & scope is empty")
-			return nil
-		}
-	}
-	return &FwRule{
-		srcVMs:         f.srcVMs,
-		dstVMs:         newDest,
-		SrcGroups:      f.SrcGroups,
-		DstGroups:      f.DstGroups,
-		IsAllSrcGroups: f.IsAllSrcGroups,
-		IsAllDstGroups: f.IsAllDstGroups,
-		ScopeGroups:    f.ScopeGroups,
-		Conn:           f.Conn,
-		Action:         f.Action,
-		direction:      string(nsx.RuleDirectionIN),
-		OrigRuleObj:    f.OrigRuleObj,
-		RuleID:         f.RuleID,
-		secPolicyName:  f.secPolicyName,
-		Priority:       f.Priority,
-	}
+	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, f.srcVMs, endpoints.Intersection(f.dstVMs, f.scope))
 }
 
-func (f *FwRule) getOutboundRule(forSynthesis bool) *FwRule {
+func (f *FwRule) getEffectiveOutboundRule() *FwRule {
 	// if action is IN -> return nil
-	if f.direction == string(nsx.RuleDirectionIN) {
+	if !f.hasOutboundComponent() {
 		f.ruleWarning("has no effective outbound component, since its direction is IN only")
 		return nil
 	}
-	noVMsSrcOrDst := false
-	if len(f.srcVMs) == 0 {
-		f.ruleWarning("has no effective outbound component, since its src vms component is empty")
-		noVMsSrcOrDst = true
+	ruleWarningMsg := f.checkOutboundEffectiveRuleValidity()
+	if ruleWarningMsg != "" {
+		f.ruleWarning(ruleWarningMsg)
+		return nil
 	}
+	// outbound rule operates on intersection(src, scope)
+	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, endpoints.Intersection(f.srcVMs, f.scope), f.dstVMs)
+}
 
+// computes inbound and outbound rules, also these with no VMs in src/dst (for synthesis)
+func (f *FwRule) getAllDirectedRules() (inbound, outbound *FwRule) {
+	// for synthesis, we do not ignore rules with no VMs in src, dst, since in the future the same src
+	// may have VMs in it. Empty connection, however, is empty regardless of the VMs snapshot
+	if f.Conn.IsEmpty() {
+		return nil, nil
+	}
+	return f.getInboundRule(), f.getOutboundRule()
+}
+
+func (f *FwRule) getInboundRule() *FwRule {
+	// if action is OUT -> return nil
+	if !f.hasInboundComponent() {
+		return nil
+	}
+	// inbound rule operates on intersection(dest, scope)
+	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, f.srcVMs, endpoints.Intersection(f.dstVMs, f.scope))
+}
+
+func (f *FwRule) getOutboundRule() *FwRule {
+	// if action is IN -> return nil
+	if !f.hasOutboundComponent() {
+		return nil
+	}
+	// outbound rule operates on intersection(src, scope)
+	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, endpoints.Intersection(f.srcVMs, f.scope), f.dstVMs)
+}
+
+// common functionality used for evaluating inbound and outbound rules; effective and (potentially) non-effective
+
+func (f *FwRule) hasInboundComponent() bool {
+	if f.direction == string(nsx.RuleDirectionOUT) {
+		return false
+	}
+	return true
+}
+
+func (f *FwRule) hasOutboundComponent() bool {
+	if f.direction == string(nsx.RuleDirectionIN) {
+		return false
+	}
+	return true
+}
+
+// checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
+func (f *FwRule) checkInboundEffectiveRuleValidity() string {
 	if len(f.dstVMs) == 0 {
-		f.ruleWarning("has no effective outbound component, since its target dst vms component is empty")
-		noVMsSrcOrDst = true
+		return "has no effective inbound component, since its dest-vms component is empty"
 	}
+	if len(f.srcVMs) == 0 {
+		return "has no effective inbound component, since its target src-vms component is empty"
+	}
+	newDest := endpoints.Intersection(f.dstVMs, f.scope)
+	if len(newDest) == 0 {
+		return "has no effective inbound component, since its intersection for dest & scope is empty"
+	}
+	return ""
+}
 
+// checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
+func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
+	if len(f.srcVMs) == 0 {
+		return "has no effective outbound component, since its src vms component is empty"
+	}
+	if len(f.dstVMs) == 0 {
+		return "has no effective outbound component, since its target dst vms component is empty"
+	}
 	// outbound rule operates on intersection(src, scope)
 	newSrc := endpoints.Intersection(f.srcVMs, f.scope)
 	if len(newSrc) == 0 {
-		f.ruleWarning("has no effective outbound component, since its intersction for src & scope is empty")
-		noVMsSrcOrDst = true
+		return "has no effective outbound component, since its intersection for src & scope is empty"
 	}
-	if !forSynthesis && noVMsSrcOrDst {
-		return nil
-	}
+	return ""
+}
+
+func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []*endpoints.VM) *FwRule {
 	return &FwRule{
-		srcVMs:         newSrc,
-		dstVMs:         f.dstVMs,
+		srcVMs:         src,
+		dstVMs:         dest,
 		SrcGroups:      f.SrcGroups,
 		DstGroups:      f.DstGroups,
 		IsAllSrcGroups: f.IsAllSrcGroups,
@@ -192,7 +232,7 @@ func (f *FwRule) getOutboundRule(forSynthesis bool) *FwRule {
 		ScopeGroups:    f.ScopeGroups,
 		Conn:           f.Conn,
 		Action:         f.Action,
-		direction:      string(nsx.RuleDirectionOUT),
+		direction:      string(direction),
 		OrigRuleObj:    f.OrigRuleObj,
 		RuleID:         f.RuleID,
 		secPolicyName:  f.secPolicyName,
