@@ -26,8 +26,9 @@ import (
 // This test is creating pods and policies and check the connections, using kubectl API.
 // The pods are created with a container that listen to TCP port 5000
 // The test is adjusted to this container:
-//   1. all TCP ports at the netpols are changed to tcp:5000
-//   2. connection between two pods is allowed iff the analyzed connection contains TCP
+//  1. all TCP ports at the netpols are changed to tcp:5000
+//  2. connection between two pods is allowed iff the analyzed connection contains TCP
+//
 // At the end of the tests, services and policies are deleted, pods are are not deleted, to save time to the next test run
 func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	if !hasKubectl() {
