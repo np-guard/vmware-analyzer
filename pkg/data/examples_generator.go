@@ -146,7 +146,7 @@ type Example struct {
 	Name string // example name for JSON file name
 }
 
-var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "collector", "data")
+var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "data")
 
 func getExamplesJSONPath(name string) string {
 	return filepath.Join(dataPkgPath, "json", name+".json")

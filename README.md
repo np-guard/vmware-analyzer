@@ -46,7 +46,7 @@ Flags:
 
 ### Textual permitted connectivity
 ```
-$ nsxanalyzer --resource-input-file pkg/collector/data/json/Example2.json 
+$ nsxanalyzer --resource-input-file pkg/data/json/Example2.json 
 
 Analyzed connectivity:
 Source         |Destination    |Permitted connections
@@ -67,16 +67,16 @@ Gryffindor-App |Slytherin-Web  |TCP dst-ports: 80,443
 
 ### Visualized permitted connectivity
 ```
-$ nsxanalyzer --resource-input-file pkg/collector/data/json/Example2.json --output-filter Gryffindor-App,Gryffindor-DB,Gryffindor-Web,Dumbledore1 -o svg -f ex2Filter1.svg
+$ nsxanalyzer --resource-input-file pkg/data/json/Example2.json --output-filter Gryffindor-App,Gryffindor-DB,Gryffindor-Web,Dumbledore1 -o svg -f ex2Filter1.svg
 
 ```
-![graph](pkg/collector/data/expected_output/ex2Filter1.svg)
+![graph](pkg/data/expected_output/ex2Filter1.svg)
 
 
 
 ## Example k8s network policy synthesis
 
-Original NSX DFW config: (see `pkg/collector/data/json/Example1.json`)
+Original NSX DFW config: (see `pkg/data/json/Example1.json`)
 ```
 ruleID |ruleName           |src      |dst     |conn |action |direction |scope |sec-policy |Category
 1004   |allow_smb_incoming |frontend |backend |SMB  |allow  |IN_OUT    |ANY   |app-x      |Application
@@ -86,7 +86,7 @@ ruleID |ruleName           |src      |dst     |conn |action |direction |scope |s
 Run policy synthesis:
 
 ```
-$ nsxanalyzer -r pkg/collector/data/json/Example1.json --skip-analysis --synthesis-dump-dir ex1-synth/
+$ nsxanalyzer -r pkg/data/json/Example1.json --skip-analysis --synthesis-dump-dir ex1-synth/
 ```
 
 Example policy generated (1 out of 3): (see `ex1-synth/k8s_resources/policies.yaml` )

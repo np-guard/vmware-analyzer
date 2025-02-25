@@ -64,7 +64,7 @@ const (
 var staticTests = []*cliTest{
 	{
 		name:        "unsupported_format_check",
-		args:        "-r ../pkg/collector/data/json/Example1.json -v -o svg -o ex1.svg ",
+		args:        "-r ../pkg/data/json/Example1.json -v -o svg -o ex1.svg ",
 		expectedErr: []string{"invalid argument"},
 	},
 	{
@@ -96,36 +96,36 @@ var staticTests = []*cliTest{
 	{
 		// analysis from nsx resources input file
 		name: "analyze-only",
-		args: "--verbose --resource-input-file ../pkg/collector/data/json/Example1.json" +
+		args: "--verbose --resource-input-file ../pkg/data/json/Example1.json" +
 			" --filename examples/output/analysis-only.txt --log-file examples/output/analysis-only.log",
 		expectedOutFile: []string{"examples/output/analysis-only.txt", "examples/output/analysis-only.log"},
 	},
 	{
 		name:            "analyze-only-resources-shorthand-flag",
-		args:            "-r ../pkg/collector/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
+		args:            "-r ../pkg/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
 		expectedOutFile: []string{"examples/output/analysis-only-new.txt"},
 	},
 	{
 		name: "analyze-topology-dot",
-		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
 		expectedOutFile: []string{"examples/output/topology.dot", "examples/output/analysis.dot"},
 	},
 	{
 		name: "analyze-topology-json",
-		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.json --filename examples/output/analysis.json -o json",
 		expectedOutFile: []string{"examples/output/topology.json", "examples/output/analysis.json"},
 	},
 	{
 		name: "analyze-topology-text",
-		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
 		expectedOutFile: []string{"examples/output/topology.txt", "examples/output/analysis.txt"},
 	},
 	{
 		name: "synthesize-only",
-		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis" +
+		args: "--resource-input-file ../pkg/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis" +
 			" --disjoint-hint backend,frontend --disjoint-hint frontend,backend --synth-create-dns-policy=false",
 		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
 	},
@@ -146,7 +146,7 @@ var staticTests = []*cliTest{
 	},
 	{
 		name: "analyze-topology-svg",
-		args: "--resource-input-file ../pkg/collector/data/json/Example1.json --topology-dump-file" +
+		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
 			` --output-filter="New-VM-2",New-VM-1`,
 		possibleErr:     noDotExecErr,

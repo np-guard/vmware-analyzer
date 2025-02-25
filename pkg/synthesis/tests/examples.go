@@ -4,7 +4,7 @@ import (
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
-	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/data"
 )
 
 const (

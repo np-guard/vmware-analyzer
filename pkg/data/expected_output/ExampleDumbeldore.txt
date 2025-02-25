@@ -1,0 +1,10 @@
+Analyzed connectivity:
+Source      |Destination |Permitted connections
+Dumbledore1 |Dumbledore2 |All Connections
+Dumbledore1 |Gryffindor  |All Connections
+Dumbledore1 |Hufflepuff  |All Connections
+Dumbledore1 |Slytherin   |All Connections
+Dumbledore2 |Dumbledore1 |All Connections
+Dumbledore2 |Gryffindor  |All Connections
+Dumbledore2 |Hufflepuff  |All Connections
+

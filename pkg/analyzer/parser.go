@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"os"
 	"slices"
 
@@ -118,6 +119,7 @@ func (p *NSXConfigParser) addPathsToDisplayNames() {
 	}
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
+		fmt.Println("*sObj.DisplayName is", *sObj.DisplayName)
 	}
 	p.configRes.Fw.SetPathsToDisplayNames(res)
 }
