@@ -45,7 +45,8 @@ relevant *VM*s will be granted labels of this group. In the following releases w
 
 ## Output
 _k8s_resources_ dir under the dir specified in _synthesis-dump-dir_ contains the following files:
-* **pods.yaml** the list of synthesized _VM's_ _pods_ with the labels of each pos  
+* **pods.yaml** the list pods (as place holder for VMs resources for now) with the relevant labels of each pod.
+The labels are added based on original VMs' tags and groups in NSX env. 
 * **policies.yaml** the k8s policies
 
 The combination of the policies and the pods' labels:
