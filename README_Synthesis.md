@@ -18,7 +18,7 @@ Synthesize a given NSX DFW policy into an equivalent k8s network policy.
 There are two main challenges here: 
 * *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
 * *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just synthesis a snapshot. 
-This is important since e.g. once a new VM as added with the relevant tags/labels it be granted the desired connectivity.
+This is important since e.g. once a new VM is added with the relevant tags/labels in the target env, it will be granted the desired connectivity.
 
 ### The flattening challenge
 The translation of priortized allow/deny/pass rules into flat allow rules is exponential in the number of terms of the
