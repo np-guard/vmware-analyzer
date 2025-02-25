@@ -150,8 +150,7 @@ func (traceFlows *TraceFlows) AddTraceFlow(src, dst string, protocol TraceFlowPr
 
 // ToJSONString converts a traceFlows into a json-formatted-string, it converts only the Tfs
 func (traceFlows *TraceFlows) ToJSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(traceFlows.Tfs, "", "    ")
-	return string(toPrint), err
+	return common.MarshalJSON(traceFlows.Tfs)
 }
 
 func (traceFlows *TraceFlows) Execute() {

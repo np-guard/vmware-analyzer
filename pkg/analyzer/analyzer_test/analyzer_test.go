@@ -1,4 +1,4 @@
-package model_test
+package analyzer_test
 
 import (
 	"fmt"
@@ -65,7 +65,7 @@ func (a *analyzerTest) run(t *testing.T) {
 		runner.WithHighVerbosity(true),
 	)
 	require.Nil(t, err)
-	err = runnerObj.Run()
+	_, err = runnerObj.Run()
 	require.Nil(t, err)
 	res := runnerObj.GetConnectivityOutput()
 

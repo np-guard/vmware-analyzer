@@ -71,20 +71,21 @@ func (r *Runner) GetAnalyzedConnectivity() connectivity.ConnMap {
 	return r.analyzedConnectivity
 }
 
-func (r *Runner) Run() error {
+// Run executes collector/analysis/synthesis components, and returns Observations objects
+func (r *Runner) Run() (*Observations, error) {
 	if err := r.initLogger(); err != nil {
-		return err
+		return nil, err
 	}
 	if err := r.runCollector(); err != nil {
-		return err
+		return nil, err
 	}
 	if err := r.runAnalyzer(); err != nil {
-		return err
+		return nil, err
 	}
 	if err := r.runSynthesis(); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &Observations{r}, nil
 }
 
 func (r *Runner) initLogger() error {

@@ -1,4 +1,4 @@
-package model
+package analyzer
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"

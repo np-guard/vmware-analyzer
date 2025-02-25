@@ -39,8 +39,7 @@ func NewResourcesContainerModel() *ResourcesContainerModel {
 
 // ToJSONString converts a ResourcesContainerModel into a json-formatted-string
 func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(resources, "", "    ")
-	return string(toPrint), err
+	return common.MarshalJSON(resources)
 }
 
 func FromJSONString(b []byte) (*ResourcesContainerModel, error) {
@@ -116,6 +115,51 @@ func (resources *ResourcesContainerModel) GetTier1(query string) *Tier1 {
 	return nil
 }
 
+func (resources *ResourcesContainerModel) GetSegmentsOfTier1(t1 *Tier1) (res []*Segment) {
+	// find all segments with ConnectivityPath equal to t1.Path
+	if t1.Path == nil {
+		return res
+	}
+	t1Path := *t1.Path
+	for i := range resources.SegmentList {
+		seg := &resources.SegmentList[i]
+		if seg.ConnectivityPath != nil && *seg.ConnectivityPath == t1Path {
+			res = append(res, seg)
+		}
+	}
+	return res
+}
+
+func (resources *ResourcesContainerModel) GetSegmentsOfTier0(t0 *Tier0) (res []*Segment) {
+	// find all segments with ConnectivityPath equal to t0.Path
+	if t0.Path == nil {
+		return res
+	}
+	t0Path := *t0.Path
+	for i := range resources.SegmentList {
+		seg := &resources.SegmentList[i]
+		if seg.ConnectivityPath != nil && *seg.ConnectivityPath == t0Path {
+			res = append(res, seg)
+		}
+	}
+	return res
+}
+
+func (resources *ResourcesContainerModel) GetT1sOfTier0(t0 *Tier0) (res []*Tier1) {
+	if t0.Path == nil {
+		return res
+	}
+	t0Path := *t0.Path
+	// find all t1 gws with Tier0Path equal to t0.Path
+	for i := range resources.Tier1List {
+		t1 := &resources.Tier1List[i]
+		if t1.Tier0Path != nil && *t1.Tier0Path == t0Path {
+			res = append(res, t1)
+		}
+	}
+	return res
+}
+
 func (resources *ResourcesContainerModel) GetSegment(query string) *Segment {
 	i := slices.IndexFunc(resources.SegmentList, func(t Segment) bool { return query == *t.Path })
 	return &resources.SegmentList[i]
@@ -161,7 +205,7 @@ func (t0 *Tier0) Kind() string                    { return "t0" }
 func (t1 *Tier1) Kind() string                    { return "t1" }
 func (segment *Segment) Kind() string             { return "segment" }
 func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
-func (vm *VirtualMachine) Kind() string           { return "vm" }
+func (vm *VirtualMachine) Kind() string           { return "VM" }
 
 func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format string) (res string, err error) {
 	var g common.Graph
@@ -175,6 +219,16 @@ func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format s
 	}
 	resources.CreateTopologyGraph(g)
 	return common.OutputGraph(g, fileName, format)
+}
+
+func (resources *ResourcesContainerModel) GetVMsOfSegment(segment *Segment) (res []*VirtualMachine) {
+	for pi := range segment.SegmentPorts {
+		att := *segment.SegmentPorts[pi].Attachment.Id
+		vni := resources.GetVirtualNetworkInterfaceByPort(att)
+		vm := resources.GetVirtualMachine(*vni.OwnerVmId)
+		res = append(res, vm)
+	}
+	return res
 }
 
 func (resources *ResourcesContainerModel) CreateTopologyGraph(g common.Graph) {
