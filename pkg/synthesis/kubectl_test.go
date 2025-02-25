@@ -282,7 +282,7 @@ func (ctl *kubeCTLFile) createCmdFile(fileName string) error {
 
 // ////////////////////////////////////////////////////////////////////////
 func runCmdFile(fileName string, arg ...string) error {
-	//nolint:gosec //its a save run
+	//nolint:gosec //its a safe run
 	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()
 }
 func hasKubectl() bool {
