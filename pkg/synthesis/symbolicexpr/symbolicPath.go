@@ -154,8 +154,8 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	tarmAny := Conjunction{tautology{}}
-	srcConjunctions := getConjunctionForGroups(rule.SrcGroups, groupToConjunctions)
-	dstConjunctions := getConjunctionForGroups(rule.DstGroups, groupToConjunctions)
+	srcConjunctions := getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
+	dstConjunctions := getConjunctionForGroups(rule.DstGroups, groupToConjunctions, rule.RuleID)
 	switch {
 	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
 		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: tarmAny, Conn: rule.Conn})
