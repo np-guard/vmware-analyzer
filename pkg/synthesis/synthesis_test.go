@@ -206,6 +206,9 @@ func TestConvertToAbsract(t *testing.T) {
 func TestK8SSynthesis(t *testing.T) {
 	parallelTestsRun(t, runK8SSynthesis)
 }
+func TestK8STraceFlow(t *testing.T) {
+	parallelTestsRun(t, runK8STraceFlow)
+}
 func TestCompareNSXConnectivity(t *testing.T) {
 	parallelTestsRun(t, runCompareNSXConnectivity)
 }
@@ -251,6 +254,7 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 	runPreprocessing(synTest, t, rc)
 	runConvertToAbstract(synTest, t, rc)
 	runK8SSynthesis(synTest, t, rc)
+	runK8STraceFlow(synTest, t, rc)
 	runCompareNSXConnectivity(synTest, t, rc)
 }
 
