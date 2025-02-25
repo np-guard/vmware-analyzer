@@ -44,19 +44,14 @@ const (
 	defaultL3   = "Default-L3-Section"
 )
 
-type ExampleSynthesis struct {
-	FromNSX            data.Example
-	DisjointGroupsTags [][]string
-}
-
-var Example1c = ExampleSynthesis{
+var Example1c = data.ExampleSynthesis{
 	FromNSX: data.Example1c,
 }
 
 // ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
-var ExampleDumbeldore = ExampleSynthesis{
+var ExampleDumbeldore = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
 		GroupsByVMs: map[string][]string{
 			sly:               {sly},
@@ -112,7 +107,7 @@ var ExampleDumbeldore = ExampleSynthesis{
 // Simple example with two denies
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
-var ExampleTwoDeniesSimple = ExampleSynthesis{
+var ExampleTwoDeniesSimple = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
 		GroupsByVMs: map[string][]string{
 			sly:  {sly},
@@ -179,7 +174,7 @@ var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, dum1, dum2}}
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
-var ExampleDenyPassSimple = ExampleSynthesis{
+var ExampleDenyPassSimple = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
 		GroupsByVMs: map[string][]string{
 			sly:  {sly},
@@ -249,7 +244,7 @@ var ExampleDenyPassSimple = ExampleSynthesis{
 // ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
-var ExampleHintsDisjoint = ExampleSynthesis{
+var ExampleHintsDisjoint = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{sly, huf, gry, dum1, dum2},
 		GroupsByVMs: map[string][]string{
 			sly:  {sly},
@@ -338,7 +333,7 @@ micro segmentation
 
 */
 
-var ExampleHogwarts = ExampleSynthesis{
+var ExampleHogwarts = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
 		GroupsByVMs: map[string][]string{
@@ -476,7 +471,7 @@ var simpleHogwartsGroups = map[string][]string{
 	web: {slyWeb, gryWeb},
 	app: {slyApp, gryApp}}
 
-var ExampleHogwartsSimpler = ExampleSynthesis{
+var ExampleHogwartsSimpler = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
 		GroupsByVMs: simpleHogwartsGroups,
@@ -641,7 +636,7 @@ var hogwartsAppToHousesPolicy = []data.Category{
 	},
 }
 
-var ExampleHogwartsNoDumbledore = ExampleSynthesis{
+var ExampleHogwartsNoDumbledore = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB},
 		GroupsByVMs: map[string][]string{
@@ -661,7 +656,7 @@ var ExampleHogwartsNoDumbledore = ExampleSynthesis{
 
 var disjointHouses = [][]string{{sly, huf, gry, dum}}
 
-var ExampleExprSingleScope = ExampleSynthesis{
+var ExampleExprSingleScope = data.ExampleSynthesis{
 	FromNSX: data.Example{
 		Name: "ExampleExprSingleScope",
 		VMs:  []string{sly, huf, gry, dum},
@@ -783,7 +778,7 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryWeb: {{Scope: house, Tag: gry}, {Scope: funct, Tag: web}},
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
-var ExampleExprTwoScopes = ExampleSynthesis{FromNSX: data.Example{
+var ExampleExprTwoScopes = data.ExampleSynthesis{FromNSX: data.Example{
 	Name: "ExampleExprTwoScopes",
 	VMs: []string{slyDB, slyWeb, slyApp,
 		hufDB, hufWeb, hufApp,
@@ -806,7 +801,7 @@ var vmsHouses = []string{slyDB, slyWeb, slyApp,
 	gryDB, gryWeb, gryApp}
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
-var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
+var ExampleExprAndConds = data.ExampleSynthesis{FromNSX: data.Example{
 	Name:         "ExampleExprAndConds",
 	VMs:          vmsHouses,
 	VMsTags:      vmsHousesTags,
@@ -817,7 +812,7 @@ var ExampleExprAndConds = ExampleSynthesis{FromNSX: data.Example{
 }
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
-var ExampleExprOrConds = ExampleSynthesis{FromNSX: data.Example{
+var ExampleExprOrConds = data.ExampleSynthesis{FromNSX: data.Example{
 	Name:         "ExampleOrSimple",
 	VMs:          vmsHouses,
 	VMsTags:      vmsHousesTags,
@@ -924,7 +919,7 @@ func getAndOrOrPolicies(op data.ExampleOp) []data.Category {
 	}
 }
 
-var ExampleHogwartsSimplerNonSymInOut = ExampleSynthesis{
+var ExampleHogwartsSimplerNonSymInOut = data.ExampleSynthesis{
 	FromNSX: data.Example{VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
 		GroupsByVMs: simpleHogwartsGroups,

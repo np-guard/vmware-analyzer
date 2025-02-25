@@ -146,6 +146,11 @@ type Example struct {
 	Name string // example name for JSON file name
 }
 
+type ExampleSynthesis struct {
+	FromNSX            Example
+	DisjointGroupsTags [][]string
+}
+
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "data")
 
 func getExamplesJSONPath(name string) string {
