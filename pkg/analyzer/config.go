@@ -23,11 +23,11 @@ type ParsedNSXConfig interface {
 // config captures nsx config, implements NSXConfig interface
 type config struct {
 	vms                  []endpoints.EP                      // list of all vms
-	externalIPBlocks     []endpoints.EP                 // list of all external blocks
-	vmsMap               map[string]*endpoints.VM             // map from uid to vm objects
-	Fw                   *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
+	externalIPBlocks     []endpoints.EP                      // list of all external blocks
+	vmsMap               map[string]*endpoints.VM            // map from uid to vm objects
+	Fw                   *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
 	GroupsPerVM          map[endpoints.EP][]*collector.Group // map from vm to its groups
-	analyzedConnectivity connectivity.ConnMap                 // the resulting connectivity map from analyzing this configuration
+	analyzedConnectivity connectivity.ConnMap                // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
 
@@ -41,7 +41,7 @@ func (c *config) VMs() []endpoints.EP {
 	return c.vms
 }
 func (c *config) EPs() []endpoints.EP {
-	return slices.Concat(c.vms,c.externalIPBlocks)
+	return slices.Concat(c.vms, c.externalIPBlocks)
 }
 
 func (c *config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
