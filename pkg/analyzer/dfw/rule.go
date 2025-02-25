@@ -177,17 +177,11 @@ func (f *FwRule) getOutboundRule() *FwRule {
 // common functionality used for evaluating inbound and outbound rules; effective and (potentially) non-effective
 
 func (f *FwRule) hasInboundComponent() bool {
-	if f.direction == string(nsx.RuleDirectionOUT) {
-		return false
-	}
-	return true
+	return f.direction != string(nsx.RuleDirectionOUT)
 }
 
 func (f *FwRule) hasOutboundComponent() bool {
-	if f.direction == string(nsx.RuleDirectionIN) {
-		return false
-	}
-	return true
+	return f.direction != string(nsx.RuleDirectionIN)
 }
 
 // checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
