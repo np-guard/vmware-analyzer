@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"slices"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -211,6 +213,9 @@ func TestConvertToAbsract(t *testing.T) {
 func TestK8SSynthesis(t *testing.T) {
 	parallelTestsRun(t, runK8SSynthesis)
 }
+func TestK8STraceFlow(t *testing.T) {
+	parallelTestsRun(t, runK8STraceFlow)
+}
 func TestCompareNSXConnectivity(t *testing.T) {
 	parallelTestsRun(t, runCompareNSXConnectivity)
 }
@@ -256,6 +261,7 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 	runPreprocessing(synTest, t, rc)
 	runConvertToAbstract(synTest, t, rc)
 	runK8SSynthesis(synTest, t, rc)
+	runK8STraceFlow(synTest, t, rc)
 	runCompareNSXConnectivity(synTest, t, rc)
 }
 
@@ -327,16 +333,59 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
-	// todo - compare the k8s_connectivity.txt with vmware_connectivity.txt (currently they are not in the same format)
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
 	require.Nil(t, err)
-	err = k8sAnalyzer(k8sDir, path.Join(synTest.debugDir(), "k8s_connectivity.txt"), "txt")
+	k8sConnectivityFile := path.Join(synTest.debugDir(), "k8s_connectivity.txt")
+	k8sConnectivityFileCreated, err := k8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
 	require.Nil(t, err)
-	// compare to expected results:
+	// compare k8s resources to expected results:
 	if synTest.hasExpectedResults() {
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
+	if k8sConnectivityFileCreated {
+		compareToNetpol(t, rc, k8sConnectivityFile)
+	}
+}
+func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
+	// we get a file with lines in the foramt:
+	// default/Dumbledore1[Pod] => default/Gryffindor-Web[Pod] : All Connections
+	netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
+	require.Nil(t, err)
+	netpolConnLines := strings.Split(string(netpolConnBytes), "\n")
+	netpolConnLines = slices.DeleteFunc(netpolConnLines, func(s string) bool { return s == "" })
+	netpolConnMap := map[string]string{}
+	for _, line := range netpolConnLines {
+		namesAndConn := strings.Split(line, " : ")
+		require.Equal(t, len(namesAndConn), 2)
+		netpolConnMap[namesAndConn[0]] = namesAndConn[1]
+	}
+	// get analyzed connectivity:
+	config, err := analyzer.ConfigFromResourcesContainer(rc, common.OutputParameters{})
+	require.Nil(t, err)
+	connMap := config.AnalyzedConnectivity()
+	// iterate over the connMap, check each connection:
+	for src, dsts := range connMap {
+		for dst, conn := range dsts {
+			// todo - set the real vm namespaces:
+			netpolFormat := fmt.Sprintf("default/%s[Pod] => default/%s[Pod]", src.Name(), dst.Name())
+			netpolConn, ok := netpolConnMap[netpolFormat]
+			require.Equal(t, ok, !conn.Conn.IsEmpty())
+			if ok {
+				compareConns(t, conn.Conn.String(), netpolConn)
+			}
+		}
+	}
+}
+
+func compareConns(t *testing.T, vmFormat, k8sFormat string) {
+	vmFormat = strings.ReplaceAll(vmFormat, "dst-ports: ", "")
+	vmFormat = strings.ReplaceAll(vmFormat, "ICMP;", "")
+	if vmFormat == "TCP,UDP" {
+		vmFormat = "All Connections"
+	}
+	k8sFormat = strings.ReplaceAll(k8sFormat, " 1-65535", "")
+	require.Equal(t, vmFormat, k8sFormat)
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
