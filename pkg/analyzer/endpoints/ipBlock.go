@@ -3,11 +3,13 @@ package endpoints
 import (
 	"strings"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 type IPBlock struct {
 	name string
+	netset.IPBlock
 }
 
 func (b *IPBlock) Name() string {
