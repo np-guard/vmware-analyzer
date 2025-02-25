@@ -13,8 +13,8 @@ import (
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
-	vms        []*endpoints.VM
-	epToGroups map[*endpoints.VM][]*collector.Group
+	vms        []endpoints.EP
+	epToGroups map[endpoints.EP][]*collector.Group
 	// todo: add similar maps to OS, hostname
 
 	// if synthesizeAdmin is true, rules will be translated to allow only starting with category MinNonAdminCategory();
@@ -109,7 +109,7 @@ func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
 		strOrigSymbolicRules(policy.outbound, true, options.Color)
 }
 
-func strGroupsStr(epsToGroups map[*endpoints.VM][]*collector.Group, color bool) string {
+func strGroupsStr(epsToGroups map[endpoints.EP][]*collector.Group, color bool) string {
 	// 1. gets a list of groups
 	groupsMap := map[string]*collector.Group{}
 	for _, groups := range epsToGroups {

@@ -91,7 +91,7 @@ func emptyConnectionsAndRules() *connectionsAndRules {
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 //
 //nolint:gocritic // temporarily keep commented-out code
-func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
+func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
 ) (allowedConns, // allowedConns are the set of connections between src to dst, which are allowed by this category rules.
 	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the
 	// rule action jump_to_app.
@@ -166,9 +166,9 @@ func (c *CategorySpec) outboundEffectiveRules() string {
 		common.NewLine)
 }
 
-func (c *CategorySpec) addRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
+func (c *CategorySpec) addRule(src, dst []endpoints.EP, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
-	origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
+	origRule *collector.Rule, scope []endpoints.EP, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	newRule := &FwRule{
 		srcVMs:             src,
 		dstVMs:             dst,

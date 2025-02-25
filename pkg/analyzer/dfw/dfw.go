@@ -22,7 +22,7 @@ type DFW struct {
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 //
 //nolint:gocritic // temporarily keep commented-out code
-func (d *DFW) AllowedConnections(src, dst *endpoints.VM) *connectivity.DetailedConnection {
+func (d *DFW) AllowedConnections(src, dst endpoints.EP) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := d.AllowedConnectionsIngressOrEgress(src, dst, true)
 	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
 	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
@@ -55,7 +55,7 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 //
 //nolint:gocritic // temporarily keep commented-out code
-func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngress bool) (
+func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst endpoints.EP, isIngress bool) (
 	allAllowedConns, allDeniedConns, delegatedConns *connectionsAndRules) {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns = emptyConnectionsAndRules()
@@ -181,9 +181,9 @@ func (d *DFW) AllEffectiveRules() string {
 	return inbound + outbound
 }
 
-func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
+func (d *DFW) AddRule(src, dst []endpoints.EP, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
+	ruleID int, origRule *collector.Rule, scope []endpoints.EP, secPolicyName string, origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {
 		if fwCategory.Category.String() == categoryStr {
 			fwCategory.addRule(src, dst, srcGroups, dstGroups, scopeGroups, isAllSrcGroups, isAllDstGroups, conn,

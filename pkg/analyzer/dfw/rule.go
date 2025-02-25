@@ -50,9 +50,9 @@ func actionFromString(s string) RuleAction {
 }
 
 type FwRule struct {
-	srcVMs []*endpoints.VM
-	dstVMs []*endpoints.VM
-	scope  []*endpoints.VM
+	srcVMs []endpoints.EP
+	dstVMs []endpoints.EP
+	scope  []endpoints.EP
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
 	SrcGroups      []*collector.Group
@@ -185,7 +185,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 	}
 }
 
-func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
+func (f *FwRule) processedRuleCapturesPair(src, dst endpoints.EP) bool {
 	// in processed rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
 	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
@@ -203,7 +203,7 @@ func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 	return slices.Contains(egressDirections, f.direction) && slices.Contains(f.scope, src)
 }*/
 
-func vmsString(vms []*endpoints.VM) string {
+func vmsString(vms []endpoints.EP) string {
 	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }
 

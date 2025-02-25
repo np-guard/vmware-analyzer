@@ -1,6 +1,7 @@
 package model
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -15,16 +16,17 @@ type ParsedNSXConfig interface {
 	AnalyzedConnectivity() connectivity.ConnMap
 	DFW() *dfw.DFW
 	DefaultDenyRule() *dfw.FwRule
-	VMs() []*endpoints.VM
-	VMToGroupsMap() map[*endpoints.VM][]*collector.Group
+	VMs() []endpoints.EP
+	VMToGroupsMap() map[endpoints.EP][]*collector.Group
 }
 
 // config captures nsx config, implements NSXConfig interface
 type config struct {
-	vms                  []*endpoints.VM                      // list of all vms
+	vms                  []endpoints.EP                      // list of all vms
+	externalIPBlocks     []endpoints.EP                 // list of all external blocks
 	vmsMap               map[string]*endpoints.VM             // map from uid to vm objects
 	Fw                   *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
-	GroupsPerVM          map[*endpoints.VM][]*collector.Group // map from vm to its groups
+	GroupsPerVM          map[endpoints.EP][]*collector.Group // map from vm to its groups
 	analyzedConnectivity connectivity.ConnMap                 // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
 }
@@ -35,10 +37,14 @@ func (c *config) AnalyzedConnectivity() connectivity.ConnMap {
 func (c *config) DFW() *dfw.DFW {
 	return c.Fw
 }
-func (c *config) VMs() []*endpoints.VM {
+func (c *config) VMs() []endpoints.EP {
 	return c.vms
 }
-func (c *config) VMToGroupsMap() map[*endpoints.VM][]*collector.Group {
+func (c *config) EPs() []endpoints.EP {
+	return slices.Concat(c.vms,c.externalIPBlocks)
+}
+
+func (c *config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
 	return c.GroupsPerVM
 }
 
@@ -46,7 +52,7 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connectivity.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.InitPairs(false, c.vms, vmsFilter)
+	res.InitPairs(false, c.EPs(), vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
@@ -99,7 +105,7 @@ func (c *config) getVMsInfoStr(color bool) string {
 	header := []string{"VM Name", "VM ID", "VM Addresses"}
 	lines := [][]string{}
 	for _, vm := range c.vms {
-		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})
+		lines = append(lines, vm.InfoStr())
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

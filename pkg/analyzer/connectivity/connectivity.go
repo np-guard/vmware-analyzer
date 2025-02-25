@@ -8,18 +8,18 @@ import (
 )
 
 // ConnMap captures permitted connections between endpoints in the input config
-type ConnMap map[*endpoints.VM]map[*endpoints.VM]*DetailedConnection
+type ConnMap map[endpoints.EP]map[endpoints.EP]*DetailedConnection
 
 // add func adds a given pair with specified permitted connection
-func (c ConnMap) Add(src, dst *endpoints.VM, conn *DetailedConnection) {
+func (c ConnMap) Add(src, dst endpoints.EP, conn *DetailedConnection) {
 	if _, ok := c[src]; !ok {
-		c[src] = map[*endpoints.VM]*DetailedConnection{}
+		c[src] = map[endpoints.EP]*DetailedConnection{}
 	}
 	c[src][dst] = conn
 }
 
 // initPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c ConnMap) InitPairs(initAllow bool, vms []*endpoints.VM, vmsFilter []string) {
+func (c ConnMap) InitPairs(initAllow bool, vms []endpoints.EP, vmsFilter []string) {
 	vmsToaAnalyze := map[string]bool{}
 	if len(vmsFilter) > 0 {
 		for _, vmName := range vmsFilter {
@@ -60,7 +60,7 @@ func (c ConnMap) filter(vms []string) ConnMap {
 
 // connMapEntry captures one entry in ConnMap
 type connMapEntry struct {
-	Src, Dst     *endpoints.VM
+	Src, Dst     endpoints.EP
 	DetailedConn *DetailedConnection
 }
 
