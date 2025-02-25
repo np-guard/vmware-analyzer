@@ -170,10 +170,10 @@ func (d *DFW) String() string {
 
 func (d *DFW) AllEffectiveRules() string {
 	inboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
-		func(c *CategorySpec) string { return c.inboundEffectiveRules() },
+		func(c *CategorySpec) string { return c.inboundEffectiveRulesStr() },
 		common.NewLine)
 	outboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
-		func(c *CategorySpec) string { return c.outboundEffectiveRules() },
+		func(c *CategorySpec) string { return c.outboundEffectiveRulesStr() },
 		common.NewLine)
 
 	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, inboundResStr)
