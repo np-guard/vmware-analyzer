@@ -79,7 +79,7 @@ func (p *NSXConfigParser) RunParser() error {
 func (p *NSXConfigParser) removeVMsWithoutGroups() {
 	toRemove := []endpoints.EP{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 {
+		if len(groups) == 0 && len(p.topology.vmSegments[vm]) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}
@@ -296,10 +296,12 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	}
 	vms := []endpoints.EP{}
 	groups := []*collector.Group{}
+	blocks := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
+	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(blocks, path) })
 	if exclude {
-		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(p string) bool { return slices.Contains(groupsPaths, p) })
+		// TODO: what should we do with the blocks?!
+		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
 	}
-	// TODO: support IP Addresses in groupsPaths
 	for _, groupPath := range groupsPaths {
 		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
 		vms = append(vms, thisGroupVMs...)
