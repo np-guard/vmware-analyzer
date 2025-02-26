@@ -41,7 +41,7 @@ of the tag.
 Currently, the tool supports groups defined by expressions over tags; nested expression are not yet supported.
 If a group is defined 
 by an expression that we do not yet support, then the synthesized policy will refer just to the group, and the 
-relevant *VM*s will be granted labels of this group. In the following releases we will expend our expressions support. 
+relevant *VM*s will be granted labels of this group. 
 
 ## Output
 `k8s_resources` dir under the dir specified in `synthesis-dump-dir` contains the following files:
