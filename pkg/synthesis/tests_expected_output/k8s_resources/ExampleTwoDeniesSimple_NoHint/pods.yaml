@@ -40,19 +40,6 @@ metadata:
     creationTimestamp: null
     labels:
         group__Dumbledore: "true"
-        group__Dumbledore1: "true"
-    name: Dumbledore1
-    namespace: default
-spec:
-    containers: null
-status: {}
----
-apiVersion: v1
-kind: Pod
-metadata:
-    creationTimestamp: null
-    labels:
-        group__Dumbledore: "true"
         group__Dumbledore2: "true"
     name: Dumbledore2
     namespace: default

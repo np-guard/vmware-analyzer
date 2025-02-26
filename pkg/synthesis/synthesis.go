@@ -47,7 +47,7 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
 		options.SynthesizeAdmin, options.Hints)
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
-	abstractModel := &AbstractModelSyn{vms: config.VMs(), epToGroups: config.VMToGroupsMap(),
+	abstractModel := &AbstractModelSyn{vms: config.VMs(), allGroups: config.GetGroups(), epToGroups: config.VMToGroupsMap(),
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
 	abstractModelStr := strAbstractModel(abstractModel, options)

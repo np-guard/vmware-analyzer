@@ -19,12 +19,12 @@ func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[co
 	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
 	for _, category := range categoriesSpecs {
 		categoryPolicy := symbolicPolicy{}
-		if len(category.ProcessedRules.Outbound)+len(category.ProcessedRules.Inbound) == 0 {
+		if len(category.EvaluatedRules.Outbound)+len(category.EvaluatedRules.Inbound) == 0 {
 			continue
 		}
-		categoryPolicy.inbound = append(categoryPolicy.inbound, convertRulesToSymbolicPaths(category.ProcessedRules.Inbound,
+		categoryPolicy.inbound = append(categoryPolicy.inbound, convertRulesToSymbolicPaths(category.EvaluatedRules.Inbound,
 			category.Category, groupToConjunctions)...)
-		categoryPolicy.outbound = append(categoryPolicy.outbound, convertRulesToSymbolicPaths(category.ProcessedRules.Outbound,
+		categoryPolicy.outbound = append(categoryPolicy.outbound, convertRulesToSymbolicPaths(category.EvaluatedRules.Outbound,
 			category.Category, groupToConjunctions)...)
 
 		categoryToPolicy[category.Category] = &categoryPolicy
