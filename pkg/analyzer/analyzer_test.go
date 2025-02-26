@@ -110,9 +110,9 @@ func TestAnalyzer(t *testing.T) {
 }
 
 func getExpectedTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "data", "tests_expected_output", name)
+	return filepath.Join(projectpath.Root, "pkg", "analyzer", "tests_expected_output", name)
 }
 
 func getActualTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "data", "tests_actual_output", name)
+	return filepath.Join(projectpath.Root, "pkg", "analyzer", "tests_actual_output", name)
 }
