@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -44,8 +45,8 @@ type NSXConfigParser struct {
 	configRes              *config
 	allGroups              []*collector.Group
 	allGroupsPaths         []string
-	allGroupsVMs           []*endpoints.VM
-	groupToVMsListCache    map[*collector.Group][]*endpoints.VM
+	allGroupsVMs           []endpoints.EP
+	groupToVMsListCache    map[*collector.Group][]endpoints.EP
 	servicePathToConnCache map[string]*netset.TransportSet
 	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
@@ -57,7 +58,7 @@ func (p *NSXConfigParser) init() {
 	p.configRes = &config{}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
-	p.groupToVMsListCache = map[*collector.Group][]*endpoints.VM{}
+	p.groupToVMsListCache = map[*collector.Group][]endpoints.EP{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
 }
 
@@ -76,7 +77,7 @@ func (p *NSXConfigParser) RunParser() error {
 }
 
 func (p *NSXConfigParser) removeVMsWithoutGroups() {
-	toRemove := []*endpoints.VM{}
+	toRemove := []endpoints.EP{}
 	for vm, groups := range p.configRes.GroupsPerVM {
 		if len(groups) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
@@ -85,7 +86,7 @@ func (p *NSXConfigParser) removeVMsWithoutGroups() {
 	}
 	for _, vm := range toRemove {
 		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.vms = slices.DeleteFunc(p.configRes.vms, func(v *endpoints.VM) bool { return v.ID() == vm.ID() })
+		p.configRes.vms = slices.DeleteFunc(p.configRes.vms, func(v endpoints.EP) bool { return v.ID() == vm.ID() })
 		delete(p.configRes.vmsMap, vm.ID())
 	}
 }
@@ -94,8 +95,8 @@ func (p *NSXConfigParser) GetConfig() *config {
 	return p.configRes
 }
 
-func (p *NSXConfigParser) vMsGroups() map[*endpoints.VM][]*collector.Group {
-	groups := map[*endpoints.VM][]*collector.Group{}
+func (p *NSXConfigParser) vMsGroups() map[endpoints.EP][]*collector.Group {
+	groups := map[endpoints.EP][]*collector.Group{}
 	for _, g := range p.allGroups {
 		vms := p.groupToVMsList(g)
 		for _, vm := range vms {
@@ -110,7 +111,7 @@ func (p *NSXConfigParser) vMsGroups() map[*endpoints.VM][]*collector.Group {
 	return groups
 }
 
-func (p *NSXConfigParser) VMs() []*endpoints.VM {
+func (p *NSXConfigParser) VMs() []endpoints.EP {
 	return p.configRes.vms
 }
 
@@ -134,7 +135,7 @@ func (p *NSXConfigParser) getGroups() {
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *NSXConfigParser) getVMs() {
-	p.configRes.vmsMap = map[string]*endpoints.VM{}
+	p.configRes.vmsMap = map[string]endpoints.EP{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -246,8 +247,8 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	srcVMs []*endpoints.VM
-	dstVMs []*endpoints.VM
+	srcVMs []endpoints.EP
+	dstVMs []endpoints.EP
 	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
 	//       defined by groups, thus the following temp 4 fields
 	srcGroups      []*collector.Group
@@ -258,7 +259,7 @@ type parsedRule struct {
 	conn           *netset.TransportSet
 	direction      string
 	ruleID         int
-	scope          []*endpoints.VM
+	scope          []endpoints.EP
 	// todo: scopeGroups tmp same as srcGroups and fields above
 	scopeGroups    []*collector.Group
 	secPolicyName  string
@@ -267,7 +268,7 @@ type parsedRule struct {
 
 func (p *NSXConfigParser) getAllGroups() {
 	// p.allGroupsVMs and p.allGroups and allGroupsPaths are written together
-	vms := []*endpoints.VM{}
+	vms := []endpoints.EP{}
 	groups := []*collector.Group{}
 	groupsPaths := []string{}
 	for i := range p.rc.DomainList {
@@ -279,21 +280,21 @@ func (p *NSXConfigParser) getAllGroups() {
 			groupsPaths = append(groupsPaths, *group.Path)
 		}
 	}
-	vms = endpoints.Compact(vms)
+	vms = common.SliceCompact(vms)
 	p.allGroupsVMs = vms
 	p.allGroups = groups
 	p.allGroupsPaths = groupsPaths
 }
 
-func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]*endpoints.VM, []*collector.Group) {
+func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]endpoints.EP, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
-			return []*endpoints.VM{}, []*collector.Group{} // no group
+			return []endpoints.EP{}, []*collector.Group{} // no group
 		}
 		return p.allGroupsVMs, p.allGroups // all groups
 	}
-	vms := []*endpoints.VM{}
+	vms := []endpoints.EP{}
 	groups := []*collector.Group{}
 	if exclude {
 		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(p string) bool { return slices.Contains(groupsPaths, p) })
@@ -304,7 +305,7 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		vms = append(vms, thisGroupVMs...)
 		groups = append(groups, thisGroup)
 	}
-	vms = endpoints.Compact(vms)
+	vms = common.SliceCompact(vms)
 	return vms, groups
 }
 
@@ -414,7 +415,7 @@ func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.
 	return res
 }
 
-func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM {
+func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []endpoints.EP {
 	if vms, ok := p.groupToVMsListCache[group]; ok {
 		return vms
 	}
@@ -455,7 +456,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 		}
 		ids[*vif.OwnerVmId] = true
 	}
-	res := []*endpoints.VM{}
+	res := []endpoints.EP{}
 	for vmID := range ids {
 		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
 			res = append(res, vmObj)
@@ -470,7 +471,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []*endpoints.VM
 	return res
 }
 
-func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]*endpoints.VM, *collector.Group) {
+func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]endpoints.EP, *collector.Group) {
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
