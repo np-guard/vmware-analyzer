@@ -1,6 +1,5 @@
 package endpoints
 
-
 type EP interface {
 	Name() string
 	String() string
