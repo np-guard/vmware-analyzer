@@ -207,7 +207,7 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
+	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
@@ -253,10 +253,10 @@ type parsedRule struct {
 	//       defined by groups, thus the following temp 4 fields
 	srcGroups      []*collector.Group
 	isAllSrcGroups bool
-	srcBlocks      []string
+	srcBlocks      []*endpoints.RuleBlock
 	dstGroups      []*collector.Group
 	isAllDstGroups bool
-	dstBlocks      []string
+	dstBlocks      []*endpoints.RuleBlock
 	action         string
 	conn           *netset.TransportSet
 	direction      string
@@ -288,18 +288,18 @@ func (p *NSXConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
-func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]endpoints.EP, []*collector.Group, []string) {
+func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]endpoints.EP, []*collector.Group, []*endpoints.RuleBlock) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
-			return []endpoints.EP{}, []*collector.Group{}, []string{} // no group
+			return []endpoints.EP{}, []*collector.Group{}, []*endpoints.RuleBlock{} // no group
 		}
-		return p.allGroupsVMs, p.allGroups, []string{} // all groups
+		return p.allGroupsVMs, p.allGroups, []*endpoints.RuleBlock{} // all groups
 	}
 	vms := []endpoints.EP{}
 	groups := []*collector.Group{}
-	blocks := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
-	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(blocks, path) })
+	IPs := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
+	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(IPs, path) })
 	if exclude {
 		// TODO: what should we do with the blocks?!
 		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
@@ -310,6 +310,10 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		groups = append(groups, thisGroup)
 	}
 	vms = common.SliceCompact(vms)
+	blocks := make([]*endpoints.RuleBlock, len(IPs))
+	for i, ip := range IPs {
+		blocks[i] = endpoints.NewRuleBlock(ip)
+	}
 	return vms, groups, blocks
 }
 
