@@ -14,7 +14,8 @@ Flags:
 ```
 
 ## Overview
-Synthesize a given NSX DFW policy into k8s network policy.
+Synthesize a given `NSX DFW` policy into k8s network policy.
+The result may not be totally equivalent, due to limitations of the target policy; more details regarding the k8s synthesis [here](#limitation).
 There are two main challenges here: 
 * *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
 * *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just synthesis a snapshot. 
@@ -44,8 +45,9 @@ by an expression that we do not yet support, then the synthesized policy will re
 relevant *VM*s will be granted labels of this group. 
 
 ## Output
-`k8s_resources` dir under the dir specified in `synthesis-dump-dir` contains the following files:
-* **pods.yaml** the list pods (as place holder for VMs resources for now) with the relevant labels of each pod.
+### Synthesized k8s resource
+`k8s_resources` folder under the folder specified in `synthesis-dump-dir` contains the following files:
+* **pods.yaml** the list pods (as placeholder for VMs resources for now) with the relevant labels of each pod.
 The labels are added based on original VMs' tags and groups in NSX env. 
 * **policies.yaml** the k8s policies
 
@@ -53,6 +55,12 @@ The combination of the policies and the pods' labels:
 1. Satisfies the snapshot of the connectivity at the time of the synthesis
 2. Preserve the policy's intent, as expressed e.g. by *tags*, for future changes 
 (e.g. adding a `VM` or changing its functionality and thus its labeling)
+
+
+<a id="limitation"></a>
+#### limitations
+There are differences in the expression power between `NSX DFW` to `Kubernetes Network Policies`; e.g. `ICMP protocols`
+support depends on the network plugin and is not supported by our synthesis. 
 
 ## Debugging
 The synthesize process is a complex one. Along it, in order to have the intent preserving synthesis as explained above,
