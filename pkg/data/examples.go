@@ -71,6 +71,8 @@ var Example1 = Example{
 	},
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var Example1a = Example{
 	Name: "Example1a",
 	VMs:  []string{"A", "B"},
@@ -105,6 +107,8 @@ var Example1a = Example{
 	},
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var Example1c = Example{
 	Name: "Example1c",
 	VMs:  []string{"A", "B", "C"},
@@ -131,6 +135,8 @@ var Example1c = Example{
 		},
 	},
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var Example1d = Example{
 	Name: "Example1d",
@@ -166,6 +172,56 @@ var Example1d = Example{
 		},
 	},
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleExclude = Example{
+	Name: "ExampleExclude",
+	VMs: []string{"Slytherin1", "Slytherin2", "Hufflepuff1", "Hufflepuff2",
+		"Gryffindor1", "Gryffindor2", "Dumbledore1", "Dumbledore2", "Aladdin"},
+	GroupsByVMs: map[string][]string{
+		"Slytherin":  {"Slytherin1", "Slytherin2"},
+		"Hufflepuff": {"Hufflepuff1", "Hufflepuff2"},
+		"Gryffindor": {"Gryffindor1", "Gryffindor2"},
+		"Dumbledore": {"Dumbledore1", "Dumbledore2"},
+		"Aladdin":    {"Aladdin"},
+	},
+	Policies: []Category{
+		{
+			Name:         "AladdinTalks",
+			CategoryType: "Environment",
+			Rules: []Rule{
+				{
+					Name:                 "allow-Aladdin-to-others",
+					ID:                   10218,
+					Source:               "Aladdin",
+					Dest:                 "Aladdin",
+					DestinationsExcluded: true,
+					Services:             []string{"ANY"},
+					Action:               Allow,
+				},
+				{
+					Name:            "allow-others-to-Aladdin",
+					ID:              10219,
+					Source:          "Aladdin",
+					Dest:            "Aladdin",
+					SourcesExcluded: true,
+					Services:        []string{"ANY"},
+					Action:          Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default-L3-Section",
+			CategoryType: "Application",
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
 Example 2 with macro and micro segmentation
@@ -392,51 +448,7 @@ var Example2 = Example{
 	},
 }
 
-var ExampleExclude = Example{
-	Name: "ExampleExclude",
-	VMs: []string{"Slytherin1", "Slytherin2", "Hufflepuff1", "Hufflepuff2",
-		"Gryffindor1", "Gryffindor2", "Dumbledore1", "Dumbledore2", "Aladdin"},
-	GroupsByVMs: map[string][]string{
-		"Slytherin":  {"Slytherin1", "Slytherin2"},
-		"Hufflepuff": {"Hufflepuff1", "Hufflepuff2"},
-		"Gryffindor": {"Gryffindor1", "Gryffindor2"},
-		"Dumbledore": {"Dumbledore1", "Dumbledore2"},
-		"Aladdin":    {"Aladdin"},
-	},
-	Policies: []Category{
-		{
-			Name:         "AladdinTalks",
-			CategoryType: "Environment",
-			Rules: []Rule{
-				{
-					Name:                 "allow-Aladdin-to-others",
-					ID:                   10218,
-					Source:               "Aladdin",
-					Dest:                 "Aladdin",
-					DestinationsExcluded: true,
-					Services:             []string{"ANY"},
-					Action:               Allow,
-				},
-				{
-					Name:            "allow-others-to-Aladdin",
-					ID:              10219,
-					Source:          "Aladdin",
-					Dest:            "Aladdin",
-					SourcesExcluded: true,
-					Services:        []string{"ANY"},
-					Action:          Allow,
-				},
-			},
-		},
-		{
-			Name:         "Default-L3-Section",
-			CategoryType: "Application",
-			Rules: []Rule{
-				DefaultDenyRule(denyRuleIDApp),
-			},
-		},
-	},
-}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var Example3 = example3FromExample2()
 
@@ -464,11 +476,14 @@ func example3FromExample2() Example {
 	return res
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
 var ExampleDumbeldore = Example{
-	VMs: []string{huf, gry, dum1, dum2},
+	Name: "ExampleDumbeldore",
+	VMs:  []string{huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
 		sly:               {},
 		huf:               {huf},
@@ -518,12 +533,15 @@ var ExampleDumbeldore = Example{
 	},
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ExampleTwoDeniesSimple
 // Simple example with two denies
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
 var ExampleTwoDeniesSimple = Example{
-	VMs: []string{sly, huf, gry, dum2},
+	Name: "ExampleTwoDeniesSimple",
+	VMs:  []string{sly, huf, gry, dum2},
 	GroupsByVMs: map[string][]string{
 		sly:  {sly},
 		huf:  {huf},
@@ -584,12 +602,15 @@ var ExampleTwoDeniesSimple = Example{
 	},
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, dum1, dum2}}
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
 var ExampleDenyPassSimple = Example{
-	VMs: []string{sly, huf, gry, dum1, dum2},
+	Name: "ExampleDenyPassSimple",
+	VMs:  []string{sly, huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
 		sly:  {sly},
 		huf:  {huf},
@@ -654,11 +675,14 @@ var ExampleDenyPassSimple = Example{
 	DisjointGroupsTags: disjointHouses2Dum,
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
 var ExampleHintsDisjoint = Example{
-	VMs: []string{sly, huf, gry, dum1, dum2},
+	Name: "ExampleHintsDisjoint",
+	VMs:  []string{sly, huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
 		sly:  {sly},
 		huf:  {huf},
@@ -716,6 +740,8 @@ var ExampleHintsDisjoint = Example{
 	DisjointGroupsTags: disjointHouses2Dum,
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /*
 ExampleHogwarts with macro and micro segmentation
 
@@ -746,6 +772,7 @@ micro segmentation
 */
 
 var ExampleHogwarts = Example{
+	Name: "ExampleHogwarts",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
 	GroupsByVMs: map[string][]string{
@@ -872,6 +899,8 @@ var ExampleHogwarts = Example{
 	},
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var disjointHousesAndFunctionality = [][]string{
 	{sly, huf, gry, dum},
 	{web, app, db}}
@@ -883,6 +912,7 @@ var simpleHogwartsGroups = map[string][]string{
 	app: {slyApp, gryApp}}
 
 var ExampleHogwartsSimpler = Example{
+	Name: "ExampleHogwartsSimpler",
 	VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
 	GroupsByVMs: simpleHogwartsGroups,
@@ -955,6 +985,8 @@ var ExampleHogwartsSimpler = Example{
 	},
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var hogwartsAppToHousesPolicy = []Category{
 	{
@@ -1047,6 +1079,7 @@ var hogwartsAppToHousesPolicy = []Category{
 }
 
 var ExampleHogwartsNoDumbledore = Example{
+	Name: "ExampleHogwartsNoDumbledore",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB},
 	GroupsByVMs: map[string][]string{
@@ -1060,6 +1093,8 @@ var ExampleHogwartsNoDumbledore = Example{
 	Policies:           hogwartsAppToHousesPolicy,
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // examples with expr instead of direct vms references
 
@@ -1174,6 +1209,8 @@ var ExampleExprSingleScope = Example{
 	DisjointGroupsTags: disjointHouses,
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scope: funct, Tag: db}},
 	slyWeb: {{Scope: house, Tag: sly}, {Scope: funct, Tag: web}},
 	slyApp: {{Scope: house, Tag: sly}, {Scope: funct, Tag: app}},
@@ -1213,6 +1250,8 @@ var ExampleExprTwoScopesAbstract = Example{
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var vmsHouses = []string{slyDB, slyWeb, slyApp,
 	hufDB, hufWeb, hufApp,
 	gryDB, gryWeb, gryApp}
@@ -1227,6 +1266,8 @@ var ExampleExprAndConds = Example{
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // ExampleExprOrConds todo: this example uses not yet supported scope
 var ExampleExprOrConds = Example{
 	Name:               "ExampleOrSimple",
@@ -1236,6 +1277,8 @@ var ExampleExprOrConds = Example{
 	Policies:           getAndOrOrPolicies(Or),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const (
 	slyAndNoDB = "Slytherin-And-no-DB"
@@ -1335,6 +1378,7 @@ func getAndOrOrPolicies(op ExampleOp) []Category {
 }
 
 var ExampleHogwartsSimplerNonSymInOut = Example{
+	Name: "ExampleHogwartsSimplerNonSymInOut",
 	VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
 	GroupsByVMs: simpleHogwartsGroups,
@@ -1447,3 +1491,5 @@ var ExampleHogwartsSimplerNonSymInOut = Example{
 	},
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,25 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 )
 
-func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
+// Example is in s single domain
+type Example struct {
+	// nsx config spec fields below
+	VMs          []string
+	VMsTags      map[string][]nsx.Tag
+	GroupsByVMs  map[string][]string
+	GroupsByExpr map[string]ExampleExpr // map from group name to its expr
+	Policies     []Category
+
+	// additional info about example, relevant for synthesis
+	DisjointGroupsTags [][]string
+
+	// JSON generation fields below
+	Name string // example name for JSON file name
+}
+
+// ExamplesGeneration - main function to generate ResourcesContainerModel from specified Example object.
+// It also stores the generated example in the path pkg/data/json .
+func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesContainerModel, error) {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
 	for _, vmName := range e.VMs {
@@ -59,7 +77,30 @@ func ExamplesGeneration(e *Example) *collector.ResourcesContainerModel {
 	// add dfw
 	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
 	res.ServiceList = getServices()
-	return res
+
+	// store the example resources object generated as JSON file
+	if err := e.storeAsJSON(overrideJSON, res); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (e *Example) storeAsJSON(override bool, rc *collector.ResourcesContainerModel) error {
+	if e.Name == "" {
+		return fmt.Errorf("invalid example with empty name")
+	}
+	jsonPath := getExamplesJSONPath(e.Name)
+	if !override {
+		if _, err := os.Stat(jsonPath); err == nil {
+			// jsonPath exists - not re-generating
+			return nil
+		}
+	}
+	rcJSON, err := rc.ToJSONString()
+	if err != nil {
+		return err
+	}
+	return common.WriteToFile(jsonPath, rcJSON)
 }
 
 func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
@@ -133,40 +174,10 @@ type ExampleExpr struct {
 	Cond2 ExampleCond
 }
 
-// Example is in s single domain
-type Example struct {
-	// config spec fields below
-	VMs                []string
-	VMsTags            map[string][]nsx.Tag
-	GroupsByVMs        map[string][]string
-	GroupsByExpr       map[string]ExampleExpr // map from group name to its expr
-	Policies           []Category
-	DisjointGroupsTags [][]string // disjoint groups and tags; used by synthesis
-
-	// JSON generation fields below
-	Name string // example name for JSON file name
-}
-
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "data")
 
 func getExamplesJSONPath(name string) string {
 	return filepath.Join(dataPkgPath, "json", name+".json")
-}
-
-func (e *Example) StoreAsJSON(override bool) error {
-	jsonPath := getExamplesJSONPath(e.Name)
-	if !override {
-		if _, err := os.Stat(jsonPath); err == nil {
-			// jsonPath exists
-			return nil
-		}
-	}
-	rc := ExamplesGeneration(e)
-	rcJSON, err := rc.ToJSONString()
-	if err != nil {
-		return err
-	}
-	return common.WriteToFile(jsonPath, rcJSON)
 }
 
 func (e *Example) CopyTopology() *Example {

@@ -496,8 +496,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object
-	rc := data.ExamplesGeneration(example)
-	err := example.StoreAsJSON(overrideJSON)
+	rc, err := data.ExamplesGeneration(example, overrideJSON)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

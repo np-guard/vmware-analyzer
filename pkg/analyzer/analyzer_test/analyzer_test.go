@@ -56,8 +56,7 @@ func (a *analyzerTest) run(t *testing.T) {
 	//nolint:gocritic // comment here should stay
 	// overrideAll = true // uncommnet to override expected output and config as JSON
 	// overrideOnlyConnOutput = true // uncommnet to override expected output
-	rc := data.ExamplesGeneration(&a.exData)
-	err := a.exData.StoreAsJSON(overrideAll)
+	rc, err := data.ExamplesGeneration(&a.exData, overrideAll)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

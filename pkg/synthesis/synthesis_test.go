@@ -267,7 +267,9 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		rc := data.ExamplesGeneration(test.exData)
+		overrideJSON := false // change to true in case examples were modified, so JSON file gets updated
+		rc, err := data.ExamplesGeneration(test.exData, overrideJSON)
+		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
 		},
