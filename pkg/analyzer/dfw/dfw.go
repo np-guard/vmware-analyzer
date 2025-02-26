@@ -12,9 +12,9 @@ import (
 )
 
 type DFW struct {
-	CategoriesSpecs   []*CategorySpec // ordered list of categories
-	totalIngressRules int
-	totalEgressRules  int
+	CategoriesSpecs            []*CategorySpec // ordered list of categories
+	totalEffectiveIngressRules int
+	totalEffectiveEgressRules  int
 
 	pathsToDisplayNames map[string]string // map from printing paths references as display names instead
 }
@@ -62,9 +62,9 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 	allDeniedConns = emptyConnectionsAndRules()
 	allNotDeterminedConns := emptyConnectionsAndRules()
 	delegatedConns = emptyConnectionsAndRules()
-	remainingRulesNum := d.totalEgressRules
+	remainingRulesNum := d.totalEffectiveEgressRules
 	if isIngress {
-		remainingRulesNum = d.totalIngressRules
+		remainingRulesNum = d.totalEffectiveIngressRules
 	}
 
 	for _, dfwCategory := range d.CategoriesSpecs {
@@ -89,9 +89,9 @@ func (d *DFW) AllowedConnectionsIngressOrEgress(src, dst *endpoints.VM, isIngres
 
 		// update counter of total remaining rules to analyze
 		if isIngress {
-			remainingRulesNum -= len(dfwCategory.ProcessedRules.Inbound)
+			remainingRulesNum -= len(dfwCategory.EffectiveRules.Inbound)
 		} else {
-			remainingRulesNum -= len(dfwCategory.ProcessedRules.Outbound)
+			remainingRulesNum -= len(dfwCategory.EffectiveRules.Outbound)
 		}
 
 		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
@@ -170,10 +170,10 @@ func (d *DFW) String() string {
 
 func (d *DFW) AllEffectiveRules() string {
 	inboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
-		func(c *CategorySpec) string { return c.inboundEffectiveRules() },
+		func(c *CategorySpec) string { return c.inboundEffectiveRulesStr() },
 		common.NewLine)
 	outboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
-		func(c *CategorySpec) string { return c.outboundEffectiveRules() },
+		func(c *CategorySpec) string { return c.outboundEffectiveRulesStr() },
 		common.NewLine)
 
 	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, inboundResStr)
@@ -183,7 +183,8 @@ func (d *DFW) AllEffectiveRules() string {
 
 func (d *DFW) AddRule(src, dst []*endpoints.VM, srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string, origDefaultRule *collector.FirewallRule) {
+	ruleID int, origRule *collector.Rule, scope []*endpoints.VM, secPolicyName string,
+	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {
 		if fwCategory.Category.String() == categoryStr {
 			fwCategory.addRule(src, dst, srcGroups, dstGroups, scopeGroups, isAllSrcGroups, isAllDstGroups, conn,

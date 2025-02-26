@@ -91,7 +91,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 
 ///////////////////////////////////////////////////////////////////////////
 
-func k8sAnalyzer(k8sDir, outfile, format string) error {
+func k8sAnalyzer(k8sDir, outfile, format string) (bool, error) {
 	analyzerExec := "k8snetpolicy"
 
 	// looking for the analyzerExec in:
@@ -100,7 +100,7 @@ func k8sAnalyzer(k8sDir, outfile, format string) error {
 	// 3. in $PATH environment variable
 	runningExec, err := os.Executable()
 	if err != nil {
-		return err
+		return false, err
 	}
 	runningExecDir := filepath.Dir(runningExec)
 	potentialAnalyzerExecPaths := []string{
@@ -121,8 +121,8 @@ func k8sAnalyzer(k8sDir, outfile, format string) error {
 		}
 	}
 	if analyzerExecPath == "" {
-		return nil
+		return false, nil
 	}
 	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
-	return cmd.Run()
+	return true, cmd.Run()
 }
