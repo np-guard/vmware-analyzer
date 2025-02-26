@@ -38,6 +38,10 @@ var allTests = []analyzerTest{
 		exData: data.Example3,
 	},
 	{
+		name:   "ExampleExternal",
+		exData: data.Example1External,
+	},
+	{
 		name:   "ExampleDumbeldore",
 		exData: data.ExampleDumbeldore,
 	},
@@ -99,7 +103,9 @@ func TestAnalyzer(t *testing.T) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for i := range allTests {
 		test := &allTests[i]
-		test.run(t)
+		t.Run(test.name, func(t *testing.T) {
+			test.run(t)
+		})
 	}
 }
 
