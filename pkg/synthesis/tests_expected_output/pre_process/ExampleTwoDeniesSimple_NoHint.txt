@@ -6,7 +6,7 @@ Priority |Rule Id |Action |Src                  |Dst                   |Connecti
 1        |2       |deny   |(*)                  |(group = Dumbledore2) |All Connections
 2        |3       |allow  |(group = Slytherin)  |(*)                   |All Connections
 3        |4       |allow  |(group = Gryffindor) |(*)                   |All Connections
-4        |2144    |deny   |(*)                  |(*)                   |All Connections
+4        |10230   |deny   |(*)                  |(*)                   |All Connections
 
 
 symbolic outbound rules:
@@ -15,5 +15,5 @@ Priority |Rule Id |Action |Src                  |Dst                   |Connecti
 1        |2       |deny   |(*)                  |(group = Dumbledore2) |All Connections
 2        |3       |allow  |(group = Slytherin)  |(*)                   |All Connections
 3        |4       |allow  |(group = Gryffindor) |(*)                   |All Connections
-4        |2144    |deny   |(*)                  |(*)                   |All Connections
+4        |10230   |deny   |(*)                  |(*)                   |All Connections
 

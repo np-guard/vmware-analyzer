@@ -11,7 +11,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/runner"
 )
 
@@ -496,8 +496,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object
-	rc := data.ExamplesGeneration(example)
-	err := example.StoreAsJSON(overrideJSON)
+	rc, err := data.ExamplesGeneration(example, overrideJSON)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

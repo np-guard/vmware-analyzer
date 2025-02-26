@@ -40,4 +40,4 @@ jobs:
       - name: Check Docker image - help
         run: docker run ${{ steps.build_docker.outputs.digest }} -h
       - name: Check Docker image - analysis
-        run: docker run --rm -v $PWD/pkg/collector/data/:/mnt/data ${{ steps.build_docker.outputs.digest }} -r /mnt/data/json/Example1.json
+        run: docker run --rm -v $PWD/pkg/data/:/mnt/data ${{ steps.build_docker.outputs.digest }} -r /mnt/data/json/Example1.json

@@ -26,7 +26,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections'
-        nsx-id: "1925"
+        nsx-id: "9198"
     creationTimestamp: null
     name: policy-1
     namespace: default
@@ -48,7 +48,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Gryffindor) dst: (tag = Slytherin and tag != DB) conn: All Connections'
-        nsx-id: "1926"
+        nsx-id: "9199"
     creationTimestamp: null
     name: policy-2
     namespace: default
@@ -73,7 +73,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections'
-        nsx-id: "1927"
+        nsx-id: "9200"
     creationTimestamp: null
     name: policy-3
     namespace: default
@@ -95,7 +95,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (tag = Hufflepuff and tag != DB) conn: All Connections'
-        nsx-id: "1928"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-4
     namespace: default

@@ -16,13 +16,13 @@ Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
 Original allow rule priority |Rule id |Src |Dst                |Connection
-0                            |1925    |(*) |(tag != DB)        |All Connections
-0                            |1925    |(*) |(tag = Slytherin)  |All Connections
-1                            |1927    |(*) |(tag = Gryffindor) |All Connections
+0                            |9198    |(*) |(tag != DB)        |All Connections
+0                            |9198    |(*) |(tag = Slytherin)  |All Connections
+1                            |9200    |(*) |(tag = Gryffindor) |All Connections
 
 outbound rules
 Original allow rule priority |Rule id |Src                |Dst                |Connection
-0                            |1926    |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
-1                            |1928    |(*)                |(tag != DB)        |All Connections
-1                            |1928    |(*)                |(tag = Hufflepuff) |All Connections
+0                            |9199    |(tag = Gryffindor) |(tag = Slytherin)  |All Connections
+1                            |9201    |(*)                |(tag != DB)        |All Connections
+1                            |9201    |(*)                |(tag = Hufflepuff) |All Connections
 

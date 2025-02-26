@@ -23,7 +23,7 @@ Priority |Rule Id |Action |Src         |Dst         |Connection
 0        |9195    |allow  |(*)         |(tag = Web) |All Connections
 1        |9196    |allow  |(tag = Web) |(tag = App) |All Connections
 2        |9197    |allow  |(tag = App) |(tag = DB)  |All Connections
-3        |2144    |deny   |(*)         |(*)         |All Connections
+3        |10230   |deny   |(*)         |(*)         |All Connections
 
 
 symbolic outbound rules:
@@ -31,5 +31,5 @@ Priority |Rule Id |Action |Src         |Dst         |Connection
 0        |9195    |allow  |(*)         |(tag = Web) |All Connections
 1        |9196    |allow  |(tag = Web) |(tag = App) |All Connections
 2        |9197    |allow  |(tag = App) |(tag = DB)  |All Connections
-3        |2144    |deny   |(*)         |(*)         |All Connections
+3        |10230   |deny   |(*)         |(*)         |All Connections
 
