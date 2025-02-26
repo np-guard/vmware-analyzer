@@ -18,7 +18,7 @@ Synthesize a given `NSX DFW` policy into k8s network policy.
 The result may not be totally equivalent, due to limitations of the target policy; more details regarding the k8s synthesis [here](#limitation).
 There are two main challenges here: 
 * *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
-* *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just synthesis a snapshot. 
+* *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just generate any set of rules that preserves the connectivity between VMs given the current state of the configuration. For example, a DFW rule that uses an NSX group with no VMs at the moment of analysis and synthesis, may still be relevant to maintain in the conversion to network policies. 
 This is important since e.g. once a new VM is added with the relevant tags/labels in the target env, 
 it will be granted the desired connectivity.
 
