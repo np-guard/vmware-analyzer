@@ -5,6 +5,7 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -279,7 +280,7 @@ func (p *NSXConfigParser) getAllGroups() {
 			groupsPaths = append(groupsPaths, *group.Path)
 		}
 	}
-	vms = endpoints.Compact(vms)
+	vms = common.SliceCompact(vms)
 	p.allGroupsVMs = vms
 	p.allGroups = groups
 	p.allGroupsPaths = groupsPaths
@@ -304,7 +305,7 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		vms = append(vms, thisGroupVMs...)
 		groups = append(groups, thisGroup)
 	}
-	vms = endpoints.Compact(vms)
+	vms = common.SliceCompact(vms)
 	return vms, groups
 }
 

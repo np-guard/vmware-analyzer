@@ -1,9 +1,5 @@
 package endpoints
 
-import (
-	"maps"
-	"slices"
-)
 
 type EP interface {
 	Name() string
@@ -40,13 +36,4 @@ func Subtract(a, b []EP) []EP {
 		}
 	}
 	return res
-}
-
-// todo - move to slices.go:
-func Compact(a []EP) []EP {
-	set := map[EP]bool{}
-	for _, aVM := range a {
-		set[aVM] = true
-	}
-	return slices.Collect(maps.Keys(set))
 }
