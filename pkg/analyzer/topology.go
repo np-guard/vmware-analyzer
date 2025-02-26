@@ -9,18 +9,18 @@ import (
 
 type segment struct {
 	block *netset.IPBlock
-	vms   []*endpoints.VM
+	vms   []endpoints.EP
 	name  string
 }
 
 type topology struct {
 	segments      []*segment
-	vmSegments    map[*endpoints.VM][]*segment
+	vmSegments    map[endpoints.EP][]*segment
 	externalBlock *netset.IPBlock
 }
 
 func newTopology() *topology {
-	return &topology{vmSegments: map[*endpoints.VM][]*segment{}, externalBlock: netset.GetCidrAll()}
+	return &topology{vmSegments: map[endpoints.EP][]*segment{}, externalBlock: netset.GetCidrAll()}
 }
 
 func (p *NSXConfigParser) getTopology() (err error) {
