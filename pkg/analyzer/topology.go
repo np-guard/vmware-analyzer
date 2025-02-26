@@ -43,7 +43,6 @@ func (p *NSXConfigParser) getTopology() (err error) {
 				p.topology.vmSegments[vm] = append(p.topology.vmSegments[vm], segment)
 				segment.vms = append(segment.vms, vm)
 			}
-
 		}
 		p.topology.externalBlock = p.topology.externalBlock.Subtract(segment.block)
 		p.topology.segments = append(p.topology.segments, segment)
