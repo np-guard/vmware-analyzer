@@ -15,15 +15,15 @@ Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
 Original allow rule priority |Rule id |Src                                            |Dst                                          |Connection
-0                            |1927    |(group = Dumbledore1 and group != Dumbledore2) |(group != Slytherin)                         |All Connections
-0                            |1927    |(group = Dumbledore1)                          |(group != Slytherin and group != Gryffindor) |All Connections
-1                            |1928    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                        |All Connections
-1                            |1928    |(group = Dumbledore2)                          |(group != Slytherin and group != Gryffindor) |All Connections
+0                            |9200    |(group = Dumbledore1 and group != Dumbledore2) |(group != Slytherin)                         |All Connections
+0                            |9200    |(group = Dumbledore1)                          |(group != Slytherin and group != Gryffindor) |All Connections
+1                            |9201    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                        |All Connections
+1                            |9201    |(group = Dumbledore2)                          |(group != Slytherin and group != Gryffindor) |All Connections
 
 outbound rules
 Original allow rule priority |Rule id |Src                                            |Dst                                          |Connection
-0                            |1927    |(group = Dumbledore1 and group != Dumbledore2) |(group != Slytherin)                         |All Connections
-0                            |1927    |(group = Dumbledore1)                          |(group != Slytherin and group != Gryffindor) |All Connections
-1                            |1928    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                        |All Connections
-1                            |1928    |(group = Dumbledore2)                          |(group != Slytherin and group != Gryffindor) |All Connections
+0                            |9200    |(group = Dumbledore1 and group != Dumbledore2) |(group != Slytherin)                         |All Connections
+0                            |9200    |(group = Dumbledore1)                          |(group != Slytherin and group != Gryffindor) |All Connections
+1                            |9201    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                        |All Connections
+1                            |9201    |(group = Dumbledore2)                          |(group != Slytherin and group != Gryffindor) |All Connections
 

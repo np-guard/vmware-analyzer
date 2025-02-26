@@ -2,28 +2,28 @@ category: Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Rule Id |Action              |Src |Dst                  |Connection
-0        |10218   |jump_to_application |(*) |(group = Dumbledore) |All Connections
-1        |10219   |deny                |(*) |(group = Hufflepuff) |All Connections
-2        |10220   |deny                |(*) |(group = Slytherin)  |All Connections
+0        |9198    |jump_to_application |(*) |(group = Dumbledore) |All Connections
+1        |9199    |deny                |(*) |(group = Hufflepuff) |All Connections
+2        |9200    |deny                |(*) |(group = Slytherin)  |All Connections
 
 
 symbolic outbound rules:
 Priority |Rule Id |Action              |Src |Dst                  |Connection
-0        |10218   |jump_to_application |(*) |(group = Dumbledore) |All Connections
-1        |10219   |deny                |(*) |(group = Hufflepuff) |All Connections
-2        |10220   |deny                |(*) |(group = Slytherin)  |All Connections
+0        |9198    |jump_to_application |(*) |(group = Dumbledore) |All Connections
+1        |9199    |deny                |(*) |(group = Hufflepuff) |All Connections
+2        |9200    |deny                |(*) |(group = Slytherin)  |All Connections
 
 
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Rule Id |Action |Src |Dst |Connection
-0        |10230   |allow  |(*) |(*) |All Connections
-1        |2144    |deny   |(*) |(*) |All Connections
+0        |9201    |allow  |(*) |(*) |All Connections
+1        |10230   |deny   |(*) |(*) |All Connections
 
 
 symbolic outbound rules:
 Priority |Rule Id |Action |Src |Dst |Connection
-0        |10230   |allow  |(*) |(*) |All Connections
-1        |2144    |deny   |(*) |(*) |All Connections
+0        |9201    |allow  |(*) |(*) |All Connections
+1        |10230   |deny   |(*) |(*) |All Connections
 

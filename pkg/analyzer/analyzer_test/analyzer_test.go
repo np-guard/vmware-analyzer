@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/collector/data"
+	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/runner"
@@ -56,8 +56,7 @@ func (a *analyzerTest) run(t *testing.T) {
 	//nolint:gocritic // comment here should stay
 	// overrideAll = true // uncommnet to override expected output and config as JSON
 	// overrideOnlyConnOutput = true // uncommnet to override expected output
-	rc := data.ExamplesGeneration(&a.exData)
-	err := a.exData.StoreAsJSON(overrideAll)
+	rc, err := data.ExamplesGeneration(&a.exData, overrideAll)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(
@@ -105,9 +104,9 @@ func TestAnalyzer(t *testing.T) {
 }
 
 func getExpectedTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "expected_output", name)
+	return filepath.Join(projectpath.Root, "pkg", "data", "expected_output", name)
 }
 
 func getActualTestPath(name string) string {
-	return filepath.Join(projectpath.Root, "pkg", "collector", "data", "actual_output", name)
+	return filepath.Join(projectpath.Root, "pkg", "data", "actual_output", name)
 }

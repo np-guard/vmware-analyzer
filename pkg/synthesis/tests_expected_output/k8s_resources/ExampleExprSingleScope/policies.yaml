@@ -26,7 +26,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections'
-        nsx-id: "1926"
+        nsx-id: "9199"
     creationTimestamp: null
     name: policy-1
     namespace: default
@@ -49,7 +49,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections'
-        nsx-id: "1926"
+        nsx-id: "9199"
     creationTimestamp: null
     name: policy-2
     namespace: default
@@ -72,7 +72,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections'
-        nsx-id: "1928"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-3
     namespace: default
@@ -95,7 +95,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections'
-        nsx-id: "1928"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-4
     namespace: default
@@ -118,7 +118,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections'
-        nsx-id: "1930"
+        nsx-id: "9203"
     creationTimestamp: null
     name: policy-5
     namespace: default
@@ -141,7 +141,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections'
-        nsx-id: "1930"
+        nsx-id: "9203"
     creationTimestamp: null
     name: policy-6
     namespace: default
@@ -164,7 +164,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections'
-        nsx-id: "1932"
+        nsx-id: "9205"
     creationTimestamp: null
     name: policy-7
     namespace: default
@@ -187,7 +187,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections'
-        nsx-id: "1932"
+        nsx-id: "9205"
     creationTimestamp: null
     name: policy-8
     namespace: default
@@ -210,7 +210,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: Default Deny Network Policy
-        nsx-id: "2144"
+        nsx-id: "10230"
     creationTimestamp: null
     name: default-deny
     namespace: default
