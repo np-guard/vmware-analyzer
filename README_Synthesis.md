@@ -18,9 +18,9 @@ Synthesize a given `NSX DFW` policy into k8s network policy.
 The result may not be totally equivalent, due to limitations of the target policy; more details regarding the k8s synthesis [here](#limitation).
 There are two main challenges here: 
 * *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
-* *The intent preserving challenge*: maintain the original semantic intent of the rules, and not just generate any set of rules that preserves the connectivity between VMs given the current state of the configuration. For example, a DFW rule that uses an NSX group with no VMs at the moment of analysis and synthesis, may still be relevant to maintain in the conversion to network policies. 
-This is important since e.g. once a new VM is added with the relevant tags/labels in the target env, 
-it will be granted the desired connectivity.
+* *The intent preserving challenge*: maintain the original semantic intent of the rules
+and not just generate a set of rules that preserves the connectivity between VMs given the current state of the configuration.
+
 
 ### The flattening challenge
 The translation of priortized `allow,deny,jump-to-app` rules into flat `allow` rules is exponential in the number of terms of the
@@ -34,10 +34,18 @@ disjoint sets, and ask the user to approve them.
 tool is provided, the more concise and readable rules it will synthesize.  
 
 ### The policy preserving challenge
-To preserve the original intent of the policy, the synthesized policy refers, where possible, to permanent labeling such
-as tags - e.g. `front-end` - and not to temporarily labeling such as `VM` names. E.g., a specific rule's `src` is
- defined to be group `aaa` that is defined as `tag = backend` and `tag != DB` then the synthesized policy will refer to the value
-of the tag.
+The synthesis maintains the original semantic intent of the rules
+and not just generates a set of rules that preserves the connectivity between VMs given the current state of the configuration.
+For example:
+* When a `frontend` `VM` is added it should be granted the policies defined for the `frontend`
+* A DFW rule that uses an NSX group with no VMs at the moment of analysis and synthesis,
+will still be relevant to maintain in the conversion to network policies.
+
+To preserve the original intent of the policy, the synthesized policy refers to permanent labeling such
+as tags - e.g. `front-end` - and not to temporal labeling such as `VM` names. E.g., given a specific rule's `src`
+ defined to be group `aaa` that is defined as `tag = backend` and `tag != DB` then the synthesized policy will maintain 
+this reference to the tag's value.
+`todo: add tag -> labeling machanism` 
 
 ## Currently supported
 Currently, the tool supports groups defined by expressions over tags; nested expression are not yet supported.
