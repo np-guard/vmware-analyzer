@@ -50,6 +50,7 @@ type NSXConfigParser struct {
 	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
+	topology              *topology
 }
 
 func (p *NSXConfigParser) init() {
@@ -63,7 +64,10 @@ func (p *NSXConfigParser) init() {
 func (p *NSXConfigParser) RunParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
-	p.getVMs()    // get vms config
+	p.getVMs() // get vms config
+	if err := p.getTopology(); err != nil {
+		return err
+	}
 	p.getGroups() // get groups config
 	p.removeVMsWithoutGroups()
 	p.getDFW() // get distributed firewall config
