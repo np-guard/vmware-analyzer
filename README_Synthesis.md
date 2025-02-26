@@ -41,10 +41,12 @@ For example:
 * A DFW rule that uses an NSX group with no VMs at the moment of analysis and synthesis,
 will still be relevant to maintain in the conversion to network policies.
 
-To preserve the original intent of the policy, the synthesized policy refers to permanent labeling such
-as tags - e.g. `front-end` - and not to temporal labeling such as `VM` names. E.g., given a specific rule's `src`
- defined to be group `aaa` that is defined as `tag = backend` and `tag != DB` then the synthesized policy will maintain 
-this reference to the tag's value.
+To preserve the original intent of the policy, the synthesized policy prioritizes referencing non-ephemeral features.
+E.g., it prefers referencing`frontend` label instead of referencing `VMs'` names. `VM`s may be deleted and added, while
+the `frontend` label is always granted to any relevant `VM`.  
+Specifically,  given a rule with `src`defined as group `aaa` which is defined as `tag = backend and tag != DB`,
+the synthesized policy will reference the labels corresponding to the `backend` and `DB`  values.
+
 `todo: add tag -> labeling machanism` 
 
 ## Currently supported
