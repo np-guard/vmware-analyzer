@@ -1,15 +1,17 @@
 package endpoints
 
 import (
-	"maps"
 	"slices"
+	"strings"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 // VM intenal modeling for vmware endpoints
 type VM struct {
 	name        string
 	uid         string
-	tags        []string //todo: implement
+	tags        []string
 	ipAddresses []string
 	// address string
 }
@@ -19,7 +21,6 @@ func (v *VM) ID() string {
 }
 
 func (v *VM) Name() string {
-	_ = v.tags // todo tmp
 	return v.name
 }
 
@@ -29,6 +30,10 @@ func (v *VM) String() string {
 
 func (v *VM) Kind() string {
 	return "vm"
+}
+
+func (v *VM) InfoStr() []string {
+	return []string{v.Name(), v.ID(), strings.Join(v.IPAddresses(), common.CommaSeparator)}
 }
 
 func (v *VM) SetIPAddresses(ips []string) {
@@ -53,42 +58,6 @@ func NewVM(name, uid string) *VM {
 	return &VM{
 		name: name,
 		uid:  uid,
-		tags: []string{}, // todo tmp
+		tags: []string{},
 	}
-}
-
-func Intersection(a, b []*VM) []*VM {
-	res := []*VM{}
-	aKeys := map[string]bool{}
-	for _, aVM := range a {
-		aKeys[aVM.name] = true
-	}
-	for _, bVM := range b {
-		if aKeys[bVM.name] {
-			res = append(res, bVM)
-		}
-	}
-	return res
-}
-
-func Subtract(a, b []*VM) []*VM {
-	res := []*VM{}
-	bKeys := map[string]bool{}
-	for _, bVM := range b {
-		bKeys[bVM.name] = true
-	}
-	for _, aVM := range a {
-		if !bKeys[aVM.name] {
-			res = append(res, aVM)
-		}
-	}
-	return res
-}
-
-func Compact(a []*VM) []*VM {
-	set := map[*VM]bool{}
-	for _, aVM := range a {
-		set[aVM] = true
-	}
-	return slices.Collect(maps.Keys(set))
 }
