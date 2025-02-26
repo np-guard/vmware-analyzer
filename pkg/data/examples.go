@@ -173,7 +173,6 @@ var Example1d = Example{
 	},
 }
 
-
 var Example1External = Example{
 	Name:        "Example1External",
 	VMs:         Example1d.VMs,
