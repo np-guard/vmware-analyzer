@@ -5,8 +5,8 @@ Abstract Model Details
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
 Group       |Expression |VM
-Dumbledore  |           |Dumbledore1, Dumbledore2
-Dumbledore1 |           |Dumbledore1
+Dumbledore  |           |Dumbledore2
+Dumbledore1 |           |
 Dumbledore2 |           |Dumbledore2
 Gryffindor  |           |Gryffindor
 Hufflepuff  |           |Hufflepuff
