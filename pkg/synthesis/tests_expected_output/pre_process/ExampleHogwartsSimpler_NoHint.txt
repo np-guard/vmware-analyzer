@@ -20,12 +20,12 @@ symbolic inbound rules:
 Priority |Rule Id |Action |Src           |Dst           |Connection
 0        |9195    |allow  |(*)           |(group = Web) |TCP
 1        |9196    |allow  |(group = Web) |(group = App) |UDP
-2        |2144    |deny   |(*)           |(*)           |All Connections
+2        |10230   |deny   |(*)           |(*)           |All Connections
 
 
 symbolic outbound rules:
 Priority |Rule Id |Action |Src           |Dst           |Connection
 0        |9195    |allow  |(*)           |(group = Web) |TCP
 1        |9196    |allow  |(group = Web) |(group = App) |UDP
-2        |2144    |deny   |(*)           |(*)           |All Connections
+2        |10230   |deny   |(*)           |(*)           |All Connections
 

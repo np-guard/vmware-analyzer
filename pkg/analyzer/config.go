@@ -15,18 +15,18 @@ type ParsedNSXConfig interface {
 	AnalyzedConnectivity() connectivity.ConnMap
 	DFW() *dfw.DFW
 	DefaultDenyRule() *dfw.FwRule
-	VMs() []*endpoints.VM
-	VMToGroupsMap() map[*endpoints.VM][]*collector.Group
+	VMs() []endpoints.EP
+	VMToGroupsMap() map[endpoints.EP][]*collector.Group
 	GetGroups() []*collector.Group
 }
 
 // config captures nsx config, implements NSXConfig interface
 type config struct {
-	vms         []*endpoints.VM                      // list of all vms
-	vmsMap      map[string]*endpoints.VM             // map from uid to vm objects
-	Fw          *dfw.DFW                             // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups      []*collector.Group                   // list of all groups (also these with no vms)
-	GroupsPerVM map[*endpoints.VM][]*collector.Group // map from vm to its groups
+	vms         []endpoints.EP                      // list of all vms
+	vmsMap      map[string]endpoints.EP             // map from uid to vm objects
+	Fw          *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups      []*collector.Group                  // list of all groups (also these with no vms)
+	GroupsPerVM map[endpoints.EP][]*collector.Group // map from vm to its groups
 	// todo: does this belong here? https://github.com/np-guard/vmware-analyzer/issues/145
 	analyzedConnectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
 	analysisDone         bool
@@ -38,10 +38,10 @@ func (c *config) AnalyzedConnectivity() connectivity.ConnMap {
 func (c *config) DFW() *dfw.DFW {
 	return c.Fw
 }
-func (c *config) VMs() []*endpoints.VM {
+func (c *config) VMs() []endpoints.EP {
 	return c.vms
 }
-func (c *config) VMToGroupsMap() map[*endpoints.VM][]*collector.Group {
+func (c *config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
 	return c.GroupsPerVM
 }
 func (c *config) GetGroups() []*collector.Group {
@@ -105,7 +105,7 @@ func (c *config) getVMsInfoStr(color bool) string {
 	header := []string{"VM Name", "VM ID", "VM Addresses"}
 	lines := [][]string{}
 	for _, vm := range c.vms {
-		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.IPAddresses(), common.CommaSeparator)})
+		lines = append(lines, vm.InfoStr())
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

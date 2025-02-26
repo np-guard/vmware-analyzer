@@ -158,6 +158,6 @@ func (f *FwRule) servicesString() string {
 	return common.JoinNonEmpty([]string{serviceEntriesStr, servicesStr}, common.CommaSeparator)
 }
 
-func vmsString(vms []*endpoints.VM) string {
+func vmsString(vms []endpoints.EP) string {
 	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }

@@ -26,7 +26,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections'
-        nsx-id: "10230"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-1
     namespace: default
@@ -48,7 +48,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (group = Dumbledore) conn: All Connections'
-        nsx-id: "10230"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-2
     namespace: default
@@ -68,7 +68,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (group != Hufflepuff and group != Slytherin) conn: All Connections'
-        nsx-id: "10230"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-3
     namespace: default
@@ -90,7 +90,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (*) dst: (group = Dumbledore) conn: All Connections'
-        nsx-id: "10230"
+        nsx-id: "9201"
     creationTimestamp: null
     name: policy-4
     namespace: default
@@ -110,7 +110,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: Default Deny Network Policy
-        nsx-id: "2144"
+        nsx-id: "10230"
     creationTimestamp: null
     name: default-deny
     namespace: default

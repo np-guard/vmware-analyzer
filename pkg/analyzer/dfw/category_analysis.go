@@ -15,7 +15,7 @@ import (
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 //
 //nolint:gocritic // temporarily keep commented-out code
-func (c *CategorySpec) analyzeCategory(src, dst *endpoints.VM, isIngress bool,
+func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
 ) (allowedConns, // allowedConns are the set of connections between src to dst, which are allowed by this category rules.
 	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the
 	// rule action jump_to_app.

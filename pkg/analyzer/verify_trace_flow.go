@@ -10,7 +10,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 )
 
-type vmFilter func(vm *endpoints.VM) bool
+type vmFilter func(vm endpoints.EP) bool
 
 func compareConfigToTraceflows(
 	resources *collector.ResourcesContainerModel,
@@ -71,7 +71,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 }
 
 func createTraceFlowsForConn(traceFlows *collector.TraceFlows, srcIP, dstIP string,
-	srcVM, dstVM *endpoints.VM, connmap connectivity.ConnMap) {
+	srcVM, dstVM endpoints.EP, connmap connectivity.ConnMap) {
 	fmt.Printf("createTraceFlowsForConn: srcVM %s, dstVM: %s\n", srcVM.Name(), dstVM.Name())
 	allowed, denied := connmap.GetDisjointExplanationsPerEndpoints(srcVM.Name(), dstVM.Name())
 	for _, a := range allowed {

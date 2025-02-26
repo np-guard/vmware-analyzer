@@ -14,15 +14,15 @@ Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
 Original allow rule priority |Rule id |Src                |Dst                 |Connection
-0                            |1926    |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
-1                            |1928    |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
-2                            |1930    |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
-3                            |1932    |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
+0                            |9199    |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
+1                            |9201    |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
+2                            |9203    |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
+3                            |9205    |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
 
 outbound rules
 Original allow rule priority |Rule id |Src                |Dst                 |Connection
-0                            |1926    |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
-1                            |1928    |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
-2                            |1930    |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
-3                            |1932    |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
+0                            |9199    |(tag = Dumbledore) |(tag != Slytherin)  |All Connections
+1                            |9201    |(tag = Gryffindor) |(tag != Hufflepuff) |All Connections
+2                            |9203    |(tag = Hufflepuff) |(tag != Slytherin)  |All Connections
+3                            |9205    |(tag = Slytherin)  |(tag != Gryffindor) |All Connections
 
