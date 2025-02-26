@@ -70,7 +70,7 @@ Gryffindor-App |Slytherin-Web  |TCP dst-ports: 80,443
 $ nsxanalyzer --resource-input-file pkg/data/json/Example2.json --output-filter Gryffindor-App,Gryffindor-DB,Gryffindor-Web,Dumbledore1 -o svg -f ex2Filter1.svg
 
 ```
-![graph](pkg/data/tests_expected_output/ex2Filter1.svg)
+![graph](pkg/analyzer/tests_expected_output/ex2Filter1.svg)
 
 
 
