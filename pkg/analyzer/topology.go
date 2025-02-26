@@ -30,7 +30,7 @@ func (p *NSXConfigParser) getTopology() (err error) {
 		if len(segResource.SegmentPorts) == 0 && len(segResource.Subnets) == 0 {
 			continue
 		}
-		segment := &segment{block: netset.NewIPBlock(),name: *segResource.DisplayName }
+		segment := &segment{block: netset.NewIPBlock(), name: *segResource.DisplayName}
 		subnetsNetworks := common.CustomStrSliceToStrings(segResource.Subnets, func(subnet nsx.SegmentSubnet) string { return *subnet.Network })
 		segment.block, err = netset.IPBlockFromCidrList(subnetsNetworks)
 		if err != nil {

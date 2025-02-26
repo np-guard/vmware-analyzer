@@ -64,8 +64,8 @@ func (p *NSXConfigParser) init() {
 func (p *NSXConfigParser) RunParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
-	p.getVMs()    // get vms config
-	if err := p.getTopology(); err != nil{
+	p.getVMs() // get vms config
+	if err := p.getTopology(); err != nil {
 		return err
 	}
 	p.getGroups() // get groups config
