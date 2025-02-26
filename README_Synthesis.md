@@ -23,7 +23,7 @@ and not just generate a set of rules that preserves the connectivity between VMs
 
 
 ### The flattening challenge
-The translation of priortized `allow,deny,jump-to-app` rules into flat `allow` rules is exponential in the number of terms of the
+The translation of priortized `allow,deny,jump-to-app` rules into flat `allow` rules is exponential in the size of the
 original rules (to be accurate, the number of allow rules generated for each original allow rule is
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
 1. Ask the user to provide the tool with `hints` -  lists of disjoint tags/groups.
