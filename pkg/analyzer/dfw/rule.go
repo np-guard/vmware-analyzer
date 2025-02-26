@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -49,6 +48,7 @@ func actionFromString(s string) RuleAction {
 	}
 }
 
+// FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
 	srcVMs []*endpoints.VM
 	dstVMs []*endpoints.VM
@@ -72,8 +72,52 @@ type FwRule struct {
 	categoryRef        *CategorySpec
 	dfwRef             *DFW
 	Priority           int // the priority inside the category, (the index of the rule in category rules list)
-	// srcRuleObj ... todo: add a reference to the original rule retrieved from api
+}
 
+// NewFwRule - create new FWRule object from input fields,
+// expecting any such object to be created from this function
+func NewFwRule(
+	srcVMs []*endpoints.VM,
+	dstVMs []*endpoints.VM,
+	scope []*endpoints.VM,
+	srcGroups []*collector.Group,
+	isAllSrcGroups bool,
+	dstGroups []*collector.Group,
+	isAllDstGroups bool,
+	scopeGroups []*collector.Group,
+	conn *netset.TransportSet,
+	action RuleAction,
+	direction string,
+	origRuleObj *collector.Rule,
+	origDefaultRuleObj *collector.FirewallRule,
+	ruleID int,
+	secPolicyName string,
+	secPolicyCategory string,
+	categoryRef *CategorySpec,
+	dfwRef *DFW,
+	priority int,
+) *FwRule {
+	return &FwRule{
+		srcVMs:             srcVMs,
+		dstVMs:             dstVMs,
+		scope:              scope,
+		SrcGroups:          srcGroups,
+		IsAllSrcGroups:     isAllSrcGroups,
+		DstGroups:          dstGroups,
+		IsAllDstGroups:     isAllDstGroups,
+		ScopeGroups:        scopeGroups,
+		Conn:               conn,
+		Action:             action,
+		direction:          direction,
+		OrigRuleObj:        origRuleObj,
+		origDefaultRuleObj: origDefaultRuleObj,
+		RuleID:             ruleID,
+		secPolicyName:      secPolicyName,
+		secPolicyCategory:  secPolicyCategory,
+		categoryRef:        categoryRef,
+		dfwRef:             dfwRef,
+		Priority:           priority,
+	}
 }
 
 func (f *FwRule) RuleIDStr() string {
@@ -94,99 +138,128 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 	logging.Debugf("%s %s", f.ruleDescriptionStr(), warnMsg)
 }
 
-func (f *FwRule) effectiveRules() (inbound, outbound *FwRule) {
-	if len(f.scope) == 0 {
-		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
-		return nil, nil
-	}
+//////////////////////////////////////////////////////////////////////////////////////////
+// computation of evaluated inbound and outbound rules
+// 1. for analysis: inbound and outbound rules which effects the current topology
+// 2. for synthesis: inbound and outbound rules which may not have effect on the current topology
+//////////////////////////////////////////////////////////////////////////////////////////
+
+func (f *FwRule) getEvaluatedRulesAndEffectiveRules() (inbound, outbound, inboundEffective, outboundEffective *FwRule) {
+	// for synthesis, we do not ignore rules with no VMs in src, dst, since in the future the same src
+	// may have VMs in it. Empty connection, however, is empty regardless of the VMs snapshot
 	if f.Conn.IsEmpty() {
 		f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
-		return nil, nil
+		return nil, nil, nil, nil
 	}
-	return f.getInboundRule(), f.getOutboundRule()
+
+	inbound = f.getInboundRule()
+	outbound = f.getOutboundRule()
+
+	// check if rules are considered effective or not
+	if len(f.scope) == 0 {
+		// rules with no VMs in src, dst are not considered effective rules
+		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
+		return inbound, outbound, nil, nil
+	}
+
+	if inboundNotEffectiveMsg := f.checkInboundEffectiveRuleValidity(); inboundNotEffectiveMsg != "" {
+		f.ruleWarning(inboundNotEffectiveMsg)
+	} else if inbound != nil {
+		inboundEffective = inbound.clone()
+	}
+
+	if outboundNotEffectiveMsg := f.checkOutboundEffectiveRuleValidity(); outboundNotEffectiveMsg != "" {
+		f.ruleWarning(outboundNotEffectiveMsg)
+		outboundEffective = nil
+	} else if outbound != nil {
+		outboundEffective = outbound.clone()
+	}
+
+	return inbound, outbound, inboundEffective, outboundEffective
 }
 
 func (f *FwRule) getInboundRule() *FwRule {
 	// if action is OUT -> return nil
-	if f.direction == string(nsx.RuleDirectionOUT) {
+	if !f.hasInboundComponent() {
 		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
 		return nil
 	}
-	if len(f.dstVMs) == 0 {
-		f.ruleWarning("has no effective inbound component, since its dest-vms component is empty")
-		return nil
-	}
-	if len(f.srcVMs) == 0 {
-		f.ruleWarning("has no effective inbound component, since its target src-vms component is empty")
-		return nil
-	}
-
 	// inbound rule operates on intersection(dest, scope)
-	newDest := endpoints.Intersection(f.dstVMs, f.scope)
-	if len(newDest) == 0 {
-		f.ruleWarning("has no effective inbound component, since its intersction for dest & scope is empty")
-		return nil
-	}
-	return &FwRule{
-		srcVMs:         f.srcVMs,
-		dstVMs:         newDest,
-		SrcGroups:      f.SrcGroups,
-		DstGroups:      f.DstGroups,
-		IsAllSrcGroups: f.IsAllSrcGroups,
-		IsAllDstGroups: f.IsAllDstGroups,
-		ScopeGroups:    f.ScopeGroups,
-		Conn:           f.Conn,
-		Action:         f.Action,
-		direction:      string(nsx.RuleDirectionIN),
-		OrigRuleObj:    f.OrigRuleObj,
-		RuleID:         f.RuleID,
-		secPolicyName:  f.secPolicyName,
-		Priority:       f.Priority,
-	}
+	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, f.srcVMs, endpoints.Intersection(f.dstVMs, f.scope))
 }
 
 func (f *FwRule) getOutboundRule() *FwRule {
 	// if action is IN -> return nil
-	if f.direction == string(nsx.RuleDirectionIN) {
+	if !f.hasOutboundComponent() {
 		f.ruleWarning("has no effective outbound component, since its direction is IN only")
 		return nil
 	}
-	if len(f.srcVMs) == 0 {
-		f.ruleWarning("has no effective outbound component, since its src vms component is empty")
-		return nil
-	}
+	// outbound rule operates on intersection(src, scope)
+	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, endpoints.Intersection(f.srcVMs, f.scope), f.dstVMs)
+}
 
+// common functionality used for evaluating inbound and outbound rules; effective and (potentially) non-effective
+
+func (f *FwRule) hasInboundComponent() bool {
+	return f.direction != string(nsx.RuleDirectionOUT)
+}
+
+func (f *FwRule) hasOutboundComponent() bool {
+	return f.direction != string(nsx.RuleDirectionIN)
+}
+
+// checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
+func (f *FwRule) checkInboundEffectiveRuleValidity() string {
 	if len(f.dstVMs) == 0 {
-		f.ruleWarning("has no effective outbound component, since its target dst vms component is empty")
-		return nil
+		return "has no effective inbound component, since its dest-vms component is empty"
 	}
+	if len(f.srcVMs) == 0 {
+		return "has no effective inbound component, since its target src-vms component is empty"
+	}
+	newDest := endpoints.Intersection(f.dstVMs, f.scope)
+	if len(newDest) == 0 {
+		return "has no effective inbound component, since its intersection for dest & scope is empty"
+	}
+	return ""
+}
 
+// checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
+func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
+	if len(f.srcVMs) == 0 {
+		return "has no effective outbound component, since its src vms component is empty"
+	}
+	if len(f.dstVMs) == 0 {
+		return "has no effective outbound component, since its target dst vms component is empty"
+	}
 	// outbound rule operates on intersection(src, scope)
 	newSrc := endpoints.Intersection(f.srcVMs, f.scope)
 	if len(newSrc) == 0 {
-		f.ruleWarning("has no effective outbound component, since its intersction for src & scope is empty")
-		return nil
+		return "has no effective outbound component, since its intersection for src & scope is empty"
 	}
-	return &FwRule{
-		srcVMs:         newSrc,
-		dstVMs:         f.dstVMs,
-		SrcGroups:      f.SrcGroups,
-		DstGroups:      f.DstGroups,
-		IsAllSrcGroups: f.IsAllSrcGroups,
-		IsAllDstGroups: f.IsAllDstGroups,
-		ScopeGroups:    f.ScopeGroups,
-		Conn:           f.Conn,
-		Action:         f.Action,
-		direction:      string(nsx.RuleDirectionOUT),
-		OrigRuleObj:    f.OrigRuleObj,
-		RuleID:         f.RuleID,
-		secPolicyName:  f.secPolicyName,
-		Priority:       f.Priority,
-	}
+	return ""
 }
 
-func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
-	// in processed rule the src/dst vms already consider the original scope rule
+func (f *FwRule) clone() *FwRule {
+	return NewFwRule(f.srcVMs, f.dstVMs, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
+		f.IsAllDstGroups, f.ScopeGroups, f.Conn, f.Action,
+		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
+		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
+}
+
+func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []*endpoints.VM) *FwRule {
+	// duplicating most fields, only updating src,dst as evaluated with scope + updating to one direction option (in/out),
+	// and scope field is changed to nil
+	res := f.clone()
+	res.srcVMs = src
+	res.dstVMs = dest
+	res.scope = nil
+	res.direction = string(direction)
+
+	return res
+}
+
+func (f *FwRule) evaluatedRuleCapturesPair(src, dst *endpoints.VM) bool {
+	// in evaluated rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
 	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 }
@@ -202,154 +275,3 @@ func (f *FwRule) processedRuleCapturesPair(src, dst *endpoints.VM) bool {
 	}
 	return slices.Contains(egressDirections, f.direction) && slices.Contains(f.scope, src)
 }*/
-
-func vmsString(vms []*endpoints.VM) string {
-	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
-}
-
-// return a string representation of a single rule
-// groups are interpreted to VM members in this representation
-func (f *FwRule) String() string {
-	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
-}
-
-func (f *FwRule) effectiveRuleStr() string {
-	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
-}
-
-func getDefaultRuleScope(r *collector.FirewallRule) string {
-	return common.JoinCustomStrFuncSlice(r.AppliedTos,
-		func(r nsx.ResourceReference) string {
-			if r.TargetDisplayName != nil {
-				return *r.TargetDisplayName
-			}
-			return ""
-		}, common.CommaSeparator)
-}
-
-// shorten long strings in output, to enable readable table of the input fw-rules
-func trimmedString(s string) string {
-	const (
-		strLenLimit = 30
-		trimmedStr  = "..."
-	)
-	if len(s) > strLenLimit {
-		// shorten long strings in output, to enable readable table of the input fw-rules
-		s = s[0:strLenLimit] + trimmedStr
-	}
-	return s
-}
-
-func (f *FwRule) pathToShortPathString(path string) string {
-	const (
-		pathSep = "/"
-	)
-	var res string
-	// get display name from path when possible
-	if name, ok := f.dfwRef.pathsToDisplayNames[path]; ok {
-		res = name
-	} else {
-		// shorten the path str in output
-		pathElems := strings.Split(path, pathSep)
-		if len(pathElems) == 0 {
-			return ""
-		}
-		res = pathElems[len(pathElems)-1]
-	}
-	return trimmedString(res)
-}
-
-func (f *FwRule) getShortPathsString(paths []string) string {
-	return common.JoinCustomStrFuncSlice(paths,
-		func(p string) string { return f.pathToShortPathString(p) }, common.CommaSeparator)
-}
-
-func getSrcOrDstExcludedStr(groupsStr string) string {
-	return fmt.Sprintf("exclude(%s)", groupsStr)
-}
-
-func (f *FwRule) getSrcString() string {
-	srcGroups := f.getShortPathsString(f.OrigRuleObj.SourceGroups)
-	if f.OrigRuleObj.SourcesExcluded {
-		return getSrcOrDstExcludedStr(srcGroups)
-	}
-	return srcGroups
-}
-
-func (f *FwRule) getDstString() string {
-	dstGroups := f.getShortPathsString(f.OrigRuleObj.DestinationGroups)
-	if f.OrigRuleObj.DestinationsExcluded {
-		return getSrcOrDstExcludedStr(dstGroups)
-	}
-	return dstGroups
-}
-
-func getRulesHeader() []string {
-	return []string{
-		"ruleID",
-		"ruleName",
-		"src",
-		"dst",
-		"services",
-		"action",
-		"direction",
-		"scope",
-		"sec-policy",
-		"Category",
-	}
-}
-
-// originalRuleComponentsStr returns a string representation of a single rule with original attribute values (including groups)
-func (f *FwRule) originalRuleComponentsStr() []string {
-	const (
-		anyStr = "ANY"
-	)
-	if f.OrigRuleObj == nil && f.origDefaultRuleObj == nil {
-		f.ruleWarning("has no origRuleObj or origDefaultRuleObj")
-		return []string{}
-	}
-
-	// if this is a "default rule" from category with ConnectivityPreference configured,
-	// the rule object is of different type
-	if f.OrigRuleObj == nil && f.origDefaultRuleObj != nil {
-		return []string{
-			*f.origDefaultRuleObj.Id,
-			*f.origDefaultRuleObj.DisplayName,
-			// The default rule that gets created will be a any-any rule and applied
-			// to entities specified in the scope of the security policy.
-			anyStr,
-			anyStr,
-			anyStr,
-			string(*f.origDefaultRuleObj.Action),
-			string(f.origDefaultRuleObj.Direction),
-			getDefaultRuleScope(f.origDefaultRuleObj),
-			f.secPolicyName,
-			f.secPolicyCategory,
-		}
-	}
-
-	name := ""
-	if f.OrigRuleObj.DisplayName != nil {
-		name = *f.OrigRuleObj.DisplayName
-	}
-	return []string{
-		f.RuleIDStr(),
-		name,
-		f.getSrcString(),
-		f.getDstString(),
-		f.servicesString(),
-		string(f.Action), f.direction,
-		strings.Join(f.OrigRuleObj.Scope, common.CommaSeparator),
-		f.secPolicyName,
-		f.secPolicyCategory,
-	}
-}
-
-func (f *FwRule) servicesString() string {
-	var serviceEntriesStr, servicesStr string
-	serviceEntriesStr = trimmedString(common.JoinStringifiedSlice(f.OrigRuleObj.ServiceEntries, common.CommaSeparator))
-	servicesStr = f.getShortPathsString(f.OrigRuleObj.Services)
-	return common.JoinNonEmpty([]string{serviceEntriesStr, servicesStr}, common.CommaSeparator)
-}

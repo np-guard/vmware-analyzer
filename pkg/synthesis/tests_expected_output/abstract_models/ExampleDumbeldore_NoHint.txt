@@ -10,7 +10,7 @@ DumbledoreAll   |           |Dumbledore1
 DumbledoreNoSly |           |Dumbledore2
 Gryffindor      |           |Gryffindor
 Hufflepuff      |           |Hufflepuff
-Slytherin       |           |Slytherin
+Slytherin       |           |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

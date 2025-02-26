@@ -468,9 +468,9 @@ func example3FromExample2() Example {
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
 var ExampleDumbeldore = Example{
-	VMs: []string{sly, huf, gry, dum1, dum2},
+	VMs: []string{huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
-		sly:               {sly},
+		sly:               {},
 		huf:               {huf},
 		gry:               {gry},
 		dum:               {dum1, dum2},
@@ -523,13 +523,13 @@ var ExampleDumbeldore = Example{
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
 var ExampleTwoDeniesSimple = Example{
-	VMs: []string{sly, huf, gry, dum1, dum2},
+	VMs: []string{sly, huf, gry, dum2},
 	GroupsByVMs: map[string][]string{
 		sly:  {sly},
 		huf:  {huf},
 		gry:  {gry},
-		dum:  {dum1, dum2},
-		dum1: {dum1},
+		dum:  {dum2},
+		dum1: {},
 		dum2: {dum2},
 	},
 	Policies: []Category{
@@ -1066,10 +1066,9 @@ var ExampleHogwartsNoDumbledore = Example{
 var disjointHouses = [][]string{{sly, huf, gry, dum}}
 
 var ExampleExprSingleScope = Example{
-	Name: "ExampleExprSingleScope",
-	VMs:  []string{sly, huf, gry, dum},
-	VMsTags: map[string][]nsx.Tag{sly: {{Tag: sly}}, huf: {{Tag: huf}},
-		gry: {{Tag: gry}}, dum: {{Tag: dum}}},
+	Name:    "ExampleExprSingleScope",
+	VMs:     []string{huf, gry, dum},
+	VMsTags: map[string][]nsx.Tag{huf: {{Tag: huf}}, gry: {{Tag: gry}}, dum: {{Tag: dum}}},
 	GroupsByExpr: map[string]ExampleExpr{
 		sly: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: sly}}},
 		gry: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: gry}}},
@@ -1185,19 +1184,31 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryWeb: {{Scope: house, Tag: gry}, {Scope: funct, Tag: web}},
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
+var twoScopeGroupsByExpr = map[string]ExampleExpr{
+	sly: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+	gry: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+	huf: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+	db:  {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+	web: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+	app: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
+
 var ExampleExprTwoScopes = Example{
 	Name: "ExampleExprTwoScopes",
 	VMs: []string{slyDB, slyWeb, slyApp,
 		hufDB, hufWeb, hufApp,
 		gryDB, gryWeb, gryApp},
-	VMsTags: vmsHousesTags,
-	GroupsByExpr: map[string]ExampleExpr{
-		sly: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-		db:  {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
-		web: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
-		app: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}},
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       twoScopeGroupsByExpr,
+	Policies:           hogwartsAppToHousesPolicy,
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+}
+
+// ExampleExprTwoScopesAbstract is like ExampleExprTwoScopes expect it has no VMs
+var ExampleExprTwoScopesAbstract = Example{
+	Name:               "ExampleExprTwoScopes",
+	VMs:                []string{},
+	VMsTags:            map[string][]nsx.Tag{},
+	GroupsByExpr:       twoScopeGroupsByExpr,
 	Policies:           hogwartsAppToHousesPolicy,
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 }

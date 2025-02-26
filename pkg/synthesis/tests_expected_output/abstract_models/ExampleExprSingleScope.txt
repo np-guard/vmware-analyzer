@@ -8,7 +8,7 @@ Group      |Expression                                  |VM
 Dumbledore |((Tag Of VirtualMachine EQUALS Dumbledore)) |Dumbledore
 Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor)) |Gryffindor
 Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff)) |Hufflepuff
-Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |Slytherin
+Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

@@ -148,6 +148,11 @@ var groupsByExprTests = []synthesisTest{
 		noHint: false,
 	},
 	{
+		name:   "ExampleExprTwoScopesAbstract",
+		exData: &data.ExampleExprTwoScopesAbstract,
+		noHint: false,
+	},
+	{
 		name:   "ExampleExprAndConds",
 		exData: &data.ExampleExprAndConds,
 		noHint: false,
