@@ -152,16 +152,10 @@ func (f *FwRule) getEvaluatedRulesAndEffectiveRules() (inbound, outbound, inboun
 		return nil, nil, nil, nil
 	}
 
-	if inbound = f.getInboundRule(); inbound != nil {
-		inboundEffective = inbound.clone()
-	}
-
-	if outbound = f.getOutboundRule(); outbound != nil {
-		outboundEffective = outbound.clone()
-	}
+	inbound = f.getInboundRule()
+	outbound = f.getOutboundRule()
 
 	// check if rules are considered effective or not
-
 	if len(f.scope) == 0 {
 		// rules with no VMs in src, dst are not considered effective rules
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
@@ -170,12 +164,15 @@ func (f *FwRule) getEvaluatedRulesAndEffectiveRules() (inbound, outbound, inboun
 
 	if inboundNotEffectiveMsg := f.checkInboundEffectiveRuleValidity(); inboundNotEffectiveMsg != "" {
 		f.ruleWarning(inboundNotEffectiveMsg)
-		inboundEffective = nil
+	} else if inbound != nil {
+		inboundEffective = inbound.clone()
 	}
 
-	if outbountNotEffectiveMsg := f.checkOutboundEffectiveRuleValidity(); outbountNotEffectiveMsg != "" {
-		f.ruleWarning(outbountNotEffectiveMsg)
+	if outboundNotEffectiveMsg := f.checkOutboundEffectiveRuleValidity(); outboundNotEffectiveMsg != "" {
+		f.ruleWarning(outboundNotEffectiveMsg)
 		outboundEffective = nil
+	} else if outbound != nil {
+		outboundEffective = outbound.clone()
 	}
 
 	return inbound, outbound, inboundEffective, outboundEffective
