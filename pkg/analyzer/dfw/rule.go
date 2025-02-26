@@ -50,9 +50,9 @@ func actionFromString(s string) RuleAction {
 
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	srcVMs []*endpoints.VM
-	dstVMs []*endpoints.VM
-	scope  []*endpoints.VM
+	srcVMs []endpoints.EP
+	dstVMs []endpoints.EP
+	scope  []endpoints.EP
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
 	SrcGroups      []*collector.Group
@@ -77,9 +77,9 @@ type FwRule struct {
 // NewFwRule - create new FWRule object from input fields,
 // expecting any such object to be created from this function
 func NewFwRule(
-	srcVMs []*endpoints.VM,
-	dstVMs []*endpoints.VM,
-	scope []*endpoints.VM,
+	srcVMs []endpoints.EP,
+	dstVMs []endpoints.EP,
+	scope []endpoints.EP,
 	srcGroups []*collector.Group,
 	isAllSrcGroups bool,
 	dstGroups []*collector.Group,
@@ -246,7 +246,7 @@ func (f *FwRule) clone() *FwRule {
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
 }
 
-func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []*endpoints.VM) *FwRule {
+func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []endpoints.EP) *FwRule {
 	// duplicating most fields, only updating src,dst as evaluated with scope + updating to one direction option (in/out),
 	// and scope field is changed to nil
 	res := f.clone()
@@ -258,14 +258,14 @@ func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []
 	return res
 }
 
-func (f *FwRule) evaluatedRuleCapturesPair(src, dst *endpoints.VM) bool {
+func (f *FwRule) evaluatedRuleCapturesPair(src, dst endpoints.EP) bool {
 	// in evaluated rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
 	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 }
 
 // return whether the rule captures the input src,dst VMs on the given direction
-/*func (f *FwRule) capturesPair(src, dst *endpoints.VM, isIngress bool) bool {
+/*func (f *FwRule) capturesPair(src, dst endpoints.EP, isIngress bool) bool {
 	vmsCaptured := slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 	if !vmsCaptured {
 		return false

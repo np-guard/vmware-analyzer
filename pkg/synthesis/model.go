@@ -13,9 +13,9 @@ import (
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
-	vms        []*endpoints.VM
+	vms        []endpoints.EP
 	allGroups  []*collector.Group
-	epToGroups map[*endpoints.VM][]*collector.Group
+	epToGroups map[endpoints.EP][]*collector.Group
 	// todo: add similar maps to OS, hostname
 
 	// if synthesizeAdmin is true, rules will be translated to allow only starting with category MinNonAdminCategory();
