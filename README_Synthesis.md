@@ -50,10 +50,14 @@ the synthesized policy will reference the labels corresponding to the `backend` 
 `todo: add tag -> labeling machanism` 
 
 ## Currently supported
-Currently, the tool supports groups defined by expressions over tags; nested expression are not yet supported.
-If a group is defined 
-by an expression that we do not yet support, then the synthesized policy will refer just to the group, and the 
-relevant *VM*s will be granted labels of this group. 
+Currently, the tool supports groups defined by expressions over tags; `nested NSX expression` are not yet supported.
+If a group is defined by an expression that we do not yet support, then the synthesized policy will refer just to the group, 
+and the relevant *VM*s will be granted labels of this group.
+
+For example, the expression `tag = backend and tag != DB` is supported, while the nested expression
+`(tag = backend and tag != DB) or (tag = research) ` is not supported. For a group defined over the former expression,
+the synthesis will reference labels corresponding to the above tags' values, while for a group defined over the latter 
+expression, the synthesis will reference a label corresponding to the group.
 
 ## Output
 ### Synthesized k8s resource
