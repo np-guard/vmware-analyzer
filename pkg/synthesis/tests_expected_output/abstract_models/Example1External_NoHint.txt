@@ -1,0 +1,23 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group    |Expression |VM
+backend  |           |B
+db       |           |C
+frontend |           |A
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                |Dst               |Connection
+0                            |1005    |(group = frontend) |(group = backend) |TCP dst-ports: 445
+1                            |1006    |(group = backend)  |(group = db)      |TCP dst-ports: 443
+
+outbound rules
+Original allow rule priority |Rule id |Src                |Dst               |Connection
+0                            |1005    |(group = frontend) |(group = backend) |TCP dst-ports: 445
+1                            |1006    |(group = backend)  |(group = db)      |TCP dst-ports: 443
+
