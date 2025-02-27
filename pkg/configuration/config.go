@@ -27,7 +27,7 @@ type Config struct {
 	Fw          *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
 	Groups      []*collector.Group                  // list of all groups (also these with no Vms)
 	GroupsPerVM map[endpoints.EP][]*collector.Group // map from vm to its groups
-	// todo: does this belong here?
+	// todo: does not belong here https://github.com/np-guard/vmware-analyzer/issues/280
 	Connectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
 	AnalysisDone bool
 }
