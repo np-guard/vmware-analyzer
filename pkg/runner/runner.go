@@ -2,7 +2,6 @@ package runner
 
 import (
 	"fmt"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"os"
 	"strings"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/anonymizer"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
