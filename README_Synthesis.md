@@ -28,9 +28,10 @@ original rules (to be accurate, the number of allow rules generated for each ori
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
 1. Ask the user to provide the tool with `hints` -  lists of disjoint tags/groups.
 E.g., tags `{frontend, backend}` are disjoint.
-In the future it is planned to "guess" these disjoint sets, and ask the user to approve them.
-Consider the example `ExampleHintsDisjoint` in `./pkg/data/examples`.
-When run without Hints the result contains 
+In the future it is planned to "guess" these disjoint sets, and ask the user to approve them. E.g., 
+for [this example](pkg/data/exampleHint.go) there are two related files: [flat allow rules without hints](pkg/synthesis/tests_expected_output/abstract_models/ExampleHintsDisjoint_NoHint_NoHint.txt)
+contains the flat allow rules when executed without hints; and [flat allow rules with hints](pkg/synthesis/tests_expected_output/abstract_models/ExampleHintsDisjoint.txt) 
+contains the flat allow when executed with `--disjoint-hint sly, huf, gry, dum1, dum2` 
 2. Apply various optimization to simplify the resulting rules and to delete redundant rules; the more accurate hints the
 tool is provided, the more concise and readable rules it will synthesize.  
 
