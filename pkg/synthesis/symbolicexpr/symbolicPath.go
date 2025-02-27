@@ -2,7 +2,7 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 )
 
 func (path *SymbolicPath) String() string {
