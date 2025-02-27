@@ -23,6 +23,22 @@ and not just generate a set of rules that preserves the connectivity between VMs
 
 
 ### The flattening challenge
+There are two modes of policies synthesis, depending on the value of `synthesize-admin-policies`; when
+it is not active then priortized `allow, deny, jump-to-app` rules from all `NSX categories` should be synthesized to 
+`k8s network policy`, namely, to `flat allow rules`; when it is activated then rules from `NSX category environment` should be synthesized to  
+`admin network policy` which rules have `allow, deny, pass` and priority; other categories should be synthesized as
+before to `k8s network policy`. 
+
+For example, for [this example](pkg/data/exampleHogwarts.go) there are two related files: 
+[no admin policies](pkg/synthesis/tests_expected_output/abstract_models/ExampleHogwarts.txt), which is the result of execution
+without `-- synthesize-admin-policies` and contains translation of all rules to flat allow rules; and 
+[with admin policies](pkg/synthesis/tests_expected_output/abstract_models/ExampleHogwartsAdmin_AdminPoliciesEnabled.txt),
+result of execution with `-- synthesize-admin-policies`, contains the translation when `NSX category env` 
+is synthesized to admin polices that can use `deny/pass/allow` and priorities. Full synthesis results for this example can be found 
+[here](pkg/synthesis/tests_expected_output/k8s_resources/ExampleHogwarts)
+for non-admin polices and [here](pkg/synthesis/tests_expected_output/k8s_resources/ExampleHogwartsAdmin_AdminPoliciesEnabled) 
+for admin policies.
+
 The translation of priortized `allow,deny,jump-to-app` rules into flat `allow` rules is exponential in the size of the
 original rules (to be accurate, the number of allow rules generated for each original allow rule is
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
