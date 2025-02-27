@@ -105,6 +105,12 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
+		name:            "ExampleHintsDisjoint",
+		exData:          &data.ExampleHintsDisjoint,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
 		name:            "ExampleHogwartsSimpler",
 		exData:          &data.ExampleHogwartsSimpler,
 		synthesizeAdmin: false,
@@ -456,7 +462,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputComparison
+const runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
