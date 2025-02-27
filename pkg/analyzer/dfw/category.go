@@ -33,7 +33,7 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 
 // addRule adds a FWRule from input fields to list of category's original rules + adds relevant inbound/outbound evaluated rules
 // for the list of evaluated rules (and effective rules if the input rule is considered effective)
-func (c *CategorySpec) addRule(src, dst []endpoints.EP, srcBlocks, dstBlocks []*endpoints.RuleBlock,
+func (c *CategorySpec) addRule(src, dst []endpoints.EP, srcBlocks, dstBlocks []*endpoints.RuleIPBlock,
 	srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
 	origRule *collector.Rule, scope []endpoints.EP, secPolicyName string,

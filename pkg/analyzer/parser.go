@@ -3,6 +3,7 @@ package model
 import (
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -52,7 +53,7 @@ type NSXConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *topology
-	allRuleBlocks         map[string]*endpoints.RuleBlock
+	allRuleIPBlocks       map[string]*endpoints.RuleIPBlock // a map from the ip string,to the block
 }
 
 func (p *NSXConfigParser) init() {
@@ -61,7 +62,7 @@ func (p *NSXConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]endpoints.EP{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
-	p.allRuleBlocks = map[string]*endpoints.RuleBlock{}
+	p.allRuleIPBlocks = map[string]*endpoints.RuleIPBlock{}
 }
 
 func (p *NSXConfigParser) RunParser() error {
@@ -262,10 +263,10 @@ type parsedRule struct {
 	//       defined by groups, thus the following temp 4 fields
 	srcGroups      []*collector.Group
 	isAllSrcGroups bool
-	srcBlocks      []*endpoints.RuleBlock
+	srcBlocks      []*endpoints.RuleIPBlock
 	dstGroups      []*collector.Group
 	isAllDstGroups bool
-	dstBlocks      []*endpoints.RuleBlock
+	dstBlocks      []*endpoints.RuleIPBlock
 	action         string
 	conn           *netset.TransportSet
 	direction      string
@@ -309,12 +310,16 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	groups := []*collector.Group{}
 	if exclude {
 		// TODO: what should we do with IP Addresses in groupsPaths and exclude
-
 		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
+		ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
+		if len(ips) > 0 {
+			logging.Warnf("Rule with SourcesExcluded flag set, and IPs is not supported. ignoring the following IPs\n%s",
+				strings.Join(ips, common.CommaSeparator))
+		}
 	}
 	for _, groupPath := range groupsPaths {
 		if !slices.Contains(p.allGroupsPaths, groupPath) {
-			vms = append(vms, p.allRuleBlocks[groupPath].VMs...)
+			vms = append(vms, p.allRuleIPBlocks[groupPath].VMs...)
 			continue
 		}
 		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
@@ -339,10 +344,10 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) (*parsedRule, error) 
 	srcGroups := rule.SourceGroups // paths of the source groups
 	dstGroups := rule.DestinationGroups
 	var err error
-	if res.srcBlocks, err = p.getRuleBlocks(srcGroups); err != nil {
+	if res.srcBlocks, err = p.getRuleIPBlocks(srcGroups); err != nil {
 		return nil, err
 	}
-	if res.dstBlocks, err = p.getRuleBlocks(dstGroups); err != nil {
+	if res.dstBlocks, err = p.getRuleIPBlocks(dstGroups); err != nil {
 		return nil, err
 	}
 	// If set to true, the rule gets applied on all the groups that are NOT part of
@@ -509,13 +514,13 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]endpoints.EP, *collec
 	}
 	return nil, nil // could not find given groupPath (add warning)
 }
-func (p *NSXConfigParser) getRuleBlocks(groupsPaths []string) ([]*endpoints.RuleBlock, error) {
+func (p *NSXConfigParser) getRuleIPBlocks(groupsPaths []string) ([]*endpoints.RuleIPBlock, error) {
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths),
 		func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
-	res := make([]*endpoints.RuleBlock, len(ips))
+	res := make([]*endpoints.RuleIPBlock, len(ips))
 	for i, ip := range ips {
-		if ruleBlock, ok := p.allRuleBlocks[ip]; ok {
-			res[i] = ruleBlock
+		if ruleIPBlock, ok := p.allRuleIPBlocks[ip]; ok {
+			res[i] = ruleIPBlock
 			continue
 		}
 		block, err := netset.IPBlockFromCidrOrAddress(ip)
@@ -525,8 +530,8 @@ func (p *NSXConfigParser) getRuleBlocks(groupsPaths []string) ([]*endpoints.Rule
 		if err != nil {
 			return nil, err
 		}
-		res[i] = endpoints.NewRuleBlock(ip, block)
-		p.allRuleBlocks[ip] = res[i]
+		res[i] = endpoints.NewRuleIPBlock(ip, block)
+		p.allRuleIPBlocks[ip] = res[i]
 		// todo - calc VMs of the block
 	}
 	return res, nil

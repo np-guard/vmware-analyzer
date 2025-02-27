@@ -53,8 +53,8 @@ type FwRule struct {
 	srcVMs    []endpoints.EP
 	dstVMs    []endpoints.EP
 	scope     []endpoints.EP
-	srcBlocks []*endpoints.RuleBlock
-	dstBlocks []*endpoints.RuleBlock
+	srcBlocks []*endpoints.RuleIPBlock
+	dstBlocks []*endpoints.RuleIPBlock
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
 	SrcGroups      []*collector.Group
@@ -81,8 +81,8 @@ type FwRule struct {
 func NewFwRule(
 	srcVMs []endpoints.EP,
 	dstVMs []endpoints.EP,
-	srcBlocks []*endpoints.RuleBlock,
-	dstBlocks []*endpoints.RuleBlock,
+	srcBlocks []*endpoints.RuleIPBlock,
+	dstBlocks []*endpoints.RuleIPBlock,
 	scope []endpoints.EP,
 	srcGroups []*collector.Group,
 	isAllSrcGroups bool,

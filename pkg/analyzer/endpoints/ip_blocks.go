@@ -9,13 +9,13 @@ type ipBlock struct {
 	Block *netset.IPBlock
 	name  string
 }
-type RuleBlock struct {
+type RuleIPBlock struct {
 	ipBlock
 	VMs []EP
 }
 
-func NewRuleBlock(name string, block *netset.IPBlock) *RuleBlock {
-	return &RuleBlock{ipBlock: ipBlock{name: name, Block: block}}
+func NewRuleIPBlock(name string, block *netset.IPBlock) *RuleIPBlock {
+	return &RuleIPBlock{ipBlock: ipBlock{name: name, Block: block}}
 }
 
 type Segment struct {
