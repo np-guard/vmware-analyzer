@@ -1,4 +1,4 @@
-package model
+package configuration
 
 // TODO: fix later
 /*
@@ -22,6 +22,6 @@ func TestParser(t *testing.T) {
 
 	config.ComputeConnectivity()
 	fmt.Println("analyzed Connectivity")
-	fmt.Println(config.analyzedConnectivity.String())
+	fmt.Println(config.Connectivity.String())
 	fmt.Println("done")
 }*/

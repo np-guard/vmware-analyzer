@@ -7,7 +7,7 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 )
 
 // analyzeCategory returns sets of connections w.r.t their determining rule action from this category rules,

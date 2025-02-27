@@ -6,8 +6,9 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 )
 
 type vmFilter func(vm endpoints.EP) bool
@@ -28,9 +29,9 @@ func compareConfigToTraceflows(
 
 func createTraceflows(resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
-	config *config, vmFilter vmFilter) *collector.TraceFlows {
+	config *configuration.Config, vmFilter vmFilter) *collector.TraceFlows {
 	traceFlows := collector.NewTraceflows(resources, server)
-	for srcUID, srcVM := range config.vmsMap {
+	for srcUID, srcVM := range config.VmsMap {
 		if !vmFilter(srcVM) {
 			continue
 		}
@@ -47,7 +48,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 		if port == nil {
 			continue
 		}
-		for dstUID, dstVM := range config.vmsMap {
+		for dstUID, dstVM := range config.VmsMap {
 			if srcUID == dstUID {
 				continue
 			}
@@ -64,7 +65,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 			if !collector.IsVMConnected(resources, srcUID, dstUID) {
 				continue
 			}
-			createTraceFlowsForConn(traceFlows, srcIP, dstIP, srcVM, dstVM, config.analyzedConnectivity)
+			createTraceFlowsForConn(traceFlows, srcIP, dstIP, srcVM, dstVM, config.Connectivity)
 		}
 	}
 	return traceFlows

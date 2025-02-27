@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 

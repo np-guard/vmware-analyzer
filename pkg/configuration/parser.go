@@ -1,4 +1,4 @@
-package model
+package configuration
 
 import (
 	"os"
@@ -6,12 +6,12 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 const (
@@ -42,7 +42,7 @@ func NewNSXConfigParserFromResourcesContainer(rc *collector.ResourcesContainerMo
 type NSXConfigParser struct {
 	file                   string
 	rc                     *collector.ResourcesContainerModel
-	configRes              *config
+	configRes              *Config
 	allGroups              []*collector.Group
 	allGroupsPaths         []string
 	allGroupsVMs           []endpoints.EP
@@ -55,7 +55,7 @@ type NSXConfigParser struct {
 }
 
 func (p *NSXConfigParser) init() {
-	p.configRes = &config{}
+	p.configRes = &Config{}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]endpoints.EP{}
@@ -86,12 +86,12 @@ func (p *NSXConfigParser) removeVMsWithoutGroups() {
 	}
 	for _, vm := range toRemove {
 		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.vms = slices.DeleteFunc(p.configRes.vms, func(v endpoints.EP) bool { return v.ID() == vm.ID() })
-		delete(p.configRes.vmsMap, vm.ID())
+		p.configRes.Vms = slices.DeleteFunc(p.configRes.Vms, func(v endpoints.EP) bool { return v.ID() == vm.ID() })
+		delete(p.configRes.VmsMap, vm.ID())
 	}
 }
 
-func (p *NSXConfigParser) GetConfig() *config {
+func (p *NSXConfigParser) GetConfig() *Config {
 	return p.configRes
 }
 
@@ -112,7 +112,7 @@ func (p *NSXConfigParser) vMsGroups() map[endpoints.EP][]*collector.Group {
 }
 
 func (p *NSXConfigParser) VMs() []endpoints.EP {
-	return p.configRes.vms
+	return p.configRes.Vms
 }
 
 // update mapping from groups and services paths to their names
@@ -135,7 +135,7 @@ func (p *NSXConfigParser) getGroups() {
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *NSXConfigParser) getVMs() {
-	p.configRes.vmsMap = map[string]endpoints.EP{}
+	p.configRes.VmsMap = map[string]endpoints.EP{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -152,8 +152,8 @@ func (p *NSXConfigParser) getVMs() {
 				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
 			}
 		}
-		p.configRes.vms = append(p.configRes.vms, vmObj)
-		p.configRes.vmsMap[vmObj.ID()] = vmObj
+		p.configRes.Vms = append(p.configRes.Vms, vmObj)
+		p.configRes.VmsMap[vmObj.ID()] = vmObj
 	}
 }
 
@@ -458,7 +458,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []endpoints.EP 
 	}
 	res := []endpoints.EP{}
 	for vmID := range ids {
-		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
+		if vmObj, ok := p.configRes.VmsMap[vmID]; ok {
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config

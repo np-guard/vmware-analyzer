@@ -13,6 +13,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/anonymizer"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -56,7 +57,7 @@ type Runner struct {
 	generatedK8sAdminPolicies  []*v1alpha1.AdminNetworkPolicy
 	connectivityAnalysisOutput string
 	analyzedConnectivity       connectivity.ConnMap
-	parsedConfig               analyzer.ParsedNSXConfig
+	parsedConfig               configuration.ParsedNSXConfig
 }
 
 func (r *Runner) GetGeneratedPolicies() ([]*v1.NetworkPolicy, []*v1alpha1.AdminNetworkPolicy) {
