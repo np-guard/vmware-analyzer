@@ -10,7 +10,7 @@ Flags:
   -- synthesize-admin-policies  flag to synthesize category environment into admin network policies (which included deny, pass and priority) (default false)
   -- disjoint-hint              comma separated list of NSX groups/tags that are always disjoint in their VM members, 
   needed for an effective and sound synthesis process, can specify more than one hint 
-  (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\") 
+  (example: --disjoint-hint frontend,backend --disjoint-hint app,web,db) 
 ```
 
 ## Overview
@@ -28,8 +28,9 @@ original rules (to be accurate, the number of allow rules generated for each ori
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
 1. Ask the user to provide the tool with `hints` -  lists of disjoint tags/groups.
 E.g., tags `{frontend, backend}` are disjoint.
-In the future it is planned to "guess" these
-disjoint sets, and ask the user to approve them.
+In the future it is planned to "guess" these disjoint sets, and ask the user to approve them.
+Consider the example `ExampleHintsDisjoint` in `./pkg/data/examples`.
+When run without Hints the result contains 
 2. Apply various optimization to simplify the resulting rules and to delete redundant rules; the more accurate hints the
 tool is provided, the more concise and readable rules it will synthesize.  
 
