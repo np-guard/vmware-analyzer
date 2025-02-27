@@ -1,13 +1,13 @@
-package model
+package configuration
 
 import (
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -20,39 +20,39 @@ type ParsedNSXConfig interface {
 	GetGroups() []*collector.Group
 }
 
-// config captures nsx config, implements NSXConfig interface
-type config struct {
-	vms         []endpoints.EP                      // list of all vms
-	vmsMap      map[string]endpoints.EP             // map from uid to vm objects
+// Config captures nsx Config, implements NSXConfig interface
+type Config struct {
+	Vms         []endpoints.EP                      // list of all Vms
+	VmsMap      map[string]endpoints.EP             // map from uid to vm objects
 	Fw          *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups      []*collector.Group                  // list of all groups (also these with no vms)
+	Groups      []*collector.Group                  // list of all groups (also these with no Vms)
 	GroupsPerVM map[endpoints.EP][]*collector.Group // map from vm to its groups
-	// todo: does this belong here? https://github.com/np-guard/vmware-analyzer/issues/145
-	analyzedConnectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
-	analysisDone         bool
+	// todo: does this belong here?
+	Connectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
+	AnalysisDone bool
 }
 
-func (c *config) AnalyzedConnectivity() connectivity.ConnMap {
-	return c.analyzedConnectivity
+func (c *Config) AnalyzedConnectivity() connectivity.ConnMap {
+	return c.Connectivity
 }
-func (c *config) DFW() *dfw.DFW {
+func (c *Config) DFW() *dfw.DFW {
 	return c.Fw
 }
-func (c *config) VMs() []endpoints.EP {
-	return c.vms
+func (c *Config) VMs() []endpoints.EP {
+	return c.Vms
 }
-func (c *config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
+func (c *Config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
 	return c.GroupsPerVM
 }
-func (c *config) GetGroups() []*collector.Group {
+func (c *Config) GetGroups() []*collector.Group {
 	return c.Groups
 }
 
-func (c *config) ComputeConnectivity(vmsFilter []string) {
+func (c *Config) ComputeConnectivity(vmsFilter []string) {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connectivity.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.InitPairs(false, c.vms, vmsFilter)
+	res.InitPairs(false, c.Vms, vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
@@ -63,12 +63,12 @@ func (c *config) ComputeConnectivity(vmsFilter []string) {
 			res.Add(src, dst, conn)
 		}
 	}
-	c.analyzedConnectivity = res
-	c.analysisDone = true
+	c.Connectivity = res
+	c.AnalysisDone = true
 }
 
 // GetConfigInfoStr returns string describing the captured configuration content
-func (c *config) GetConfigInfoStr(color bool) string {
+func (c *Config) GetConfigInfoStr(color bool) string {
 	var sb strings.Builder
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")
@@ -91,7 +91,7 @@ func (c *config) GetConfigInfoStr(color bool) string {
 	return sb.String()
 }
 
-func (c *config) getVMGroupsStr(color bool) string {
+func (c *Config) getVMGroupsStr(color bool) string {
 	header := []string{"VM", "Groups"}
 	lines := [][]string{}
 	for vm, groups := range c.GroupsPerVM {
@@ -101,16 +101,16 @@ func (c *config) getVMGroupsStr(color bool) string {
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-func (c *config) getVMsInfoStr(color bool) string {
+func (c *Config) getVMsInfoStr(color bool) string {
 	header := []string{"VM Name", "VM ID", "VM Addresses"}
 	lines := [][]string{}
-	for _, vm := range c.vms {
+	for _, vm := range c.Vms {
 		lines = append(lines, vm.InfoStr())
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-func (c *config) DefaultDenyRule() *dfw.FwRule {
+func (c *Config) DefaultDenyRule() *dfw.FwRule {
 	for _, category := range c.Fw.CategoriesSpecs {
 		if category.Category == collector.LastCategory() {
 			for _, rule := range category.Rules {

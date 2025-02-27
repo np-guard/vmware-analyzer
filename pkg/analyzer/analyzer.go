@@ -3,17 +3,18 @@ package model
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (
-	ParsedNSXConfig, string, error) {
+	configuration.ParsedNSXConfig, string, error) {
 	config, err := ConfigFromResourcesContainer(recourses, params)
 	if err != nil {
 		return nil, "", err
 	}
 
-	res, err := config.analyzedConnectivity.GenConnectivityOutput(params)
+	res, err := config.Connectivity.GenConnectivityOutput(params)
 
 	//nolint:gocritic // temporarily keep commented-out code
 	/*allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")
@@ -39,8 +40,9 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 	return config, res, err
 }
 
-func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (*config, error) {
-	parser := NewNSXConfigParserFromResourcesContainer(recourses)
+func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel,
+	params common.OutputParameters) (*configuration.Config, error) {
+	parser := configuration.NewNSXConfigParserFromResourcesContainer(recourses)
 	err := parser.RunParser()
 	if err != nil {
 		return nil, err

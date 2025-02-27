@@ -6,7 +6,7 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 )
 
 func newVM(name string) endpoints.EP {

@@ -1,10 +1,10 @@
-package model
+package configuration
 
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 type segment struct {
@@ -39,7 +39,7 @@ func (p *NSXConfigParser) getTopology() (err error) {
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)
-			if vm, ok := p.configRes.vmsMap[*vni.OwnerVmId]; ok {
+			if vm, ok := p.configRes.VmsMap[*vni.OwnerVmId]; ok {
 				p.topology.vmSegments[vm] = append(p.topology.vmSegments[vm], segment)
 				segment.vms = append(segment.vms, vm)
 			}

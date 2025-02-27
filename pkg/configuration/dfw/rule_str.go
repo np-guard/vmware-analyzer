@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 // return a string representation of a single rule

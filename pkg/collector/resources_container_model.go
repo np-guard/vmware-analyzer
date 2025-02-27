@@ -11,7 +11,7 @@ import (
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 // ResourcesContainerModel defines the model of a container for all resource types we can collect
