@@ -29,7 +29,7 @@ func (p *NSXConfigParser) getTopology() (err error) {
 		if err != nil {
 			return err
 		}
-		segment := endpoints.NewSegment(*segResource.DisplayName, block)		
+		segment := endpoints.NewSegment(*segResource.DisplayName, block)
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)

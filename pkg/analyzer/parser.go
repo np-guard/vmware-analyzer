@@ -180,8 +180,8 @@ func (p *NSXConfigParser) getDFW() error {
 			rules := secPolicy.Rules
 			for i := range rules {
 				rule := &rules[i]
-				r,err := p.getDFWRule(rule)
-				if err != nil{
+				r, err := p.getDFWRule(rule)
+				if err != nil {
 					return err
 				}
 				r.scope = scope // scope from policy
@@ -307,12 +307,12 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	vms := []endpoints.EP{}
 	groups := []*collector.Group{}
 	if exclude {
-	// TODO: what should we do with IP Addresses in groupsPaths and exclude
+		// TODO: what should we do with IP Addresses in groupsPaths and exclude
 
 		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
 	}
 	for _, groupPath := range groupsPaths {
-		if !slices.Contains(p.allGroupsPaths,groupPath){
+		if !slices.Contains(p.allGroupsPaths, groupPath) {
 			vms = append(vms, p.allRuleBlocks[groupPath].VMs...)
 			continue
 		}

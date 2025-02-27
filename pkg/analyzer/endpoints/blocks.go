@@ -26,4 +26,3 @@ type Segment struct {
 func NewSegment(name string, block *netset.IPBlock) *Segment {
 	return &Segment{ipBlock: ipBlock{name: name, Block: block}}
 }
-
