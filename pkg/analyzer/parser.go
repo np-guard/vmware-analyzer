@@ -215,7 +215,8 @@ func (p *NSXConfigParser) getDFW() error {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
+	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
+		r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
@@ -509,7 +510,8 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]endpoints.EP, *collec
 	return nil, nil // could not find given groupPath (add warning)
 }
 func (p *NSXConfigParser) getRuleBlocks(groupsPaths []string) ([]*endpoints.RuleBlock, error) {
-	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
+	ips := slices.DeleteFunc(slices.Clone(groupsPaths),
+		func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
 	res := make([]*endpoints.RuleBlock, len(ips))
 	for i, ip := range ips {
 		if ruleBlock, ok := p.allRuleBlocks[ip]; ok {

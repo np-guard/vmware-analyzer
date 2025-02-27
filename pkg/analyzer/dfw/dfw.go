@@ -181,7 +181,8 @@ func (d *DFW) AllEffectiveRules() string {
 	return inbound + outbound
 }
 
-func (d *DFW) AddRule(src, dst []endpoints.EP, srcBlocks, dstBlocks []*endpoints.RuleBlock, srcGroups, dstGroups, scopeGroups []*collector.Group,
+func (d *DFW) AddRule(src, dst []endpoints.EP, srcBlocks, dstBlocks []*endpoints.RuleBlock,
+	srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, scope []endpoints.EP, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {

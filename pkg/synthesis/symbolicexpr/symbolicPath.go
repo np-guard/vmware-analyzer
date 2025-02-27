@@ -161,7 +161,6 @@ func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[stri
 	}
 	if !rule.IsAllDstGroups {
 		dstConjunctions = getConjunctionForGroups(rule.DstGroups, groupToConjunctions, rule.RuleID)
-
 	}
 	for _, srcConjunction := range srcConjunctions {
 		for _, dstConjunction := range dstConjunctions {
