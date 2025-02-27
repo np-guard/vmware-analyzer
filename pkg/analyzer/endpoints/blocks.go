@@ -4,20 +4,18 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 )
 
+// a base struct to represent external endpoints, segments and rule block
 type ipBlock struct {
 	Block *netset.IPBlock
 	name  string
 }
+type RuleBlock struct {
+	ipBlock
+	VMs []EP
+}
 
-type RuleBlock ipBlock
-
-func NewRuleBlock(ip string) *RuleBlock {
-	block, err := netset.IPBlockFromCidrOrAddress(ip)
-	if err != nil {
-		block, err = netset.IPBlockFromIPRangeStr(ip)
-	}
-	// todo - handle error
-	return &RuleBlock{name: ip, Block: block}
+func NewRuleBlock(name string, block *netset.IPBlock) *RuleBlock {
+	return &RuleBlock{ipBlock: ipBlock{name: name, Block: block}}
 }
 
 type Segment struct {
