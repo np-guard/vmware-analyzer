@@ -108,13 +108,13 @@ linters:
     - staticcheck
     - stylecheck
     - tagliatelle
-    - tenv
     - testableexamples
     - typecheck
     - unconvert
     - unparam
     - unused
     - usestdlibvars
+    - usetesting
     - whitespace
  
 issues:
