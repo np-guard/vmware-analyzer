@@ -8,7 +8,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html

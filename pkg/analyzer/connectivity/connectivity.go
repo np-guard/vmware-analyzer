@@ -3,14 +3,14 @@ package connectivity
 import (
 	"slices"
 
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 // ConnMap captures permitted connections between endpoints in the input config
 type ConnMap map[endpoints.EP]map[endpoints.EP]*DetailedConnection
 
-// add func adds a given pair with specified permitted connection
+// Add func adds a given pair with specified permitted connection
 func (c ConnMap) Add(src, dst endpoints.EP, conn *DetailedConnection) {
 	if _, ok := c[src]; !ok {
 		c[src] = map[endpoints.EP]*DetailedConnection{}
@@ -18,7 +18,7 @@ func (c ConnMap) Add(src, dst endpoints.EP, conn *DetailedConnection) {
 	c[src][dst] = conn
 }
 
-// initPairs adds all possible pairs with allow-all or deny-all, based on initAllow
+// InitPairs adds all possible pairs with allow-all or deny-all, based on initAllow
 func (c ConnMap) InitPairs(initAllow bool, vms []endpoints.EP, vmsFilter []string) {
 	vmsToaAnalyze := map[string]bool{}
 	if len(vmsFilter) > 0 {
