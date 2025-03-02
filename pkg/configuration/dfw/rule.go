@@ -2,13 +2,12 @@ package dfw
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -50,11 +49,12 @@ func actionFromString(s string) RuleAction {
 
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	srcVMs    []endpoints.EP
-	dstVMs    []endpoints.EP
-	scope     []endpoints.EP
-	srcBlocks []*endpoints.RuleIPBlock
-	dstBlocks []*endpoints.RuleIPBlock
+	SrcVMs    []topology.Endpoint
+	DstVMs    []topology.Endpoint
+	scope     []topology.Endpoint
+	srcBlocks []*topology.RuleIPBlock
+	dstBlocks []*topology.RuleIPBlock
+
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
 	SrcGroups      []*collector.Group
@@ -79,11 +79,11 @@ type FwRule struct {
 // NewFwRule - create new FWRule object from input fields,
 // expecting any such object to be created from this function
 func NewFwRule(
-	srcVMs []endpoints.EP,
-	dstVMs []endpoints.EP,
-	srcBlocks []*endpoints.RuleIPBlock,
-	dstBlocks []*endpoints.RuleIPBlock,
-	scope []endpoints.EP,
+	srcVMs []topology.Endpoint,
+	dstVMs []topology.Endpoint,
+	srcBlocks []*topology.RuleIPBlock,
+	dstBlocks []*topology.RuleIPBlock,
+	scope []topology.Endpoint,
 	srcGroups []*collector.Group,
 	isAllSrcGroups bool,
 	dstGroups []*collector.Group,
@@ -102,8 +102,8 @@ func NewFwRule(
 	priority int,
 ) *FwRule {
 	return &FwRule{
-		srcVMs:             srcVMs,
-		dstVMs:             dstVMs,
+		SrcVMs:             srcVMs,
+		DstVMs:             dstVMs,
 		srcBlocks:          srcBlocks,
 		dstBlocks:          dstBlocks,
 		scope:              scope,
@@ -191,7 +191,7 @@ func (f *FwRule) getInboundRule() *FwRule {
 		return nil
 	}
 	// inbound rule operates on intersection(dest, scope)
-	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, f.srcVMs, endpoints.Intersection(f.dstVMs, f.scope))
+	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, f.SrcVMs, topology.Intersection(f.DstVMs, f.scope))
 }
 
 func (f *FwRule) getOutboundRule() *FwRule {
@@ -201,7 +201,7 @@ func (f *FwRule) getOutboundRule() *FwRule {
 		return nil
 	}
 	// outbound rule operates on intersection(src, scope)
-	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, endpoints.Intersection(f.srcVMs, f.scope), f.dstVMs)
+	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, topology.Intersection(f.SrcVMs, f.scope), f.DstVMs)
 }
 
 // common functionality used for evaluating inbound and outbound rules; effective and (potentially) non-effective
@@ -216,13 +216,13 @@ func (f *FwRule) hasOutboundComponent() bool {
 
 // checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
 func (f *FwRule) checkInboundEffectiveRuleValidity() string {
-	if len(f.dstVMs) == 0 {
+	if len(f.DstVMs) == 0 {
 		return "has no effective inbound component, since its dest-vms component is empty"
 	}
-	if len(f.srcVMs) == 0 {
+	if len(f.SrcVMs) == 0 {
 		return "has no effective inbound component, since its target src-vms component is empty"
 	}
-	newDest := endpoints.Intersection(f.dstVMs, f.scope)
+	newDest := topology.Intersection(f.DstVMs, f.scope)
 	if len(newDest) == 0 {
 		return "has no effective inbound component, since its intersection for dest & scope is empty"
 	}
@@ -231,14 +231,14 @@ func (f *FwRule) checkInboundEffectiveRuleValidity() string {
 
 // checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
 func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
-	if len(f.srcVMs) == 0 {
+	if len(f.SrcVMs) == 0 {
 		return "has no effective outbound component, since its src vms component is empty"
 	}
-	if len(f.dstVMs) == 0 {
+	if len(f.DstVMs) == 0 {
 		return "has no effective outbound component, since its target dst vms component is empty"
 	}
 	// outbound rule operates on intersection(src, scope)
-	newSrc := endpoints.Intersection(f.srcVMs, f.scope)
+	newSrc := topology.Intersection(f.SrcVMs, f.scope)
 	if len(newSrc) == 0 {
 		return "has no effective outbound component, since its intersection for src & scope is empty"
 	}
@@ -246,32 +246,26 @@ func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
 }
 
 func (f *FwRule) clone() *FwRule {
-	return NewFwRule(f.srcVMs, f.dstVMs, f.srcBlocks, f.dstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
+	return NewFwRule(f.SrcVMs, f.DstVMs, f.srcBlocks, f.dstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
 		f.IsAllDstGroups, f.ScopeGroups, f.Conn, f.Action,
 		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
 }
 
-func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []endpoints.EP) *FwRule {
+func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []topology.Endpoint) *FwRule {
 	// duplicating most fields, only updating src,dst as evaluated with scope + updating to one direction option (in/out),
 	// and scope field is changed to nil
 	res := f.clone()
-	res.srcVMs = src
-	res.dstVMs = dest
+	res.SrcVMs = src
+	res.DstVMs = dest
 	res.scope = nil
 	res.direction = string(direction)
 
 	return res
 }
 
-func (f *FwRule) evaluatedRuleCapturesPair(src, dst endpoints.EP) bool {
-	// in evaluated rule the src/dst vms already consider the original scope rule
-	// and the separation to inound/outbound is done in advance
-	return slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
-}
-
 // return whether the rule captures the input src,dst VMs on the given direction
-/*func (f *FwRule) capturesPair(src, dst endpoints.EP, isIngress bool) bool {
+/*func (f *FwRule) capturesPair(src, dst topology.EP, isIngress bool) bool {
 	vmsCaptured := slices.Contains(f.srcVMs, src) && slices.Contains(f.dstVMs, dst)
 	if !vmsCaptured {
 		return false

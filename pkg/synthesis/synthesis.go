@@ -26,16 +26,15 @@ func NSXToK8sSynthesis(
 	return createK8sResources(abstractModel, options.CreateDNSPolicy), nil
 }
 
-func NSXToPolicy(recourses *collector.ResourcesContainerModel,
+func NSXToPolicy(resources *collector.ResourcesContainerModel,
 	config configuration.ParsedNSXConfig,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
-		parser := configuration.NewNSXConfigParserFromResourcesContainer(recourses)
-		err := parser.RunParser()
+		var err error
+		config, err = configuration.ConfigFromResourcesContainer(resources, options.Color)
 		if err != nil {
 			return nil, err
 		}
-		config = parser.GetConfig()
 	}
 
 	logging.Debugf("started synthesis")
@@ -52,6 +51,5 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		defaultDenyRule: config.DefaultDenyRule()}
 	abstractModelStr := strAbstractModel(abstractModel, options)
 	logging.Debugf("abstract model\n==============\n%v", abstractModelStr)
-	/*>>>>>>> main*/
 	return abstractModel, nil
 }

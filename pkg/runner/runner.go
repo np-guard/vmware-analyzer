@@ -138,12 +138,12 @@ func (r *Runner) runAnalyzer() error {
 	}
 
 	logging.Infof("starting connectivity analysis")
-	parsedConfig, connResStr, err := analyzer.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
+	parsedConfig, connMap, connResStr, err := analyzer.NSXConnectivityFromResourcesContainer(r.nsxResources, params)
 	if err != nil {
 		return err
 	}
 	r.connectivityAnalysisOutput = connResStr
-	r.analyzedConnectivity = parsedConfig.AnalyzedConnectivity()
+	r.analyzedConnectivity = connMap
 	r.parsedConfig = parsedConfig
 	// TODO: remove print?
 	fmt.Println(connResStr)

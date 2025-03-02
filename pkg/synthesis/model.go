@@ -7,15 +7,15 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
-	vms        []endpoints.EP
+	vms        []topology.Endpoint
 	allGroups  []*collector.Group
-	epToGroups map[endpoints.EP][]*collector.Group
+	epToGroups map[topology.Endpoint][]*collector.Group
 	// todo: add similar maps to OS, hostname
 
 	// if synthesizeAdmin is true, rules will be translated to allow only starting with category MinNonAdminCategory();

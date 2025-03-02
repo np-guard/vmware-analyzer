@@ -1,4 +1,4 @@
-package endpoints
+package topology
 
 import (
 	"github.com/np-guard/models/pkg/netset"
@@ -11,7 +11,7 @@ type ipBlock struct {
 type RuleIPBlock struct {
 	ipBlock
 	origIP string
-	VMs    []EP
+	VMs    []Endpoint
 }
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
@@ -21,7 +21,7 @@ func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
 type Segment struct {
 	ipBlock
 	name string
-	VMs  []EP
+	VMs  []Endpoint
 }
 
 func NewSegment(name string, block *netset.IPBlock) *Segment {
