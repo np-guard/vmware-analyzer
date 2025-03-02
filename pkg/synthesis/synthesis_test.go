@@ -82,6 +82,12 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
+		name:            "Example1External",
+		exData:          &data.Example1External,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
 		name:            "ExampleDumbeldore",
 		exData:          &data.ExampleDumbeldore,
 		synthesizeAdmin: false,
