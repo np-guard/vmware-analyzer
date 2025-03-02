@@ -56,16 +56,22 @@ The synthesis maintains the original semantic intent of the rules
 and not just generates a set of rules that preserves the connectivity between VMs given the current state of the configuration.
 For example:
 * When a `frontend` `VM` is added it should be granted the policies defined for the `frontend`
-* A DFW rule that uses an NSX group with no VMs at the moment of analysis and synthesis,
+* A `DFW` rule that uses an `NSX group` with no `VMs` at the moment of the synthesis,
 will still be relevant to maintain in the conversion to network policies.
 
-To preserve the original intent of the policy, the synthesized policy prioritizes referencing non-ephemeral features.
-E.g., it prefers referencing`frontend` label instead of referencing `VMs'` names. `VM`s may be deleted and added, while
-the `frontend` label is always granted to any relevant `VM`.  
-Specifically,  given a rule with `src`defined as group `aaa` which is defined as `tag = backend and tag != DB`,
-the synthesized policy will reference the labels corresponding to the `backend` and `DB`  values.
+#### Labeling mechanism
+All `VMs'` pods are assumed to be in namespace `default`.
+Each `VM`'s  pod is granted labels reflecting the `NSX's` `tags` and `groups`.
+`Group: DB`  will be synthesized to `label` `group__DB: "true"`;
+`Tag: DB`  will be synthesized to `label` `tag__DB: "true"`.
 
-`todo: add tag -> labeling machanism` 
+### Policy synthesis
+To preserve the original intent of the policy, the synthesized policy prioritizes referencing non-ephemeral features.
+E.g., it prefers referencing `frontend` label instead of referencing `VMs'` names, or even `VMs' groups`. `VMs` may be deleted and added, while
+the `frontend` label is always granted to any `frontend` `VM`.  
+Specifically,  given a rule with `src` defined as group `aaa` which is defined as `tag = backend and tag != DB`,
+the synthesized policy will reference the labels corresponding to the `backend` and `DB`  values, and not the group `aaa`
+or the names of the`VMs'` that resides in the group at the time of synthesis.
 
 ## Currently supported
 Currently, the tool supports groups defined by expressions over tags; `nested NSX expression` are not yet supported.
