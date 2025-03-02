@@ -49,9 +49,12 @@ func actionFromString(s string) RuleAction {
 
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	SrcVMs []endpoints.EP
-	DstVMs []endpoints.EP
-	scope  []endpoints.EP
+	SrcVMs    []endpoints.EP
+	DstVMs    []endpoints.EP
+	scope     []endpoints.EP
+	srcBlocks []*endpoints.RuleIPBlock
+	dstBlocks []*endpoints.RuleIPBlock
+
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
 	SrcGroups      []*collector.Group
@@ -78,6 +81,8 @@ type FwRule struct {
 func NewFwRule(
 	srcVMs []endpoints.EP,
 	dstVMs []endpoints.EP,
+	srcBlocks []*endpoints.RuleIPBlock,
+	dstBlocks []*endpoints.RuleIPBlock,
 	scope []endpoints.EP,
 	srcGroups []*collector.Group,
 	isAllSrcGroups bool,
@@ -99,6 +104,8 @@ func NewFwRule(
 	return &FwRule{
 		SrcVMs:             srcVMs,
 		DstVMs:             dstVMs,
+		srcBlocks:          srcBlocks,
+		dstBlocks:          dstBlocks,
 		scope:              scope,
 		SrcGroups:          srcGroups,
 		IsAllSrcGroups:     isAllSrcGroups,
@@ -239,7 +246,7 @@ func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
 }
 
 func (f *FwRule) clone() *FwRule {
-	return NewFwRule(f.SrcVMs, f.DstVMs, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
+	return NewFwRule(f.SrcVMs, f.DstVMs, f.srcBlocks, f.dstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
 		f.IsAllDstGroups, f.ScopeGroups, f.Conn, f.Action,
 		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
