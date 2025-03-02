@@ -71,7 +71,7 @@ func (e *EvalRules) addInboundRule(r *FwRule, d *DFW, isEffective bool) {
 	if r != nil {
 		e.Inbound = append(e.Inbound, r)
 		if isEffective {
-			d.totalEffectiveIngressRules += 1
+			d.TotalEffectiveIngressRules += 1
 		}
 	}
 }
@@ -80,7 +80,7 @@ func (e *EvalRules) addOutboundRule(r *FwRule, d *DFW, isEffective bool) {
 	if r != nil {
 		e.Outbound = append(e.Outbound, r)
 		if isEffective {
-			d.totalEffectiveEgressRules += 1
+			d.TotalEffectiveEgressRules += 1
 		}
 	}
 }

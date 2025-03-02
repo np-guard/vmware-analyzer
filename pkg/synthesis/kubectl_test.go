@@ -182,11 +182,10 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 		return err
 	}
 	// get analyzed connectivity:
-	config, err := analyzer.ConfigFromResourcesContainer(rc, common.OutputParameters{})
+	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{})
 	if err != nil {
 		return err
 	}
-	connMap := config.AnalyzedConnectivity()
 	// iterate over the connMap, create test for each connection:
 	tests := []*connTest{}
 	for src, dsts := range connMap {

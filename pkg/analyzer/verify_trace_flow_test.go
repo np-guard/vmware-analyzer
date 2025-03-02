@@ -1,4 +1,4 @@
-package model
+package analyzer
 
 import (
 	"fmt"

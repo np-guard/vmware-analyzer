@@ -1,4 +1,4 @@
-package model
+package analyzer
 
 import (
 	"fmt"
@@ -17,11 +17,12 @@ func compareConfigToTraceflows(
 	resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
 	vmFilter vmFilter) (*collector.TraceFlows, error) {
-	config, err := ConfigFromResourcesContainer(resources, common.OutputParameters{})
+	config, connMap, _, err := NSXConnectivityFromResourcesContainer(resources, common.OutputParameters{})
 	if err != nil {
 		return nil, err
 	}
-	traceFlows := createTraceflows(resources, server, config, vmFilter)
+
+	traceFlows := createTraceflows(resources, server, config, connMap, vmFilter)
 	traceFlows.Execute()
 	traceFlows.Summary()
 	return traceFlows, nil
@@ -29,9 +30,9 @@ func compareConfigToTraceflows(
 
 func createTraceflows(resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
-	config *configuration.Config, vmFilter vmFilter) *collector.TraceFlows {
+	config configuration.ParsedNSXConfig, connMap connectivity.ConnMap, vmFilter vmFilter) *collector.TraceFlows {
 	traceFlows := collector.NewTraceflows(resources, server)
-	for srcUID, srcVM := range config.VmsMap {
+	for srcUID, srcVM := range config.VMsMap() {
 		if !vmFilter(srcVM) {
 			continue
 		}
@@ -48,7 +49,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 		if port == nil {
 			continue
 		}
-		for dstUID, dstVM := range config.VmsMap {
+		for dstUID, dstVM := range config.VMsMap() {
 			if srcUID == dstUID {
 				continue
 			}
@@ -65,7 +66,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 			if !collector.IsVMConnected(resources, srcUID, dstUID) {
 				continue
 			}
-			createTraceFlowsForConn(traceFlows, srcIP, dstIP, srcVM, dstVM, config.Connectivity)
+			createTraceFlowsForConn(traceFlows, srcIP, dstIP, srcVM, dstVM, connMap)
 		}
 	}
 	return traceFlows

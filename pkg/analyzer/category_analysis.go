@@ -1,12 +1,11 @@
-package dfw
+package analyzer
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 )
 
@@ -15,7 +14,7 @@ import (
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 //
 //nolint:gocritic // temporarily keep commented-out code
-func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
+func analyzeCategory(c *dfw.CategorySpec, src, dst endpoints.EP, isIngress bool,
 ) (allowedConns, // allowedConns are the set of connections between src to dst, which are allowed by this category rules.
 	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the
 	// rule action jump_to_app.
@@ -31,9 +30,9 @@ func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
 	}
 	// logging.Debugf("num of rules: %d", len(rules))
 	for _, rule := range rules {
-		if rule.evaluatedRuleCapturesPair(src, dst) {
+		if evaluatedRuleCapturesPair(rule, src, dst) {
 			switch rule.Action {
-			case ActionAllow:
+			case dfw.ActionAllow:
 				addedAllowedConns := rule.Conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
@@ -41,7 +40,7 @@ func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
 					allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
 				}
 
-			case ActionDeny:
+			case dfw.ActionDeny:
 				addedDeniedConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
 				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
 				deniedConns.accumulatedConns = deniedConns.accumulatedConns.Union(addedDeniedConns)
@@ -49,7 +48,7 @@ func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
 					deniedConns.partitionsByRules = append(deniedConns.partitionsByRules, rulePartition)
 				}
 
-			case ActionJumpToApp:
+			case dfw.ActionJumpToApp:
 				addedJumpToAppConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
 				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
 				jumpToAppConns.accumulatedConns = jumpToAppConns.accumulatedConns.Union(addedJumpToAppConns)
@@ -64,16 +63,6 @@ func (c *CategorySpec) analyzeCategory(src, dst endpoints.EP, isIngress bool,
 		jumpToAppConns.accumulatedConns) // connections not determined by this category
 
 	return allowedConns, jumpToAppConns, deniedConns, nonDet
-}
-
-type connectionsAndRules struct {
-	accumulatedConns  *netset.TransportSet
-	partitionsByRules []*connectivity.RuleAndConn
-}
-
-func (cr *connectionsAndRules) String() string {
-	partitionsByRulesStr := common.JoinStringifiedSlice(cr.partitionsByRules, ";")
-	return fmt.Sprintf("accumulatedConns: %s, partitionsByRules: %s", cr.accumulatedConns.String(), partitionsByRulesStr)
 }
 
 func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *netset.TransportSet) {
@@ -98,13 +87,8 @@ func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *nets
 	cr.accumulatedConns = cr.accumulatedConns.Subtract(higherPrioConns)
 }
 
-func (cr *connectionsAndRules) union(cr2 *connectionsAndRules) {
-	cr.accumulatedConns = cr.accumulatedConns.Union(cr2.accumulatedConns)
-	cr.partitionsByRules = append(cr.partitionsByRules, cr2.partitionsByRules...)
-}
-
-func emptyConnectionsAndRules() *connectionsAndRules {
-	return &connectionsAndRules{
-		accumulatedConns: netset.NoTransports(),
-	}
+func evaluatedRuleCapturesPair(f *dfw.FwRule, src, dst endpoints.EP) bool {
+	// in evaluated rule the src/dst vms already consider the original scope rule
+	// and the separation to inound/outbound is done in advance
+	return slices.Contains(f.SrcVMs, src) && slices.Contains(f.DstVMs, dst)
 }
