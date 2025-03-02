@@ -52,6 +52,5 @@ func NSXToPolicy(recourses *collector.ResourcesContainerModel,
 		defaultDenyRule: config.DefaultDenyRule()}
 	abstractModelStr := strAbstractModel(abstractModel, options)
 	logging.Debugf("abstract model\n==============\n%v", abstractModelStr)
-	/*>>>>>>> main*/
 	return abstractModel, nil
 }
