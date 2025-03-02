@@ -1,8 +1,8 @@
 package synthesis
 
 import (
-	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
@@ -16,7 +16,7 @@ type SynthesisOptions struct {
 
 func NSXToK8sSynthesis(
 	resources *collector.ResourcesContainerModel,
-	config analyzer.ParsedNSXConfig,
+	config configuration.ParsedNSXConfig,
 	options *SynthesisOptions,
 ) (*k8sResources, error) {
 	abstractModel, err := NSXToPolicy(resources, config, options)
@@ -27,10 +27,10 @@ func NSXToK8sSynthesis(
 }
 
 func NSXToPolicy(recourses *collector.ResourcesContainerModel,
-	config analyzer.ParsedNSXConfig,
+	config configuration.ParsedNSXConfig,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
-		parser := analyzer.NewNSXConfigParserFromResourcesContainer(recourses)
+		parser := configuration.NewNSXConfigParserFromResourcesContainer(recourses)
 		err := parser.RunParser()
 		if err != nil {
 			return nil, err

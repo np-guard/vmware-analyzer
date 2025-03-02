@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"strings"
 
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 // ///////////////////////////////////////////////////////////////////////////////////////

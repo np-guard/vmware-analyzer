@@ -8,7 +8,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 )
 
 // https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/types_SecurityPolicy.html
@@ -33,12 +33,13 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 
 // addRule adds a FWRule from input fields to list of category's original rules + adds relevant inbound/outbound evaluated rules
 // for the list of evaluated rules (and effective rules if the input rule is considered effective)
-func (c *CategorySpec) addRule(src, dst []endpoints.EP, srcGroups, dstGroups, scopeGroups []*collector.Group,
+func (c *CategorySpec) addRule(src, dst []endpoints.EP, srcBlocks, dstBlocks []*endpoints.RuleIPBlock,
+	srcGroups, dstGroups, scopeGroups []*collector.Group,
 	isAllSrcGroup, isAllDstGroup bool, conn *netset.TransportSet, action, direction string, ruleID int,
 	origRule *collector.Rule, scope []endpoints.EP, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {
 	// create FWRule object from input field values
-	newRule := NewFwRule(src, dst, scope, srcGroups, isAllSrcGroup, dstGroups, isAllDstGroup, scopeGroups, conn,
+	newRule := NewFwRule(src, dst, srcBlocks, dstBlocks, scope, srcGroups, isAllSrcGroup, dstGroups, isAllDstGroup, scopeGroups, conn,
 		actionFromString(action), direction, origRule, origDefaultRule, ruleID, secPolicyName, c.Category.String(), c, c.dfwRef, len(c.Rules))
 
 	// add FWRule object to list of original rules

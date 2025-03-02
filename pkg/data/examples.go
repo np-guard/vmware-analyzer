@@ -2,7 +2,7 @@ package data
 
 import (
 	"github.com/np-guard/models/pkg/netset"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 const (
@@ -182,11 +182,11 @@ var Example1External = Example{
 			CategoryType: "Application",
 			Rules: []Rule{
 				{
-					Name:     "allow_ftp_from_123",
+					Name:     "allow_http_from_123",
 					ID:       1004,
 					Source:   "1.2.3.0/8",
 					Dest:     "frontend",
-					Services: []string{"/infra/services/FTP"},
+					Services: []string{"/infra/services/HTTP"},
 					Action:   Allow,
 				},
 				{

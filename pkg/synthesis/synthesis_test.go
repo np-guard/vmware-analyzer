@@ -14,6 +14,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -77,6 +78,12 @@ var groupsByVmsTests = []synthesisTest{
 	{
 		name:            "Example1c",
 		exData:          &data.Example1c,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "Example1External",
+		exData:          &data.Example1External,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
@@ -291,7 +298,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	parser := analyzer.NewNSXConfigParserFromResourcesContainer(rc)
+	parser := configuration.NewNSXConfigParserFromResourcesContainer(rc)
 	err = parser.RunParser()
 	require.Nil(t, err)
 	config := parser.GetConfig()

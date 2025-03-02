@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -50,9 +50,11 @@ func actionFromString(s string) RuleAction {
 
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	srcVMs []endpoints.EP
-	dstVMs []endpoints.EP
-	scope  []endpoints.EP
+	srcVMs    []endpoints.EP
+	dstVMs    []endpoints.EP
+	scope     []endpoints.EP
+	srcBlocks []*endpoints.RuleIPBlock
+	dstBlocks []*endpoints.RuleIPBlock
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
 	SrcGroups      []*collector.Group
@@ -79,6 +81,8 @@ type FwRule struct {
 func NewFwRule(
 	srcVMs []endpoints.EP,
 	dstVMs []endpoints.EP,
+	srcBlocks []*endpoints.RuleIPBlock,
+	dstBlocks []*endpoints.RuleIPBlock,
 	scope []endpoints.EP,
 	srcGroups []*collector.Group,
 	isAllSrcGroups bool,
@@ -100,6 +104,8 @@ func NewFwRule(
 	return &FwRule{
 		srcVMs:             srcVMs,
 		dstVMs:             dstVMs,
+		srcBlocks:          srcBlocks,
+		dstBlocks:          dstBlocks,
 		scope:              scope,
 		SrcGroups:          srcGroups,
 		IsAllSrcGroups:     isAllSrcGroups,
@@ -240,7 +246,7 @@ func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
 }
 
 func (f *FwRule) clone() *FwRule {
-	return NewFwRule(f.srcVMs, f.dstVMs, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
+	return NewFwRule(f.srcVMs, f.dstVMs, f.srcBlocks, f.dstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
 		f.IsAllDstGroups, f.ScopeGroups, f.Conn, f.Action,
 		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)

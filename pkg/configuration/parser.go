@@ -1,17 +1,18 @@
-package model
+package configuration
 
 import (
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 const (
@@ -42,7 +43,7 @@ func NewNSXConfigParserFromResourcesContainer(rc *collector.ResourcesContainerMo
 type NSXConfigParser struct {
 	file                   string
 	rc                     *collector.ResourcesContainerModel
-	configRes              *config
+	configRes              *Config
 	allGroups              []*collector.Group
 	allGroupsPaths         []string
 	allGroupsVMs           []endpoints.EP
@@ -52,14 +53,16 @@ type NSXConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *topology
+	allRuleIPBlocks       map[string]*endpoints.RuleIPBlock // a map from the ip string,to the block
 }
 
 func (p *NSXConfigParser) init() {
-	p.configRes = &config{}
+	p.configRes = &Config{}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]endpoints.EP{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+	p.allRuleIPBlocks = map[string]*endpoints.RuleIPBlock{}
 }
 
 func (p *NSXConfigParser) RunParser() error {
@@ -86,12 +89,12 @@ func (p *NSXConfigParser) removeVMsWithoutGroups() {
 	}
 	for _, vm := range toRemove {
 		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.vms = slices.DeleteFunc(p.configRes.vms, func(v endpoints.EP) bool { return v.ID() == vm.ID() })
-		delete(p.configRes.vmsMap, vm.ID())
+		p.configRes.Vms = slices.DeleteFunc(p.configRes.Vms, func(v endpoints.EP) bool { return v.ID() == vm.ID() })
+		delete(p.configRes.VmsMap, vm.ID())
 	}
 }
 
-func (p *NSXConfigParser) GetConfig() *config {
+func (p *NSXConfigParser) GetConfig() *Config {
 	return p.configRes
 }
 
@@ -112,7 +115,7 @@ func (p *NSXConfigParser) vMsGroups() map[endpoints.EP][]*collector.Group {
 }
 
 func (p *NSXConfigParser) VMs() []endpoints.EP {
-	return p.configRes.vms
+	return p.configRes.Vms
 }
 
 // update mapping from groups and services paths to their names
@@ -135,7 +138,7 @@ func (p *NSXConfigParser) getGroups() {
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *NSXConfigParser) getVMs() {
-	p.configRes.vmsMap = map[string]endpoints.EP{}
+	p.configRes.VmsMap = map[string]endpoints.EP{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -152,8 +155,8 @@ func (p *NSXConfigParser) getVMs() {
 				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
 			}
 		}
-		p.configRes.vms = append(p.configRes.vms, vmObj)
-		p.configRes.vmsMap[vmObj.ID()] = vmObj
+		p.configRes.Vms = append(p.configRes.Vms, vmObj)
+		p.configRes.VmsMap[vmObj.ID()] = vmObj
 	}
 }
 
@@ -170,7 +173,7 @@ func (p *NSXConfigParser) getDFW() {
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
 			// This scope will take precedence over rule level scope.
-			scope, _ := p.getEndpointsFromGroupsPaths(secPolicy.Scope, false)
+			scope, _, _ := p.getEndpointsFromGroupsPaths(secPolicy.Scope, false)
 			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
 
 			rules := secPolicy.Rules
@@ -180,7 +183,7 @@ func (p *NSXConfigParser) getDFW() {
 				r.scope = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
-					r.scope, r.scopeGroups = p.getEndpointsFromGroupsPaths(rule.Scope, false)
+					r.scope, r.scopeGroups, _ = p.getEndpointsFromGroupsPaths(rule.Scope, false)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
@@ -207,7 +210,8 @@ func (p *NSXConfigParser) getDFW() {
 }
 
 func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
+	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
+		r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
@@ -218,7 +222,7 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res := &parsedRule{}
 	// scope - the list of group paths where the rules in this policy will get applied.
 	scope := secPolicy.Scope
-	vms, groups := p.getEndpointsFromGroupsPaths(scope, false)
+	vms, groups, _ := p.getEndpointsFromGroupsPaths(scope, false)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
 	res.srcVMs = vms
 	res.dstVMs = vms
@@ -253,8 +257,10 @@ type parsedRule struct {
 	//       defined by groups, thus the following temp 4 fields
 	srcGroups      []*collector.Group
 	isAllSrcGroups bool
+	srcBlocks      []*endpoints.RuleIPBlock
 	dstGroups      []*collector.Group
 	isAllDstGroups bool
+	dstBlocks      []*endpoints.RuleIPBlock
 	action         string
 	conn           *netset.TransportSet
 	direction      string
@@ -286,27 +292,40 @@ func (p *NSXConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
-func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]endpoints.EP, []*collector.Group) {
+func (p *NSXConfigParser) getEndpointsFromGroupsPaths(
+	groupsPaths []string, exclude bool) (
+	[]endpoints.EP, []*collector.Group, []*endpoints.RuleIPBlock) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
-			return []endpoints.EP{}, []*collector.Group{} // no group
+			return nil, nil, nil // no group
 		}
-		return p.allGroupsVMs, p.allGroups // all groups
+		return p.allGroupsVMs, p.allGroups, nil // all groups
 	}
-	vms := []endpoints.EP{}
-	groups := []*collector.Group{}
+	var vms []endpoints.EP
+	var ruleBlocks []*endpoints.RuleIPBlock
+	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
+	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
 	if exclude {
-		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(p string) bool { return slices.Contains(groupsPaths, p) })
+		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
+		if len(ips) > 0 {
+			logging.Warnf("Rule with IPs and SourcesExcluded is not supported. ignoring the following IPs\n%s",
+				strings.Join(ips, common.CommaSeparator))
+		}
+	} else {
+		ruleBlocks = p.getRuleIPBlocks(ips)
+		for _, ruleBlock := range ruleBlocks {
+			vms = append(vms, ruleBlock.VMs...)
+		}
 	}
-	// TODO: support IP Addresses in groupsPaths
-	for _, groupPath := range groupsPaths {
+	groups := make([]*collector.Group, len(groupsPaths))
+	for i, groupPath := range groupsPaths {
 		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
 		vms = append(vms, thisGroupVMs...)
-		groups = append(groups, thisGroup)
+		groups[i] = thisGroup
 	}
 	vms = common.SliceCompact(vms)
-	return vms, groups
+	return vms, groups, ruleBlocks
 }
 
 // type *collector.FirewallRule is deprecated but used to collect default rule per securityPolicy
@@ -321,14 +340,14 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 
 	res := &parsedRule{}
 	srcGroups := rule.SourceGroups // paths of the source groups
+	dstGroups := rule.DestinationGroups
 	// If set to true, the rule gets applied on all the groups that are NOT part of
 	// the source groups. If false, the rule applies to the source groups
 	// TODO: handle excluded fields
 	// srcExclude := rule.SourcesExcluded
-	res.srcVMs, res.srcGroups = p.getEndpointsFromGroupsPaths(srcGroups, rule.SourcesExcluded)
+	res.srcVMs, res.srcGroups, res.srcBlocks = p.getEndpointsFromGroupsPaths(srcGroups, rule.SourcesExcluded)
 	res.isAllSrcGroups = slices.Contains(srcGroups, anyStr)
-	dstGroups := rule.DestinationGroups
-	res.dstVMs, res.dstGroups = p.getEndpointsFromGroupsPaths(dstGroups, rule.DestinationsExcluded)
+	res.dstVMs, res.dstGroups, res.dstBlocks = p.getEndpointsFromGroupsPaths(dstGroups, rule.DestinationsExcluded)
 	res.isAllDstGroups = slices.Contains(dstGroups, anyStr)
 
 	res.action = string(*rule.Action)
@@ -458,7 +477,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []endpoints.EP 
 	}
 	res := []endpoints.EP{}
 	for vmID := range ids {
-		if vmObj, ok := p.configRes.vmsMap[vmID]; ok {
+		if vmObj, ok := p.configRes.VmsMap[vmID]; ok {
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config
@@ -485,6 +504,27 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]endpoints.EP, *collec
 		}
 	}
 	return nil, nil // could not find given groupPath (add warning)
+}
+func (p *NSXConfigParser) getRuleIPBlocks(groupsPaths []string) []*endpoints.RuleIPBlock {
+	ips := slices.DeleteFunc(slices.Clone(groupsPaths),
+		func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
+	res := []*endpoints.RuleIPBlock{}
+	for _, ip := range ips {
+		if _, ok := p.allRuleIPBlocks[ip]; !ok {
+			block, err := netset.IPBlockFromCidrOrAddress(ip)
+			if err != nil {
+				block, err = netset.IPBlockFromIPRangeStr(ip)
+			}
+			if err != nil {
+				logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
+				continue
+			}
+			p.allRuleIPBlocks[ip] = endpoints.NewRuleIPBlock(ip, block)
+			// todo - calc VMs of the block
+		}
+		res = append(res, p.allRuleIPBlocks[ip])
+	}
+	return res
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

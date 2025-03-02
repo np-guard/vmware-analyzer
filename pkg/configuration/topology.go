@@ -1,26 +1,20 @@
-package model
+package configuration
 
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/endpoints"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
-type segment struct {
-	block *netset.IPBlock
-	vms   []endpoints.EP
-	name  string
-}
-
 type topology struct {
-	segments      []*segment
-	vmSegments    map[endpoints.EP][]*segment
+	segments      []*endpoints.Segment
+	vmSegments    map[endpoints.EP][]*endpoints.Segment
 	externalBlock *netset.IPBlock
 }
 
 func newTopology() *topology {
-	return &topology{vmSegments: map[endpoints.EP][]*segment{}, externalBlock: netset.GetCidrAll()}
+	return &topology{vmSegments: map[endpoints.EP][]*endpoints.Segment{}, externalBlock: netset.GetCidrAll()}
 }
 
 func (p *NSXConfigParser) getTopology() (err error) {
@@ -30,21 +24,21 @@ func (p *NSXConfigParser) getTopology() (err error) {
 		if len(segResource.SegmentPorts) == 0 && len(segResource.Subnets) == 0 {
 			continue
 		}
-		segment := &segment{block: netset.NewIPBlock(), name: *segResource.DisplayName}
 		subnetsNetworks := common.CustomStrSliceToStrings(segResource.Subnets, func(subnet nsx.SegmentSubnet) string { return *subnet.Network })
-		segment.block, err = netset.IPBlockFromCidrList(subnetsNetworks)
+		block, err := netset.IPBlockFromCidrList(subnetsNetworks)
 		if err != nil {
 			return err
 		}
+		segment := endpoints.NewSegment(*segResource.DisplayName, block)
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)
-			if vm, ok := p.configRes.vmsMap[*vni.OwnerVmId]; ok {
+			if vm, ok := p.configRes.VmsMap[*vni.OwnerVmId]; ok {
 				p.topology.vmSegments[vm] = append(p.topology.vmSegments[vm], segment)
-				segment.vms = append(segment.vms, vm)
+				segment.VMs = append(segment.VMs, vm)
 			}
 		}
-		p.topology.externalBlock = p.topology.externalBlock.Subtract(segment.block)
+		p.topology.externalBlock = p.topology.externalBlock.Subtract(segment.Block)
 		p.topology.segments = append(p.topology.segments, segment)
 	}
 	return nil

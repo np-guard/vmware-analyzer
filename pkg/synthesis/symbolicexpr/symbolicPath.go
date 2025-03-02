@@ -2,7 +2,7 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 )
 
 func (path *SymbolicPath) String() string {
@@ -154,27 +154,18 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	tarmAny := Conjunction{tautology{}}
-	srcConjunctions := getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
-	dstConjunctions := getConjunctionForGroups(rule.DstGroups, groupToConjunctions, rule.RuleID)
-	switch {
-	case rule.IsAllSrcGroups && rule.IsAllDstGroups:
-		resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: tarmAny, Conn: rule.Conn})
-	case rule.IsAllSrcGroups:
+	srcConjunctions := []*Conjunction{&tarmAny}
+	dstConjunctions := []*Conjunction{&tarmAny}
+	if !rule.IsAllSrcGroups {
+		srcConjunctions = getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
+	}
+	if !rule.IsAllDstGroups {
+		dstConjunctions = getConjunctionForGroups(rule.DstGroups, groupToConjunctions, rule.RuleID)
+	}
+	for _, srcConjunction := range srcConjunctions {
 		for _, dstConjunction := range dstConjunctions {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: tarmAny, Dst: *dstConjunction,
-				Conn: rule.Conn})
-		}
-	case rule.IsAllDstGroups:
-		for _, srcConjunction := range srcConjunctions {
-			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction, Dst: tarmAny,
-				Conn: rule.Conn})
-		}
-	default:
-		for _, srcConjunction := range srcConjunctions {
-			for _, dstConjunction := range dstConjunctions {
-				resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
-					Dst: *dstConjunction, Conn: rule.Conn})
-			}
+			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
+				Dst: *dstConjunction, Conn: rule.Conn})
 		}
 	}
 	return &resSymbolicPaths
