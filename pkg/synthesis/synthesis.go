@@ -1,7 +1,6 @@
 package synthesis
 
 import (
-	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -32,7 +31,7 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
 		var err error
-		config, err = configuration.ConfigFromResourcesContainer(resources, common.OutputParameters{})
+		config, err = configuration.ConfigFromResourcesContainer(resources, options.Color)
 		if err != nil {
 			return nil, err
 		}

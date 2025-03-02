@@ -294,7 +294,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	config, err := configuration.ConfigFromResourcesContainer(rc, common.OutputParameters{})
+	config, err := configuration.ConfigFromResourcesContainer(rc, false)
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)

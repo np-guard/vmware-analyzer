@@ -21,7 +21,7 @@ type ParsedNSXConfig interface {
 }
 
 func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
-	params common.OutputParameters) (*Config, error) {
+	color bool) (*Config, error) {
 	parser := newNSXConfigParserFromResourcesContainer(resources)
 	err := parser.runParser()
 	if err != nil {
@@ -30,7 +30,7 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 	config := parser.getConfig()
 
 	// in debug/verbose mode -- print the parsed config
-	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
+	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(color))
 
 	return config, nil
 }
