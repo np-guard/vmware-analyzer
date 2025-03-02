@@ -294,10 +294,8 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	parser := configuration.NewNSXConfigParserFromResourcesContainer(rc)
-	err = parser.RunParser()
+	config, err := configuration.ConfigFromResourcesContainer(rc, common.OutputParameters{})
 	require.Nil(t, err)
-	config := parser.GetConfig()
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)

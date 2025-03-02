@@ -1,6 +1,7 @@
 package synthesis
 
 import (
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -26,16 +27,15 @@ func NSXToK8sSynthesis(
 	return createK8sResources(abstractModel, options.CreateDNSPolicy), nil
 }
 
-func NSXToPolicy(recourses *collector.ResourcesContainerModel,
+func NSXToPolicy(resources *collector.ResourcesContainerModel,
 	config configuration.ParsedNSXConfig,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
-		parser := configuration.NewNSXConfigParserFromResourcesContainer(recourses)
-		err := parser.RunParser()
+		var err error
+		config, err = configuration.ConfigFromResourcesContainer(resources, common.OutputParameters{})
 		if err != nil {
 			return nil, err
 		}
-		config = parser.GetConfig()
 	}
 
 	logging.Debugf("started synthesis")

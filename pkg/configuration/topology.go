@@ -17,7 +17,7 @@ func newTopology() *nsxTopology {
 	return &nsxTopology{vmSegments: map[topology.Endpoint][]*topology.Segment{}, externalBlock: netset.GetCidrAll()}
 }
 
-func (p *NSXConfigParser) getTopology() (err error) {
+func (p *nsxConfigParser) getTopology() (err error) {
 	p.topology = newTopology()
 	for i := range p.rc.SegmentList {
 		segResource := &p.rc.SegmentList[i]

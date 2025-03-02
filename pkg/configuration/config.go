@@ -20,14 +20,14 @@ type ParsedNSXConfig interface {
 	VMsMap() map[string]topology.Endpoint
 }
 
-func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel,
+func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 	params common.OutputParameters) (*Config, error) {
-	parser := NewNSXConfigParserFromResourcesContainer(recourses)
-	err := parser.RunParser()
+	parser := newNSXConfigParserFromResourcesContainer(resources)
+	err := parser.runParser()
 	if err != nil {
 		return nil, err
 	}
-	config := parser.GetConfig()
+	config := parser.getConfig()
 
 	// in debug/verbose mode -- print the parsed config
 	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
