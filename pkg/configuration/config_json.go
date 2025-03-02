@@ -67,7 +67,7 @@ func (c *Config) buildConfigInfo() {
 		c.configSummary.Segments = append(c.configSummary.Segments, segInfo)
 	}
 
-	for _, v := range c.Vms {
+	for _, v := range c.VMs {
 		vmGroupsList := []string{}
 		groups, ok := c.GroupsPerVM[v]
 		if ok {

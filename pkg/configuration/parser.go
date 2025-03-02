@@ -86,7 +86,7 @@ func (p *nsxConfigParser) runParser() error {
 
 // storeParsedVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *nsxConfigParser) storeParsedVMs() {
-	p.configRes.VmsMap = map[string]topology.Endpoint{}
+	p.configRes.VMsMap = map[string]topology.Endpoint{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -103,8 +103,8 @@ func (p *nsxConfigParser) storeParsedVMs() {
 				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
 			}
 		}
-		p.configRes.Vms = append(p.configRes.Vms, vmObj)
-		p.configRes.VmsMap[vmObj.ID()] = vmObj
+		p.configRes.VMs = append(p.configRes.VMs, vmObj)
+		p.configRes.VMsMap[vmObj.ID()] = vmObj
 	}
 }
 
@@ -160,8 +160,8 @@ func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	}
 	for _, vm := range toRemove {
 		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.Vms = slices.DeleteFunc(p.configRes.Vms, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
-		delete(p.configRes.VmsMap, vm.ID())
+		p.configRes.VMs = slices.DeleteFunc(p.configRes.VMs, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
+		delete(p.configRes.VMsMap, vm.ID())
 	}
 }
 
@@ -186,7 +186,7 @@ func (p *nsxConfigParser) vMsGroups() map[topology.Endpoint][]*collector.Group {
 }
 
 func (p *nsxConfigParser) VMs() []topology.Endpoint {
-	return p.configRes.Vms
+	return p.configRes.VMs
 }
 
 // update mapping from groups and services paths to their names
@@ -198,7 +198,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	p.configRes.Fw.SetPathsToDisplayNames(res)
+	p.configRes.FW.SetPathsToDisplayNames(res)
 }
 
 func (p *nsxConfigParser) storeParsedGroups() {
@@ -209,7 +209,7 @@ func (p *nsxConfigParser) storeParsedGroups() {
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
 func (p *nsxConfigParser) getVMs() {
-	p.configRes.VmsMap = map[string]topology.Endpoint{}
+	p.configRes.VMsMap = map[string]topology.Endpoint{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -226,14 +226,14 @@ func (p *nsxConfigParser) getVMs() {
 				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
 			}
 		}
-		p.configRes.Vms = append(p.configRes.Vms, vmObj)
-		p.configRes.VmsMap[vmObj.ID()] = vmObj
+		p.configRes.VMs = append(p.configRes.VMs, vmObj)
+		p.configRes.VMsMap[vmObj.ID()] = vmObj
 	}
 }
 
 // func (p *nsxConfigParser) getDFW() {}
 func (p *nsxConfigParser) storeParsedDFW() {
-	p.configRes.Fw = dfw.NewEmptyDFW()
+	p.configRes.FW = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.SecurityPolicyList {
@@ -282,7 +282,7 @@ func (p *nsxConfigParser) storeParsedDFW() {
 }
 
 func (p *nsxConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
+	p.configRes.FW.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
 		r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
@@ -549,7 +549,7 @@ func (p *nsxConfigParser) groupToVMsList(group *collector.Group) []topology.Endp
 	}
 	res := []topology.Endpoint{}
 	for vmID := range ids {
-		if vmObj, ok := p.configRes.VmsMap[vmID]; ok {
+		if vmObj, ok := p.configRes.VMsMap[vmID]; ok {
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config
