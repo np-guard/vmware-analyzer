@@ -8,31 +8,22 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-type analyzer struct {
-	Connectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
-	c            *configuration.Config
-}
-
-func (a *analyzer) AnalyzedConnectivity() connectivity.ConnMap {
-	return a.Connectivity
-}
-
-func (a *analyzer) ComputeConnectivity(vmsFilter []string) {
+func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivity.ConnMap {
 	logging.Debugf("compute connectivity on parsed config")
 	res := connectivity.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.InitPairs(false, a.c.Vms, vmsFilter)
+	res.InitPairs(false, c.Vms, vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
 			if src == dst {
 				continue
 			}
-			conn := DFWAllowedConnections(a.c.Fw, src, dst)
+			conn := dfwAllowedConnections(c.Fw, src, dst)
 			res.Add(src, dst, conn)
 		}
 	}
-	a.Connectivity = res
+	return res
 }
 
 func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params common.OutputParameters) (
@@ -44,9 +35,8 @@ func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContain
 	if err != nil {
 		return nil, nil, "", err
 	}
-	connAnalyzer := &analyzer{c: config}
-	connAnalyzer.ComputeConnectivity(params.VMs)
-	res, err := connAnalyzer.Connectivity.GenConnectivityOutput(params)
+	connMap := computeConnectivity(config, params.VMs)
+	res, err := connMap.GenConnectivityOutput(params)
 
 	//nolint:gocritic // temporarily keep commented-out code
 	/*allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")
@@ -69,5 +59,5 @@ func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContain
 		)
 	}*/
 
-	return config, connAnalyzer.Connectivity, res, err
+	return config, connMap, res, err
 }

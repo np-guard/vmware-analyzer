@@ -12,13 +12,13 @@ import (
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 //
 //nolint:gocritic // temporarily keep commented-out code
-func DFWAllowedConnections(d *dfw.DFW, src, dst topology.Endpoint) *connectivity.DetailedConnection {
-	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := DFWAllowedConnectionsIngressOrEgress(d, src, dst, true)
+func dfwAllowedConnections(d *dfw.DFW, src, dst topology.Endpoint) *connectivity.DetailedConnection {
+	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := dfwAllowedConnectionsIngressOrEgress(d, src, dst, true)
 	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
 	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
 	// logging.Debugf("ingressDenied: %s", ingressDenied.String())
 	// logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
-	egressAllowed, egressDenied, egressDelegated /*egressDenied*/ := DFWAllowedConnectionsIngressOrEgress(d, src, dst, false)
+	egressAllowed, egressDenied, egressDelegated /*egressDenied*/ := dfwAllowedConnectionsIngressOrEgress(d, src, dst, false)
 	// logging.Debugf("egressAllowed: %s", egressAllowed.String())
 	// logging.Debugf("egressDenied: %s", egressDenied.String())
 	// logging.Debugf("egressDelegated: %s", egressDelegated.String())
@@ -45,7 +45,7 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 //
 //nolint:gocritic // temporarily keep commented-out code
-func DFWAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint, isIngress bool) (
+func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint, isIngress bool) (
 	allAllowedConns, allDeniedConns, delegatedConns *connectionsAndRules) {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns = emptyConnectionsAndRules()
