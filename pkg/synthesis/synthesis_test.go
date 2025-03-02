@@ -25,6 +25,8 @@ const (
 	actualOutput   = "tests_actual_output"
 )
 
+var defaultParams = common.OutputParameters{Format: "txt"}
+
 type synthesisTest struct {
 	name            string
 	exData          *data.Example
@@ -362,7 +364,7 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 		netpolConnMap[namesAndConn[0]] = namesAndConn[1]
 	}
 	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{})
+	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
 	// iterate over the connMap, check each connection:
 	for src, dsts := range connMap {
@@ -399,7 +401,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
@@ -418,7 +420,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
+	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
