@@ -35,12 +35,12 @@ func (a *analyzer) ComputeConnectivity(vmsFilter []string) {
 	a.Connectivity = res
 }
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (
+func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params common.OutputParameters) (
 	configuration.ParsedNSXConfig,
 	connectivity.ConnMap,
 	string,
 	error) {
-	config, err := configuration.ConfigFromResourcesContainer(recourses, params)
+	config, err := configuration.ConfigFromResourcesContainer(resources, params)
 	if err != nil {
 		return nil, nil, "", err
 	}
