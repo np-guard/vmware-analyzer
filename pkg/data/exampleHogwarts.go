@@ -3,7 +3,7 @@ package data
 import (
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/analyzer/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 /*
