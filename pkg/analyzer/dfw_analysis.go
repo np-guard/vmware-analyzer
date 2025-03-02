@@ -5,14 +5,14 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 //
 //nolint:gocritic // temporarily keep commented-out code
-func DFWAllowedConnections(d *dfw.DFW, src, dst endpoints.EP) *connectivity.DetailedConnection {
+func DFWAllowedConnections(d *dfw.DFW, src, dst topology.Endpoint) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := DFWAllowedConnectionsIngressOrEgress(d, src, dst, true)
 	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
 	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
@@ -45,7 +45,7 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
 //
 //nolint:gocritic // temporarily keep commented-out code
-func DFWAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst endpoints.EP, isIngress bool) (
+func DFWAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint, isIngress bool) (
 	allAllowedConns, allDeniedConns, delegatedConns *connectionsAndRules) {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns = emptyConnectionsAndRules()

@@ -10,7 +10,8 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
+
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -52,7 +53,7 @@ func Test_verifyTraceflow(t *testing.T) {
 				t.Errorf(common.ErrNoResources)
 				return
 			}
-			filter := func(vm endpoints.EP) bool { return strings.Contains(vm.Name(), "") }
+			filter := func(vm topology.Endpoint) bool { return strings.Contains(vm.Name(), "") }
 			tfs, err := compareConfigToTraceflows(collectedResources, server, filter)
 			if err != nil {
 				t.Errorf("verifyTraceflow() error = %v", err)

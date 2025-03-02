@@ -1,6 +1,6 @@
-package endpoints
+package topology
 
-type EP interface {
+type Endpoint interface {
 	Name() string
 	String() string
 	Kind() string
@@ -9,8 +9,8 @@ type EP interface {
 	Tags() []string
 }
 
-func Intersection(a, b []EP) []EP {
-	res := []EP{}
+func Intersection(a, b []Endpoint) []Endpoint {
+	res := []Endpoint{}
 	aKeys := map[string]bool{}
 	for _, aVM := range a {
 		aKeys[aVM.Name()] = true
@@ -23,8 +23,8 @@ func Intersection(a, b []EP) []EP {
 	return res
 }
 
-func Subtract(a, b []EP) []EP {
-	res := []EP{}
+func Subtract(a, b []Endpoint) []Endpoint {
+	res := []Endpoint{}
 	bKeys := map[string]bool{}
 	for _, bVM := range b {
 		bKeys[bVM.Name()] = true

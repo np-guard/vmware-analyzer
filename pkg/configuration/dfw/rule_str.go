@@ -6,8 +6,8 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 // return a string representation of a single rule
@@ -158,6 +158,6 @@ func (f *FwRule) servicesString() string {
 	return common.JoinNonEmpty([]string{serviceEntriesStr, servicesStr}, common.CommaSeparator)
 }
 
-func vmsString(vms []endpoints.EP) string {
+func vmsString(vms []topology.Endpoint) string {
 	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }

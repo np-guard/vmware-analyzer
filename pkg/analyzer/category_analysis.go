@@ -6,7 +6,7 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 // analyzeCategory returns sets of connections w.r.t their determining rule action from this category rules,
@@ -14,7 +14,7 @@ import (
 // todo: may possibly eliminate jumpToAppConns and unify them with notDeterminedConns
 //
 //nolint:gocritic // temporarily keep commented-out code
-func analyzeCategory(c *dfw.CategorySpec, src, dst endpoints.EP, isIngress bool,
+func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress bool,
 ) (allowedConns, // allowedConns are the set of connections between src to dst, which are allowed by this category rules.
 	jumpToAppConns, // jumpToAppConns are the set of connections between src to dst, for which this category applies the
 	// rule action jump_to_app.
@@ -87,7 +87,7 @@ func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *nets
 	cr.accumulatedConns = cr.accumulatedConns.Subtract(higherPrioConns)
 }
 
-func evaluatedRuleCapturesPair(f *dfw.FwRule, src, dst endpoints.EP) bool {
+func evaluatedRuleCapturesPair(f *dfw.FwRule, src, dst topology.Endpoint) bool {
 	// in evaluated rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
 	return slices.Contains(f.SrcVMs, src) && slices.Contains(f.DstVMs, dst)

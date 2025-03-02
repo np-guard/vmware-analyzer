@@ -6,11 +6,11 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func newVM(name string) endpoints.EP {
-	return endpoints.NewVM(name, name)
+func newVM(name string) topology.Endpoint {
+	return topology.NewVM(name, name)
 }
 
 // todo: improve test
@@ -24,7 +24,7 @@ func TestDisjointExplanationsPerEndpoints(t *testing.T) {
 	detailedConn := &DetailedConnection{Conn: netset.AllTransports(), ExplanationObj: exp}
 
 	cmap := ConnMap{}
-	cmap.InitPairs(false, []endpoints.EP{vmA, vmB}, nil)
+	cmap.InitPairs(false, []topology.Endpoint{vmA, vmB}, nil)
 	cmap.Add(vmA, vmB, detailedConn)
 
 	res := cmap.GetDisjointConnecionSetsPerExplanationsForEndpoints(vmA.Name(), vmB.Name())

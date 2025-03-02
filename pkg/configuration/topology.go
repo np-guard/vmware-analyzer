@@ -3,18 +3,18 @@ package configuration
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-type topology struct {
-	segments      []*endpoints.Segment
-	vmSegments    map[endpoints.EP][]*endpoints.Segment
+type nsxTopology struct {
+	segments      []*topology.Segment
+	vmSegments    map[topology.Endpoint][]*topology.Segment
 	externalBlock *netset.IPBlock
 }
 
-func newTopology() *topology {
-	return &topology{vmSegments: map[endpoints.EP][]*endpoints.Segment{}, externalBlock: netset.GetCidrAll()}
+func newTopology() *nsxTopology {
+	return &nsxTopology{vmSegments: map[topology.Endpoint][]*topology.Segment{}, externalBlock: netset.GetCidrAll()}
 }
 
 func (p *NSXConfigParser) getTopology() (err error) {
@@ -29,7 +29,7 @@ func (p *NSXConfigParser) getTopology() (err error) {
 		if err != nil {
 			return err
 		}
-		segment := endpoints.NewSegment(*segResource.DisplayName, block)
+		segment := topology.NewSegment(*segResource.DisplayName, block)
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)

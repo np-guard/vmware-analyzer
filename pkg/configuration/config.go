@@ -6,17 +6,18 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
+
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 type ParsedNSXConfig interface {
 	DFW() *dfw.DFW
 	DefaultDenyRule() *dfw.FwRule
-	VMs() []endpoints.EP
-	VMToGroupsMap() map[endpoints.EP][]*collector.Group
+	VMs() []topology.Endpoint
+	VMToGroupsMap() map[topology.Endpoint][]*collector.Group
 	GetGroups() []*collector.Group
-	VMsMap() map[string]endpoints.EP
+	VMsMap() map[string]topology.Endpoint
 }
 
 func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel,
@@ -36,24 +37,24 @@ func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel,
 
 // Config captures nsx Config, implements NSXConfig interface
 type Config struct {
-	Vms         []endpoints.EP                      // list of all Vms
-	VmsMap      map[string]endpoints.EP             // map from uid to vm objects
-	Fw          *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups      []*collector.Group                  // list of all groups (also these with no Vms)
-	GroupsPerVM map[endpoints.EP][]*collector.Group // map from vm to its groups
+	Vms         []topology.Endpoint                      // list of all Vms
+	VmsMap      map[string]topology.Endpoint             // map from uid to vm objects
+	Fw          *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups      []*collector.Group                       // list of all groups (also these with no Vms)
+	GroupsPerVM map[topology.Endpoint][]*collector.Group // map from vm to its groups
 }
 
 func (c *Config) DFW() *dfw.DFW {
 	return c.Fw
 }
-func (c *Config) VMs() []endpoints.EP {
+func (c *Config) VMs() []topology.Endpoint {
 	return c.Vms
 }
-func (c *Config) VMsMap() map[string]endpoints.EP {
+func (c *Config) VMsMap() map[string]topology.Endpoint {
 	return c.VmsMap
 }
 
-func (c *Config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
+func (c *Config) VMToGroupsMap() map[topology.Endpoint][]*collector.Group {
 	return c.GroupsPerVM
 }
 func (c *Config) GetGroups() []*collector.Group {
