@@ -292,17 +292,18 @@ func (p *NSXConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
-func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) ([]endpoints.EP, []*collector.Group, []*endpoints.RuleIPBlock) {
-	var vms []endpoints.EP
-	var groups []*collector.Group
-	var ruleBlocks []*endpoints.RuleIPBlock
+func (p *NSXConfigParser) getEndpointsFromGroupsPaths(
+	groupsPaths []string, exclude bool) (
+	[]endpoints.EP, []*collector.Group, []*endpoints.RuleIPBlock) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
-			return vms, groups, ruleBlocks // no group
+			return nil, nil, nil // no group
 		}
-		return p.allGroupsVMs, p.allGroups, ruleBlocks // all groups
+		return p.allGroupsVMs, p.allGroups, nil // all groups
 	}
+	var vms []endpoints.EP
+	var ruleBlocks []*endpoints.RuleIPBlock
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
 	if exclude {
@@ -317,11 +318,11 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 			vms = append(vms, ruleBlock.VMs...)
 		}
 	}
-
-	for _, groupPath := range groupsPaths {
+	groups := make([]*collector.Group, len(groupsPaths))
+	for i, groupPath := range groupsPaths {
 		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
 		vms = append(vms, thisGroupVMs...)
-		groups = append(groups, thisGroup)
+		groups[i] = thisGroup
 	}
 	vms = common.SliceCompact(vms)
 	return vms, groups, ruleBlocks
