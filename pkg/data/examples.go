@@ -175,35 +175,37 @@ var Example1d = Example{
 
 var Example1External = Example{
 	Name:        "Example1External",
-	VMs:         Example1d.VMs,
-	GroupsByVMs: Example1d.GroupsByVMs,
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
 	Policies: []Category{
 		{
 			Name:         "app-x",
 			CategoryType: "Application",
 			Rules: []Rule{
 				{
-					Name:     "allow_http_from_123",
+					Name:     "allow_tcp_0_1",
 					ID:       1004,
-					Source:   "1.2.3.0/8",
+					Source:   "1.2.0.0-1.2.1.127",
 					Dest:     "frontend",
-					Services: []string{"/infra/services/HTTP"},
+					Conn:      netset.AllTCPTransport(),
 					Action:   Allow,
 				},
 				{
-					Name:     "allow_smb_incoming",
+					Name:     "allow_tcp_3_4",
 					ID:       1005,
-					Source:   "frontend",
-					Dest:     "backend",
-					Services: []string{"/infra/services/SMB"},
+					Source:   "1.2.3.0-1.2.4.127",
+					Dest:     "frontend",
+					Conn:      netset.AllUDPTransport(),
 					Action:   Allow,
 				},
 				{
-					Name:     "allow_https_db_incoming",
+					Name:     "allow_icmp_1_3",
 					ID:       1006,
-					Source:   "backend",
-					Dest:     "db",
-					Services: []string{"/infra/services/HTTPS"},
+					Source:   "1.2.1.0-1.2.3.127",
+					Dest:     "frontend",
+					Conn:      netset.AllICMPTransport(),
 					Action:   Allow,
 				},
 				DefaultDenyRule(denyRuleIDApp),
