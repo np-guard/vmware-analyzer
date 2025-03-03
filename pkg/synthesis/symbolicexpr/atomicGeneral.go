@@ -66,8 +66,8 @@ func (atomicTerm) IsTautology() bool {
 	return false
 }
 
-func (ipBlockTerm atomicTerm) isNegation() bool {
-	return ipBlockTerm.neg
+func (atomicTerm atomicTerm) isNegation() bool {
+	return atomicTerm.neg
 }
 
 // there are several derive classes - groupTerm, atomicTerm, of "atomic" base class
