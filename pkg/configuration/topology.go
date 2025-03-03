@@ -31,7 +31,7 @@ func (p *nsxConfigParser) getTopology() (err error) {
 	if err := p.getSegments(); err != nil {
 		return err
 	}
-	p.getRulesIPBlocks()
+	p.getAllRulesIPBlocks()
 	p.getExternalIPs()
 	// todo - calc VMs of the block
 	return nil
@@ -63,7 +63,7 @@ func (p *nsxConfigParser) getSegments() (err error) {
 	return nil
 }
 
-func (p *nsxConfigParser) getRulesIPBlocks() {
+func (p *nsxConfigParser) getAllRulesIPBlocks() {
 	allIPs := []string{}
 	// collect all the paths from the rules:
 	for i := range p.rc.DomainList {
@@ -78,7 +78,7 @@ func (p *nsxConfigParser) getRulesIPBlocks() {
 			}
 		}
 	}
-	// remove ANY and paths to groups:
+	// remove duplications, "ANY" and paths to groups:
 	slices.Sort(allIPs)
 	allIPs = slices.Compact(allIPs)
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
