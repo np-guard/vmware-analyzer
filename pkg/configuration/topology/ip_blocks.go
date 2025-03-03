@@ -9,8 +9,8 @@ import (
 
 // a base struct to represent external endpoints, segments and rule block
 type ipBlock struct {
-	Block *netset.IPBlock
-	originalIP      string
+	Block      *netset.IPBlock
+	originalIP string
 }
 type RuleIPBlock struct {
 	ipBlock
