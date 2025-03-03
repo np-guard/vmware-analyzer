@@ -1,9 +1,12 @@
 package symbolicexpr
 
-import "github.com/np-guard/models/pkg/netset"
+import (
+	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
+)
 
-func NewIPBlockTermTerm(ipBlock *ipBlock) *ipBlockAtomicTerm {
-	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, ipBlock: ipBlock}
+func NewIPBlockTermTerm(ipBlock *topology.IpBlock) *ipBlockAtomicTerm {
+	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IpBlock: ipBlock}
 }
 
 // OrigIP is non-empty for an ipTerm that is in its original rule form, or a negation of such ipTerm
@@ -12,8 +15,9 @@ func NewIPBlockTermTerm(ipBlock *ipBlock) *ipBlockAtomicTerm {
 func (ipBlockTerm ipBlockAtomicTerm) String() string {
 	ipStr := ipBlockTerm.Block.String()
 	// prefer the OrigIP if exists
-	if ipBlockTerm.ipBlock.OrigIP != "" {
-		ipStr = ipBlockTerm.ipBlock.OrigIP
+	origIP := ipBlockTerm.IpBlock.OriginalIP
+	if origIP != "" {
+		ipStr = origIP
 	}
 	op := " in "
 	if ipBlockTerm.neg {
@@ -36,7 +40,11 @@ func complementary(block *netset.IPBlock) *netset.IPBlock {
 	return allIPBlock.Subtract(block)
 }
 
-func (ipBlockTerm ipBlockAtomicTerm) getBlock() *netset.IPBlock {
+func getBlock(atom atomic) *netset.IPBlock {
+	ipBlockTerm, ok := atom.(ipBlockAtomicTerm)
+	if !ok {
+		return nil
+	}
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
 		block = complementary(block)
@@ -46,47 +54,41 @@ func (ipBlockTerm ipBlockAtomicTerm) getBlock() *netset.IPBlock {
 
 // negate an ipBlockAtomicTerm; if it has the OrigIP component then uses neg; otherwise complement the IP block
 func (ipBlockTerm ipBlockAtomicTerm) negate() atomic {
-	if ipBlockTerm.OrigIP != "" { // orig block from rule
-		return ipBlockAtomicTerm{ipBlock: &ipBlock{Block: ipBlockTerm.Block, OrigIP: ipBlockTerm.OrigIP},
+	if ipBlockTerm.OriginalIP != "" { // orig block from rule
+		return ipBlockAtomicTerm{IpBlock: &topology.IpBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
 	}
 	// block not kept in the form of original rule form
-	return ipBlockAtomicTerm{ipBlock: &ipBlock{Block: complementary(ipBlockTerm.Block), OrigIP: ""},
+	return ipBlockAtomicTerm{IpBlock: &topology.IpBlock{Block: complementary(ipBlockTerm.Block), OriginalIP: ""},
 		atomicTerm: atomicTerm{}}
 }
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
 func (ipBlockTerm ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
-	if isNegateOf(ipBlockTerm, otherAtom) {
-		return true
-	}
-	otherIPBlock, ok := otherAtom.(ipBlockAtomicTerm)
-	if !ok {
+	thisBlock := getBlock(ipBlockTerm)
+	otherBlock := getBlock(otherAtom)
+	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.Block.Equal(complementary(otherIPBlock.Block))
+	return thisBlock.Equal(complementary(otherBlock))
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
 func (ipBlockTerm ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	otherIPBlock, ok := otherAtom.(ipBlockAtomicTerm)
-	if !ok {
-		return true
+	block := getBlock(ipBlockTerm)
+	otherBlock := getBlock(otherAtom)
+	if otherAtom == nil {
+		return true // otherAtom is not an IPBlock
 	}
-	otherBlock := otherIPBlock.Block
-	if otherIPBlock.neg {
-		otherBlock = complementary(otherBlock)
-	}
-	return !ipBlockTerm.Block.Overlap(otherBlock)
+	return !block.Overlap(otherBlock)
 }
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom as given by hints
 func (ipBlockTerm ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
-	otherIPBlock, ok := otherAtom.(ipBlockAtomicTerm)
-	if !ok {
+	block := getBlock(ipBlockTerm)
+	otherBlock := getBlock(otherAtom)
+	if otherBlock == nil { // otherAtom not IP block
 		return false
 	}
-	block := ipBlockTerm.getBlock()
-	otherBlock := otherIPBlock.getBlock()
 	return otherBlock.IsSubset(block)
 }

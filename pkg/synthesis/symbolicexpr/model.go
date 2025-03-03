@@ -4,6 +4,7 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 // the package implements a symbolic expression of enabled paths from symbolic src to symbolic dst, expressed as CNF
@@ -24,15 +25,9 @@ type tagAtomicTerm struct {
 	tag *resources.Tag
 }
 
-// todo: move to dfw (rule.go); override the struct with the same name there
-type ipBlock struct {
-	Block  *netset.IPBlock
-	OrigIP string
-}
-
 type ipBlockAtomicTerm struct {
 	atomicTerm
-	*ipBlock
+	*topology.IpBlock
 }
 
 // tautology represents a condition that always holds.
