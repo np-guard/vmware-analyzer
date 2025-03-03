@@ -95,12 +95,12 @@ func (p *nsxConfigParser) getExternalIPs() {
 	}
 
 	disjointBlocks := netset.DisjointIPBlocks(exBlocks, nil)
-	p.configRes.externalIPs = make([]topology.Endpoint, len(netset.DisjointIPBlocks(exBlocks, nil)))
+	p.configRes.ExternalIPs = make([]topology.Endpoint, len(netset.DisjointIPBlocks(exBlocks, nil)))
 	for i, disjointBlock := range disjointBlocks {
-		p.configRes.externalIPs[i] = topology.NewExternalIP(disjointBlock)
+		p.configRes.ExternalIPs[i] = topology.NewExternalIP(disjointBlock)
 	}
 	for _, ruleBlock := range p.allRuleIPBlocks {
-		for _, externalIP := range p.configRes.externalIPs {
+		for _, externalIP := range p.configRes.ExternalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
 			}

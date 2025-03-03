@@ -68,7 +68,7 @@ func (p *nsxConfigParser) init() {
 func (p *nsxConfigParser) runParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
-	p.getVMs() // get vms config
+	p.getVMs()    // get vms config
 	p.getGroups() // get groups config
 	if err := p.getTopology(); err != nil {
 		return err
@@ -300,7 +300,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 		if exclude {
 			return nil, nil, nil // no group
 		}
-		return p.allGroupsVMs, p.allGroups, nil // all groups
+		return append(p.allGroupsVMs, p.configRes.ExternalIPs...), p.allGroups, nil // all groups
 	}
 	var vms []topology.Endpoint
 	var ruleBlocks []*topology.RuleIPBlock
