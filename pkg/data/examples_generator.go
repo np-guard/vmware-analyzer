@@ -17,11 +17,13 @@ import (
 // Example is in s single domain
 type Example struct {
 	// nsx config spec fields below
-	VMs          []string
-	VMsTags      map[string][]nsx.Tag
-	GroupsByVMs  map[string][]string
-	GroupsByExpr map[string]ExampleExpr // map from group name to its expr
-	Policies     []Category
+	VMs           []string
+	VMsTags       map[string][]nsx.Tag
+	GroupsByVMs   map[string][]string
+	SegmentsByVMs map[string][]string
+	SegmentsBlock map[string]string
+	GroupsByExpr  map[string]ExampleExpr // map from group name to its expr
+	Policies      []Category
 
 	// additional info about example, relevant for synthesis
 	DisjointGroupsTags [][]string
