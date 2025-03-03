@@ -28,6 +28,7 @@ func (p *nsxConfigParser) getTopology() (err error) {
 	}
 	p.getRulesIPBlocks()
 	p.getExternalIPs()
+	// todo - calc VMs of the block
 	return nil
 }
 
@@ -59,6 +60,7 @@ func (p *nsxConfigParser) getSegments() (err error) {
 
 func (p *nsxConfigParser) getRulesIPBlocks() {
 	allIPs := []string{}
+	// collect all the paths from the rules:
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.SecurityPolicyList {
@@ -71,9 +73,11 @@ func (p *nsxConfigParser) getRulesIPBlocks() {
 			}
 		}
 	}
+	// remove ANY and paths to groups:
 	slices.Sort(allIPs)
 	allIPs = slices.Compact(allIPs)
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
+	// create the blocks:
 	for _, ip := range allIPs {
 		block, err := netset.IPBlockFromCidrOrAddress(ip)
 		if err != nil {
@@ -83,24 +87,27 @@ func (p *nsxConfigParser) getRulesIPBlocks() {
 			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 			continue
 		}
-		// todo - calc VMs of the block
 		p.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
 	}
 }
 
+// creating external endpoints
 func (p *nsxConfigParser) getExternalIPs() {
+	// collect all the blocks:
 	exBlocks := make([]*netset.IPBlock, len(p.allRuleIPBlocks))
 	for i, ruleBlock := range slices.Collect(maps.Values(p.allRuleIPBlocks)) {
 		exBlocks[i] = ruleBlock.Block.Intersect(p.topology.externalBlock)
 	}
-
+	// creating disjoint blocks:
 	disjointBlocks := netset.DisjointIPBlocks(exBlocks, nil)
-	p.configRes.ExternalIPs = make([]topology.Endpoint, len(netset.DisjointIPBlocks(exBlocks, nil)))
+	p.configRes.externalIPs = make([]topology.Endpoint, len(netset.DisjointIPBlocks(exBlocks, nil)))
+	// create external IP per disjoint block:
 	for i, disjointBlock := range disjointBlocks {
-		p.configRes.ExternalIPs[i] = topology.NewExternalIP(disjointBlock)
+		p.configRes.externalIPs[i] = topology.NewExternalIP(disjointBlock)
 	}
+	// keep the external ips of each block:
 	for _, ruleBlock := range p.allRuleIPBlocks {
-		for _, externalIP := range p.configRes.ExternalIPs {
+		for _, externalIP := range p.configRes.externalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
 			}

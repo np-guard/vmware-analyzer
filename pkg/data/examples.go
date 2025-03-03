@@ -193,7 +193,7 @@ var Example1External = Example{
 					Action:   Allow,
 				},
 				{
-					Name:     "allow_tcp_3_4",
+					Name:     "allow_udp_3_4",
 					ID:       1005,
 					Source:   "1.2.3.0-1.2.4.255",
 					Dest:     "frontend",

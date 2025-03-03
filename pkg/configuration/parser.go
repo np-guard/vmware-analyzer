@@ -294,9 +294,9 @@ func (p *nsxConfigParser) getAllGroups() {
 
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		return append(p.allGroupsVMs, p.configRes.ExternalIPs...), p.allGroups // all endpoints and groups
+		return append(p.allGroupsVMs, p.configRes.externalIPs...), p.allGroups // all endpoints and groups
 	}
-	endPoints, groups , _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
+	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return endPoints, groups
 }
 func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
