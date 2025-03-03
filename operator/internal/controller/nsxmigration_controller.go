@@ -360,6 +360,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		runner.WithNSXURL(conn.url),
 		runner.WithNSXUser(conn.user),
 		runner.WithNSXPassword(conn.password),
+		runner.WithInsecureSkipVerify(conn.insecureSkipVerify),
 		//runner.WithResourcesDumpFile(args.resourceDumpFile),
 		//runner.WithResourcesAnonymization(args.anonymise),
 		//runner.WithResourcesInputFile(args.resourceInputFile),
