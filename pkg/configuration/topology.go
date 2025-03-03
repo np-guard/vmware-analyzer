@@ -14,7 +14,10 @@ type nsxTopology struct {
 }
 
 func newTopology() *nsxTopology {
-	return &nsxTopology{vmSegments: map[topology.Endpoint][]*topology.SegmentNew{}, externalBlock: netset.GetCidrAll()}
+	return &nsxTopology{
+		vmSegments:    map[topology.Endpoint][]*topology.SegmentNew{},
+		externalBlock: netset.GetCidrAll(),
+	}
 }
 
 func (p *nsxConfigParser) getTopology() (err error) {

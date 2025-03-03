@@ -116,40 +116,6 @@ func (p *nsxConfigParser) storeParsedSegments() {
 	}
 }
 
-/*
-// storeParsedVMs assigns the parsed VM objects from the NSX resources container into the res config object
-
-	func (p *nsxConfigParser) storeParsedVMs() {
-		p.configRes.vmsMap = map[string]*endpoints.VM{}
-		for i := range p.rc.VirtualMachineList {
-			vm := &p.rc.VirtualMachineList[i]
-			if vm.DisplayName == nil || vm.ExternalId == nil {
-				// skip vm without name
-				logging.Debugf("warning: skipped vm without name/uid at index %d", i)
-				continue
-			}
-			vmObj := endpoints.NewVM(*vm.DisplayName, *vm.ExternalId)
-			vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
-			for _, tag := range vm.Tags {
-				vmObj.AddTag(tag.Tag)
-				// currently ignoring tag scope
-				if tag.Scope != "" {
-					logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
-				}
-			}
-			p.configRes.vms = append(p.configRes.vms, vmObj)
-			p.configRes.vmsMap[vmObj.ID()] = vmObj
-		}
-	}
-
-	func (p *NSXConfigParser) storeParsedSegments() {
-		for i := range p.rc.SegmentList {
-			segment := &p.rc.SegmentList[i]
-			vms := p.configRes.getVMs(p.rc.GetVMsOfSegment(segment))
-			p.configRes.segments = append(p.configRes.segments, endpoints.NewSegment(segment, vms))
-		}
-	}
-*/
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
@@ -205,30 +171,6 @@ func (p *nsxConfigParser) storeParsedGroups() {
 	p.getAllGroups()
 	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
-}
-
-// getVMs assigns the parsed VM objects from the NSX resources container into the res config object
-func (p *nsxConfigParser) getVMs() {
-	p.configRes.VMsMap = map[string]topology.Endpoint{}
-	for i := range p.rc.VirtualMachineList {
-		vm := &p.rc.VirtualMachineList[i]
-		if vm.DisplayName == nil || vm.ExternalId == nil {
-			// skip vm without name
-			logging.Debugf("warning: skipped vm without name/uid at index %d", i)
-			continue
-		}
-		vmObj := topology.NewVM(*vm.DisplayName, *vm.ExternalId)
-		vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
-		for _, tag := range vm.Tags {
-			vmObj.AddTag(tag.Tag)
-			// currently ignoring tag scope
-			if tag.Scope != "" {
-				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
-			}
-		}
-		p.configRes.VMs = append(p.configRes.VMs, vmObj)
-		p.configRes.VMsMap[vmObj.ID()] = vmObj
-	}
 }
 
 // func (p *nsxConfigParser) getDFW() {}
