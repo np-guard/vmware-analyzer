@@ -173,7 +173,7 @@ func (p *nsxConfigParser) getDFW() {
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
 			// This scope will take precedence over rule level scope.
-			scope, _, _ := p.getEndpointsFromGroupsPaths(secPolicy.Scope, false)
+			scope, _ := p.getEndpointsFromScopeGroupsPaths(secPolicy.Scope)
 			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
 
 			rules := secPolicy.Rules
@@ -183,7 +183,7 @@ func (p *nsxConfigParser) getDFW() {
 				r.scope = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
-					r.scope, r.scopeGroups, _ = p.getEndpointsFromGroupsPaths(rule.Scope, false)
+					r.scope, r.scopeGroups = p.getEndpointsFromScopeGroupsPaths(rule.Scope)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
@@ -222,7 +222,7 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res := &parsedRule{}
 	// scope - the list of group paths where the rules in this policy will get applied.
 	scope := secPolicy.Scope
-	vms, groups, _ := p.getEndpointsFromGroupsPaths(scope, false)
+	vms, groups := p.getEndpointsFromScopeGroupsPaths(scope)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
 	res.srcVMs = vms
 	res.dstVMs = vms
@@ -292,6 +292,13 @@ func (p *nsxConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
+func (p *nsxConfigParser) getEndpointsFromScopeGroupsPaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
+	if slices.Contains(groupsPaths, anyStr) {
+		return append(p.allGroupsVMs, p.configRes.ExternalIPs...), p.allGroups // all groups
+	}
+	endPoints, groups , _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
+	return endPoints, groups
+}
 func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 	groupsPaths []string, exclude bool) (
 	[]topology.Endpoint, []*collector.Group, []*topology.RuleIPBlock) {
@@ -300,7 +307,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 		if exclude {
 			return nil, nil, nil // no group
 		}
-		return append(p.allGroupsVMs, p.configRes.ExternalIPs...), p.allGroups, nil // all groups
+		return p.allGroupsVMs, p.allGroups, nil // all groups
 	}
 	var vms []topology.Endpoint
 	var ruleBlocks []*topology.RuleIPBlock
