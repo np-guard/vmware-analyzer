@@ -1,10 +1,14 @@
 package configuration
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 type nsxTopology struct {
@@ -19,6 +23,15 @@ func newTopology() *nsxTopology {
 
 func (p *nsxConfigParser) getTopology() (err error) {
 	p.topology = newTopology()
+	if err := p.getSegments(); err != nil {
+		return err
+	}
+	p.getRulesIPBlocks()
+	p.getExternalIPs()
+	return nil
+}
+
+func (p *nsxConfigParser) getSegments() (err error) {
 	for i := range p.rc.SegmentList {
 		segResource := &p.rc.SegmentList[i]
 		if len(segResource.SegmentPorts) == 0 && len(segResource.Subnets) == 0 {
@@ -42,4 +55,55 @@ func (p *nsxConfigParser) getTopology() (err error) {
 		p.topology.segments = append(p.topology.segments, segment)
 	}
 	return nil
+}
+
+func (p *nsxConfigParser) getRulesIPBlocks() {
+	allIPs := []string{}
+	for i := range p.rc.DomainList {
+		domainRsc := p.rc.DomainList[i].Resources
+		for j := range domainRsc.SecurityPolicyList {
+			secPolicy := &domainRsc.SecurityPolicyList[j]
+			rules := secPolicy.Rules
+			for i := range rules {
+				rule := &rules[i]
+				allIPs = append(allIPs, rule.DestinationGroups...)
+				allIPs = append(allIPs, rule.SourceGroups...)
+			}
+		}
+	}
+	slices.Sort(allIPs)
+	allIPs = slices.Compact(allIPs)
+	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
+	for _, ip := range allIPs {
+		block, err := netset.IPBlockFromCidrOrAddress(ip)
+		if err != nil {
+			block, err = netset.IPBlockFromIPRangeStr(ip)
+		}
+		if err != nil {
+			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
+			continue
+		}
+		// todo - calc VMs of the block
+		p.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
+	}
+}
+
+func (p *nsxConfigParser) getExternalIPs() {
+	exBlocks := make([]*netset.IPBlock, len(p.allRuleIPBlocks))
+	for i, ruleBlock := range slices.Collect(maps.Values(p.allRuleIPBlocks)) {
+		exBlocks[i] = ruleBlock.Block.Intersect(p.topology.externalBlock)
+	}
+
+	disjointBlocks := netset.DisjointIPBlocks(exBlocks, nil)
+	p.configRes.externalIPs = make([]topology.Endpoint, len(netset.DisjointIPBlocks(exBlocks, nil)))
+	for i, disjointBlock := range disjointBlocks {
+		p.configRes.externalIPs[i] = topology.NewExternalIP(disjointBlock)
+	}
+	for _, ruleBlock := range p.allRuleIPBlocks {
+		for _, externalIP := range p.configRes.externalIPs {
+			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
+				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
+			}
+		}
+	}
 }

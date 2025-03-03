@@ -69,10 +69,10 @@ func (p *nsxConfigParser) runParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
 	p.getVMs() // get vms config
+	p.getGroups() // get groups config
 	if err := p.getTopology(); err != nil {
 		return err
 	}
-	p.getGroups() // get groups config
 	p.removeVMsWithoutGroups()
 	p.getDFW() // get distributed firewall config
 	p.addPathsToDisplayNames()
@@ -316,6 +316,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 		ruleBlocks = p.getRuleIPBlocks(ips)
 		for _, ruleBlock := range ruleBlocks {
 			vms = append(vms, ruleBlock.VMs...)
+			vms = append(vms, ruleBlock.ExternalIPs...)
 		}
 	}
 	groups := make([]*collector.Group, len(groupsPaths))
@@ -505,24 +506,12 @@ func (p *nsxConfigParser) getGroupVMs(groupPath string) ([]topology.Endpoint, *c
 	}
 	return nil, nil // could not find given groupPath (add warning)
 }
-func (p *nsxConfigParser) getRuleIPBlocks(groupsPaths []string) []*topology.RuleIPBlock {
-	ips := slices.DeleteFunc(slices.Clone(groupsPaths),
-		func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
+func (p *nsxConfigParser) getRuleIPBlocks(ips []string) []*topology.RuleIPBlock {
 	res := []*topology.RuleIPBlock{}
 	for _, ip := range ips {
-		if _, ok := p.allRuleIPBlocks[ip]; !ok {
-			block, err := netset.IPBlockFromCidrOrAddress(ip)
-			if err != nil {
-				block, err = netset.IPBlockFromIPRangeStr(ip)
-			}
-			if err != nil {
-				logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
-				continue
-			}
-			p.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
-			// todo - calc VMs of the block
+		if _, ok := p.allRuleIPBlocks[ip]; ok {
+			res = append(res, p.allRuleIPBlocks[ip])
 		}
-		res = append(res, p.allRuleIPBlocks[ip])
 	}
 	return res
 }

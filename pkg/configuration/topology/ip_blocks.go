@@ -10,8 +10,9 @@ type ipBlock struct {
 }
 type RuleIPBlock struct {
 	ipBlock
-	origIP string
-	VMs    []Endpoint
+	origIP      string
+	VMs         []Endpoint
+	ExternalIPs []Endpoint
 }
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
@@ -27,3 +28,25 @@ type Segment struct {
 func NewSegment(name string, block *netset.IPBlock) *Segment {
 	return &Segment{name: name, ipBlock: ipBlock{Block: block}}
 }
+
+///////////////////////
+
+type ExternalIP struct {
+	ipBlock
+	s string
+}
+
+func NewExternalIP(block *netset.IPBlock) *ExternalIP {
+	e := &ExternalIP{ipBlock: ipBlock{Block: block}}
+	e.s = e.String()
+	return e
+}
+
+func (ip *ExternalIP) Name() string   { return ip.String() }
+func (ip *ExternalIP) String() string { return ip.Block.String() }
+func (ip *ExternalIP) Kind() string   { return "external IP" }
+func (ip *ExternalIP) ID() string     { return ip.String() }
+func (ip *ExternalIP) InfoStr() []string {
+	return []string{ip.Name(), ip.ID(), ip.Name()}
+}
+func (ip *ExternalIP) Tags() []string { return nil }

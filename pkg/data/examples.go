@@ -187,7 +187,7 @@ var Example1External = Example{
 				{
 					Name:     "allow_tcp_0_1",
 					ID:       1004,
-					Source:   "1.2.0.0-1.2.1.127",
+					Source:   "1.2.0.0-1.2.1.255",
 					Dest:     "frontend",
 					Conn:      netset.AllTCPTransport(),
 					Action:   Allow,
@@ -195,7 +195,7 @@ var Example1External = Example{
 				{
 					Name:     "allow_tcp_3_4",
 					ID:       1005,
-					Source:   "1.2.3.0-1.2.4.127",
+					Source:   "1.2.3.0-1.2.4.255",
 					Dest:     "frontend",
 					Conn:      netset.AllUDPTransport(),
 					Action:   Allow,
@@ -203,7 +203,7 @@ var Example1External = Example{
 				{
 					Name:     "allow_icmp_1_3",
 					ID:       1006,
-					Source:   "1.2.1.0-1.2.3.127",
+					Source:   "1.2.1.0-1.2.3.255",
 					Dest:     "frontend",
 					Conn:      netset.AllICMPTransport(),
 					Action:   Allow,
