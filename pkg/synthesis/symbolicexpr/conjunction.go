@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 const emptySet = "empty set "
@@ -17,6 +18,23 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	if c.contains(atom) {
 		return c
 	}
+	// if c is an IPBlock, adds it to other IPBlock in the Conjunction, if any. Otherwise, just appends it
+	// in the former case we lose the OriginalIP
+	block := getBlock(atom)
+	if block != nil { // atom is an IPBlock
+		// looks for an  IPBlock in c
+		for i, itemAtom := range *c {
+			itemBlock := getBlock(itemAtom)
+			if itemBlock == nil { // itemAtom not an IPBlock
+				continue
+			}
+			// note that there could be at most one IPBlock in a Conjunction, by design
+			newIPBlockAtomicTerm := &ipBlockAtomicTerm{atomicTerm: atomicTerm{},
+				IpBlock: &topology.IpBlock{Block: block.Intersect(itemBlock)}}
+			(*c)[i] = newIPBlockAtomicTerm // overriding the IPBlock
+			return c
+		}
+	}
 	res := append(*c, atom)
 	return &res
 }
@@ -27,6 +45,7 @@ func (c *Conjunction) copy() *Conjunction {
 	return &newC
 }
 
+// tautology: single term which is 0.0.0.0/0 or single term which is tautology
 func (c *Conjunction) isTautology() bool {
 	if len(*c) == 1 && (*c)[0].IsTautology() {
 		return true
@@ -105,9 +124,19 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 }
 
 func (c *Conjunction) contains(atom atomic) bool {
-	for _, atomicTerm := range *c {
-		if atomicTerm.String() == (atom).String() {
-			return true
+	atomBlock := getBlock(atom)
+	for _, atomicItem := range *c {
+		if atomBlock != nil { // atom is an IPBlock
+			atomicItemBlock := getBlock(atomicItem)
+			if atomicItem != nil {
+				if atomBlock.IsSubset(atomicItemBlock) {
+					return true
+				}
+			}
+		} else {
+			if atomicItem.String() == (atom).String() {
+				return true
+			}
 		}
 	}
 	return false
