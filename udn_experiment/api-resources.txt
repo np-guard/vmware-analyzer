@@ -1,0 +1,67 @@
+kubectl api-resources | grep policy
+validatingadmissionpolicybindings                                                                                            admissionregistration.k8s.io/v1                false        ValidatingAdmissionPolicyBinding
+multi-networkpolicies                 multi-policy                                                                           k8s.cni.cncf.io/v1beta1                        true         MultiNetworkPolicy
+adminpolicybasedexternalroutes        apbexternalroute                                                                       k8s.ovn.org/v1                                 false        AdminPolicyBasedExternalRoute
+poddisruptionbudgets                  pdb                                                                                    policy/v1                                      true         PodDisruptionBudget
+adminnetworkpolicies                  anp                                                                                    policy.networking.k8s.io/v1alpha1              false        AdminNetworkPolicy
+baselineadminnetworkpolicies          banp                                                                                   policy.networking.k8s.io/v1alpha1              false        BaselineAdminNetworkPolicy
+podsecuritypolicyreviews                                                                                                     security.openshift.io/v1                       true         PodSecurityPolicyReview
+podsecuritypolicyselfsubjectreviews                                                                                          security.openshift.io/v1                       true         PodSecurityPolicySelfSubjectReview
+podsecuritypolicysubjectreviews      
+
+
+
+kubectl api-resources | grep network
+cloudprivateipconfigs                                                                                                        cloud.network.openshift.io/v1                 false        CloudPrivateIPConfig
+networks                                                                                                                     config.openshift.io/v1                        false        Network
+podnetworkconnectivitychecks                                                                                                 controlplane.operator.openshift.io/v1alpha1   true         PodNetworkConnectivityCheck
+network-attachment-definitions        net-attach-def                                                                         k8s.cni.cncf.io/v1                            true         NetworkAttachmentDefinition
+clusteruserdefinednetworks                                                                                                   k8s.ovn.org/v1                                false        ClusterUserDefinedNetwork
+userdefinednetworks                                                                                                          k8s.ovn.org/v1                                true         UserDefinedNetwork
+egressrouters                                                                                                                network.operator.openshift.io/v1              true         EgressRouter
+operatorpkis                                                                                                                 network.operator.openshift.io/v1              true         OperatorPKI
+ingressclasses                                                                                                               networking.k8s.io/v1                          false        IngressClass
+ingresses                             ing                                                                                    networking.k8s.io/v1                          true         Ingress
+networkpolicies                       netpol                                                                                 networking.k8s.io/v1                          true         NetworkPolicy
+networks                                                                                                                     operator.openshift.io/v1                      false        Network
+adminnetworkpolicies                  anp                                                                                    policy.networking.k8s.io/v1alpha1             false        AdminNetworkPolicy
+baselineadminnetworkpolicies          banp                                                                                   policy.networking.k8s.io/v1alpha1             false        BaselineAdminNetworkPolicy
+
+
+
+kubectl api-resources | grep virt
+aaqs                                  aaq,aaqs                                                                               aaq.kubevirt.io/v1alpha1                       false        AAQ
+cdiconfigs                                                                                                                   cdi.kubevirt.io/v1beta1                        false        CDIConfig
+cdis                                  cdi,cdis                                                                               cdi.kubevirt.io/v1beta1                        false        CDI
+dataimportcrons                       dic,dics                                                                               cdi.kubevirt.io/v1beta1                        true         DataImportCron
+datasources                           das                                                                                    cdi.kubevirt.io/v1beta1                        true         DataSource
+datavolumes                           dv,dvs                                                                                 cdi.kubevirt.io/v1beta1                        true         DataVolume
+objecttransfers                       ot,ots                                                                                 cdi.kubevirt.io/v1beta1                        false        ObjectTransfer
+storageprofiles                                                                                                              cdi.kubevirt.io/v1beta1                        false        StorageProfile
+volumeclonesources                                                                                                           cdi.kubevirt.io/v1beta1                        true         VolumeCloneSource
+volumeimportsources                                                                                                          cdi.kubevirt.io/v1beta1                        true         VolumeImportSource
+volumeuploadsources                                                                                                          cdi.kubevirt.io/v1beta1                        true         VolumeUploadSource
+virtualmachineclones                  vmclone,vmclones                                                                       clone.kubevirt.io/v1alpha1                     true         VirtualMachineClone
+virtualmachineexports                 vmexport,vmexports                                                                     export.kubevirt.io/v1beta1                     true         VirtualMachineExport
+openstackvolumepopulators             osvp,osvps                                                                             forklift.cdi.kubevirt.io/v1beta1               true         OpenstackVolumePopulator
+ovirtvolumepopulators                 ovvp,ovvps                                                                             forklift.cdi.kubevirt.io/v1beta1               true         OvirtVolumePopulator
+hyperconvergeds                       hco,hcos                                                                               hco.kubevirt.io/v1beta1                        true         HyperConverged
+hostpathprovisioners                                                                                                         hostpathprovisioner.kubevirt.io/v1beta1        false        HostPathProvisioner
+virtualmachineclusterinstancetypes    vmclusterinstancetype,vmclusterinstancetypes,vmcf,vmcfs                                instancetype.kubevirt.io/v1beta1               false        VirtualMachineClusterInstancetype
+virtualmachineclusterpreferences      vmcp,vmcps                                                                             instancetype.kubevirt.io/v1beta1               false        VirtualMachineClusterPreference
+virtualmachineinstancetypes           vminstancetype,vminstancetypes,vmf,vmfs                                                instancetype.kubevirt.io/v1beta1               true         VirtualMachineInstancetype
+virtualmachinepreferences             vmpref,vmprefs,vmp,vmps                                                                instancetype.kubevirt.io/v1beta1               true         VirtualMachinePreference
+kubevirts                             kv,kvs                                                                                 kubevirt.io/v1                                 true         KubeVirt
+virtualmachineinstancemigrations      vmim,vmims                                                                             kubevirt.io/v1                                 true         VirtualMachineInstanceMigration
+virtualmachineinstancepresets         vmipreset,vmipresets                                                                   kubevirt.io/v1                                 true         VirtualMachineInstancePreset
+virtualmachineinstancereplicasets     vmirs,vmirss                                                                           kubevirt.io/v1                                 true         VirtualMachineInstanceReplicaSet
+virtualmachineinstances               vmi,vmis                                                                               kubevirt.io/v1                                 true         VirtualMachineInstance
+virtualmachines                       vm,vms                                                                                 kubevirt.io/v1                                 true         VirtualMachine
+migrationpolicies                                                                                                            migrations.kubevirt.io/v1alpha1                false        MigrationPolicy
+networkaddonsconfigs                                                                                                         networkaddonsoperator.network.kubevirt.io/v1   false        NetworkAddonsConfig
+virtualmachinepools                   vmpool,vmpools                                                                         pool.kubevirt.io/v1alpha1                      true         VirtualMachinePool
+virtualmachinerestores                vmrestore,vmrestores                                                                   snapshot.kubevirt.io/v1beta1                   true         VirtualMachineRestore
+virtualmachinesnapshotcontents        vmsnapshotcontent,vmsnapshotcontents                                                   snapshot.kubevirt.io/v1beta1                   true         VirtualMachineSnapshotContent
+virtualmachinesnapshots               vmsnapshot,vmsnapshots                                                                 snapshot.kubevirt.io/v1beta1                   true         VirtualMachineSnapshot
+ssps                                                                                                                         ssp.kubevirt.io/v1beta3                        true         SSP
+uploadtokenrequests                   utr,utrs                                                                               upload.cdi.kubevirt.io/v1beta1                 true         UploadTokenRequest

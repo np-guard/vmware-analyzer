@@ -1,0 +1,12 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: foo
+spec:
+  podSelector:
+    matchLabels:
+      kubevirt.io/domain: fedora-tomato-zebra-41  # isolating this VM in the UDN 
+  policyTypes:
+  - Ingress
+  - Egress

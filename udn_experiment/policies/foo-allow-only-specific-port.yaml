@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-certain-port
+  namespace: foo
+spec:
+  podSelector:
+    matchLabels:
+      kubevirt.io/domain: fedora-tomato-zebra-41 # the VM to apply this policy on
+  ingress:
+  - ports:
+    - port: 80  # allo only TCP 80 ingress for this VM, block all egress 
+  
+  policyTypes:
+  - Ingress
+  - Egress

@@ -1,0 +1,31 @@
+apiVersion: v1
+items:
+- apiVersion: k8s.cni.cncf.io/v1
+  kind: NetworkAttachmentDefinition
+  metadata:
+    annotations:
+      k8s.ovn.org/network-id: "1"
+      k8s.ovn.org/network-name: foo_primary-udn
+    creationTimestamp: "2025-02-26T11:40:26Z"
+    finalizers:
+    - k8s.ovn.org/user-defined-network-protection
+    generation: 1
+    labels:
+      k8s.ovn.org/user-defined-network: ""
+    name: primary-udn
+    namespace: foo
+    ownerReferences:
+    - apiVersion: k8s.ovn.org/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: UserDefinedNetwork
+      name: primary-udn
+      uid: 70dee5f8-a0f3-4549-936b-605f9caa7bb3
+    resourceVersion: "41462"
+    uid: eaf0ee3c-ef90-4c12-ac15-32dfe6ec6005
+  spec:
+    config: '{"allowPersistentIPs":true,"cniVersion":"1.0.0","joinSubnets":"100.65.0.0/16,fd99::/64","name":"foo_primary-udn","netAttachDefName":"foo/primary-udn","role":"primary","subnets":"192.168.0.1/24","topology":"layer2","type":"ovn-k8s-cni-overlay"}'
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
