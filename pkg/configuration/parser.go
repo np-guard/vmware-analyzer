@@ -53,7 +53,6 @@ type nsxConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *nsxTopology
-	allRuleIPBlocks       map[string]*topology.RuleIPBlock // a map from the ip string,to the block
 }
 
 func (p *nsxConfigParser) init() {
@@ -62,17 +61,16 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
-	p.allRuleIPBlocks = map[string]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
-	p.getVMs() // get vms config
+	p.getVMs()    // get vms config
+	p.getGroups() // get groups config
 	if err := p.getTopology(); err != nil {
 		return err
 	}
-	p.getGroups() // get groups config
 	p.removeVMsWithoutGroups()
 	p.getDFW() // get distributed firewall config
 	p.addPathsToDisplayNames()
@@ -173,7 +171,7 @@ func (p *nsxConfigParser) getDFW() {
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
 			// This scope will take precedence over rule level scope.
-			scope, _, _ := p.getEndpointsFromGroupsPaths(secPolicy.Scope, false)
+			scope, _ := p.getEndpointsFromScopePaths(secPolicy.Scope)
 			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
 
 			rules := secPolicy.Rules
@@ -183,7 +181,7 @@ func (p *nsxConfigParser) getDFW() {
 				r.scope = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
-					r.scope, r.scopeGroups, _ = p.getEndpointsFromGroupsPaths(rule.Scope, false)
+					r.scope, r.scopeGroups = p.getEndpointsFromScopePaths(rule.Scope)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
@@ -222,7 +220,7 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res := &parsedRule{}
 	// scope - the list of group paths where the rules in this policy will get applied.
 	scope := secPolicy.Scope
-	vms, groups, _ := p.getEndpointsFromGroupsPaths(scope, false)
+	vms, groups := p.getEndpointsFromScopePaths(scope)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
 	res.srcVMs = vms
 	res.dstVMs = vms
@@ -292,6 +290,13 @@ func (p *nsxConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
+func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
+	if slices.Contains(groupsPaths, anyStr) {
+		return append(p.allGroupsVMs, p.configRes.externalIPs...), p.allGroups // all endpoints and groups
+	}
+	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
+	return endPoints, groups
+}
 func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 	groupsPaths []string, exclude bool) (
 	[]topology.Endpoint, []*collector.Group, []*topology.RuleIPBlock) {
@@ -313,9 +318,11 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 				strings.Join(ips, common.CommaSeparator))
 		}
 	} else {
-		ruleBlocks = p.getRuleIPBlocks(ips)
-		for _, ruleBlock := range ruleBlocks {
+		for _, ip := range ips {
+			ruleBlock := p.topology.allRuleIPBlocks[ip]
 			vms = append(vms, ruleBlock.VMs...)
+			vms = append(vms, ruleBlock.ExternalIPs...)
+			ruleBlocks = append(ruleBlocks, ruleBlock)
 		}
 	}
 	groups := make([]*collector.Group, len(groupsPaths))
@@ -504,27 +511,6 @@ func (p *nsxConfigParser) getGroupVMs(groupPath string) ([]topology.Endpoint, *c
 		}
 	}
 	return nil, nil // could not find given groupPath (add warning)
-}
-func (p *nsxConfigParser) getRuleIPBlocks(groupsPaths []string) []*topology.RuleIPBlock {
-	ips := slices.DeleteFunc(slices.Clone(groupsPaths),
-		func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
-	res := []*topology.RuleIPBlock{}
-	for _, ip := range ips {
-		if _, ok := p.allRuleIPBlocks[ip]; !ok {
-			block, err := netset.IPBlockFromCidrOrAddress(ip)
-			if err != nil {
-				block, err = netset.IPBlockFromIPRangeStr(ip)
-			}
-			if err != nil {
-				logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
-				continue
-			}
-			p.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
-			// todo - calc VMs of the block
-		}
-		res = append(res, p.allRuleIPBlocks[ip])
-	}
-	return res
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
