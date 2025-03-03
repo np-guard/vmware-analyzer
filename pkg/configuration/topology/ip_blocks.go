@@ -5,25 +5,25 @@ import (
 )
 
 // a base struct to represent external endpoints, segments and rule block
-type ipBlock struct {
+type IpBlock struct {
 	Block *netset.IPBlock
 }
 type RuleIPBlock struct {
-	ipBlock
-	origIP string
+	IpBlock
+	OrigIP string
 	VMs    []Endpoint
 }
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
-	return &RuleIPBlock{origIP: ip, ipBlock: ipBlock{Block: block}}
+	return &RuleIPBlock{OrigIP: ip, IpBlock: IpBlock{Block: block}}
 }
 
 type Segment struct {
-	ipBlock
+	IpBlock
 	name string
 	VMs  []Endpoint
 }
 
 func NewSegment(name string, block *netset.IPBlock) *Segment {
-	return &Segment{name: name, ipBlock: ipBlock{Block: block}}
+	return &Segment{name: name, IpBlock: IpBlock{Block: block}}
 }

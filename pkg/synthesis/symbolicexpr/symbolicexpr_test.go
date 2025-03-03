@@ -444,3 +444,21 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		!path2.isSuperset(path4, &Hints{GroupsDisjoint: [][]string{}}),
 		"path2 is a superset of path3 and path5, is not a superset of path4")
 }
+
+func TestIpBlockTerm(t *testing.T) {
+	allIPBlock, _ := netset.IPBlockFromCidr("0.0.0.0/0")
+	ipBlock1, _ := netset.IPBlockFromCidr("1.2.3.0/8")
+	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
+	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
+	ipAddrSingle, _ := netset.IPBlockFromCidr("192.0.2.0")
+	allIpBlockTerm := NewIPBlockTermTerm(&ipBlock{Block: allIPBlock, OrigIP: "0.0.0.0/0"})
+	ipBlockTerm1 := NewIPBlockTermTerm(&ipBlock{Block: ipBlock1, OrigIP: "1.2.3.0/8"})
+	ipBlockTerm2 := NewIPBlockTermTerm(&ipBlock{Block: ipBlock2, OrigIP: "1.2.3.0/16"})
+	ipBlockTerm3 := NewIPBlockTermTerm(&ipBlock{Block: ipBlock3, OrigIP: "192.0.2.0/24"})
+	ipAddrSingleTerm := NewIPBlockTermTerm(&ipBlock{Block: ipAddrSingle, OrigIP: "192.0.2.0"})
+	fmt.Println("allIpBlockTerm is", allIpBlockTerm)
+	fmt.Println("ipBlockTerm1 is", ipBlockTerm1)
+	fmt.Println("ipBlockTerm2 is", ipBlockTerm2)
+	fmt.Println("ipBlockTerm3 is", ipBlockTerm3)
+	fmt.Println("ipAddrSingleTerm is", ipAddrSingleTerm)
+}

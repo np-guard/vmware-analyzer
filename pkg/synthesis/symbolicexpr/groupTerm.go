@@ -12,11 +12,7 @@ const equalSignConst = " = "
 const nonEqualSignConst = " != "
 
 func (groupTerm groupAtomicTerm) String() string {
-	equalSign := equalSignConst
-	if groupTerm.neg {
-		equalSign = nonEqualSignConst
-	}
-	return grp + equalSign + groupTerm.name()
+	return grp + eqSign(groupTerm) + groupTerm.name()
 }
 
 func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {

@@ -66,8 +66,8 @@ func (atomicTerm) IsTautology() bool {
 	return false
 }
 
-func (atomicTerm atomicTerm) isNegation() bool {
-	return atomicTerm.neg
+func (ipBlockTerm atomicTerm) isNegation() bool {
+	return ipBlockTerm.neg
 }
 
 // there are several derive classes - groupTerm, atomicTerm, of "atomic" base class
@@ -96,4 +96,13 @@ func disjoint(atom, otherAtom atomic, hints *Hints) bool {
 // if in the same Clause, we can rid group != Hufflepuff
 func supersetOf(atom, otherAtom atomic, hints *Hints) bool {
 	return hints.disjoint(atom.name(), otherAtom.name()) && atom.isNegation() && !otherAtom.isNegation()
+}
+
+// return equalSignConst or nonEqualSignConst for atom
+func eqSign(atom atomic) string {
+	equalSign := equalSignConst
+	if atom.isNegation() {
+		equalSign = nonEqualSignConst
+	}
+	return equalSign
 }

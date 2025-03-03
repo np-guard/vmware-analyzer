@@ -24,6 +24,17 @@ type tagAtomicTerm struct {
 	tag *resources.Tag
 }
 
+// todo: move to dfw (rule.go); override the struct with the same name there
+type ipBlock struct {
+	Block  *netset.IPBlock
+	OrigIP string
+}
+
+type ipBlockAtomicTerm struct {
+	atomicTerm
+	*ipBlock
+}
+
 // tautology represents a condition that always holds.
 // To be used as src or dst for cases where only dst or only src is restricted
 type tautology struct {

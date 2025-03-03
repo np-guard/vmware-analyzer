@@ -20,11 +20,7 @@ func (tagTerm tagAtomicTerm) name() string {
 }
 
 func (tagTerm tagAtomicTerm) String() string {
-	equalSign := equalSignConst
-	if tagTerm.neg {
-		equalSign = nonEqualSignConst
-	}
-	return tagConst + equalSign + tagTerm.name()
+	return tagConst + eqSign(tagTerm) + tagTerm.name()
 }
 
 func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
