@@ -9,27 +9,3 @@ metadata:
 spec:
     containers: null
 status: {}
----
-apiVersion: v1
-kind: Pod
-metadata:
-    creationTimestamp: null
-    labels:
-        group__backend: "true"
-    name: B
-    namespace: default
-spec:
-    containers: null
-status: {}
----
-apiVersion: v1
-kind: Pod
-metadata:
-    creationTimestamp: null
-    labels:
-        group__db: "true"
-    name: C
-    namespace: default
-spec:
-    containers: null
-status: {}
