@@ -1,22 +1,25 @@
 package topology
 
 import (
+	"strings"
+
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 // a base struct to represent external endpoints, segments and rule block
 type ipBlock struct {
 	Block *netset.IPBlock
+	originalIP      string
 }
 type RuleIPBlock struct {
 	ipBlock
-	origIP      string
 	VMs         []Endpoint
 	ExternalIPs []Endpoint
 }
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
-	return &RuleIPBlock{origIP: ip, ipBlock: ipBlock{Block: block}}
+	return &RuleIPBlock{ipBlock: ipBlock{Block: block, originalIP: ip}}
 }
 
 type Segment struct {
@@ -25,28 +28,6 @@ type Segment struct {
 	VMs  []Endpoint
 }
 
-func NewSegment(name string, block *netset.IPBlock) *Segment {
-	return &Segment{name: name, ipBlock: ipBlock{Block: block}}
+func NewSegment(name string, block *netset.IPBlock, subnetsNetworks []string) *Segment {
+	return &Segment{name: name, ipBlock: ipBlock{Block: block, originalIP: strings.Join(subnetsNetworks, common.CommaSeparator)}}
 }
-
-///////////////////////
-
-type ExternalIP struct {
-	ipBlock
-	cidr string
-}
-
-func NewExternalIP(block *netset.IPBlock) *ExternalIP {
-	e := &ExternalIP{ipBlock: ipBlock{Block: block}}
-	e.cidr = block.String()
-	return e
-}
-
-func (ip *ExternalIP) Name() string   { return ip.cidr }
-func (ip *ExternalIP) String() string { return ip.cidr }
-func (ip *ExternalIP) Kind() string   { return "external IP" }
-func (ip *ExternalIP) ID() string     { return ip.cidr }
-func (ip *ExternalIP) InfoStr() []string {
-	return []string{ip.Name(), ip.ID(), ip.Name()}
-}
-func (ip *ExternalIP) Tags() []string { return nil }

@@ -48,7 +48,7 @@ func (p *nsxConfigParser) getSegments() (err error) {
 		if err != nil {
 			return err
 		}
-		segment := topology.NewSegment(*segResource.DisplayName, block)
+		segment := topology.NewSegment(*segResource.DisplayName, block, subnetsNetworks)
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)
