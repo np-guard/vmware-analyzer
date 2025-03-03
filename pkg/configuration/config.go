@@ -4,67 +4,61 @@ import (
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
+
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 type ParsedNSXConfig interface {
-	AnalyzedConnectivity() connectivity.ConnMap
 	DFW() *dfw.DFW
 	DefaultDenyRule() *dfw.FwRule
-	VMs() []endpoints.EP
-	VMToGroupsMap() map[endpoints.EP][]*collector.Group
+	VMs() []topology.Endpoint
+	VMToGroupsMap() map[topology.Endpoint][]*collector.Group
 	GetGroups() []*collector.Group
+	VMsMap() map[string]topology.Endpoint
+}
+
+func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
+	color bool) (*Config, error) {
+	parser := newNSXConfigParserFromResourcesContainer(resources)
+	err := parser.runParser()
+	if err != nil {
+		return nil, err
+	}
+	config := parser.getConfig()
+
+	// in debug/verbose mode -- print the parsed config
+	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(color))
+
+	return config, nil
 }
 
 // Config captures nsx Config, implements NSXConfig interface
 type Config struct {
-	Vms         []endpoints.EP                      // list of all Vms
-	VmsMap      map[string]endpoints.EP             // map from uid to vm objects
-	Fw          *dfw.DFW                            // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups      []*collector.Group                  // list of all groups (also these with no Vms)
-	GroupsPerVM map[endpoints.EP][]*collector.Group // map from vm to its groups
-	// todo: does not belong here https://github.com/np-guard/vmware-analyzer/issues/280
-	Connectivity connectivity.ConnMap // the resulting connectivity map from analyzing this configuration
-	AnalysisDone bool
+	Vms         []topology.Endpoint                      // list of all Vms
+	VmsMap      map[string]topology.Endpoint             // map from uid to vm objects
+	Fw          *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups      []*collector.Group                       // list of all groups (also these with no Vms)
+	GroupsPerVM map[topology.Endpoint][]*collector.Group // map from vm to its groups
 }
 
-func (c *Config) AnalyzedConnectivity() connectivity.ConnMap {
-	return c.Connectivity
-}
 func (c *Config) DFW() *dfw.DFW {
 	return c.Fw
 }
-func (c *Config) VMs() []endpoints.EP {
+func (c *Config) VMs() []topology.Endpoint {
 	return c.Vms
 }
-func (c *Config) VMToGroupsMap() map[endpoints.EP][]*collector.Group {
+func (c *Config) VMsMap() map[string]topology.Endpoint {
+	return c.VmsMap
+}
+
+func (c *Config) VMToGroupsMap() map[topology.Endpoint][]*collector.Group {
 	return c.GroupsPerVM
 }
 func (c *Config) GetGroups() []*collector.Group {
 	return c.Groups
-}
-
-func (c *Config) ComputeConnectivity(vmsFilter []string) {
-	logging.Debugf("compute connectivity on parsed config")
-	res := connectivity.ConnMap{}
-	// make sure all vm pairs are in the result, by init with global default
-	res.InitPairs(false, c.Vms, vmsFilter)
-	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
-	for src, srcMap := range res {
-		for dst := range srcMap {
-			if src == dst {
-				continue
-			}
-			conn := c.Fw.AllowedConnections(src, dst)
-			res.Add(src, dst, conn)
-		}
-	}
-	c.Connectivity = res
-	c.AnalysisDone = true
 }
 
 // GetConfigInfoStr returns string describing the captured configuration content

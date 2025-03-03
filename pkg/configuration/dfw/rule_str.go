@@ -6,20 +6,20 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 // return a string representation of a single rule
 // groups are interpreted to VM members in this representation
 func (f *FwRule) String() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
+		f.RuleID, vmsString(f.SrcVMs), vmsString(f.DstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
 }
 
 func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.srcVMs), vmsString(f.dstVMs), f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
+		f.RuleID, vmsString(f.SrcVMs), vmsString(f.DstVMs), f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
 }
 
 func getRulesHeader() []string {
@@ -158,6 +158,6 @@ func (f *FwRule) servicesString() string {
 	return common.JoinNonEmpty([]string{serviceEntriesStr, servicesStr}, common.CommaSeparator)
 }
 
-func vmsString(vms []endpoints.EP) string {
+func vmsString(vms []topology.Endpoint) string {
 	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }

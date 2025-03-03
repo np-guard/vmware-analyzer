@@ -9,7 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
@@ -19,8 +19,8 @@ const (
 	anyStr = "ANY" // ANY can specify any service or any src/dst in DFW rules
 )
 
-func NewNSXConfigParserFromFile(fileName string) (*NSXConfigParser, error) {
-	res := &NSXConfigParser{file: fileName}
+func NewNSXConfigParserFromFile(fileName string) (*nsxConfigParser, error) {
+	res := &nsxConfigParser{file: fileName}
 
 	inputConfigContent, err := os.ReadFile(fileName)
 	if err != nil {
@@ -34,38 +34,38 @@ func NewNSXConfigParserFromFile(fileName string) (*NSXConfigParser, error) {
 	return res, nil
 }
 
-func NewNSXConfigParserFromResourcesContainer(rc *collector.ResourcesContainerModel) *NSXConfigParser {
-	return &NSXConfigParser{
+func newNSXConfigParserFromResourcesContainer(rc *collector.ResourcesContainerModel) *nsxConfigParser {
+	return &nsxConfigParser{
 		rc: rc,
 	}
 }
 
-type NSXConfigParser struct {
+type nsxConfigParser struct {
 	file                   string
 	rc                     *collector.ResourcesContainerModel
 	configRes              *Config
 	allGroups              []*collector.Group
 	allGroupsPaths         []string
-	allGroupsVMs           []endpoints.EP
-	groupToVMsListCache    map[*collector.Group][]endpoints.EP
+	allGroupsVMs           []topology.Endpoint
+	groupToVMsListCache    map[*collector.Group][]topology.Endpoint
 	servicePathToConnCache map[string]*netset.TransportSet
 	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
-	topology              *topology
-	allRuleIPBlocks       map[string]*endpoints.RuleIPBlock // a map from the ip string,to the block
+	topology              *nsxTopology
+	allRuleIPBlocks       map[string]*topology.RuleIPBlock // a map from the ip string,to the block
 }
 
-func (p *NSXConfigParser) init() {
+func (p *nsxConfigParser) init() {
 	p.configRes = &Config{}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
-	p.groupToVMsListCache = map[*collector.Group][]endpoints.EP{}
+	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
-	p.allRuleIPBlocks = map[string]*endpoints.RuleIPBlock{}
+	p.allRuleIPBlocks = map[string]*topology.RuleIPBlock{}
 }
 
-func (p *NSXConfigParser) RunParser() error {
+func (p *nsxConfigParser) runParser() error {
 	logging.Debugf("started parsing the given NSX config")
 	p.init()
 	p.getVMs() // get vms config
@@ -79,8 +79,8 @@ func (p *NSXConfigParser) RunParser() error {
 	return nil
 }
 
-func (p *NSXConfigParser) removeVMsWithoutGroups() {
-	toRemove := []endpoints.EP{}
+func (p *nsxConfigParser) removeVMsWithoutGroups() {
+	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
 		if len(groups) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
@@ -89,17 +89,17 @@ func (p *NSXConfigParser) removeVMsWithoutGroups() {
 	}
 	for _, vm := range toRemove {
 		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.Vms = slices.DeleteFunc(p.configRes.Vms, func(v endpoints.EP) bool { return v.ID() == vm.ID() })
+		p.configRes.Vms = slices.DeleteFunc(p.configRes.Vms, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
 		delete(p.configRes.VmsMap, vm.ID())
 	}
 }
 
-func (p *NSXConfigParser) GetConfig() *Config {
+func (p *nsxConfigParser) getConfig() *Config {
 	return p.configRes
 }
 
-func (p *NSXConfigParser) vMsGroups() map[endpoints.EP][]*collector.Group {
-	groups := map[endpoints.EP][]*collector.Group{}
+func (p *nsxConfigParser) vMsGroups() map[topology.Endpoint][]*collector.Group {
+	groups := map[topology.Endpoint][]*collector.Group{}
 	for _, g := range p.allGroups {
 		vms := p.groupToVMsList(g)
 		for _, vm := range vms {
@@ -114,12 +114,12 @@ func (p *NSXConfigParser) vMsGroups() map[endpoints.EP][]*collector.Group {
 	return groups
 }
 
-func (p *NSXConfigParser) VMs() []endpoints.EP {
+func (p *nsxConfigParser) VMs() []topology.Endpoint {
 	return p.configRes.Vms
 }
 
 // update mapping from groups and services paths to their names
-func (p *NSXConfigParser) addPathsToDisplayNames() {
+func (p *nsxConfigParser) addPathsToDisplayNames() {
 	res := map[string]string{}
 	for gPath, gObj := range p.groupPathsToObjects {
 		res[gPath] = *gObj.DisplayName
@@ -130,15 +130,15 @@ func (p *NSXConfigParser) addPathsToDisplayNames() {
 	p.configRes.Fw.SetPathsToDisplayNames(res)
 }
 
-func (p *NSXConfigParser) getGroups() {
+func (p *nsxConfigParser) getGroups() {
 	p.getAllGroups()
 	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
 }
 
 // getVMs assigns the parsed VM objects from the NSX resources container into the res config object
-func (p *NSXConfigParser) getVMs() {
-	p.configRes.VmsMap = map[string]endpoints.EP{}
+func (p *nsxConfigParser) getVMs() {
+	p.configRes.VmsMap = map[string]topology.Endpoint{}
 	for i := range p.rc.VirtualMachineList {
 		vm := &p.rc.VirtualMachineList[i]
 		if vm.DisplayName == nil || vm.ExternalId == nil {
@@ -146,7 +146,7 @@ func (p *NSXConfigParser) getVMs() {
 			logging.Debugf("warning: skipped vm without name/uid at index %d", i)
 			continue
 		}
-		vmObj := endpoints.NewVM(*vm.DisplayName, *vm.ExternalId)
+		vmObj := topology.NewVM(*vm.DisplayName, *vm.ExternalId)
 		vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
 		for _, tag := range vm.Tags {
 			vmObj.AddTag(tag.Tag)
@@ -160,7 +160,7 @@ func (p *NSXConfigParser) getVMs() {
 	}
 }
 
-func (p *NSXConfigParser) getDFW() {
+func (p *nsxConfigParser) getDFW() {
 	p.configRes.Fw = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
@@ -209,13 +209,13 @@ func (p *NSXConfigParser) getDFW() {
 	}
 }
 
-func (p *NSXConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
+func (p *nsxConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
 	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
 		r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
-func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
+func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
 	// from spec documentation:
 	// The default rule that gets created will be a any-any rule and applied
 	// to entities specified in the scope of the security policy.
@@ -251,30 +251,30 @@ func (p *NSXConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	srcVMs []endpoints.EP
-	dstVMs []endpoints.EP
+	srcVMs []topology.Endpoint
+	dstVMs []topology.Endpoint
 	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
 	//       defined by groups, thus the following temp 4 fields
 	srcGroups      []*collector.Group
 	isAllSrcGroups bool
-	srcBlocks      []*endpoints.RuleIPBlock
+	srcBlocks      []*topology.RuleIPBlock
 	dstGroups      []*collector.Group
 	isAllDstGroups bool
-	dstBlocks      []*endpoints.RuleIPBlock
+	dstBlocks      []*topology.RuleIPBlock
 	action         string
 	conn           *netset.TransportSet
 	direction      string
 	ruleID         int
-	scope          []endpoints.EP
+	scope          []topology.Endpoint
 	// todo: scopeGroups tmp same as srcGroups and fields above
 	scopeGroups    []*collector.Group
 	secPolicyName  string
 	defaultRuleObj *collector.FirewallRule
 }
 
-func (p *NSXConfigParser) getAllGroups() {
+func (p *nsxConfigParser) getAllGroups() {
 	// p.allGroupsVMs and p.allGroups and allGroupsPaths are written together
-	vms := []endpoints.EP{}
+	vms := []topology.Endpoint{}
 	groups := []*collector.Group{}
 	groupsPaths := []string{}
 	for i := range p.rc.DomainList {
@@ -292,9 +292,9 @@ func (p *NSXConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
-func (p *NSXConfigParser) getEndpointsFromGroupsPaths(
+func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 	groupsPaths []string, exclude bool) (
-	[]endpoints.EP, []*collector.Group, []*endpoints.RuleIPBlock) {
+	[]topology.Endpoint, []*collector.Group, []*topology.RuleIPBlock) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
@@ -302,8 +302,8 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(
 		}
 		return p.allGroupsVMs, p.allGroups, nil // all groups
 	}
-	var vms []endpoints.EP
-	var ruleBlocks []*endpoints.RuleIPBlock
+	var vms []topology.Endpoint
+	var ruleBlocks []*topology.RuleIPBlock
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
 	if exclude {
@@ -333,7 +333,7 @@ func (p *NSXConfigParser) getEndpointsFromGroupsPaths(
 
 }*/
 
-func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
+func (p *nsxConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	if rule.Action == nil {
 		return nil // skip rule without action (Add warning)
 	}
@@ -357,7 +357,7 @@ func (p *NSXConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	return res
 }
 
-func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.TransportSet {
+func (p *nsxConfigParser) getRuleConnections(rule *collector.Rule) *netset.TransportSet {
 	/*
 		// In order to specify raw services this can be used, along with services which
 		// contains path to services. This can be empty or null.
@@ -396,7 +396,7 @@ func (p *NSXConfigParser) getRuleConnections(rule *collector.Rule) *netset.Trans
 }
 
 // connectionFromService returns the set of connections from a service config within the given rule
-func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
+func (p *nsxConfigParser) connectionFromService(servicePath string, rule *collector.Rule) *netset.TransportSet {
 	if conn, ok := p.servicePathToConnCache[servicePath]; ok {
 		return conn
 	}
@@ -417,7 +417,7 @@ func (p *NSXConfigParser) connectionFromService(servicePath string, rule *collec
 }
 
 // connectionFromServiceEntries returns the set of connections from a ServiceEntries config within the given rule
-func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.ServiceEntries, rule *collector.Rule) *netset.TransportSet {
+func (p *nsxConfigParser) connectionFromServiceEntries(serviceEntries collector.ServiceEntries, rule *collector.Rule) *netset.TransportSet {
 	res := netset.NoTransports()
 	for _, serviceEntry := range serviceEntries {
 		conn, err := serviceEntry.ToConnection()
@@ -434,7 +434,7 @@ func (p *NSXConfigParser) connectionFromServiceEntries(serviceEntries collector.
 	return res
 }
 
-func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []endpoints.EP {
+func (p *nsxConfigParser) groupToVMsList(group *collector.Group) []topology.Endpoint {
 	if vms, ok := p.groupToVMsListCache[group]; ok {
 		return vms
 	}
@@ -475,7 +475,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []endpoints.EP 
 		}
 		ids[*vif.OwnerVmId] = true
 	}
-	res := []endpoints.EP{}
+	res := []topology.Endpoint{}
 	for vmID := range ids {
 		if vmObj, ok := p.configRes.VmsMap[vmID]; ok {
 			res = append(res, vmObj)
@@ -490,7 +490,7 @@ func (p *NSXConfigParser) groupToVMsList(group *collector.Group) []endpoints.EP 
 	return res
 }
 
-func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]endpoints.EP, *collector.Group) {
+func (p *nsxConfigParser) getGroupVMs(groupPath string) ([]topology.Endpoint, *collector.Group) {
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
@@ -505,10 +505,10 @@ func (p *NSXConfigParser) getGroupVMs(groupPath string) ([]endpoints.EP, *collec
 	}
 	return nil, nil // could not find given groupPath (add warning)
 }
-func (p *NSXConfigParser) getRuleIPBlocks(groupsPaths []string) []*endpoints.RuleIPBlock {
+func (p *nsxConfigParser) getRuleIPBlocks(groupsPaths []string) []*topology.RuleIPBlock {
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths),
 		func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
-	res := []*endpoints.RuleIPBlock{}
+	res := []*topology.RuleIPBlock{}
 	for _, ip := range ips {
 		if _, ok := p.allRuleIPBlocks[ip]; !ok {
 			block, err := netset.IPBlockFromCidrOrAddress(ip)
@@ -519,7 +519,7 @@ func (p *NSXConfigParser) getRuleIPBlocks(groupsPaths []string) []*endpoints.Rul
 				logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 				continue
 			}
-			p.allRuleIPBlocks[ip] = endpoints.NewRuleIPBlock(ip, block)
+			p.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
 			// todo - calc VMs of the block
 		}
 		res = append(res, p.allRuleIPBlocks[ip])

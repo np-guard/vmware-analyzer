@@ -1,20 +1,42 @@
-package model
+package analyzer
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContainerModel, params common.OutputParameters) (
-	configuration.ParsedNSXConfig, string, error) {
-	config, err := ConfigFromResourcesContainer(recourses, params)
-	if err != nil {
-		return nil, "", err
+func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivity.ConnMap {
+	logging.Debugf("compute connectivity on parsed config")
+	res := connectivity.ConnMap{}
+	// make sure all vm pairs are in the result, by init with global default
+	res.InitPairs(false, c.Vms, vmsFilter)
+	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
+	for src, srcMap := range res {
+		for dst := range srcMap {
+			if src == dst {
+				continue
+			}
+			conn := dfwAllowedConnections(c.Fw, src, dst)
+			res.Add(src, dst, conn)
+		}
 	}
+	return res
+}
 
-	res, err := config.Connectivity.GenConnectivityOutput(params)
+func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params common.OutputParameters) (
+	configuration.ParsedNSXConfig,
+	connectivity.ConnMap,
+	string,
+	error) {
+	config, err := configuration.ConfigFromResourcesContainer(resources, params.Color)
+	if err != nil {
+		return nil, nil, "", err
+	}
+	connMap := computeConnectivity(config, params.VMs)
+	res, err := connMap.GenConnectivityOutput(params)
 
 	//nolint:gocritic // temporarily keep commented-out code
 	/*allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")
@@ -37,23 +59,5 @@ func NSXConnectivityFromResourcesContainer(recourses *collector.ResourcesContain
 		)
 	}*/
 
-	return config, res, err
-}
-
-func ConfigFromResourcesContainer(recourses *collector.ResourcesContainerModel,
-	params common.OutputParameters) (*configuration.Config, error) {
-	parser := configuration.NewNSXConfigParserFromResourcesContainer(recourses)
-	err := parser.RunParser()
-	if err != nil {
-		return nil, err
-	}
-	config := parser.GetConfig()
-
-	// in debug/verbose mode -- print the parsed config
-	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
-
-	// compute connectivity map from the parsed config
-	config.ComputeConnectivity(params.VMs)
-
-	return config, nil
+	return config, connMap, res, err
 }

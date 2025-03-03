@@ -3,23 +3,23 @@ package connectivity
 import (
 	"slices"
 
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 // ConnMap captures permitted connections between endpoints in the input config
-type ConnMap map[endpoints.EP]map[endpoints.EP]*DetailedConnection
+type ConnMap map[topology.Endpoint]map[topology.Endpoint]*DetailedConnection
 
 // Add func adds a given pair with specified permitted connection
-func (c ConnMap) Add(src, dst endpoints.EP, conn *DetailedConnection) {
+func (c ConnMap) Add(src, dst topology.Endpoint, conn *DetailedConnection) {
 	if _, ok := c[src]; !ok {
-		c[src] = map[endpoints.EP]*DetailedConnection{}
+		c[src] = map[topology.Endpoint]*DetailedConnection{}
 	}
 	c[src][dst] = conn
 }
 
 // InitPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c ConnMap) InitPairs(initAllow bool, vms []endpoints.EP, vmsFilter []string) {
+func (c ConnMap) InitPairs(initAllow bool, vms []topology.Endpoint, vmsFilter []string) {
 	vmsToaAnalyze := map[string]bool{}
 	if len(vmsFilter) > 0 {
 		for _, vmName := range vmsFilter {
@@ -60,7 +60,7 @@ func (c ConnMap) filter(vms []string) ConnMap {
 
 // connMapEntry captures one entry in ConnMap
 type connMapEntry struct {
-	Src, Dst     endpoints.EP
+	Src, Dst     topology.Endpoint
 	DetailedConn *DetailedConnection
 }
 

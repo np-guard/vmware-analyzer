@@ -6,7 +6,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/endpoints"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
@@ -22,10 +22,10 @@ func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSy
 }
 
 type absToNXS struct {
-	vmLabels   map[endpoints.EP][]string
-	labelsVMs  map[string][]endpoints.EP
-	allVMs     []endpoints.EP
-	vmResource map[endpoints.EP]collector.RealizedVirtualMachine
+	vmLabels   map[topology.Endpoint][]string
+	labelsVMs  map[string][]topology.Endpoint
+	allVMs     []topology.Endpoint
+	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
 
 	categories    []data.Category
 	groups        []collector.Group
@@ -34,9 +34,9 @@ type absToNXS struct {
 
 func newAbsToNXS() *absToNXS {
 	return &absToNXS{
-		vmLabels:   map[endpoints.EP][]string{},
-		labelsVMs:  map[string][]endpoints.EP{},
-		vmResource: map[endpoints.EP]collector.RealizedVirtualMachine{},
+		vmLabels:   map[topology.Endpoint][]string{},
+		labelsVMs:  map[string][]topology.Endpoint{},
+		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
 	}
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
@@ -45,7 +45,7 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 		for iGroup := range rc.DomainList[i].Resources.GroupList {
 			for iVM := range rc.DomainList[i].Resources.GroupList[iGroup].VMMembers {
 				vmResource := rc.DomainList[i].Resources.GroupList[iGroup].VMMembers[iVM]
-				vmIndex := slices.IndexFunc(a.allVMs, func(vm endpoints.EP) bool { return *vmResource.DisplayName == vm.Name() })
+				vmIndex := slices.IndexFunc(a.allVMs, func(vm topology.Endpoint) bool { return *vmResource.DisplayName == vm.Name() })
 				if vmIndex >= 0 {
 					a.vmResource[a.allVMs[vmIndex]] = vmResource
 				}
@@ -53,7 +53,7 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 		}
 	}
 	for _, vm := range a.allVMs {
-		addVMLabel := func(vm endpoints.EP, label string) {
+		addVMLabel := func(vm topology.Endpoint, label string) {
 			a.vmLabels[vm] = append(a.vmLabels[vm], label)
 			a.labelsVMs[label] = append(a.labelsVMs[label], vm)
 		}
@@ -146,9 +146,9 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 		label, not := atom.AsSelector()
 		atomVMs := a.labelsVMs[label]
 		if not {
-			atomVMs = endpoints.Subtract(a.allVMs, atomVMs)
+			atomVMs = topology.Subtract(a.allVMs, atomVMs)
 		}
-		vms = endpoints.Intersection(vms, atomVMs)
+		vms = topology.Intersection(vms, atomVMs)
 	}
 	if len(vms) == len(a.allVMs) {
 		return data.AnyStr
