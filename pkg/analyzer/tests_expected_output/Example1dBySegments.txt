@@ -1,0 +1,4 @@
+Analyzed connectivity:
+Source |Destination |Permitted connections
+
+

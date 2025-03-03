@@ -51,6 +51,35 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 		}
 		res.VirtualMachineList = append(res.VirtualMachineList, newVMRes)
 	}
+	for segmentName, ip := range e.SegmentsBlock {
+		segment := collector.Segment{
+			Segment: nsx.Segment{
+				DisplayName: &segmentName,
+				Subnets:     []nsx.SegmentSubnet{{Network: &ip}},
+				Path:        &segmentName,
+			},
+		}
+		for _, vm := range e.SegmentsByVMs[segmentName] {
+			portName := "port_" + vm
+			port := collector.SegmentPort{
+				SegmentPort: nsx.SegmentPort{
+					ParentPath: &segmentName,
+					Attachment: &nsx.PortAttachment{
+						Id: &portName,
+					},
+				},
+			}
+			vni := collector.VirtualNetworkInterface{
+				VirtualNetworkInterface: nsx.VirtualNetworkInterface{
+					LportAttachmentId: &portName,
+					OwnerVmId: &vm,
+				},
+			}
+			res.VirtualNetworkInterfaceList = append(res.VirtualNetworkInterfaceList, vni)
+			segment.SegmentPorts = append(segment.SegmentPorts, port)
+		}
+		res.SegmentList = append(res.SegmentList, segment)
+	}
 	// set default domain
 	domainRsc := collector.Domain{}
 	defaultName := "default"

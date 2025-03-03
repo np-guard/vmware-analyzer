@@ -182,8 +182,8 @@ var Example1dBySegments = Example{
 	},
 	SegmentsBlock: map[string]string{
 		"frontend": "0.0.1.0/24",
-		"backend":  "0.0.1.0/24",
-		"db":       "0.0.1.0/24",
+		"backend":  "0.0.2.0/24",
+		"db":       "0.0.3.0/24",
 	},
 	Policies: []Category{
 		{
@@ -193,16 +193,16 @@ var Example1dBySegments = Example{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
-					Source:   "frontend",
-					Dest:     "backend",
+					Source:   "0.0.1.0/24",
+					Dest:     "0.0.2.0/24",
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 				{
 					Name:     "allow_https_db_incoming",
 					ID:       1005,
-					Source:   "backend",
-					Dest:     "db",
+					Source:   "0.0.2.0/24",
+					Dest:     "0.0.3.0/24",
 					Services: []string{"/infra/services/HTTPS"},
 					Action:   Allow,
 				},
