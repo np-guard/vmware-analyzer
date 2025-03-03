@@ -173,7 +173,7 @@ func (p *nsxConfigParser) getDFW() {
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
 			// This scope will take precedence over rule level scope.
-			scope, _ := p.getEndpointsFromScopeGroupsPaths(secPolicy.Scope)
+			scope, _ := p.getEndpointsFromScopePaths(secPolicy.Scope)
 			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
 
 			rules := secPolicy.Rules
@@ -183,7 +183,7 @@ func (p *nsxConfigParser) getDFW() {
 				r.scope = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
-					r.scope, r.scopeGroups = p.getEndpointsFromScopeGroupsPaths(rule.Scope)
+					r.scope, r.scopeGroups = p.getEndpointsFromScopePaths(rule.Scope)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
@@ -222,7 +222,7 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	res := &parsedRule{}
 	// scope - the list of group paths where the rules in this policy will get applied.
 	scope := secPolicy.Scope
-	vms, groups := p.getEndpointsFromScopeGroupsPaths(scope)
+	vms, groups := p.getEndpointsFromScopePaths(scope)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
 	res.srcVMs = vms
 	res.dstVMs = vms
@@ -292,9 +292,9 @@ func (p *nsxConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
-func (p *nsxConfigParser) getEndpointsFromScopeGroupsPaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
+func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		return append(p.allGroupsVMs, p.configRes.ExternalIPs...), p.allGroups // all groups
+		return append(p.allGroupsVMs, p.configRes.ExternalIPs...), p.allGroups // all endpoints and groups
 	}
 	endPoints, groups , _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return endPoints, groups
