@@ -44,16 +44,17 @@ const (
 
 type ServerData struct {
 	host, user, password string
+	insecureSkipVerify   bool
 }
 
-func NewServerData(host, user, password string) ServerData {
-	return ServerData{host, user, password}
+func NewServerData(host, user, password string, insecureSkipVerify bool) ServerData {
+	return ServerData{host, user, password, insecureSkipVerify}
 }
 
-func ValidateNSXConnection(host, user, password string) (string, error) {
+func ValidateNSXConnection(host, user, password string, insecureSkipVerify bool) (string, error) {
 	res := NewResourcesContainerModel()
 	// vms:
-	err := collectResultList(NewServerData(host, user, password), virtualMachineQuery, &res.VirtualMachineList)
+	err := collectResultList(NewServerData(host, user, password, insecureSkipVerify), virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return "", err
 	}

@@ -19,7 +19,7 @@ func getNSXArg(arg *string, envVar string) error {
 	return nil
 }
 
-func GetNSXServerDate(host, user, password string) (ServerData, error) {
+func GetNSXServerDate(host, user, password string, insecureSkipVerify bool) (ServerData, error) {
 	// extract NSX credentials from cli args / env vars
 	if err := getNSXArg(&host, "NSX_HOST"); err != nil {
 		return ServerData{}, err
@@ -31,5 +31,5 @@ func GetNSXServerDate(host, user, password string) (ServerData, error) {
 		return ServerData{}, err
 	}
 	logging.Infof("collecting NSX resources from given host %s", host)
-	return NewServerData(host, user, password), nil
+	return NewServerData(host, user, password, insecureSkipVerify), nil
 }

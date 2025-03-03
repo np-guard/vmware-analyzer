@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -232,25 +233,6 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return ctrl.Result{}, nil
 }
 
-/*
-// getInsecureSkipVerifyFlag gets the insecureSkipVerify boolean flag
-// value from the provider connection secret.
-func (r *Client) getInsecureSkipVerifyFlag() bool {
-	insecure, found := r.Source.Secret.Data["insecureSkipVerify"]
-	if !found {
-		return false
-	}
-
-	insecureSkipVerify, err := strconv.ParseBool(string(insecure))
-	if err != nil {
-		return false
-	}
-
-	return insecureSkipVerify
-}
-
-*/
-
 type nsxConn struct {
 	user               string
 	password           string
@@ -268,6 +250,26 @@ func (n *nsxConn) getPassword(s *v1.Secret) {
 	if passwordData, found := s.Data["password"]; found {
 		n.password = string(passwordData)
 	}
+}
+
+func (n *nsxConn) getURL(s *v1.Secret) {
+	if urlData, found := s.Data["url"]; found {
+		n.url = string(urlData)
+	}
+}
+
+func (n *nsxConn) getInsecureSkipVerify(s *v1.Secret) {
+	insecure, found := s.Data["insecureSkipVerify"]
+	if !found {
+		return
+	}
+
+	insecureSkipVerify, err := strconv.ParseBool(string(insecure))
+	if err != nil {
+		return
+	}
+
+	n.insecureSkipVerify = insecureSkipVerify
 }
 
 func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) (conn *nsxConn, err error) {
@@ -292,14 +294,13 @@ func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration,
 
 	conn.getUser(secret)
 	conn.getPassword(secret)
+	conn.getURL(secret)
+	conn.getInsecureSkipVerify(secret)
 
-	if urlData, found := secret.Data["url"]; found {
-		conn.url = string(urlData)
-	}
 	log.Info("extracted nsx credentials", "user", conn.user, "url", conn.url)
 
 	// next: validate nsx connection with given credentials
-	res, err := collector.ValidateNSXConnection(conn.url, conn.user, conn.password)
+	res, err := collector.ValidateNSXConnection(conn.url, conn.user, conn.password, conn.insecureSkipVerify)
 	if err != nil {
 		log.Error(err, "REST API call error", "errStr", err.Error())
 		return nil, err
