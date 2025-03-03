@@ -1,6 +1,5 @@
 # Synthesize k8s network policy resources from NSX DFW config
 
-Synthesize a given NSX DFW configuration into an equivalent k8s network policy. 
 
 ```
 Flags:
@@ -14,7 +13,7 @@ Flags:
 ```
 
 ## Overview
-Synthesize a given `NSX DFW` policy into k8s network policy.
+Synthesizes a given `NSX DFW` policy into `k8s network policy`.
 The result may not be totally equivalent, due to limitations of the target policy; more details regarding the k8s synthesis [here](#limitation).
 There are two main challenges here: 
 * *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
@@ -65,7 +64,7 @@ Each `VM`'s  pod is granted labels reflecting the `NSX's` `tags` and `groups`.
 `Group: DB`  will be synthesized to `label` `group__DB: "true"`;
 `Tag: DB`  will be synthesized to `label` `tag__DB: "true"`.
 
-### Policy synthesis
+#### Policy synthesis
 To preserve the original intent of the policy, the synthesized policy prioritizes referencing non-ephemeral features.
 E.g., it prefers referencing `frontend` label instead of referencing `VMs'` names, or even `VMs' groups`. `VMs` may be deleted and added, while
 the `frontend` label is always granted to any `frontend` `VM`.  
