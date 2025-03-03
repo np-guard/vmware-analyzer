@@ -38,7 +38,7 @@ type ExternalIP struct {
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
 	e := &ExternalIP{ipBlock: ipBlock{Block: block}}
-	e.cidr = e.String()
+	e.cidr = block.String()
 	return e
 }
 
