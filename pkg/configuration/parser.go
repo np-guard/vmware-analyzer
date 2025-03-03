@@ -80,7 +80,7 @@ func (p *nsxConfigParser) runParser() error {
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 {
+		if len(groups) == 0 && len(p.configRes.RuleBlockPerEP[vm]) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}
@@ -292,7 +292,7 @@ func (p *nsxConfigParser) getAllGroups() {
 
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		return append(p.allGroupsVMs, p.configRes.externalIPs...), p.allGroups // all endpoints and groups
+		return append(p.allGroupsVMs, p.topology.allRuleIPBlocksEPs...), p.allGroups // all endpoints and groups
 	}
 	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return endPoints, groups

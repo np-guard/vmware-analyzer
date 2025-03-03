@@ -37,12 +37,13 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 // Config captures nsx Config, implements NSXConfig interface
 type Config struct {
-	Vms         []topology.Endpoint                      // list of all Vms
-	externalIPs []topology.Endpoint                      // list of all external ips
-	VmsMap      map[string]topology.Endpoint             // map from uid to vm objects
-	Fw          *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups      []*collector.Group                       // list of all groups (also these with no Vms)
-	GroupsPerVM map[topology.Endpoint][]*collector.Group // map from vm to its groups
+	Vms            []topology.Endpoint                           // list of all Vms
+	externalIPs    []topology.Endpoint                           // list of all external ips
+	VmsMap         map[string]topology.Endpoint                  // map from uid to vm objects
+	Fw             *dfw.DFW                                      // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups         []*collector.Group                            // list of all groups (also these with no Vms)
+	GroupsPerVM    map[topology.Endpoint][]*collector.Group      // map from vm to its groups
+	RuleBlockPerEP map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
 }
 
 func (c *Config) DFW() *dfw.DFW {

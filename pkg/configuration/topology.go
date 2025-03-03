@@ -12,10 +12,11 @@ import (
 )
 
 type nsxTopology struct {
-	segments        []*topology.Segment
-	vmSegments      map[topology.Endpoint][]*topology.Segment
-	allRuleIPBlocks map[string]*topology.RuleIPBlock // a map from the ip string,to the block
-	externalBlock   *netset.IPBlock
+	segments           []*topology.Segment
+	vmSegments         map[topology.Endpoint][]*topology.Segment
+	allRuleIPBlocks    map[string]*topology.RuleIPBlock // a map from the ip string,to the block
+	externalBlock      *netset.IPBlock
+	allRuleIPBlocksEPs []topology.Endpoint
 }
 
 func newTopology() *nsxTopology {
@@ -33,7 +34,7 @@ func (p *nsxConfigParser) getTopology() (err error) {
 	}
 	p.getAllRulesIPBlocks()
 	p.getExternalIPs()
-	// todo - calc VMs of the block
+	p.getRuleBlocksVMs()
 	return nil
 }
 
@@ -115,6 +116,24 @@ func (p *nsxConfigParser) getExternalIPs() {
 		for _, externalIP := range p.configRes.externalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
+				p.configRes.RuleBlockPerEP[externalIP] = append(p.configRes.RuleBlockPerEP[externalIP], ruleBlock)
+			}
+		}
+	}
+	p.topology.allRuleIPBlocksEPs = slices.Clone(p.configRes.externalIPs)
+}
+
+func (p *nsxConfigParser) getRuleBlocksVMs() {
+	p.configRes.RuleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
+	for _, block := range p.topology.allRuleIPBlocks {
+		for _, segment := range p.topology.segments {
+			if segment.Block.IsSubset(block.Block) {
+				block.VMs = append(block.VMs, segment.VMs...)
+				p.topology.allRuleIPBlocksEPs = append(p.topology.allRuleIPBlocksEPs, segment.VMs...)
+				for _, vm := range segment.VMs {
+					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
+
+				}
 			}
 		}
 	}
