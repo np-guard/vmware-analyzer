@@ -12,13 +12,18 @@ import (
 )
 
 type nsxTopology struct {
-	segments      []*topology.Segment
-	vmSegments    map[topology.Endpoint][]*topology.Segment
-	externalBlock *netset.IPBlock
+	segments        []*topology.Segment
+	vmSegments      map[topology.Endpoint][]*topology.Segment
+	allRuleIPBlocks map[string]*topology.RuleIPBlock // a map from the ip string,to the block
+	externalBlock   *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
-	return &nsxTopology{vmSegments: map[topology.Endpoint][]*topology.Segment{}, externalBlock: netset.GetCidrAll()}
+	return &nsxTopology{
+		vmSegments:      map[topology.Endpoint][]*topology.Segment{},
+		externalBlock:   netset.GetCidrAll(),
+		allRuleIPBlocks: map[string]*topology.RuleIPBlock{},
+	}
 }
 
 func (p *nsxConfigParser) getTopology() (err error) {
@@ -87,15 +92,15 @@ func (p *nsxConfigParser) getRulesIPBlocks() {
 			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 			continue
 		}
-		p.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
+		p.topology.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
 	}
 }
 
 // creating external endpoints
 func (p *nsxConfigParser) getExternalIPs() {
 	// collect all the blocks:
-	exBlocks := make([]*netset.IPBlock, len(p.allRuleIPBlocks))
-	for i, ruleBlock := range slices.Collect(maps.Values(p.allRuleIPBlocks)) {
+	exBlocks := make([]*netset.IPBlock, len(p.topology.allRuleIPBlocks))
+	for i, ruleBlock := range slices.Collect(maps.Values(p.topology.allRuleIPBlocks)) {
 		exBlocks[i] = ruleBlock.Block.Intersect(p.topology.externalBlock)
 	}
 	// creating disjoint blocks:
@@ -106,7 +111,7 @@ func (p *nsxConfigParser) getExternalIPs() {
 		p.configRes.externalIPs[i] = topology.NewExternalIP(disjointBlock)
 	}
 	// keep the external ips of each block:
-	for _, ruleBlock := range p.allRuleIPBlocks {
+	for _, ruleBlock := range p.topology.allRuleIPBlocks {
 		for _, externalIP := range p.configRes.externalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)

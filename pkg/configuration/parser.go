@@ -53,7 +53,6 @@ type nsxConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *nsxTopology
-	allRuleIPBlocks       map[string]*topology.RuleIPBlock // a map from the ip string,to the block
 }
 
 func (p *nsxConfigParser) init() {
@@ -62,7 +61,6 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
-	p.allRuleIPBlocks = map[string]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
@@ -320,10 +318,11 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
 				strings.Join(ips, common.CommaSeparator))
 		}
 	} else {
-		ruleBlocks = p.getRuleIPBlocks(ips)
-		for _, ruleBlock := range ruleBlocks {
+		for _, ip := range ips {
+			ruleBlock := p.topology.allRuleIPBlocks[ip]
 			vms = append(vms, ruleBlock.VMs...)
 			vms = append(vms, ruleBlock.ExternalIPs...)
+			ruleBlocks = append(ruleBlocks, ruleBlock)
 		}
 	}
 	groups := make([]*collector.Group, len(groupsPaths))
@@ -512,15 +511,6 @@ func (p *nsxConfigParser) getGroupVMs(groupPath string) ([]topology.Endpoint, *c
 		}
 	}
 	return nil, nil // could not find given groupPath (add warning)
-}
-func (p *nsxConfigParser) getRuleIPBlocks(ips []string) []*topology.RuleIPBlock {
-	res := []*topology.RuleIPBlock{}
-	for _, ip := range ips {
-		if _, ok := p.allRuleIPBlocks[ip]; ok {
-			res = append(res, p.allRuleIPBlocks[ip])
-		}
-	}
-	return res
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
