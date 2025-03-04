@@ -37,6 +37,7 @@ const (
 	createDNSPolicyFlag         = "synth-create-dns-policy"
 	disjointHintsFlag           = "disjoint-hint"
 	synthFlag                   = "synth"
+	insecureSkipVerifyFlag      = "insecure-skip-verify"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp                    = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
@@ -58,33 +59,35 @@ const (
 	colorHelp                   = "flag to enable color output (default false)"
 	createDNSPolicyHelp         = "flag to create a policy allowing access to target env dns pod"
 	synthHelp                   = "flag to run synthesis, even if synthesis-dump-dir is not specified"
+	insecureSkipVerifyHelp      = "flag to enable NSX connection with insecureSkipVerify (default false)"
 	disjointHintsHelp           = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
 )
 
 type inArgs struct {
-	resourceInputFile string
-	host              string
-	user              string
-	password          string
-	resourceDumpFile  string
-	topologyDumpFile  string
-	synthesisDumpDir  string
-	synthesizeAdmin   bool
-	skipAnalysis      bool
-	anonymise         bool
-	logFile           string
-	outputFile        string
-	outputFormat      outFormat
-	quiet             bool
-	verbose           bool
-	explain           bool
-	outputFilter      []string
-	color             bool
-	createDNSPolicy   bool
-	disjointHints     []string
-	synth             bool
+	resourceInputFile  string
+	host               string
+	user               string
+	password           string
+	resourceDumpFile   string
+	topologyDumpFile   string
+	synthesisDumpDir   string
+	synthesizeAdmin    bool
+	skipAnalysis       bool
+	anonymise          bool
+	logFile            string
+	outputFile         string
+	outputFormat       outFormat
+	quiet              bool
+	verbose            bool
+	explain            bool
+	outputFilter       []string
+	color              bool
+	createDNSPolicy    bool
+	disjointHints      []string
+	synth              bool
+	insecureSkipVerify bool
 }
 
 func newInArgs() *inArgs {
@@ -124,6 +127,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	rootCmd.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.createDNSPolicy, createDNSPolicyFlag, true, createDNSPolicyHelp)
 	rootCmd.PersistentFlags().BoolVar(&args.synth, synthFlag, false, synthHelp)
+	rootCmd.PersistentFlags().BoolVar(&args.insecureSkipVerify, insecureSkipVerifyFlag, false, insecureSkipVerifyHelp)
 	rootCmd.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 	rootCmd.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
 
@@ -159,6 +163,7 @@ func runCommand(args *inArgs) error {
 		runner.WithSynthAdminPolicies(args.synthesizeAdmin),
 		runner.WithSynthesisHints(args.disjointHints),
 		runner.WithSynthDNSPolicies(args.createDNSPolicy),
+		runner.WithInsecureSkipVerify(args.insecureSkipVerify),
 	)
 	if err != nil {
 		return err
