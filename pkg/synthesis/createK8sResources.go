@@ -70,7 +70,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		pod := &core.Pod{}
 		pod.TypeMeta.Kind = "Pod"
 		pod.TypeMeta.APIVersion = "v1"
-		pod.ObjectMeta.Name = vm.Name()
+		pod.ObjectMeta.Name = toLegalK8SString(vm.Name())
 		pod.ObjectMeta.Namespace = core.NamespaceDefault
 		if len(model.epToGroups[vm]) == 0 {
 			continue
@@ -79,10 +79,12 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		const theTrue = "true"
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
+			label = toLegalK8SString(label)
 			pod.ObjectMeta.Labels[label] = theTrue
 		}
 		for _, tag := range vm.Tags() {
 			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+			label = toLegalK8SString(label)
 			pod.ObjectMeta.Labels[label] = theTrue
 		}
 		resources.pods = append(resources.pods, pod)
@@ -124,5 +126,6 @@ func k8sAnalyzer(k8sDir, outfile, format string) (bool, error) {
 		return false, nil
 	}
 	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
+	logging.Debug(cmd.String())
 	return true, cmd.Run()
 }
