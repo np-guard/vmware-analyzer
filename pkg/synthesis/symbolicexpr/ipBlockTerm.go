@@ -67,13 +67,11 @@ func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
 func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
-	thisBlock := getBlock(ipBlockTerm)
 	otherBlock := getBlock(otherAtom)
 	if otherBlock == nil {
 		return false
 	}
-	complementaryOther := complementary(otherBlock)
-	return thisBlock.Equal(complementaryOther)
+	return getBlock(ipBlockTerm).Equal(complementary(otherBlock))
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
