@@ -213,7 +213,8 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	return selector
 }
 
+var reg = regexp.MustCompile(`[^-A-Za-z0-9_.]`)
+
 func toLegalK8SString(s string) string {
-	reg, _ := regexp.Compile(`[^-A-Za-z0-9_.]`)
 	return reg.ReplaceAllString(s, "-NLC")
 }
