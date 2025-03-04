@@ -20,4 +20,5 @@ func (ip *ExternalIP) ID() string     { return ip.originalIP }
 func (ip *ExternalIP) InfoStr() []string {
 	return []string{ip.Name(), ip.ID(), ip.Name()}
 }
-func (ip *ExternalIP) Tags() []string { return nil }
+func (ip *ExternalIP) Tags() []string         { return nil }
+func (ip *ExternalIP) IPAddressesStr() string { return ip.originalIP }

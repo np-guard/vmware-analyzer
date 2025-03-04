@@ -236,7 +236,7 @@ func TestCompareNSXConnectivity(t *testing.T) {
 // the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
 func TestLiveNSXServer(t *testing.T) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
-	server, err := collector.GetNSXServerDate("", "", "")
+	server, err := collector.GetNSXServerDate("", "", "", true)
 	if err != nil {
 		logging.Debug(err.Error())
 		return
@@ -307,8 +307,8 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
-	categoryToPolicy := preProcessing(config.Fw.CategoriesSpecs)
-	preProcessOutput := printPreProcessingSymbolicPolicy(config.Fw.CategoriesSpecs, categoryToPolicy, false)
+	categoryToPolicy := preProcessing(config.FW.CategoriesSpecs)
+	preProcessOutput := printPreProcessingSymbolicPolicy(config.FW.CategoriesSpecs, categoryToPolicy, false)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)

@@ -11,15 +11,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-type ParsedNSXConfig interface {
-	DFW() *dfw.DFW
-	DefaultDenyRule() *dfw.FwRule
-	VMs() []topology.Endpoint
-	VMToGroupsMap() map[topology.Endpoint][]*collector.Group
-	GetGroups() []*collector.Group
-	VMsMap() map[string]topology.Endpoint
-}
-
 func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 	color bool) (*Config, error) {
 	parser := newNSXConfigParserFromResourcesContainer(resources)
@@ -37,33 +28,33 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 // Config captures nsx Config, implements NSXConfig interface
 type Config struct {
-	Vms            []topology.Endpoint                           // list of all Vms
-	externalIPs    []topology.Endpoint                           // list of all external ips
-	VmsMap         map[string]topology.Endpoint                  // map from uid to vm objects
-	Fw             *dfw.DFW                                      // currently assuming one DFW only (todo: rename pkg dfw)
-	Groups         []*collector.Group                            // list of all groups (also these with no Vms)
-	GroupsPerVM    map[topology.Endpoint][]*collector.Group      // map from vm to its groups
+	VMs              []topology.Endpoint // list of all Vms
+	segments         []*topology.SegmentDetails
+	externalIPs      []topology.Endpoint                      // list of all external ips
+	VMsMap           map[string]topology.Endpoint             // map from uid to vm objects
+	FW               *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
+	Groups           []*collector.Group                       // list of all groups (also these with no Vms)
+	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
 	RuleBlockPerEP map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
+	configSummary    *configInfo
+	origNSXResources *collector.ResourcesContainerModel
 }
 
-func (c *Config) DFW() *dfw.DFW {
-	return c.Fw
-}
-func (c *Config) VMs() []topology.Endpoint {
-	return c.Vms
-}
 func (c *Config) Endpoints() []topology.Endpoint {
-	return append(c.Vms, c.externalIPs...)
-}
-func (c *Config) VMsMap() map[string]topology.Endpoint {
-	return c.VmsMap
+	return append(c.VMs, c.externalIPs...)
 }
 
-func (c *Config) VMToGroupsMap() map[topology.Endpoint][]*collector.Group {
-	return c.GroupsPerVM
-}
-func (c *Config) GetGroups() []*collector.Group {
-	return c.Groups
+func (c *Config) GetVMs(collectorVMs []*collector.VirtualMachine) (res []*topology.VM) {
+	for _, vm := range collectorVMs {
+		if vm.ExternalId == nil {
+			return nil
+		}
+		id := *vm.ExternalId
+		if vmObj, ok := c.VMsMap[id]; ok {
+			res = append(res, vmObj.(*topology.VM))
+		}
+	}
+	return res
 }
 
 // GetConfigInfoStr returns string describing the captured configuration content
@@ -73,21 +64,55 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Segments:\n")
+	sb.WriteString(c.getSegmentsInfoStr(color))
+
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Segments ports:\n")
+	sb.WriteString(c.getSegmentsPortsInfoStr(color))
+
 	// groups
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Groups:\n")
 	sb.WriteString(c.getVMGroupsStr(color))
-	sb.WriteString(common.OutputSectionSep)
 
+	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("DFW:\n")
-	sb.WriteString(c.Fw.OriginalRulesStrFormatted(color))
+	sb.WriteString(c.FW.OriginalRulesStrFormatted(color))
 	sb.WriteString(common.ShortSep)
-	sb.WriteString(c.Fw.String())
+	sb.WriteString(c.FW.String())
 	sb.WriteString(common.ShortSep)
-	sb.WriteString(c.Fw.AllEffectiveRules())
+	sb.WriteString(c.FW.AllEffectiveRules())
 	sb.WriteString(common.OutputSectionSep)
 
 	return sb.String()
+}
+
+const (
+	vmNameTitle      = "VM Name"
+	segmentNameTitle = "Segment Name"
+)
+
+func (c *Config) getSegmentsPortsInfoStr(color bool) string {
+	header := []string{segmentNameTitle, "Port Name", "Port UID", vmNameTitle}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		for _, p := range s.PortsDetails() {
+			lines = append(lines, p.ToStrSlice())
+		}
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) getSegmentsInfoStr(color bool) string {
+	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", "VMs"}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
+		lines = append(lines, []string{s.SegmentType(), s.OverlayOrVlan(), s.Name(), s.ID(), s.CIDRs(), s.VlanIDs(), vmsStr})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 func (c *Config) getVMGroupsStr(color bool) string {
@@ -101,16 +126,16 @@ func (c *Config) getVMGroupsStr(color bool) string {
 }
 
 func (c *Config) getVMsInfoStr(color bool) string {
-	header := []string{"VM Name", "VM ID", "VM Addresses"}
+	header := []string{vmNameTitle, "VM ID", "VM Addresses"}
 	lines := [][]string{}
-	for _, vm := range c.Vms {
-		lines = append(lines, vm.InfoStr())
+	for _, vm := range c.VMs {
+		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.(*topology.VM).IPAddresses(), common.CommaSeparator)})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 func (c *Config) DefaultDenyRule() *dfw.FwRule {
-	for _, category := range c.Fw.CategoriesSpecs {
+	for _, category := range c.FW.CategoriesSpecs {
 		if category.Category == collector.LastCategory() {
 			for _, rule := range category.Rules {
 				if rule.IsDenyAll() {
