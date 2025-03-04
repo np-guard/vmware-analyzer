@@ -77,11 +77,20 @@ func isNegateOf(atom, otherAtom atomic) bool {
 // returns true iff otherAtom is disjoint to atom as given by hints
 // todo: could e.g. groups and tags have the same name????
 func disjoint(atom, otherAtom atomic, hints *Hints) bool {
-	// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if both not negated
-	if atom.isNegation() || otherAtom.isNegation() {
+	atomBlock := getBlock(atom)
+	otherAtomBlock := getBlock(otherAtom)
+	switch {
+	case atomBlock != nil && otherAtomBlock != nil:
+		return atomBlock.Intersect(otherAtomBlock).IsEmpty()
+	case atomBlock != nil || otherAtomBlock != nil:
 		return false
+	default:
+		// in hints list of disjoint groups/tags/.. is given. Actual atomicTerms are disjoint only if both not negated
+		if atom.isNegation() || otherAtom.isNegation() {
+			return false
+		}
+		return hints.disjoint(atom.name(), otherAtom.name())
 	}
-	return hints.disjoint(atom.name(), otherAtom.name())
 }
 
 // returns true iff atom is supersetOf of otherAtom other as given by hints

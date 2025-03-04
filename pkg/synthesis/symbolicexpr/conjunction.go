@@ -110,8 +110,11 @@ func (c *Conjunction) isEmptySet(hints *Hints) bool {
 	}
 	for i, outAtomicTerm := range *c {
 		outAtomicBlock := getBlock(outAtomicTerm)
-		if outAtomicBlock != nil && outAtomicBlock.IsEmpty() {
-			return true
+		if outAtomicBlock != nil {
+			if outAtomicBlock.IsEmpty() {
+				return true
+			}
+			continue
 		}
 		reminder := *c
 		reminder = reminder[i+1:]
