@@ -49,4 +49,11 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, false, ipBlockTerm1.isNegateOf(ipAddrSingleTerm))
 	require.Equal(t, false, allIpBlockTerm.isNegateOf(ipAddrSingleTerm))
 	require.Equal(t, false, ipBlockTerm2.isNegateOf(ipBlockTerm3))
+
+	// tests disjoint
+	require.Equal(t, true, ipAddrSingleTerm.disjoint(ipBlockTerm1, &Hints{}))
+	require.Equal(t, true, ipBlockTerm3.disjoint(ipBlockTerm1, &Hints{}))
+	require.Equal(t, false, ipBlockTerm2.disjoint(ipBlockTerm1, &Hints{}))
+	require.Equal(t, false, ipBlockTerm2.disjoint(allIpBlockTerm, &Hints{}))
+	require.Equal(t, false, allIpBlockTerm.disjoint(ipBlockTerm1, &Hints{}))
 }
