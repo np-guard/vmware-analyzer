@@ -23,6 +23,11 @@ func (tagTerm tagAtomicTerm) String() string {
 	return tagConst + eqSign(tagTerm) + tagTerm.name()
 }
 
+// IsTautology an tagAtomicTerm is a non-empty cond on a tag
+func (tagAtomicTerm) IsTautology() bool {
+	return false
+}
+
 func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", tagConst, tagTerm.name()), tagTerm.neg
 }

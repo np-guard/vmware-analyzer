@@ -28,7 +28,7 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 			if itemBlock == nil { // itemAtom not an IPBlock
 				continue
 			}
-			// note that there could be at most one IPBlock in a Conjunction, by design
+			// note that there could be at most one IPBlock in a conjunction, by design
 			newIPBlockAtomicTerm := &ipBlockAtomicTerm{atomicTerm: atomicTerm{},
 				IpBlock: &topology.IpBlock{Block: block.Intersect(itemBlock)}}
 			(*c)[i] = newIPBlockAtomicTerm // overriding the IPBlock

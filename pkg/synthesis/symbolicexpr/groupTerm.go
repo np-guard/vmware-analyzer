@@ -15,6 +15,11 @@ func (groupTerm groupAtomicTerm) String() string {
 	return grp + eqSign(groupTerm) + groupTerm.name()
 }
 
+// IsTautology an groupAtomicTerm is a non-empty cond on a group
+func (groupAtomicTerm) IsTautology() bool {
+	return false
+}
+
 func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", grp, groupTerm.name()), groupTerm.neg
 }

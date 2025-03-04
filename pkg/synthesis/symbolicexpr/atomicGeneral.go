@@ -61,11 +61,6 @@ func (hints *Hints) disjoint(name1, name2 string) bool {
 
 // functions of Atomic with identical impl of all implementing structs
 
-// IsTautology an atomicTerm is a non empty cond on a group, a tag etc and is thus not a tautology
-func (atomicTerm) IsTautology() bool {
-	return false
-}
-
 func (atomicTerm atomicTerm) isNegation() bool {
 	return atomicTerm.neg
 }
