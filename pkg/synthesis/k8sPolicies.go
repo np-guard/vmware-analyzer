@@ -3,6 +3,7 @@ package synthesis
 import (
 	"fmt"
 	"path"
+	"regexp"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -204,9 +205,15 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	for _, a := range con {
 		if !a.IsTautology() {
 			label, notIn := a.AsSelector()
+			label = toLegalK8SString(label)
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			selector.MatchExpressions = append(selector.MatchExpressions, req)
 		}
 	}
 	return selector
+}
+
+func toLegalK8SString(s string) string {
+	reg, _ := regexp.Compile(`[^-A-Za-z0-9_.]`)
+	return reg.ReplaceAllString(s, "-NLC")
 }
