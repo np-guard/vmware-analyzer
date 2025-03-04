@@ -63,12 +63,20 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Segments:\n")
+	sb.WriteString(c.getSegmentsInfoStr(color))
+
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Segments ports:\n")
+	sb.WriteString(c.getSegmentsPortsInfoStr(color))
+
 	// groups
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Groups:\n")
 	sb.WriteString(c.getVMGroupsStr(color))
-	sb.WriteString(common.OutputSectionSep)
 
+	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("DFW:\n")
 	sb.WriteString(c.FW.OriginalRulesStrFormatted(color))
 	sb.WriteString(common.ShortSep)
@@ -78,6 +86,32 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString(common.OutputSectionSep)
 
 	return sb.String()
+}
+
+const (
+	vmNameTitle      = "VM Name"
+	segmentNameTitle = "Segment Name"
+)
+
+func (c *Config) getSegmentsPortsInfoStr(color bool) string {
+	header := []string{segmentNameTitle, "Port Name", "Port UID", vmNameTitle}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		for _, p := range s.PortsDetails() {
+			lines = append(lines, p.ToStrSlice())
+		}
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) getSegmentsInfoStr(color bool) string {
+	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", "VMs"}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
+		lines = append(lines, []string{s.SegmentType(), s.OverlayOrVlan(), s.Name(), s.ID(), s.CIDRs(), s.VlanIDs(), vmsStr})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
 func (c *Config) getVMGroupsStr(color bool) string {
@@ -91,10 +125,10 @@ func (c *Config) getVMGroupsStr(color bool) string {
 }
 
 func (c *Config) getVMsInfoStr(color bool) string {
-	header := []string{"VM Name", "VM ID", "VM Addresses"}
+	header := []string{vmNameTitle, "VM ID", "VM Addresses"}
 	lines := [][]string{}
 	for _, vm := range c.VMs {
-		lines = append(lines, vm.InfoStr())
+		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.(*topology.VM).IPAddresses(), common.CommaSeparator)})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
