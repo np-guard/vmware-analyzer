@@ -26,6 +26,11 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 	return "IP block" + op + ipStr
 }
 
+// IsTautology an atomicTerm is a non empty cond on a group, a tag etc and is thus not a tautology
+func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
+	return complementary(getBlock(ipBlockTerm)).IsEmpty()
+}
+
 func (ipBlockTerm *ipBlockAtomicTerm) name() string {
 	return ipBlockTerm.String()
 }
@@ -92,9 +97,4 @@ func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints)
 		return false
 	}
 	return otherBlock.IsSubset(block)
-}
-
-// IsTautology an atomicTerm is a non empty cond on a group, a tag etc and is thus not a tautology
-func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
-	return complementary(ipBlockTerm.Block).IsEmpty()
 }
