@@ -181,7 +181,7 @@ var Example1dExternalWithSegments = Example{
 	},
 	SegmentsByVMs: map[string][]string{
 		"seg_a_and_b": {"A","B"},
-		"seg_c":       {"C"},
+		"seg_c":       {"C-no-address"},
 	},
 	SegmentsBlock: map[string]string{
 		"seg_a_and_b": "0.0.1.0/24",

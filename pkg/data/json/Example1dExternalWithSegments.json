@@ -28485,8 +28485,8 @@
                     ]
                 }
             ],
-            "lport_attachment_id": "port_C",
-            "owner_vm_id": "C"
+            "lport_attachment_id": "port_C-no-address",
+            "owner_vm_id": "C-no-address"
         }
     ],
     "segments": [
@@ -28524,7 +28524,7 @@
             "segment_ports": [
                 {
                     "attachment": {
-                        "id": "port_C"
+                        "id": "port_C-no-address"
                     },
                     "parent_path": "seg_c"
                 }

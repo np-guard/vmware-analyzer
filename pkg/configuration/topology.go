@@ -80,8 +80,7 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 		}
 	}
 	// remove duplications, "ANY" and paths to groups:
-	slices.Sort(allIPs)
-	allIPs = slices.Compact(allIPs)
+	allIPs = common.SliceCompact(allIPs)
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
 	// create the blocks:
 	for _, ip := range allIPs {
@@ -124,22 +123,34 @@ func (p *nsxConfigParser) getExternalIPs() {
 }
 
 func (p *nsxConfigParser) getRuleBlocksVMs() {
-	for _, vm := range p.configRes.Vms {
-		for _, block := range p.topology.allRuleIPBlocks {
-			addresses := vm.(*topology.VM).IPAddresses()
-			if len(addresses) == 0 {
-				continue
-			}
-			address, err := netset.IPBlockFromIPAddress(addresses[0])
-			if err != nil {
-				logging.Warnf("Could not resolve address %s of vm %s", addresses[0], vm.Name())
-			}
-			if address.IsSubset(block.Block) {
-				block.VMs = append(block.VMs, vm)
-				p.topology.allRuleIPBlocksEPs = append(p.topology.allRuleIPBlocksEPs, vm)
-				p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
+	for _, block := range p.topology.allRuleIPBlocks {
+		for _, vm := range p.configRes.Vms {
+			for _, address := range vm.(*topology.VM).IPAddresses() {
+				address, err := netset.IPBlockFromIPAddress(address)
+				if err != nil {
+					logging.Warnf("Could not resolve address %s of vm %s", address, vm.Name())
+					continue
+				}
+				if address.IsSubset(block.Block) {
+					block.VMs = append(block.VMs, vm)
+					p.topology.allRuleIPBlocksEPs = append(p.topology.allRuleIPBlocksEPs, vm)
+					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
+				}
 			}
 		}
+		for _, segment := range p.topology.segments {
+			if segment.Block.IsSubset(block.Block) {
+				block.VMs = append(block.VMs, segment.VMs...)
+				p.topology.allRuleIPBlocksEPs = append(p.topology.allRuleIPBlocksEPs, segment.VMs...)
+				for _, vm := range segment.VMs {
+					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
+				}
+			}
+		}
+		block.VMs = common.SliceCompact(block.VMs)
 	}
-	p.topology.allRuleIPBlocksEPs = slices.Compact(p.topology.allRuleIPBlocksEPs)
+	for _, vm := range p.configRes.Vms {
+		p.configRes.RuleBlockPerEP[vm] = common.SliceCompact(p.configRes.RuleBlockPerEP[vm])
+	}
+	p.topology.allRuleIPBlocksEPs = common.SliceCompact(p.topology.allRuleIPBlocksEPs)
 }
