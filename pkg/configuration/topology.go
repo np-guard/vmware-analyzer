@@ -124,7 +124,6 @@ func (p *nsxConfigParser) getExternalIPs() {
 }
 
 func (p *nsxConfigParser) getRuleBlocksVMs() {
-	p.configRes.RuleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
 	for _, block := range p.topology.allRuleIPBlocks {
 		for _, segment := range p.topology.segments {
 			if segment.Block.IsSubset(block.Block) {

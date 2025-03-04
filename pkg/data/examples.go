@@ -172,8 +172,8 @@ var Example1d = Example{
 		},
 	},
 }
-var Example1dBySegments = Example{
-	Name: "Example1dBySegments",
+var Example1dExternalWithSegments = Example{
+	Name: "Example1dExternalWithSegments",
 	VMs:  []string{"A", "B", "C"},
 	SegmentsByVMs: map[string][]string{
 		"frontend": {"A"},

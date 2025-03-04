@@ -50,8 +50,8 @@ var allTests = []analyzerTest{
 		exData: data.ExampleExclude,
 	},
 	{
-		name:   "Example1dBySegments",
-		exData: data.Example1dBySegments,
+		name:   "Example1dExternalWithSegments",
+		exData: data.Example1dExternalWithSegments,
 	},
 }
 

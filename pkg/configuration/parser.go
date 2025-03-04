@@ -61,6 +61,7 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+	p.configRes.RuleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
