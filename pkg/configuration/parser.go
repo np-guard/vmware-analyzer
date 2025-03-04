@@ -112,7 +112,7 @@ func (p *nsxConfigParser) storeParsedSegments() {
 	for i := range p.rc.SegmentList {
 		segment := &p.rc.SegmentList[i]
 		vms := p.configRes.GetVMs(p.rc.GetVMsOfSegment(segment))
-		p.configRes.segments = append(p.configRes.segments, topology.NewSegment(segment, vms))
+		p.configRes.segments = append(p.configRes.segments, topology.NewSegmentDetails(segment, vms))
 	}
 }
 

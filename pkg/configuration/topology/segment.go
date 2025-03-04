@@ -34,8 +34,8 @@ collecting here the same nsx UIDs for each segment's ports.
 
 */
 
-// Segment captures NSX Segment properties
-type Segment struct {
+// SegmentDetails captures NSX SegmentDetails properties
+type SegmentDetails struct {
 	name           string
 	uid            string
 	cidrs          []string
@@ -54,8 +54,8 @@ type segmentPort struct {
 	inferredVM *VM
 }
 
-func NewSegment(origSegmentObj *collector.Segment, vms []*VM) *Segment {
-	res := &Segment{origSegmentObj: origSegmentObj, vms: vms}
+func NewSegmentDetails(origSegmentObj *collector.Segment, vms []*VM) *SegmentDetails {
+	res := &SegmentDetails{origSegmentObj: origSegmentObj, vms: vms}
 	res.name = *origSegmentObj.DisplayName
 	res.uid = *origSegmentObj.UniqueId
 	res.cidrs = common.CustomStrSliceToStrings(origSegmentObj.Subnets, func(s nsx.SegmentSubnet) string { return *s.Network })
@@ -89,31 +89,31 @@ func portToVM(portName string, segmentVMs []*VM) *VM {
 	return nil
 }
 
-func (s *Segment) Name() string {
+func (s *SegmentDetails) Name() string {
 	return s.name
 }
 
-func (s *Segment) ID() string {
+func (s *SegmentDetails) ID() string {
 	return s.uid
 }
 
-func (s *Segment) CIDRs() string {
+func (s *SegmentDetails) CIDRs() string {
 	return strings.Join(s.cidrs, common.CommaSeparator)
 }
 
-func (s *Segment) VMs() []*VM {
+func (s *SegmentDetails) VMs() []*VM {
 	return s.vms
 }
 
-func (s *Segment) OverlayOrVlan() string {
+func (s *SegmentDetails) OverlayOrVlan() string {
 	return s.overlayOrVlan
 }
 
-func (s *Segment) VlanIDs() string {
+func (s *SegmentDetails) VlanIDs() string {
 	return strings.Join(s.vlanIDs, common.CommaSeparator)
 }
 
-func (s *Segment) SegmentType() string {
+func (s *SegmentDetails) SegmentType() string {
 	return s.segmentType
 }
 
@@ -128,7 +128,7 @@ func (p *PortDetails) ToStrSlice() []string {
 	return []string{p.SegmentName, p.PortName, p.PortUID, p.VMName}
 }
 
-func (s *Segment) PortsDetails() (res []*PortDetails) {
+func (s *SegmentDetails) PortsDetails() (res []*PortDetails) {
 	for _, p := range s.ports {
 		vmName := ""
 		if p.inferredVM != nil {

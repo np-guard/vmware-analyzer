@@ -12,15 +12,15 @@ import (
 )
 
 type nsxTopology struct {
-	segments        []*topology.SegmentNew
-	vmSegments      map[topology.Endpoint][]*topology.SegmentNew
+	segments        []*topology.Segment
+	vmSegments      map[topology.Endpoint][]*topology.Segment
 	allRuleIPBlocks map[string]*topology.RuleIPBlock // a map from the ip string,to the block
 	externalBlock   *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
 	return &nsxTopology{
-		vmSegments:      map[topology.Endpoint][]*topology.SegmentNew{},
+		vmSegments:      map[topology.Endpoint][]*topology.Segment{},
 		externalBlock:   netset.GetCidrAll(),
 		allRuleIPBlocks: map[string]*topology.RuleIPBlock{},
 	}
@@ -49,7 +49,7 @@ func (p *nsxConfigParser) getSegments() (err error) {
 			return err
 		}
 
-		segment := topology.NewSegmentNew(*segResource.DisplayName, block, subnetsNetworks)
+		segment := topology.NewSegment(*segResource.DisplayName, block, subnetsNetworks)
 
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
