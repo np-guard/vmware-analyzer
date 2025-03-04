@@ -53,14 +53,17 @@ type nsxConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *nsxTopology
+	ruleBlockPerEP   map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
+
 }
 
 func (p *nsxConfigParser) init() {
-	p.configRes = &Config{origNSXResources: p.rc, RuleBlockPerEP: map[topology.Endpoint][]*topology.RuleIPBlock{}}
+	p.configRes = &Config{origNSXResources: p.rc}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+	p.ruleBlockPerEP=  map[topology.Endpoint][]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
@@ -119,7 +122,7 @@ func (p *nsxConfigParser) storeParsedSegments() {
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 && len(p.configRes.RuleBlockPerEP[vm]) == 0 {
+		if len(groups) == 0 && len(p.ruleBlockPerEP[vm]) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}

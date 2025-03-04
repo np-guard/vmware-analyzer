@@ -35,7 +35,6 @@ type Config struct {
 	FW               *dfw.DFW                                 // currently assuming one DFW only (todo: rename pkg dfw)
 	Groups           []*collector.Group                       // list of all groups (also these with no Vms)
 	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
-	RuleBlockPerEP map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
 	configSummary    *configInfo
 	origNSXResources *collector.ResourcesContainerModel
 }

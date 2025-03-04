@@ -116,7 +116,7 @@ func (p *nsxConfigParser) getExternalIPs() {
 		for _, externalIP := range p.configRes.externalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
-				p.configRes.RuleBlockPerEP[externalIP] = append(p.configRes.RuleBlockPerEP[externalIP], ruleBlock)
+				p.ruleBlockPerEP[externalIP] = append(p.ruleBlockPerEP[externalIP], ruleBlock)
 			}
 		}
 	}
@@ -134,7 +134,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 				}
 				if address.IsSubset(block.Block) {
 					block.VMs = append(block.VMs, vm)
-					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
+					p.ruleBlockPerEP[vm] = append(p.ruleBlockPerEP[vm], block)
 				}
 			}
 		}
@@ -143,13 +143,13 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 			if segment.Block.IsSubset(block.Block) {
 				block.VMs = append(block.VMs, segment.VMs...)
 				for _, vm := range segment.VMs {
-					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
+					p.ruleBlockPerEP[vm] = append(p.ruleBlockPerEP[vm], block)
 				}
 			}
 		}
 		block.VMs = common.SliceCompact(block.VMs)
 	}
 	for _, vm := range p.configRes.VMs {
-		p.configRes.RuleBlockPerEP[vm] = common.SliceCompact(p.configRes.RuleBlockPerEP[vm])
+		p.ruleBlockPerEP[vm] = common.SliceCompact(p.ruleBlockPerEP[vm])
 	}
 }
