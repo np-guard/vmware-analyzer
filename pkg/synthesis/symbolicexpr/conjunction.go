@@ -77,7 +77,8 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	return newC
 }
 
-// atomic atom is a redundant in Conjunction c, if it is a superset of one of c's terms
+// atomic atom is a redundant in Conjunction c, if it is a superset of one of c's terms; this applies to tagTerm and
+// groupTerm; as to ipBlockTerm - there is at most one such term which is not redundant
 func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false
@@ -132,9 +133,8 @@ func (c *Conjunction) contains(atom atomic) bool {
 		if atomBlock != nil { // atom is an IPBlock
 			atomicItemBlock := getBlock(atomicItem)
 			if atomicItem != nil {
-				if atomBlock.IsSubset(atomicItemBlock) {
-					return true
-				}
+				// by design there is at most one ipBlockTerm in Conjunction c
+				return atomBlock.IsSubset(atomicItemBlock)
 			}
 		} else {
 			if atomicItem.String() == (atom).String() {
