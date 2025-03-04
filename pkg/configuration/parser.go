@@ -310,8 +310,8 @@ func (p *nsxConfigParser) getAllGroups() {
 
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		// in scope - "any" are all the vms and external endpoints
-		return p.configRes.Endpoints(), p.allGroups // all endpoints and groups
+		// in scope - "any" are all the vms
+		return p.configRes.VMs, p.allGroups // all endpoints and groups
 	}
 	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return endPoints, groups

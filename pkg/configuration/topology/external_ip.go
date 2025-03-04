@@ -9,7 +9,12 @@ type ExternalIP struct {
 }
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
-	e := &ExternalIP{ipBlock: ipBlock{Block: block, originalIP: block.String()}}
+	asCidrs, asRanges := block.String(), block.ToIPRanges()
+	origIP := asCidrs
+	if len(asRanges) < len(asCidrs){
+		origIP = asRanges
+	}
+	e := &ExternalIP{ipBlock: ipBlock{Block: block, originalIP: origIP}}
 	return e
 }
 

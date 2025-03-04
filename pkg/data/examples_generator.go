@@ -73,13 +73,15 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 					},
 				},
 			}
-			vmAddress := nsx.IPAddress(e.VMsAddress[vm])
 			vni := collector.VirtualNetworkInterface{
 				VirtualNetworkInterface: nsx.VirtualNetworkInterface{
 					LportAttachmentId: &portName,
 					OwnerVmId:         &vm,
-					IpAddressInfo:     []nsx.IpAddressInfo{{IpAddresses: []nsx.IPAddress{vmAddress}}},
 				},
+			}
+			if address, ok := e.VMsAddress[vm]; ok {
+				vmAddress := nsx.IPAddress(address)
+				vni.IpAddressInfo = []nsx.IpAddressInfo{{IpAddresses: []nsx.IPAddress{vmAddress}}}
 			}
 			res.VirtualNetworkInterfaceList = append(res.VirtualNetworkInterfaceList, vni)
 			segment.SegmentPorts = append(segment.SegmentPorts, port)
