@@ -12,15 +12,15 @@ import (
 )
 
 type nsxTopology struct {
-	segments        []*topology.Segment
-	vmSegments      map[topology.Endpoint][]*topology.Segment
+	segments        []*topology.SegmentNew
+	vmSegments      map[topology.Endpoint][]*topology.SegmentNew
 	allRuleIPBlocks map[string]*topology.RuleIPBlock // a map from the ip string,to the block
 	externalBlock   *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
 	return &nsxTopology{
-		vmSegments:      map[topology.Endpoint][]*topology.Segment{},
+		vmSegments:      map[topology.Endpoint][]*topology.SegmentNew{},
 		externalBlock:   netset.GetCidrAll(),
 		allRuleIPBlocks: map[string]*topology.RuleIPBlock{},
 	}
@@ -48,11 +48,13 @@ func (p *nsxConfigParser) getSegments() (err error) {
 		if err != nil {
 			return err
 		}
-		segment := topology.NewSegment(*segResource.DisplayName, block, subnetsNetworks)
+
+		segment := topology.NewSegmentNew(*segResource.DisplayName, block, subnetsNetworks)
+
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)
-			if vm, ok := p.configRes.VmsMap[*vni.OwnerVmId]; ok {
+			if vm, ok := p.configRes.VMsMap[*vni.OwnerVmId]; ok {
 				p.topology.vmSegments[vm] = append(p.topology.vmSegments[vm], segment)
 				segment.VMs = append(segment.VMs, vm)
 			}

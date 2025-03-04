@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 
@@ -272,6 +271,29 @@ func (n *nsxConn) getInsecureSkipVerify(s *v1.Secret) {
 	n.insecureSkipVerify = insecureSkipVerify
 }
 
+func (r *NSXMigrationReconciler) genConfigMap(data map[string]string, name string, ctx context.Context, log logr.Logger) error {
+	// test create configmap
+	cm := &v1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+		Data: data,
+	}
+	if err := r.Create(ctx, cm); err != nil {
+		log.Error(err, "Failed to create ConfigMap",
+			"ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+		return err
+	}
+
+	log.Info("generated configmap", "ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+	return nil
+}
+
 func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) (conn *nsxConn, err error) {
 	// TODO: initial step: connect to NSX host from spec, validate connection is OK, print to log the results.
 	ref := cr.Spec.Secret
@@ -308,8 +330,11 @@ func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration,
 	log.Info("REST API call returned successfully", "response", res)
 
 	return conn, nil
-
 }
+
+/*func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
+
+}*/
 
 func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
 
@@ -369,7 +394,8 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		//runner.WithAnalysisOutputFile(args.outputFile),
 		//runner.WithAnalysisExplain(args.explain),
 		//runner.WithAnalysisVMsFilter(args.outputFilter),
-		runner.WithSynthesisDumpDir("debug/synthesis"),
+		runner.WithSynth(true),
+		//runner.WithSynthesisDumpDir("debug/synthesis"),
 		//runner.WithSynthAdminPolicies(args.synthesizeAdmin),
 		//runner.WithSynthesisHints(args.disjointHints),
 		//runner.WithSynthDNSPolicies(args.createDNSPolicy),
@@ -378,45 +404,67 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		return err
 	}
 
-	if err := runnerObj.Run(); err != nil {
+	runObservations, err := runnerObj.Run()
+	if err != nil {
 		log.Error(err, "runner.Run() returned with error", "errStr", err.Error())
 		return err
 	}
 
 	policies, _ := runnerObj.GetGeneratedPolicies()
-
-	// build policies as map for configmap
-	dataPolicies := map[string]string{}
-	for _, policy := range policies {
-		pKey := policy.Name
-		buf, err := json.Marshal(policy)
-		if err != nil {
-			return err
-		}
-
-		pValue := string(buf)
-		dataPolicies[pKey] = pValue
-	}
-
-	// test create configmap
-	cm := &v1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "ConfigMap",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-config-map", // generated policies
-			Namespace: "default",
-		},
-		Data: dataPolicies,
-	}
-	if err = r.Create(ctx, cm); err != nil {
-		log.Error(err, "Failed to create ConfigMap",
-			"ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+	jsonOut, err := runObservations.ConfigAsJSON()
+	if err != nil {
+		log.Error(err, "runner.ConfigAsJSON() returned with error", "errStr", err.Error())
 		return err
 	}
 
-	log.Info("generated configmap")
+	// build configmaps from jsonOut
+
+	if err := r.genConfigMap(map[string]string{"topology": jsonOut.Topology}, "topology-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+	if err := r.genConfigMap(map[string]string{"segmentation": jsonOut.Segmentation}, "segmentation-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+	if err := r.genConfigMap(map[string]string{"connectivity": jsonOut.Connectivity}, "connectivity-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+	if err := r.genConfigMap(map[string]string{"generated-netpols": jsonOut.GeneratedNetpols}, "generated-netpols-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+
+	/*
+		// build policies as map for configmap
+		dataPolicies := map[string]string{}
+		for _, policy := range policies {
+			pKey := policy.Name
+			buf, err := json.Marshal(policy)
+			if err != nil {
+				return err
+			}
+
+			pValue := string(buf)
+			dataPolicies[pKey] = pValue
+		}
+
+		// test create configmap
+		cm := &v1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ConfigMap",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "my-config-map", // generated policies
+				Namespace: "default",
+			},
+			Data: dataPolicies,
+		}
+		if err = r.Create(ctx, cm); err != nil {
+			log.Error(err, "Failed to create ConfigMap",
+				"ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+			return err
+		}
+
+		log.Info("generated configmap")*/
 
 	//clientset.CoreV1().ConfigMaps("my-namespace").Create(&cm)
 

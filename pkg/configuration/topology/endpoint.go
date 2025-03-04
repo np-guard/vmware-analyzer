@@ -7,6 +7,7 @@ type Endpoint interface {
 	ID() string
 	InfoStr() []string
 	Tags() []string
+	IPAddressesStr() string
 }
 
 func Intersection(a, b []Endpoint) []Endpoint {
