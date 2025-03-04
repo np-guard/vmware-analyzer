@@ -176,7 +176,7 @@ func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPo
 	pol := &networking.NetworkPolicy{}
 	pol.TypeMeta.Kind = "NetworkPolicy"
 	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
-	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Name = toLegalK8SString(name)
 	pol.ObjectMeta.Namespace = meta.NamespaceDefault
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
@@ -189,7 +189,7 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 	pol := &admin.AdminNetworkPolicy{}
 	pol.TypeMeta.Kind = "AdminNetworkPolicy"
 	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
-	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Name = toLegalK8SString(name)
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
