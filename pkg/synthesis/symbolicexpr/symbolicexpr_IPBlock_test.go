@@ -56,4 +56,13 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, false, ipBlockTerm2.disjoint(ipBlockTerm1, &Hints{}))
 	require.Equal(t, false, ipBlockTerm2.disjoint(allIpBlockTerm, &Hints{}))
 	require.Equal(t, false, allIpBlockTerm.disjoint(ipBlockTerm1, &Hints{}))
+
+	// tests supersetOf
+	require.Equal(t, false, ipBlockTerm2.supersetOf(allIpBlockTerm, &Hints{}))
+	require.Equal(t, true, allIpBlockTerm.supersetOf(ipBlockTerm1, &Hints{}))
+	require.Equal(t, true, ipBlockTerm1.supersetOf(ipBlockTerm2, &Hints{}))
+	require.Equal(t, false, ipBlockTerm2.supersetOf(ipBlockTerm1, &Hints{}))
+	require.Equal(t, false, ipAddrSingleTerm.supersetOf(ipBlockTerm2, &Hints{}))
+	require.Equal(t, true, ipAddrSingleTerm.supersetOf(ipAddrSingleTerm, &Hints{}))
+	require.Equal(t, true, allIpBlockTerm.supersetOf(allIpBlockTerm, &Hints{}))
 }
