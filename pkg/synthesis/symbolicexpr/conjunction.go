@@ -103,11 +103,16 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 
 // checks whether the conjunction is empty: either syntactically, or contains an groupAtomicTerm and its negation
 // or contains two atoms that are disjoint to each other by hints
+// or contains an empty ipBlockTerm
 func (c *Conjunction) isEmptySet(hints *Hints) bool {
 	if len(*c) == 0 {
 		return true
 	}
 	for i, outAtomicTerm := range *c {
+		outAtomicBlock := getBlock(outAtomicTerm)
+		if outAtomicBlock != nil && outAtomicBlock.IsEmpty() {
+			return true
+		}
 		reminder := *c
 		reminder = reminder[i+1:]
 		for _, inAtomicTerm := range reminder {
