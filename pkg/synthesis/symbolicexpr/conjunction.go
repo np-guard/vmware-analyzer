@@ -18,24 +18,34 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	if c.contains(atom) {
 		return c
 	}
+	var ipBlockAddedToExisting bool
 	// if c is an IPBlock, adds it to other IPBlock in the Conjunction, if any. Otherwise, just appends it
 	// in the former case we lose the OriginalIP
 	block := getBlock(atom)
-	if block != nil { // atom is an IPBlock
+	var res Conjunction
+	if block != nil { // atom is an IPBlockTerm
 		// looks for an  IPBlock in c
-		for i, itemAtom := range *c {
+		for _, itemAtom := range *c {
 			itemBlock := getBlock(itemAtom)
 			if itemBlock == nil { // itemAtom not an IPBlock
-				continue
+				res = append(res, itemAtom)
+			} else {
+				// note that there could be at most one IPBlock in a conjunction, by design
+				// since the Conjunction's items are added, we should intersect the IPBlocks
+				newIPBlockAtomicTerm := &ipBlockAtomicTerm{atomicTerm: atomicTerm{},
+					IpBlock: &topology.IpBlock{Block: block.Intersect(itemBlock)}}
+				res = append(res, newIPBlockAtomicTerm)
+				ipBlockAddedToExisting = true
 			}
-			// note that there could be at most one IPBlock in a conjunction, by design
-			newIPBlockAtomicTerm := &ipBlockAtomicTerm{atomicTerm: atomicTerm{},
-				IpBlock: &topology.IpBlock{Block: block.Intersect(itemBlock)}}
-			(*c)[i] = newIPBlockAtomicTerm // overriding the IPBlock
-			return c
 		}
 	}
-	res := append(*c, atom)
+	if ipBlockAddedToExisting {
+		return &res
+	}
+	// atom was not an ipBlockTerm or c did not yet have an ipBlockTerm
+	res = Conjunction{} // empty slice
+	res = append(*c, atom)
+
 	return &res
 }
 
@@ -127,6 +137,12 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 	return false
 }
 
+// a Conjunction c contains an atom atomic if:
+// semantically:
+// the condition in atom is already implied by c
+// syntactically:
+// if atom is a tagTerm or a groupTerm, then if it contains the atom literally
+// if atom is an IPBlock, if there is already an IPBlock in c that is a subset of atom.
 func (c *Conjunction) contains(atom atomic) bool {
 	atomBlock := getBlock(atom)
 	for _, atomicItem := range *c {
@@ -134,7 +150,7 @@ func (c *Conjunction) contains(atom atomic) bool {
 			atomicItemBlock := getBlock(atomicItem)
 			if atomicItem != nil {
 				// by design there is at most one ipBlockTerm in Conjunction c
-				return atomBlock.IsSubset(atomicItemBlock)
+				return atomicItemBlock.IsSubset(atomBlock)
 			}
 		} else {
 			if atomicItem.String() == (atom).String() {

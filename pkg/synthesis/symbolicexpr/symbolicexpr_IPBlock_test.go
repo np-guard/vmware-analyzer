@@ -9,17 +9,22 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func TestIpBlockTerm(t *testing.T) {
+func getIPBlocksTerms() (allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm *ipBlockAtomicTerm) {
 	allIPBlock, _ := netset.IPBlockFromCidr("0.0.0.0/0")
 	ipBlock1, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
 	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
 	ipAddrSingle, _ := netset.IPBlockFromCidr("192.0.2.0/32")
-	allIpBlockTerm := NewIPBlockTermTerm(&topology.IpBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
-	ipBlockTerm1 := NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
-	ipBlockTerm2 := NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
-	ipBlockTerm3 := NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
-	ipAddrSingleTerm := NewIPBlockTermTerm(&topology.IpBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0 originalIP"})
+	allIpBlockTerm = NewIPBlockTermTerm(&topology.IpBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
+	ipBlockTerm1 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
+	ipBlockTerm2 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
+	ipBlockTerm3 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
+	ipAddrSingleTerm = NewIPBlockTermTerm(&topology.IpBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0 originalIP"})
+	return
+}
+
+func TestIpBlockTerm(t *testing.T) {
+	allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
 	fmt.Println("allIpBlockTerm is", allIpBlockTerm)
 	fmt.Println("ipBlockTerm1 is", ipBlockTerm1)
 	fmt.Println("ipBlockTerm2 is", ipBlockTerm2)
@@ -27,9 +32,9 @@ func TestIpBlockTerm(t *testing.T) {
 	fmt.Println("ipAddrSingleTerm is", ipAddrSingleTerm)
 
 	// tests String and Name
-	require.Equal(t, "IP block in 0.0.0.0/0", allIpBlockTerm.String())
-	require.Equal(t, "IP block in 192.0.2.0/24", ipBlockTerm3.String())
-	require.Equal(t, "IP block in 192.0.2.0 originalIP", ipAddrSingleTerm.String())
+	require.Equal(t, "IP addr in 0.0.0.0/0", allIpBlockTerm.String())
+	require.Equal(t, "IP addr in 192.0.2.0/24", ipBlockTerm3.String())
+	require.Equal(t, "IP addr in 192.0.2.0 originalIP", ipAddrSingleTerm.String())
 
 	// tests IsTautology()
 	require.Equal(t, true, allIpBlockTerm.IsTautology())
@@ -39,8 +44,8 @@ func TestIpBlockTerm(t *testing.T) {
 	// tests negation String()
 	fmt.Println("neg ipBlockTerm3 is", ipBlockTerm3.negate())
 	fmt.Println("neg ipAddrSingleTerm is", ipAddrSingleTerm.negate())
-	require.Equal(t, "IP block not in 192.0.2.0/24", ipBlockTerm3.negate().String())
-	require.Equal(t, "IP block not in 192.0.2.0 originalIP", ipAddrSingleTerm.negate().String())
+	require.Equal(t, "IP addr not in 192.0.2.0/24", ipBlockTerm3.negate().String())
+	require.Equal(t, "IP addr not in 192.0.2.0 originalIP", ipAddrSingleTerm.negate().String())
 
 	// tests isNegateOf
 	require.Equal(t, true, ipAddrSingleTerm.negate().isNegateOf(ipAddrSingleTerm))
@@ -65,4 +70,27 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, false, ipAddrSingleTerm.supersetOf(ipBlockTerm2, &Hints{}))
 	require.Equal(t, true, ipAddrSingleTerm.supersetOf(ipAddrSingleTerm, &Hints{}))
 	require.Equal(t, true, allIpBlockTerm.supersetOf(allIpBlockTerm, &Hints{}))
+}
+
+func TestIpBlockWithConj(t *testing.T) {
+	allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
+	slytherin, gryffindor := "Slytherin", "Gryffindor"
+	atomicSly := NewTagTerm(slytherin, false)
+	atomicGry := NewTagTerm(gryffindor, false)
+	conjAllIpBlockTermOnly := &Conjunction{allIpBlockTerm}
+	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1, atomicSly, atomicGry}
+	conjIPBlockTerm2Only := &Conjunction{ipBlockTerm2}
+	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3, atomicSly, atomicGry}
+	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm, atomicSly, atomicGry}
+	fmt.Println("conjAllIpBlockTerm is", conjAllIpBlockTermOnly)
+	fmt.Println("conjIPBlockTerm1 is", conjIPBlockTerm1)
+	fmt.Println("conjIPBlockTerm2 is", conjIPBlockTerm2Only)
+	fmt.Println("conjIPBlockTerm3 is", conjIPBlockTerm3)
+	fmt.Println("conjIPAddrSingleTerm is", conjIPAddrSingleTerm)
+
+	// tests add
+	fmt.Println("conjIPBlockTerm2.add(ipBlockTerm3)", conjIPBlockTerm2Only.add(ipBlockTerm3))
+	fmt.Println("conjAllIpBlockTerm.add(ipBlockTerm3)", conjAllIpBlockTermOnly.add(ipBlockTerm3))
+	require.Equal(t, "(IP addr in the empty block)", conjIPBlockTerm2Only.add(ipBlockTerm3).String())
+	require.Equal(t, "(IP addr in 192.0.2.0/24)", conjAllIpBlockTermOnly.add(ipBlockTerm3).String())
 }

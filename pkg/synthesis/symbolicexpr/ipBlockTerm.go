@@ -13,7 +13,12 @@ func NewIPBlockTermTerm(ipBlock *topology.IpBlock) *ipBlockAtomicTerm {
 // once we have more than one ipTerm in a Conjunction we merge; and then the OrigIP component is lost
 
 func (ipBlockTerm *ipBlockAtomicTerm) String() string {
-	ipStr := ipBlockTerm.Block.String()
+	var ipStr string
+	if ipBlockTerm.Block.IsEmpty() {
+		ipStr = "the empty block"
+	} else {
+		ipStr = ipBlockTerm.Block.String()
+	}
 	// prefer the OrigIP if exists
 	origIP := ipBlockTerm.IpBlock.OriginalIP
 	if origIP != "" {
@@ -23,7 +28,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 	if ipBlockTerm.neg {
 		op = " not in "
 	}
-	return "IP block" + op + ipStr
+	return "IP addr" + op + ipStr
 }
 
 // IsTautology an atomicTerm is a non empty cond on a group, a tag etc and is thus not a tautology
