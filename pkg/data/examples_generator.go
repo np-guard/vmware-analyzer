@@ -19,6 +19,7 @@ type Example struct {
 	// nsx config spec fields below
 	VMs           []string
 	VMsTags       map[string][]nsx.Tag
+	VMsAddress    map[string]string
 	GroupsByVMs   map[string][]string
 	SegmentsByVMs map[string][]string
 	SegmentsBlock map[string]string
@@ -69,10 +70,12 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 					},
 				},
 			}
+			vmAddress := nsx.IPAddress(e.VMsAddress[vm])
 			vni := collector.VirtualNetworkInterface{
 				VirtualNetworkInterface: nsx.VirtualNetworkInterface{
 					LportAttachmentId: &portName,
-					OwnerVmId: &vm,
+					OwnerVmId:         &vm,
+					IpAddressInfo:     []nsx.IpAddressInfo{{IpAddresses: []nsx.IPAddress{vmAddress}}},
 				},
 			}
 			res.VirtualNetworkInterfaceList = append(res.VirtualNetworkInterfaceList, vni)
