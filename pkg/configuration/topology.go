@@ -159,7 +159,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 // tmp function till netset is fixed:
 func IPBlockFromIPAddress(ipAddress string) (*netset.IPBlock, error) {
 	startIP := net.ParseIP(ipAddress)
-	if startIP == nil || startIP.To4() == nil{
+	if startIP == nil || startIP.To4() == nil {
 		return nil, fmt.Errorf("%v is not a valid ipv4", ipAddress)
 	}
 	return netset.IPBlockFromIPAddress(ipAddress)
