@@ -175,7 +175,8 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 
 // Conjunction c is a superset of atomic atom if any resource satisfying atom also satisfies c
 // this is the case if each of c's term is a superset of atom
-// e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
+// e.g.,  1.2.1.0/8 is a superset of 1.2.1.0/16;
+// given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
 func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false
