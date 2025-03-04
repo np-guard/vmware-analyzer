@@ -7,7 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 //nolint:stylecheck // names should be as in rest output
 package vsphrcoll
 
-import "encoding/json"
+import (
+	"github.com/np-guard/vmware-analyzer/internal/common"
+)
 
 const (
 	virtualMachineQuery = "api/vcenter/vm"
@@ -99,8 +101,7 @@ func NewResourcesContainerModel() *ResourcesContainerModel {
 
 // ToJSONString converts a ResourcesContainerModel into a json-formatted-string
 func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
-	toPrint, err := json.MarshalIndent(resources, "", "    ")
-	return string(toPrint), err
+	return common.MarshalJSON(resources)
 }
 
 func CollectResources(nsxServer, userName, password string, insecureSkipVerify bool) (*ResourcesContainerModel, error) {

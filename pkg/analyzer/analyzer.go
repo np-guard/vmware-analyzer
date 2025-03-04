@@ -19,7 +19,7 @@ func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivi
 			if src == dst {
 				continue
 			}
-			conn := dfwAllowedConnections(c.Fw, src, dst)
+			conn := dfwAllowedConnections(c.FW, src, dst)
 			res.Add(src, dst, conn)
 		}
 	}
@@ -27,7 +27,7 @@ func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivi
 }
 
 func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params common.OutputParameters) (
-	configuration.ParsedNSXConfig,
+	*configuration.Config,
 	connectivity.ConnMap,
 	string,
 	error) {

@@ -16,7 +16,7 @@ type SynthesisOptions struct {
 
 func NSXToK8sSynthesis(
 	resources *collector.ResourcesContainerModel,
-	config configuration.ParsedNSXConfig,
+	config *configuration.Config,
 	options *SynthesisOptions,
 ) (*k8sResources, error) {
 	abstractModel, err := NSXToPolicy(resources, config, options)
@@ -27,7 +27,7 @@ func NSXToK8sSynthesis(
 }
 
 func NSXToPolicy(resources *collector.ResourcesContainerModel,
-	config configuration.ParsedNSXConfig,
+	config *configuration.Config,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
 		var err error
@@ -38,15 +38,15 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 	}
 
 	logging.Debugf("started synthesis")
-	preProcessingCategoryToPolicy := preProcessing(config.DFW().CategoriesSpecs)
-	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
+	preProcessingCategoryToPolicy := preProcessing(config.FW.CategoriesSpecs)
+	preProcessingPolicyStr := printPreProcessingSymbolicPolicy(config.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
 		options.Color)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%v", preProcessingPolicyStr)
 	allowOnlyPolicy := computeAllowOnlyRulesForPolicy(
-		config.DFW().CategoriesSpecs, preProcessingCategoryToPolicy,
+		config.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
 		options.SynthesizeAdmin, options.Hints)
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
-	abstractModel := &AbstractModelSyn{vms: config.VMs(), allGroups: config.GetGroups(), epToGroups: config.VMToGroupsMap(),
+	abstractModel := &AbstractModelSyn{vms: config.VMs, allGroups: config.Groups, epToGroups: config.GroupsPerVM,
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
 	abstractModelStr := strAbstractModel(abstractModel, options)
