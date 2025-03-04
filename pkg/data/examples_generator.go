@@ -66,8 +66,8 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 			port := collector.SegmentPort{
 				SegmentPort: nsx.SegmentPort{
 					DisplayName: &portName,
-					UniqueId: &portName,
-					ParentPath: &segmentName,
+					UniqueId:    &portName,
+					ParentPath:  &segmentName,
 					Attachment: &nsx.PortAttachment{
 						Id: &portName,
 					},

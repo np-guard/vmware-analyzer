@@ -90,8 +90,8 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
-		name:   "Example1dExternalWithSegments",
-		exData: &data.Example1dExternalWithSegments,
+		name:            "Example1dExternalWithSegments",
+		exData:          &data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},

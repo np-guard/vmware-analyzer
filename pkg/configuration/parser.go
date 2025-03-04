@@ -53,8 +53,7 @@ type nsxConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *nsxTopology
-	ruleBlockPerEP   map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
-
+	ruleBlockPerEP        map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
 }
 
 func (p *nsxConfigParser) init() {
@@ -63,7 +62,7 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
-	p.ruleBlockPerEP=  map[topology.Endpoint][]*topology.RuleIPBlock{}
+	p.ruleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
@@ -311,7 +310,7 @@ func (p *nsxConfigParser) getAllGroups() {
 
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		// in scope - any are all the vms and external endpoints  
+		// in scope - "any" are all the vms and external endpoints
 		return p.configRes.Endpoints(), p.allGroups // all endpoints and groups
 	}
 	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
