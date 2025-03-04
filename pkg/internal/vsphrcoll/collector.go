@@ -103,8 +103,8 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	return string(toPrint), err
 }
 
-func CollectResources(nsxServer, userName, password string) (*ResourcesContainerModel, error) {
-	server := &serverData{nsxServer, userName, password, ""}
+func CollectResources(nsxServer, userName, password string, insecureSkipVerify bool) (*ResourcesContainerModel, error) {
+	server := &serverData{nsxServer, userName, password, "", insecureSkipVerify}
 	res := NewResourcesContainerModel()
 	err := collectResource(server, virtualMachineQuery, &res.Vms)
 	if err != nil {
