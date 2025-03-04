@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -451,11 +452,11 @@ func TestIpBlockTerm(t *testing.T) {
 	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
 	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
 	ipAddrSingle, _ := netset.IPBlockFromCidr("192.0.2.0")
-	allIpBlockTerm := NewIPBlockTermTerm(&ipBlock{Block: allIPBlock, OrigIP: "0.0.0.0/0"})
-	ipBlockTerm1 := NewIPBlockTermTerm(&ipBlock{Block: ipBlock1, OrigIP: "1.2.3.0/8"})
-	ipBlockTerm2 := NewIPBlockTermTerm(&ipBlock{Block: ipBlock2, OrigIP: "1.2.3.0/16"})
-	ipBlockTerm3 := NewIPBlockTermTerm(&ipBlock{Block: ipBlock3, OrigIP: "192.0.2.0/24"})
-	ipAddrSingleTerm := NewIPBlockTermTerm(&ipBlock{Block: ipAddrSingle, OrigIP: "192.0.2.0"})
+	allIpBlockTerm := NewIPBlockTermTerm(&topology.IpBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
+	ipBlockTerm1 := NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
+	ipBlockTerm2 := NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
+	ipBlockTerm3 := NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
+	ipAddrSingleTerm := NewIPBlockTermTerm(&topology.IpBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0"})
 	fmt.Println("allIpBlockTerm is", allIpBlockTerm)
 	fmt.Println("ipBlockTerm1 is", ipBlockTerm1)
 	fmt.Println("ipBlockTerm2 is", ipBlockTerm2)
