@@ -26,7 +26,7 @@ func TestIpBlockTerm(t *testing.T) {
 	fmt.Println("ipBlockTerm3 is", ipBlockTerm3)
 	fmt.Println("ipAddrSingleTerm is", ipAddrSingleTerm)
 
-	// checks String and Name
+	// tests String and Name
 	require.Equal(t, "IP block in 0.0.0.0/0", allIpBlockTerm.String())
 	require.Equal(t, "IP block in 192.0.2.0/24", ipBlockTerm3.String())
 	require.Equal(t, "IP block in 192.0.2.0 originalIP", ipAddrSingleTerm.String())
@@ -37,8 +37,11 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, "IP block not in 192.0.2.0/24", ipBlockTerm3.negate().String())
 	require.Equal(t, "IP block not in 192.0.2.0 originalIP", ipAddrSingleTerm.negate().String())
 
-	// checks isNegateOf
+	// tests isNegateOf
 	require.Equal(t, true, ipAddrSingleTerm.negate().isNegateOf(ipAddrSingleTerm))
 	require.Equal(t, true, ipBlockTerm1.negate().isNegateOf(ipBlockTerm1))
 	require.Equal(t, true, allIpBlockTerm.negate().isNegateOf(allIpBlockTerm))
+	require.Equal(t, false, ipBlockTerm1.isNegateOf(ipAddrSingleTerm))
+	require.Equal(t, false, allIpBlockTerm.isNegateOf(ipAddrSingleTerm))
+	require.Equal(t, false, ipBlockTerm2.isNegateOf(ipBlockTerm3))
 }
