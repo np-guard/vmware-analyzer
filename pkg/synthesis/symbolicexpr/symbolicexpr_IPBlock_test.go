@@ -92,8 +92,12 @@ func TestIpBlockWithConj(t *testing.T) {
 	fmt.Println("conjIPBlockTerm2.add(ipBlockTerm3)", conjIPBlockTerm2Only.add(ipBlockTerm3))
 	fmt.Println("conjAllIpBlockTerm.add(ipBlockTerm3)", conjAllIpBlockTermOnly.add(ipBlockTerm3))
 	fmt.Println("conjIPAddrSingleTerm.add(conjIPBlockTerm1)", conjIPAddrSingleTerm.add(ipBlockTerm3))
+	fmt.Println("conjIPBlockTerm3.add(ipAddrSingleTerm)", conjIPBlockTerm3.add(ipAddrSingleTerm))
+
 	require.Equal(t, "(IP addr in the empty block)", conjIPBlockTerm2Only.add(ipBlockTerm3).String())
 	require.Equal(t, "(IP addr in 192.0.2.0/24)", conjAllIpBlockTermOnly.add(ipBlockTerm3).String())
 	require.Equal(t, "(IP addr in 192.0.2.0 originalIP and tag = Slytherin and tag = Gryffindor)",
 		conjIPAddrSingleTerm.add(ipBlockTerm3).String())
+	require.Equal(t, "(IP addr in 192.0.2.0 and tag = Slytherin and tag = Gryffindor)",
+		conjIPBlockTerm3.add(ipAddrSingleTerm).String())
 }
