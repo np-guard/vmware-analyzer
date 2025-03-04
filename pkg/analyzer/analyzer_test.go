@@ -49,6 +49,10 @@ var allTests = []analyzerTest{
 		name:   "ExampleExclude",
 		exData: data.ExampleExclude,
 	},
+	{
+		name:   "Example1dExternalWithSegments",
+		exData: data.Example1dExternalWithSegments,
+	},
 }
 
 func (a *analyzerTest) file() string {

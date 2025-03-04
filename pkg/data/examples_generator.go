@@ -17,11 +17,14 @@ import (
 // Example is in s single domain
 type Example struct {
 	// nsx config spec fields below
-	VMs          []string
-	VMsTags      map[string][]nsx.Tag
-	GroupsByVMs  map[string][]string
-	GroupsByExpr map[string]ExampleExpr // map from group name to its expr
-	Policies     []Category
+	VMs           []string
+	VMsTags       map[string][]nsx.Tag
+	VMsAddress    map[string]string
+	GroupsByVMs   map[string][]string
+	SegmentsByVMs map[string][]string
+	SegmentsBlock map[string]string
+	GroupsByExpr  map[string]ExampleExpr // map from group name to its expr
+	Policies      []Category
 
 	// additional info about example, relevant for synthesis
 	DisjointGroupsTags [][]string
@@ -48,6 +51,40 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 			VirtualMachine: newVM,
 		}
 		res.VirtualMachineList = append(res.VirtualMachineList, newVMRes)
+	}
+	for segmentName, ip := range e.SegmentsBlock {
+		segment := collector.Segment{
+			Segment: nsx.Segment{
+				UniqueId:    &segmentName,
+				DisplayName: &segmentName,
+				Subnets:     []nsx.SegmentSubnet{{Network: &ip}},
+				Path:        &segmentName,
+			},
+		}
+		for _, vm := range e.SegmentsByVMs[segmentName] {
+			portName := "port_" + vm
+			port := collector.SegmentPort{
+				SegmentPort: nsx.SegmentPort{
+					DisplayName: &portName,
+					UniqueId:    &portName,
+					ParentPath:  &segmentName,
+					Attachment: &nsx.PortAttachment{
+						Id: &portName,
+					},
+				},
+			}
+			vmAddress := nsx.IPAddress(e.VMsAddress[vm])
+			vni := collector.VirtualNetworkInterface{
+				VirtualNetworkInterface: nsx.VirtualNetworkInterface{
+					LportAttachmentId: &portName,
+					OwnerVmId:         &vm,
+					IpAddressInfo:     []nsx.IpAddressInfo{{IpAddresses: []nsx.IPAddress{vmAddress}}},
+				},
+			}
+			res.VirtualNetworkInterfaceList = append(res.VirtualNetworkInterfaceList, vni)
+			segment.SegmentPorts = append(segment.SegmentPorts, port)
+		}
+		res.SegmentList = append(res.SegmentList, segment)
 	}
 	// set default domain
 	domainRsc := collector.Domain{}

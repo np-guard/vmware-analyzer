@@ -172,6 +172,47 @@ var Example1d = Example{
 		},
 	},
 }
+var Example1dExternalWithSegments = Example{
+	Name: "Example1dExternalWithSegments",
+	VMs:  []string{"A", "B", "C-no-address"},
+	VMsAddress: map[string]string{
+		"A": "0.0.1.0",
+		"B": "0.0.1.192",
+	},
+	SegmentsByVMs: map[string][]string{
+		"seg_a_and_b": {"A", "B"},
+		"seg_c":       {"C-no-address"},
+	},
+	SegmentsBlock: map[string]string{
+		"seg_a_and_b": "0.0.1.0/24",
+		"seg_c":       "0.0.2.0/24",
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "allow_smb_a_to_b",
+					ID:       1004,
+					Source:   "0.0.1.0/25",
+					Dest:     "0.0.1.128/25",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_https_b_to_c",
+					ID:       1005,
+					Source:   "0.0.1.128/25",
+					Dest:     "0.0.2.0/24",
+					Services: []string{"/infra/services/HTTPS"},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
 
 var Example1External = Example{
 	Name: "Example1External",

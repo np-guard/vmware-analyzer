@@ -33,7 +33,7 @@ func (p *nsxConfigParser) getTopology() (err error) {
 	}
 	p.getAllRulesIPBlocks()
 	p.getExternalIPs()
-	// todo - calc VMs of the block
+	p.getRuleBlocksVMs()
 	return nil
 }
 
@@ -81,8 +81,7 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 		}
 	}
 	// remove duplications, "ANY" and paths to groups:
-	slices.Sort(allIPs)
-	allIPs = slices.Compact(allIPs)
+	allIPs = common.SliceCompact(allIPs)
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
 	// create the blocks:
 	for _, ip := range allIPs {
@@ -117,7 +116,40 @@ func (p *nsxConfigParser) getExternalIPs() {
 		for _, externalIP := range p.configRes.externalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
+				p.ruleBlockPerEP[externalIP] = append(p.ruleBlockPerEP[externalIP], ruleBlock)
 			}
 		}
+	}
+}
+
+func (p *nsxConfigParser) getRuleBlocksVMs() {
+	for _, block := range p.topology.allRuleIPBlocks {
+		// iterate over VMs, look if the vm address is in the block:
+		for _, vm := range p.configRes.VMs {
+			for _, address := range vm.(*topology.VM).IPAddresses() {
+				address, err := netset.IPBlockFromIPAddress(address)
+				if err != nil {
+					logging.Warnf("Could not resolve address %s of vm %s", address, vm.Name())
+					continue
+				}
+				if address.IsSubset(block.Block) {
+					block.VMs = append(block.VMs, vm)
+					p.ruleBlockPerEP[vm] = append(p.ruleBlockPerEP[vm], block)
+				}
+			}
+		}
+		// iterate over segments, if segment is in the block, add all its vms
+		for _, segment := range p.topology.segments {
+			if segment.Block.IsSubset(block.Block) {
+				block.VMs = append(block.VMs, segment.VMs...)
+				for _, vm := range segment.VMs {
+					p.ruleBlockPerEP[vm] = append(p.ruleBlockPerEP[vm], block)
+				}
+			}
+		}
+		block.VMs = common.SliceCompact(block.VMs)
+	}
+	for _, vm := range p.configRes.VMs {
+		p.ruleBlockPerEP[vm] = common.SliceCompact(p.ruleBlockPerEP[vm])
 	}
 }

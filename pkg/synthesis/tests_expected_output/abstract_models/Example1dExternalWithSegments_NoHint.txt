@@ -1,0 +1,19 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group |Expression |VM
+
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src |Dst |Connection
+
+
+outbound rules
+Original allow rule priority |Rule id |Src |Dst |Connection
+
+

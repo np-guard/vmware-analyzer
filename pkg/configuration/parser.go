@@ -53,6 +53,7 @@ type nsxConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *nsxTopology
+	ruleBlockPerEP        map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
 }
 
 func (p *nsxConfigParser) init() {
@@ -61,6 +62,7 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+	p.ruleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
@@ -119,7 +121,7 @@ func (p *nsxConfigParser) storeParsedSegments() {
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 {
+		if len(groups) == 0 && len(p.ruleBlockPerEP[vm]) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}
@@ -308,7 +310,8 @@ func (p *nsxConfigParser) getAllGroups() {
 
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		return append(p.allGroupsVMs, p.configRes.externalIPs...), p.allGroups // all endpoints and groups
+		// in scope - "any" are all the vms and external endpoints
+		return p.configRes.Endpoints(), p.allGroups // all endpoints and groups
 	}
 	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return endPoints, groups
