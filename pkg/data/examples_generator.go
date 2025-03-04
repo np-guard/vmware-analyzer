@@ -55,6 +55,7 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 	for segmentName, ip := range e.SegmentsBlock {
 		segment := collector.Segment{
 			Segment: nsx.Segment{
+				UniqueId:    &segmentName,
 				DisplayName: &segmentName,
 				Subnets:     []nsx.SegmentSubnet{{Network: &ip}},
 				Path:        &segmentName,
@@ -64,6 +65,8 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 			portName := "port_" + vm
 			port := collector.SegmentPort{
 				SegmentPort: nsx.SegmentPort{
+					DisplayName: &portName,
+					UniqueId: &portName,
 					ParentPath: &segmentName,
 					Attachment: &nsx.PortAttachment{
 						Id: &portName,
