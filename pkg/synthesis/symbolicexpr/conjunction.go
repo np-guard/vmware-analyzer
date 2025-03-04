@@ -45,9 +45,12 @@ func (c *Conjunction) copy() *Conjunction {
 	return &newC
 }
 
-// tautology: single term which is 0.0.0.0/0 or single term which is tautology
+// tautology: ipBlock 0.0.0.0/0 or tautology struct; at most 2 items
 func (c *Conjunction) isTautology() bool {
-	if len(*c) == 1 && (*c)[0].IsTautology() {
+	if len(*c) > 2 || len(*c) == 0 || !(*c)[0].IsTautology() {
+		return false
+	}
+	if len(*c) == 1 || (len(*c) == 2 && (*c)[1].IsTautology()) {
 		return true
 	}
 	return false
