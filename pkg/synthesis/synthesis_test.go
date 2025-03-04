@@ -230,7 +230,7 @@ func TestCompareNSXConnectivity(t *testing.T) {
 // the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
 func TestLiveNSXServer(t *testing.T) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
-	server, err := collector.GetNSXServerDate("", "", "")
+	server, err := collector.GetNSXServerDate("", "", "", true)
 	if err != nil {
 		logging.Debug(err.Error())
 		return

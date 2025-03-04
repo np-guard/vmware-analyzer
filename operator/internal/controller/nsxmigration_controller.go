@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -232,8 +233,92 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return ctrl.Result{}, nil
 }
 
-func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
+type nsxConn struct {
+	user               string
+	password           string
+	url                string
+	insecureSkipVerify bool
+}
+
+func (n *nsxConn) getUser(s *v1.Secret) {
+	if userData, found := s.Data["username"]; found {
+		n.user = string(userData)
+	}
+}
+
+func (n *nsxConn) getPassword(s *v1.Secret) {
+	if passwordData, found := s.Data["password"]; found {
+		n.password = string(passwordData)
+	}
+}
+
+func (n *nsxConn) getURL(s *v1.Secret) {
+	if urlData, found := s.Data["url"]; found {
+		n.url = string(urlData)
+	}
+}
+
+func (n *nsxConn) getInsecureSkipVerify(s *v1.Secret) {
+	insecure, found := s.Data["insecureSkipVerify"]
+	if !found {
+		return
+	}
+
+	insecureSkipVerify, err := strconv.ParseBool(string(insecure))
+	if err != nil {
+		return
+	}
+
+	n.insecureSkipVerify = insecureSkipVerify
+}
+
+func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) (conn *nsxConn, err error) {
 	// TODO: initial step: connect to NSX host from spec, validate connection is OK, print to log the results.
+	ref := cr.Spec.Secret
+	nsName := types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}
+	log.Info("called nsxMigration() to fetch secret", "NamespacedName", nsName.String())
+	// get the secret from spec
+
+	secret := &v1.Secret{}
+	if err := r.Get(ctx, nsName, secret); err != nil {
+		log.Error(err, "Failed to get secret ref", "namespace", ref.Namespace, "name", ref.Name)
+		log.Error(err, "error is:", "errorStr", err.Error())
+		return nil, err
+	}
+
+	log.Info("completed Get Secrete without error")
+
+	// get nsx credentials from secret
+	//var user, password, url string
+	conn = &nsxConn{}
+
+	conn.getUser(secret)
+	conn.getPassword(secret)
+	conn.getURL(secret)
+	conn.getInsecureSkipVerify(secret)
+
+	log.Info("extracted nsx credentials", "user", conn.user, "url", conn.url)
+
+	// next: validate nsx connection with given credentials
+	res, err := collector.ValidateNSXConnection(conn.url, conn.user, conn.password, conn.insecureSkipVerify)
+	if err != nil {
+		log.Error(err, "REST API call error", "errStr", err.Error())
+		return nil, err
+	}
+	log.Info("REST API call returned successfully", "response", res)
+
+	return conn, nil
+
+}
+
+func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
+
+	conn, err := r.getNSXCredentials(cr, ctx, log)
+	if err != nil {
+		return err
+	}
+
+	/*// TODO: initial step: connect to NSX host from spec, validate connection is OK, print to log the results.
 	ref := cr.Spec.Secret
 	nsName := types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}
 	log.Info("called nsxMigration() to fetch secret", "NamespacedName", nsName.String())
@@ -266,15 +351,16 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		log.Error(err, "REST API call error", "errStr", err.Error())
 		return err
 	}
-	log.Info("REST API call returned successfully", "response", res)
+	log.Info("REST API call returned successfully", "response", res)*/
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(
 		// default output format
 		runner.WithHighVerbosity(true),
 		runner.WithLogFile("debug/log.txt"),
-		runner.WithNSXURL(url),
-		runner.WithNSXUser(user),
-		runner.WithNSXPassword(password),
+		runner.WithNSXURL(conn.url),
+		runner.WithNSXUser(conn.user),
+		runner.WithNSXPassword(conn.password),
+		runner.WithInsecureSkipVerify(conn.insecureSkipVerify),
 		//runner.WithResourcesDumpFile(args.resourceDumpFile),
 		//runner.WithResourcesAnonymization(args.anonymise),
 		//runner.WithResourcesInputFile(args.resourceInputFile),
