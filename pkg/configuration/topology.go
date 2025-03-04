@@ -12,11 +12,10 @@ import (
 )
 
 type nsxTopology struct {
-	segments           []*topology.Segment
-	vmSegments         map[topology.Endpoint][]*topology.Segment
-	allRuleIPBlocks    map[string]*topology.RuleIPBlock // a map from the ip string,to the block
-	externalBlock      *netset.IPBlock
-	allRuleIPBlocksEPs []topology.Endpoint
+	segments        []*topology.Segment
+	vmSegments      map[topology.Endpoint][]*topology.Segment
+	allRuleIPBlocks map[string]*topology.RuleIPBlock // a map from the ip string,to the block
+	externalBlock   *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
@@ -119,11 +118,11 @@ func (p *nsxConfigParser) getExternalIPs() {
 			}
 		}
 	}
-	p.topology.allRuleIPBlocksEPs = slices.Clone(p.configRes.externalIPs)
 }
 
 func (p *nsxConfigParser) getRuleBlocksVMs() {
 	for _, block := range p.topology.allRuleIPBlocks {
+		// iterate over VMs, look if the vm address is in the block:
 		for _, vm := range p.configRes.Vms {
 			for _, address := range vm.(*topology.VM).IPAddresses() {
 				address, err := netset.IPBlockFromIPAddress(address)
@@ -133,15 +132,14 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 				}
 				if address.IsSubset(block.Block) {
 					block.VMs = append(block.VMs, vm)
-					p.topology.allRuleIPBlocksEPs = append(p.topology.allRuleIPBlocksEPs, vm)
 					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
 				}
 			}
 		}
+		// iterate over segments, if segment is in the block, add all its vms 
 		for _, segment := range p.topology.segments {
 			if segment.Block.IsSubset(block.Block) {
 				block.VMs = append(block.VMs, segment.VMs...)
-				p.topology.allRuleIPBlocksEPs = append(p.topology.allRuleIPBlocksEPs, segment.VMs...)
 				for _, vm := range segment.VMs {
 					p.configRes.RuleBlockPerEP[vm] = append(p.configRes.RuleBlockPerEP[vm], block)
 				}
@@ -152,5 +150,4 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 	for _, vm := range p.configRes.Vms {
 		p.configRes.RuleBlockPerEP[vm] = common.SliceCompact(p.configRes.RuleBlockPerEP[vm])
 	}
-	p.topology.allRuleIPBlocksEPs = common.SliceCompact(p.topology.allRuleIPBlocksEPs)
 }
