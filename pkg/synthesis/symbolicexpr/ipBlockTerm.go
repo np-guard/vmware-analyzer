@@ -101,10 +101,8 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom as given by hints
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
-	block := getBlock(ipBlockTerm)
-	otherBlock := getBlock(otherAtom)
-	if otherBlock == nil { // otherAtom not IP block
+	if getBlock(otherAtom) == nil {
 		return false
 	}
-	return otherBlock.IsSubset(block)
+	return ipBlockTerm.negate().disjoint(otherAtom, hints)
 }
