@@ -46,7 +46,7 @@ func (v *VM) IPAddresses() []string {
 func (v *VM) IPAddressesStr() string {
 	return strings.Join(v.ipAddresses, common.CommaSeparator)
 }
-func (v *VM) IsExternal() bool {return false}
+func (v *VM) IsExternal() bool { return false }
 
 func (v *VM) AddTag(t string) {
 	if slices.Contains(v.tags, t) {

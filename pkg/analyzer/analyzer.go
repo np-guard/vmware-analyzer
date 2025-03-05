@@ -12,7 +12,7 @@ func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivi
 	logging.Debugf("compute connectivity on parsed config")
 	res := connectivity.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
-	res.InitPairs(false,c.VMs, c.Endpoints(), vmsFilter)
+	res.InitPairs(false, c.VMs, c.Endpoints(), vmsFilter)
 	// iterate over all vm pairs in the initialized map at res, get the analysis result per pair
 	for src, srcMap := range res {
 		for dst := range srcMap {
