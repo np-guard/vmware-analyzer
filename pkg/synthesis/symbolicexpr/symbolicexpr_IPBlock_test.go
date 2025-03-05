@@ -126,4 +126,18 @@ func TestIpBlockWithConj(t *testing.T) {
 	require.Equal(t, false, conjAllIpBlockTermOnly.add(atomicSly).isTautology())
 	require.Equal(t, false, conjIPBlockTerm2Only.isTautology())
 	require.Equal(t, false, conjIPBlockTerm3.isTautology())
+
+	// test contains
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm2))
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm1))
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(allIpBlockTerm))
+	require.Equal(t, true, conjIPBlockTerm3.contains(allIpBlockTerm))
+	require.Equal(t, true, conjIPAddrSingleTerm.contains(ipBlockTerm3))
+	require.Equal(t, true, singleAddTerm3.contains(ipBlockTerm3))
+	require.Equal(t, true, singleAddTerm3.contains(ipAddrSingleTerm))
+	require.Equal(t, true, term2AddTerm3.contains(ipBlockTerm1))
+	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2))
+
+	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2))
+	require.Equal(t, false, conjAllIpBlockTermOnly.contains(ipBlockTerm3))
 }

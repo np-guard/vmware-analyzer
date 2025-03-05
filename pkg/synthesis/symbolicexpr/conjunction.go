@@ -147,8 +147,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 }
 
 // a Conjunction c contains an atom atomic if:
-// semantically:
-// the condition in atom is already implied by c
+// semantically: the condition in atom is already implied by c
 // syntactically:
 // if atom is a tagTerm or a groupTerm, then if it contains the atom literally
 // if atom is an IPBlock, if there is already an IPBlock in c that is a subset of atom.
