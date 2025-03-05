@@ -51,7 +51,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 
 // todo: move to netset??
 func complementary(block *netset.IPBlock) *netset.IPBlock {
-	allIPBlock, _ := netset.IPBlockFromCidr(netset.CidrAll)
+	allIPBlock := netset.GetCidrAll()
 	return allIPBlock.Subtract(block)
 }
 
