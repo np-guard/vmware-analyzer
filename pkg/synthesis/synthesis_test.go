@@ -381,7 +381,7 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 	for src, dsts := range connMap {
 		for dst, conn := range dsts {
 			// todo - set the real vm namespaces:
-			netpolFormat := fmt.Sprintf("default/%s[Pod] => default/%s[Pod]", src.Name(), dst.Name())
+			netpolFormat := fmt.Sprintf("default/%s[Pod] => default/%s[Pod]", toLegalK8SString(src.Name()), toLegalK8SString(dst.Name()))
 			netpolConn, ok := netpolConnMap[netpolFormat]
 			require.Equal(t, ok, !conn.Conn.IsEmpty())
 			if ok {
