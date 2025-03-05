@@ -131,28 +131,41 @@ func TestIpBlockWithConj(t *testing.T) {
 		term1AddTerm2.String())
 
 	// tests isFalse
-	require.Equal(t, true, conjIPBlockTerm2Only.add(ipBlockTerm3).isFalse(&Hints{}))
-	require.Equal(t, false, conjAllIpBlockTermOnly.add(ipBlockTerm3).isFalse(&Hints{}))
-	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isFalse(&Hints{}))
-	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isFalse(&Hints{}))
+	require.Equal(t, true, conjIPBlockTerm2Only.add(ipBlockTerm3).isFalse(&Hints{}),
+		"1.2.3.0/16 intersected with 192.0.2.0/24 is empty (false)")
+	require.Equal(t, false, conjAllIpBlockTermOnly.add(ipBlockTerm3).isFalse(&Hints{}),
+		"0.0.0.0/0 intersected with 192.0.2.0/24 is not empty")
+	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isFalse(&Hints{}),
+		"192.0.2.0/24 intersected with 192.0.2.0 is not empty")
+	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isFalse(&Hints{}),
+		"1.2.3.0/8 intersected with 192.0.2.0/24 is empty")
 
 	// test isTautology
-	require.Equal(t, true, conjAllIpBlockTermOnly.isTautology())
-	require.Equal(t, false, conjAllIpBlockTermOnly.add(atomicSly).isTautology())
-	require.Equal(t, false, conjIPBlockTerm2Only.isTautology())
-	require.Equal(t, false, conjIPBlockTerm3.isTautology())
+	require.Equal(t, true, conjAllIpBlockTermOnly.isTautology(), "1.2.3.0/16 is tautology")
+	require.Equal(t, false, conjAllIpBlockTermOnly.add(atomicSly).isTautology(), "adding a "+
+		"non tautology block to 0.0.0.0/0 is not a tautology")
+	require.Equal(t, false, conjIPBlockTerm2Only.isTautology(), "1.2.3.0/16 with OriginalIP not tautology")
+	require.Equal(t, false, conjIPBlockTerm3.isTautology(), "192.0.2.0/24 not tautology")
 
 	// test contains
-	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm2))
-	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm1))
-	require.Equal(t, true, conjIPBlockTerm2Only.contains(allIpBlockTerm))
-	require.Equal(t, true, conjIPBlockTerm3.contains(allIpBlockTerm))
-	require.Equal(t, true, conjIPAddrSingleTerm.contains(ipBlockTerm3))
-	require.Equal(t, true, singleAddTerm3.contains(ipBlockTerm3))
-	require.Equal(t, true, singleAddTerm3.contains(ipAddrSingleTerm))
-	require.Equal(t, true, term2AddTerm3.contains(ipBlockTerm1))
-	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2))
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm2), "ip block implies itself")
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm1), "1.2.3.0/16 implies 1.2.3.0/16")
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(allIpBlockTerm), "1.2.3.0/16 implies 0.0.0.0/0")
+	require.Equal(t, true, conjIPBlockTerm3.contains(allIpBlockTerm),
+		"conj with ipBlock and other terms implies 0.0.0.0/0")
+	require.Equal(t, true, conjIPAddrSingleTerm.contains(ipBlockTerm3),
+		"conj with 192.0.2.0 implies 192.0.2.0/24")
+	require.Equal(t, true, singleAddTerm3.contains(ipBlockTerm3),
+		"result of add to conj with only ip addr implies its conj ip term")
+	require.Equal(t, true, singleAddTerm3.contains(ipAddrSingleTerm),
+		"result of add to conj with only ip addr implies its right term")
+	require.Equal(t, true, term2AddTerm3.contains(ipBlockTerm1),
+		"result of add to conj with not only ip addr implies its conj ip term")
+	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2),
+		"result of add to conj with no only ip addr implies its right term")
 
-	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2))
-	require.Equal(t, false, conjAllIpBlockTermOnly.contains(ipBlockTerm3))
+	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2), "conj with 1.2.3.0/8 does not "+
+		"imply 1.2.3.0/16")
+	require.Equal(t, false, conjAllIpBlockTermOnly.contains(ipBlockTerm3), "conj with 0.0.0.0/0 does not "+
+		"imply non 0.0.0.0/0 ip term")
 }
