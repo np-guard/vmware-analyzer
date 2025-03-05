@@ -18,13 +18,13 @@ func (c ConnMap) Add(src, dst topology.Endpoint, conn *DetailedConnection) {
 	c[src][dst] = conn
 }
 
-// InitPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c ConnMap) InitPairs(initAllow bool, vms, referencedEP []topology.Endpoint, vmsFilter []string) {
+// InitPairs adds all possible pairs from EPs1 to EPs2  with allow-all or deny-all, based on initAllow
+func (c ConnMap) InitPairs(initAllow bool, EPs1, EPs2 []topology.Endpoint, vmsFilter []string) {
 	filterFunc := func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && slices.Contains(vmsFilter, ep.Name()) }
-	filteredVMs := slices.DeleteFunc(slices.Clone(vms), filterFunc)
-	filteredReferencedEP := slices.DeleteFunc(slices.Clone(referencedEP), filterFunc)
-	for _, src := range filteredVMs {
-		for _, dst := range filteredReferencedEP {
+	EPs1 = slices.DeleteFunc(slices.Clone(EPs1), filterFunc)
+	EPs2 = slices.DeleteFunc(slices.Clone(EPs2), filterFunc)
+	for _, src := range EPs1 {
+		for _, dst := range EPs2 {
 			if src == dst {
 				continue
 			}

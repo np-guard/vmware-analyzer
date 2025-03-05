@@ -57,6 +57,7 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 		remainingRulesNum = d.TotalEffectiveIngressRules
 	}
 	if src.IsExternal() && !isIngress || dst.IsExternal() && isIngress {
+		// if src/dst is external, all connection is allowed.
 		allAllowedConns.accumulatedConns = netset.AllTransports()
 		return allAllowedConns, allDeniedConns, delegatedConns
 	}

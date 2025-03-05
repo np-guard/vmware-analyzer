@@ -9,6 +9,7 @@ type ExternalIP struct {
 }
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
+	// look for the shortest name:
 	asCidrs, asRanges := block.String(), block.ToIPRanges()
 	origIP := asCidrs
 	if len(asRanges) < len(asCidrs) {

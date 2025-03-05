@@ -308,6 +308,7 @@ func (p *nsxConfigParser) getAllGroups() {
 	p.allGroupsPaths = groupsPaths
 }
 
+// todo: delete this method, use getEndpointsFromGroupsPaths() directly
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// in scope - "any" are all the vms
