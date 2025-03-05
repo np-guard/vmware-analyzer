@@ -328,7 +328,7 @@ func subTestsRunByTestName(t *testing.T, f testMethod) {
 }
 
 //////////////////////////////////////////
-// the test functions:
+// the test methods:
 //////////////////////////////////////////
 
 func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
