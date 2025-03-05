@@ -20,8 +20,9 @@ func (c ConnMap) Add(src, dst topology.Endpoint, conn *DetailedConnection) {
 
 // InitPairs adds all possible pairs with allow-all or deny-all, based on initAllow
 func (c ConnMap) InitPairs(initAllow bool, vms, referencedEP []topology.Endpoint, vmsFilter []string) {
-	filteredVMs := slices.DeleteFunc(slices.Clone(vms), func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && slices.Contains(vmsFilter, ep.Name()) })
-	filteredReferencedEP := referencedEP
+	filterFunc := func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && slices.Contains(vmsFilter, ep.Name()) }
+	filteredVMs := slices.DeleteFunc(slices.Clone(vms), filterFunc)
+	filteredReferencedEP := slices.DeleteFunc(slices.Clone(referencedEP), filterFunc)
 	for _, src := range filteredVMs {
 		for _, dst := range filteredReferencedEP {
 			if src == dst {
