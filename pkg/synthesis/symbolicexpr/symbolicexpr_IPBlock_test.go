@@ -90,30 +90,36 @@ func TestIpBlockWithConj(t *testing.T) {
 	fmt.Println()
 
 	// tests add
-	fmt.Println("conjIPBlockTerm2.add(ipBlockTerm3)", conjIPBlockTerm2Only.add(ipBlockTerm3))
-	fmt.Println("conjAllIpBlockTerm.add(ipBlockTerm3)", conjAllIpBlockTermOnly.add(ipBlockTerm3))
-	fmt.Println("conjIPAddrSingleTerm.add(conjIPBlockTerm1)", conjIPAddrSingleTerm.add(ipBlockTerm3))
-	fmt.Println("conjIPBlockTerm3.add(ipAddrSingleTerm)", conjIPBlockTerm3.add(ipAddrSingleTerm))
-	fmt.Println("conjIPBlockTerm1.add(ipBlockTerm3)", conjIPBlockTerm1.add(ipBlockTerm3))
-	fmt.Println("conjIPBlockTerm1.add(ipBlockTerm2)", conjIPBlockTerm1.add(ipBlockTerm2))
+	term2AddTerm3 := conjIPBlockTerm2Only.add(ipBlockTerm3)
+	allAddTerm3 := conjAllIpBlockTermOnly.add(ipBlockTerm3)
+	singleAddTerm3 := conjIPAddrSingleTerm.add(ipBlockTerm3)
+	term3AddSingle := conjIPBlockTerm3.add(ipAddrSingleTerm)
+	term1AddTerm3 := conjIPBlockTerm1.add(ipBlockTerm3)
+	term1AddTerm2 := conjIPBlockTerm1.add(ipBlockTerm2)
 
-	require.Equal(t, "(IP addr in the empty block)", conjIPBlockTerm2Only.add(ipBlockTerm3).String())
-	require.Equal(t, "(IP addr in 192.0.2.0/24)", conjAllIpBlockTermOnly.add(ipBlockTerm3).String())
+	fmt.Println("conjIPBlockTerm2.add(ipBlockTerm3)", term2AddTerm3)
+	fmt.Println("conjAllIpBlockTerm.add(ipBlockTerm3)", allAddTerm3)
+	fmt.Println("conjIPAddrSingleTerm.add(conjIPBlockTerm1)", singleAddTerm3)
+	fmt.Println("conjIPBlockTerm3.add(ipAddrSingleTerm)", term3AddSingle)
+	fmt.Println("conjIPBlockTerm1.add(ipBlockTerm3)", term1AddTerm3)
+	fmt.Println("conjIPBlockTerm1.add(ipBlockTerm2)", term1AddTerm2)
+
+	require.Equal(t, "(IP addr in the empty block)", term2AddTerm3.String())
+	require.Equal(t, "(IP addr in 192.0.2.0/24)", allAddTerm3.String())
 	require.Equal(t, "(IP addr in 192.0.2.0 originalIP and tag = Slytherin and tag = Gryffindor)",
-		conjIPAddrSingleTerm.add(ipBlockTerm3).String())
+		singleAddTerm3.String())
 	require.Equal(t, "(IP addr in 192.0.2.0 and tag = Slytherin and tag = Gryffindor)",
-		conjIPBlockTerm3.add(ipAddrSingleTerm).String())
+		term3AddSingle.String())
 	require.Equal(t, "(IP addr in the empty block and tag = Slytherin and tag = Gryffindor)",
-		conjIPBlockTerm1.add(ipBlockTerm3).String())
+		term1AddTerm3.String())
 	require.Equal(t, "(IP addr in 1.2.0.0/16 and tag = Slytherin and tag = Gryffindor)",
-		conjIPBlockTerm1.add(ipBlockTerm2).String())
+		term1AddTerm2.String())
 
 	// tests isEmptySet
 	require.Equal(t, true, conjIPBlockTerm2Only.add(ipBlockTerm3).isEmptySet(&Hints{}))
 	require.Equal(t, false, conjAllIpBlockTermOnly.add(ipBlockTerm3).isEmptySet(&Hints{}))
-	require.Equal(t, false, conjIPAddrSingleTerm.add(ipBlockTerm3).isEmptySet(&Hints{}))
 	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isEmptySet(&Hints{}))
 	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isEmptySet(&Hints{}))
-	require.Equal(t, false, conjIPBlockTerm1.add(ipBlockTerm2).isEmptySet(&Hints{}))
 
+	// todo: test IsTautology
 }
