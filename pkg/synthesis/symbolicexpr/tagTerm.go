@@ -2,8 +2,8 @@ package symbolicexpr
 
 import (
 	"fmt"
-	"github.com/np-guard/models/pkg/netset"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
