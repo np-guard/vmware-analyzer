@@ -149,25 +149,22 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 // semantically: the condition in atom is already implied by c
 // syntactically:
 // if atom is a tagTerm or a groupTerm, then if it contains the atom literally
-// if atom is an IPBlock, if there is already an IPBlock in c that is a subset of atom.
+// if atom is an IPBlock, if there is already an IPBlock in c that atom is a superset of it.
 func (c *Conjunction) contains(atom atomic) bool {
 	if atom.IsTautology() {
 		return true
 	}
-	atomBlock := getBlock(atom)
 	for _, atomicItem := range *c {
-		if atomBlock != nil { // atom is an IPBlock
-			atomicItemBlock := getBlock(atomicItem)
-			if atomicItem != nil {
-				// by design there is at most one ipBlockTerm in Conjunction c
-				return atomicItemBlock.IsSubset(atomBlock)
-			}
-		} else {
-			if atomicItem.String() == (atom).String() {
-				return true
-			}
+		// the following is relevant only when both atom and atomicItem are ipBlockTerms;
+		// in the other cases supersetOf is based on hints
+		if atom.supersetOf(atomicItem, &Hints{}) {
+			return true
+		}
+		if atomicItem.String() == (atom).String() {
+			return true
 		}
 	}
+
 	return false
 }
 
