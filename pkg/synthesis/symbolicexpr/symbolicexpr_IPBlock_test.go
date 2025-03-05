@@ -115,11 +115,11 @@ func TestIpBlockWithConj(t *testing.T) {
 	require.Equal(t, "(IP addr in 1.2.0.0/16 and tag = Slytherin and tag = Gryffindor)",
 		term1AddTerm2.String())
 
-	// tests isEmptySet
-	require.Equal(t, true, conjIPBlockTerm2Only.add(ipBlockTerm3).isEmptySet(&Hints{}))
-	require.Equal(t, false, conjAllIpBlockTermOnly.add(ipBlockTerm3).isEmptySet(&Hints{}))
-	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isEmptySet(&Hints{}))
-	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isEmptySet(&Hints{}))
+	// tests isFalse
+	require.Equal(t, true, conjIPBlockTerm2Only.add(ipBlockTerm3).isFalse(&Hints{}))
+	require.Equal(t, false, conjAllIpBlockTermOnly.add(ipBlockTerm3).isFalse(&Hints{}))
+	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isFalse(&Hints{}))
+	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isFalse(&Hints{}))
 
 	// test isTautology
 	require.Equal(t, true, conjAllIpBlockTermOnly.isTautology())

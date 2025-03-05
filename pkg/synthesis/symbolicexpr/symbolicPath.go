@@ -15,7 +15,7 @@ func (path *SymbolicPath) TableString() []string {
 
 // if the source or destination is empty then so is the entire path
 func (path *SymbolicPath) isEmpty(hints *Hints) bool {
-	return path.Conn.IsEmpty() || path.Src.isEmptySet(hints) || path.Dst.isEmptySet(hints)
+	return path.Conn.IsEmpty() || path.Src.isFalse(hints) || path.Dst.isFalse(hints)
 }
 
 // checks whether paths are disjoint. This is the case when one of the path's components (src, dst, conn) are disjoint

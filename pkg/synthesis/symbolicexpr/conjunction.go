@@ -101,12 +101,13 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	return false
 }
 
-// checks whether the conjunction is empty: either syntactically, or contains an groupAtomicTerm and its negation
+// checks whether the conjunction is false:
+// either contains an groupAtomicTerm and its negation
 // or contains two atoms that are disjoint to each other by hints
 // or contains an empty ipBlockTerm
-func (c *Conjunction) isEmptySet(hints *Hints) bool {
+func (c *Conjunction) isFalse(hints *Hints) bool {
 	if len(*c) == 0 {
-		return true
+		return false
 	}
 	for i, outAtomicTerm := range *c {
 		outAtomicBlock := getBlock(outAtomicTerm)
