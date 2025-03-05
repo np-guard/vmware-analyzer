@@ -152,6 +152,9 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 // if atom is a tagTerm or a groupTerm, then if it contains the atom literally
 // if atom is an IPBlock, if there is already an IPBlock in c that is a subset of atom.
 func (c *Conjunction) contains(atom atomic) bool {
+	if atom.IsTautology() {
+		return true
+	}
 	atomBlock := getBlock(atom)
 	for _, atomicItem := range *c {
 		if atomBlock != nil { // atom is an IPBlock

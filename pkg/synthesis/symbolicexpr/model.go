@@ -35,7 +35,12 @@ type ipBlockAtomicTerm struct {
 type tautology struct {
 }
 
-// atomic interface for atomic expression - implemented by groupAtomicTerm and tautology
+// contradiction represents a condition that never holds; the negation of tautology
+type contradiction struct {
+}
+
+// atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
+// tautology and contradiction
 type atomic interface {
 	name() string                   // name of group/tag/...
 	String() string                 // full expression e.g. "group = slytherin"

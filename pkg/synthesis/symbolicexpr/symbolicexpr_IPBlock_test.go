@@ -163,6 +163,9 @@ func TestIpBlockWithConj(t *testing.T) {
 		"result of add to conj with not only ip addr implies its conj ip term")
 	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2),
 		"result of add to conj with no only ip addr implies its right term")
+	nonIPBlockConj := &Conjunction{atomicSly, atomicGry}
+	require.Equal(t, true, nonIPBlockConj.contains(allIpBlockTerm), "conj with no ip Block still implies"+
+		"0.0.0.0/0")
 
 	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2), "conj with 1.2.3.0/8 does not "+
 		"imply 1.2.3.0/16")
