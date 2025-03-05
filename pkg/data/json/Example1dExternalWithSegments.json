@@ -28459,6 +28459,17 @@
             "ip_address_info": [
                 {
                     "ip_addresses": [
+                        ""
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_C-no-address",
+            "owner_vm_id": "C-no-address"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
                         "0.0.1.0"
                     ]
                 }
@@ -28476,43 +28487,9 @@
             ],
             "lport_attachment_id": "port_B",
             "owner_vm_id": "B"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        ""
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_C-no-address",
-            "owner_vm_id": "C-no-address"
         }
     ],
     "segments": [
-        {
-            "display_name": "seg_a_and_b",
-            "path": "seg_a_and_b",
-            "subnets": [
-                {
-                    "network": "0.0.1.0/24"
-                }
-            ],
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_A"
-                    },
-                    "parent_path": "seg_a_and_b"
-                },
-                {
-                    "attachment": {
-                        "id": "port_B"
-                    },
-                    "parent_path": "seg_a_and_b"
-                }
-            ]
-        },
         {
             "display_name": "seg_c",
             "path": "seg_c",
@@ -28521,12 +28498,43 @@
                     "network": "0.0.2.0/24"
                 }
             ],
+            "unique_id": "seg_c",
             "segment_ports": [
                 {
                     "attachment": {
                         "id": "port_C-no-address"
                     },
-                    "parent_path": "seg_c"
+                    "display_name": "port_C-no-address",
+                    "parent_path": "seg_c",
+                    "unique_id": "port_C-no-address"
+                }
+            ]
+        },
+        {
+            "display_name": "seg_a_and_b",
+            "path": "seg_a_and_b",
+            "subnets": [
+                {
+                    "network": "0.0.1.0/24"
+                }
+            ],
+            "unique_id": "seg_a_and_b",
+            "segment_ports": [
+                {
+                    "attachment": {
+                        "id": "port_A"
+                    },
+                    "display_name": "port_A",
+                    "parent_path": "seg_a_and_b",
+                    "unique_id": "port_A"
+                },
+                {
+                    "attachment": {
+                        "id": "port_B"
+                    },
+                    "display_name": "port_B",
+                    "parent_path": "seg_a_and_b",
+                    "unique_id": "port_B"
                 }
             ]
         }

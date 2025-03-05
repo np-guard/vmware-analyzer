@@ -217,6 +217,17 @@ func TestDoNotAllowSameName(t *testing.T) {
 		names[test.name] = true
 	}
 }
+func TestOverrideJsonFiles(t *testing.T) {
+	overrideFunc := func(test *synthesisTest, t *testing.T, _ *collector.ResourcesContainerModel) {
+		_, err := data.ExamplesGeneration(test.exData, true)
+		require.Nil(t, err)
+	}
+	overrideJSON := true // change to true in case examples were modified, so JSON file gets updated
+	if overrideJSON {
+		parallelTestsRun(t, overrideFunc)
+	}
+}
+
 func TestPreprocessing(t *testing.T) {
 	parallelTestsRun(t, runPreprocessing)
 }
@@ -282,8 +293,7 @@ func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.Resource
 func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		overrideJSON := false // change to true in case examples were modified, so JSON file gets updated
-		rc, err := data.ExamplesGeneration(test.exData, overrideJSON)
+		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
