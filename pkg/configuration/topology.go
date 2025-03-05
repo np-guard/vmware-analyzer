@@ -129,7 +129,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 		// iterate over VMs, look if the vm address is in the block:
 		for _, vm := range p.configRes.VMs {
 			for _, address := range vm.(*topology.VM).IPAddresses() {
-				address, err := IPBlockFromIPAddress(address)
+				address, err := iIPBlockFromIPAddress(address)
 				if err != nil {
 					logging.Warnf("Could not resolve address %s of vm %s", address, vm.Name())
 					continue
@@ -157,10 +157,10 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 }
 
 // tmp function till netset is fixed:
-func IPBlockFromIPAddress(ipAddress string) (*netset.IPBlock, error) {
+func iIPBlockFromIPAddress(ipAddress string) (*netset.IPBlock, error) {
 	startIP := net.ParseIP(ipAddress)
 	if startIP == nil || startIP.To4() == nil {
-		return nil, fmt.Errorf("%v is not a valid ipv4", ipAddress)
+		return nil, fmt.Errorf("%s is not a valid IPv4 address", ipAddress)
 	}
 	return netset.IPBlockFromIPAddress(ipAddress)
 }
