@@ -37,9 +37,9 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, "IP addr in 192.0.2.0 originalIP", ipAddrSingleTerm.String())
 
 	// tests IsTautology()
-	require.Equal(t, true, allIpBlockTerm.IsTautology())
-	require.Equal(t, false, ipBlockTerm1.IsTautology())
-	require.Equal(t, false, ipAddrSingleTerm.IsTautology())
+	require.Equal(t, true, allIpBlockTerm.IsTautology(), "0.0.0.0/0 is a tautology")
+	require.Equal(t, false, ipBlockTerm1.IsTautology(), "1.2.3.0/8 is not a tautology")
+	require.Equal(t, false, ipAddrSingleTerm.IsTautology(), "192.0.2.0 is not a tautology")
 
 	// tests negation String()
 	fmt.Println("neg ipBlockTerm3 is", ipBlockTerm3.negate())
@@ -48,28 +48,43 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, "IP addr not in 192.0.2.0 originalIP", ipAddrSingleTerm.negate().String())
 
 	// tests isNegateOf
-	require.Equal(t, true, ipAddrSingleTerm.negate().isNegateOf(ipAddrSingleTerm))
-	require.Equal(t, true, ipBlockTerm1.negate().isNegateOf(ipBlockTerm1))
-	require.Equal(t, true, allIpBlockTerm.negate().isNegateOf(allIpBlockTerm))
-	require.Equal(t, false, ipBlockTerm1.isNegateOf(ipAddrSingleTerm))
-	require.Equal(t, false, allIpBlockTerm.isNegateOf(ipAddrSingleTerm))
-	require.Equal(t, false, ipBlockTerm2.isNegateOf(ipBlockTerm3))
+	require.Equal(t, true, ipAddrSingleTerm.negate().isNegateOf(ipAddrSingleTerm),
+		"negation is isNegateOf under term with OriginalIP")
+	require.Equal(t, true, ipBlockTerm1.negate().isNegateOf(ipBlockTerm1), "negation is isNegateOf")
+	require.Equal(t, true, allIpBlockTerm.negate().isNegateOf(allIpBlockTerm),
+		"negation is isNegateOf also for 0.0.0.0/0 which negation is empty set")
+	require.Equal(t, false, ipBlockTerm1.isNegateOf(ipAddrSingleTerm), "disjoint blocks are not "+
+		"negation of each other")
+	require.Equal(t, false, allIpBlockTerm.isNegateOf(ipAddrSingleTerm), "blocks with containment "+
+		"relations are not negation of each other")
+	require.Equal(t, false, ipBlockTerm2.isNegateOf(ipBlockTerm3), "blocks with containment "+
+		"relations are not negation of each other")
 
 	// tests disjoint
-	require.Equal(t, true, ipAddrSingleTerm.disjoint(ipBlockTerm1, &Hints{}))
-	require.Equal(t, true, ipBlockTerm3.disjoint(ipBlockTerm1, &Hints{}))
-	require.Equal(t, false, ipBlockTerm2.disjoint(ipBlockTerm1, &Hints{}))
-	require.Equal(t, false, ipBlockTerm2.disjoint(allIpBlockTerm, &Hints{}))
-	require.Equal(t, false, allIpBlockTerm.disjoint(ipBlockTerm1, &Hints{}))
+	require.Equal(t, true, ipAddrSingleTerm.disjoint(ipBlockTerm1, &Hints{}),
+		"192.0.2.0 disjoint to 1.2.3.0/8")
+	require.Equal(t, true, ipBlockTerm3.disjoint(ipBlockTerm1, &Hints{}),
+		"192.0.2.0/24 disjoint to 1.2.3.0/8")
+	require.Equal(t, false, ipBlockTerm2.disjoint(ipBlockTerm1, &Hints{}),
+		"1.2.3.0/16 not disjoint to 1.2.3.0/8")
+	require.Equal(t, false, ipBlockTerm2.disjoint(allIpBlockTerm, &Hints{}),
+		"1.2.3.0/16 not disjoint to 0.0.0.0/0")
+	require.Equal(t, false, allIpBlockTerm.disjoint(ipBlockTerm1, &Hints{}),
+		"0.0.0.0/0 not disjoint to 1.2.3.0/8")
 
 	// tests supersetOf
-	require.Equal(t, false, ipBlockTerm2.supersetOf(allIpBlockTerm, &Hints{}))
-	require.Equal(t, true, allIpBlockTerm.supersetOf(ipBlockTerm1, &Hints{}))
-	require.Equal(t, true, ipBlockTerm1.supersetOf(ipBlockTerm2, &Hints{}))
-	require.Equal(t, false, ipBlockTerm2.supersetOf(ipBlockTerm1, &Hints{}))
-	require.Equal(t, false, ipAddrSingleTerm.supersetOf(ipBlockTerm2, &Hints{}))
-	require.Equal(t, true, ipAddrSingleTerm.supersetOf(ipAddrSingleTerm, &Hints{}))
-	require.Equal(t, true, allIpBlockTerm.supersetOf(allIpBlockTerm, &Hints{}))
+	require.Equal(t, false, ipBlockTerm2.supersetOf(allIpBlockTerm, &Hints{}),
+		"1.2.3.0/16 not superset of 0.0.0.0/0")
+	require.Equal(t, true, allIpBlockTerm.supersetOf(ipBlockTerm1, &Hints{}),
+		"0.0.0.0/0 superset of 1.2.3.0/8")
+	require.Equal(t, true, ipBlockTerm1.supersetOf(ipBlockTerm2, &Hints{}),
+		"1.2.3.0/8 superset of 1.2.3.0/16")
+	require.Equal(t, false, ipBlockTerm2.supersetOf(ipBlockTerm1, &Hints{}),
+		"1.2.3.0/16 not superset of 1.2.3.0/8")
+	require.Equal(t, false, ipAddrSingleTerm.supersetOf(ipBlockTerm2, &Hints{}),
+		"192.0.2.0 not superset of 1.2.3.0/16")
+	require.Equal(t, true, ipAddrSingleTerm.supersetOf(ipAddrSingleTerm, &Hints{}),
+		"addr superset of itself")
 }
 
 func TestIpBlockWithConj(t *testing.T) {
