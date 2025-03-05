@@ -88,7 +88,7 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 }
 
 // atomic atom is a redundant in Conjunction c, if it is a superset of one of c's terms; this applies to tagTerm and
-// groupTerm; as to ipBlockTerm - there is at most one such term which is not redundant
+// groupTerm; as to ipBlockTerm - there is at most one such term which is not redundant by design
 func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false
