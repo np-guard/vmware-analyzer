@@ -18,8 +18,8 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"strconv"
 
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -39,14 +39,14 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/runner"
 )
 
-const migratensxFinalizer = "nsx.npguard.io/finalizer"
+//const migratensxFinalizer = "nsx.npguard.io/finalizer"
 
 // Definitions to manage status conditions
 const (
 	// typeAvailableNSXMigration represents the status of the Deployment reconciliation
 	typeAvailableNSXMigration = "Available"
 	// typeDegradedNSXMigration represents the status used when the custom resource is deleted and the finalizer operations are yet to occur.
-	typeDegradedNSXMigration = "Degraded"
+	//typeDegradedNSXMigration = "Degraded"
 )
 
 // NSXMigrationReconciler reconciles a NSXMigration object
@@ -232,7 +232,69 @@ func (r *NSXMigrationReconciler) Reconcile(ctx context.Context, req ctrl.Request
 	return ctrl.Result{}, nil
 }
 
-func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
+type nsxConn struct {
+	user               string
+	password           string
+	url                string
+	insecureSkipVerify bool
+}
+
+func (n *nsxConn) getUser(s *v1.Secret) {
+	if userData, found := s.Data["username"]; found {
+		n.user = string(userData)
+	}
+}
+
+func (n *nsxConn) getPassword(s *v1.Secret) {
+	if passwordData, found := s.Data["password"]; found {
+		n.password = string(passwordData)
+	}
+}
+
+func (n *nsxConn) getURL(s *v1.Secret) {
+	if urlData, found := s.Data["url"]; found {
+		n.url = string(urlData)
+	}
+}
+
+func (n *nsxConn) getInsecureSkipVerify(s *v1.Secret) {
+	insecure, found := s.Data["insecureSkipVerify"]
+	if !found {
+		return
+	}
+
+	insecureSkipVerify, err := strconv.ParseBool(string(insecure))
+	if err != nil {
+		return
+	}
+
+	n.insecureSkipVerify = insecureSkipVerify
+}
+
+func (r *NSXMigrationReconciler) genConfigMap(data map[string]string, name string, ctx context.Context, log logr.Logger) error {
+	// test create configmap
+	cm := &v1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: "default",
+		},
+		Data: data,
+	}
+	if err := r.Create(ctx, cm); err != nil {
+		log.Error(err, "Failed to create ConfigMap",
+			"ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+		return err
+	}
+
+	log.Info("generated configmap", "ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
+	return nil
+}
+
+func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) (conn *nsxConn, err error) {
 	// TODO: initial step: connect to NSX host from spec, validate connection is OK, print to log the results.
 	ref := cr.Spec.Secret
 	nsName := types.NamespacedName{Namespace: ref.Namespace, Name: ref.Name}
@@ -243,125 +305,81 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 	if err := r.Get(ctx, nsName, secret); err != nil {
 		log.Error(err, "Failed to get secret ref", "namespace", ref.Namespace, "name", ref.Name)
 		log.Error(err, "error is:", "errorStr", err.Error())
-		return err
+		return nil, err
 	}
+
 	log.Info("completed Get Secrete without error")
 
 	// get nsx credentials from secret
-	var user, password, url string
-	if userData, found := secret.Data["username"]; found {
-		user = string(userData)
-	}
-	if passwordData, found := secret.Data["password"]; found {
-		password = string(passwordData)
-	}
-	if urlData, found := secret.Data["url"]; found {
-		url = string(urlData)
-	}
-	log.Info("extracted nsx credentials", "user", user, "url", url)
+	//var user, password, url string
+	conn = &nsxConn{}
+
+	conn.getUser(secret)
+	conn.getPassword(secret)
+	conn.getURL(secret)
+	conn.getInsecureSkipVerify(secret)
+
+	log.Info("extracted nsx credentials", "user", conn.user, "url", conn.url)
 
 	// next: validate nsx connection with given credentials
-	res, err := collector.ValidateNSXConnection(url, user, password)
+	res, err := collector.ValidateNSXConnection(conn.url, conn.user, conn.password, conn.insecureSkipVerify)
 	if err != nil {
 		log.Error(err, "REST API call error", "errStr", err.Error())
-		return err
+		return nil, err
 	}
 	log.Info("REST API call returned successfully", "response", res)
 
+	return conn, nil
+}
+
+func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx context.Context, log logr.Logger) error {
+
+	conn, err := r.getNSXCredentials(cr, ctx, log)
+	if err != nil {
+		return err
+	}
+
 	runnerObj, err := runner.NewRunnerWithOptionsList(
-		// default output format
 		runner.WithHighVerbosity(true),
 		runner.WithLogFile("debug/log.txt"),
-		runner.WithNSXURL(url),
-		runner.WithNSXUser(user),
-		runner.WithNSXPassword(password),
-		//runner.WithResourcesDumpFile(args.resourceDumpFile),
-		//runner.WithResourcesAnonymization(args.anonymise),
-		//runner.WithResourcesInputFile(args.resourceInputFile),
-		//runner.WithTopologyDumpFile(args.topologyDumpFile),
-		//runner.WithSkipAnalysis(args.skipAnalysis),
-		//runner.WithAnalysisOutputFile(args.outputFile),
-		//runner.WithAnalysisExplain(args.explain),
-		//runner.WithAnalysisVMsFilter(args.outputFilter),
-		runner.WithSynthesisDumpDir("debug/synthesis"),
-		//runner.WithSynthAdminPolicies(args.synthesizeAdmin),
-		//runner.WithSynthesisHints(args.disjointHints),
-		//runner.WithSynthDNSPolicies(args.createDNSPolicy),
+		runner.WithNSXURL(conn.url),
+		runner.WithNSXUser(conn.user),
+		runner.WithNSXPassword(conn.password),
+		runner.WithInsecureSkipVerify(conn.insecureSkipVerify),
+		runner.WithSynth(true),
 	)
 	if err != nil {
 		return err
 	}
 
-	if err := runnerObj.Run(); err != nil {
+	runObservations, err := runnerObj.Run()
+	if err != nil {
 		log.Error(err, "runner.Run() returned with error", "errStr", err.Error())
 		return err
 	}
 
 	policies, _ := runnerObj.GetGeneratedPolicies()
-
-	// build policies as map for configmap
-	dataPolicies := map[string]string{}
-	for _, policy := range policies {
-		pKey := policy.Name
-		buf, err := json.Marshal(policy)
-		if err != nil {
-			return err
-		}
-
-		pValue := string(buf)
-		dataPolicies[pKey] = pValue
-	}
-
-	// test create configmap
-	cm := &v1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "ConfigMap",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "my-config-map", // generated policies
-			Namespace: "default",
-		},
-		Data: dataPolicies,
-	}
-	if err = r.Create(ctx, cm); err != nil {
-		log.Error(err, "Failed to create ConfigMap",
-			"ConfigMap.Namespace", cm.Namespace, "ConfigMap.Name", cm.Name)
-		return err
-	}
-
-	log.Info("generated configmap")
-
-	//clientset.CoreV1().ConfigMaps("my-namespace").Create(&cm)
-
-	/*//Tee
-	logging.Tee("debug/log.txt")
-
-	// collector
-	collectorObj := &collector.Collector{}
-	nsxResourecs, err := collectorObj.CollectResources(url, user, password)
-	//_, err = collectorObj.CollectResources(url, user, password)
+	jsonOut, err := runObservations.ConfigAsJSON()
 	if err != nil {
-		log.Error(err, "CollectResources returned with error", "errStr", err.Error())
+		log.Error(err, "runner.ConfigAsJSON() returned with error", "errStr", err.Error())
 		return err
 	}
-	log.Info("retured from CollectResources without err")
-	// analyzer
-	nsxAnalyzer := &model.NSXConnAnalyzer{}
-	conn, err := nsxAnalyzer.NSXConnectivity(nsxResourecs)
-	if err != nil {
-		log.Error(err, "NSXConnectivity returned with error", "errStr", err.Error())
-		return err
-	}
-	log.Info("NSXConnectivity res:", "res", conn)
 
-	// synthesis
-	synth := &synthesis.Synthesis{}
-	policies, err := synth.NSXToK8sSynthesis(nsxResourecs)
-	if err != nil {
-		log.Error(err, "NSXToK8sSynthesis returned with error", "errStr", err.Error())
+	// build configmaps from jsonOut
+
+	if err := r.genConfigMap(map[string]string{"topology": jsonOut.Topology}, "topology-"+cr.Name, ctx, log); err != nil {
 		return err
-	}*/
+	}
+	if err := r.genConfigMap(map[string]string{"segmentation": jsonOut.Segmentation}, "segmentation-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+	if err := r.genConfigMap(map[string]string{"connectivity": jsonOut.Connectivity}, "connectivity-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+	if err := r.genConfigMap(map[string]string{"generated-netpols": jsonOut.GeneratedNetpols}, "generated-netpols-"+cr.Name, ctx, log); err != nil {
+		return err
+	}
+
 	log.Info("NSXToK8sSynthesis returned with policies", "numPolicies", len(policies))
 
 	/*for _, policy := range policies {
@@ -379,64 +397,11 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 
 	log.Info("NetworkPolicy created successfully")
 
-	/*currentQuery := "api/v1/fabric/virtual-machines"
-	b, err := curlGetRequest(ServerData{host: url, user: user, password: password}, currentQuery, log)
-	if err != nil {
-		log.Error(err, "REST API call error", "errStr", err.Error())
-		return err
-	}
-	log.Info("REST API call returned successfully", "response", string(b))*/
-
-	// TODO: implement
-
 	return nil
 }
 
-/*
-type ServerData struct {
-	host, user, password string
-}
-
-func curlGetRequest(server ServerData, query string, log logr.Logger) ([]byte, error) {
-	return curlRequest(server, query, http.MethodGet, "", http.NoBody, log)
-}
-
-func curlRequest(server ServerData, query, method, contentType string, body io.Reader, log logr.Logger) ([]byte, error) {
-	// Generated by curl-to-Go: https://mholt.github.io/curl-to-go
-	const rateTimeLimit = 200 * time.Millisecond
-	//nolint:gosec // need insecure TLS option for testing and development
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr}
-
-	//nolint:noctx // no context for testing and development
-	req, err := http.NewRequest(method, server.host+"/"+query, body)
-	log.Info("curl request details", "method", method, "query", query)
-	if err != nil {
-		return nil, err
-	}
-	if server.user != "" {
-		req.SetBasicAuth(server.user, server.password)
-	}
-	if contentType != "" {
-		req.Header.Set("Content-Type", contentType)
-	}
-	time.Sleep(rateTimeLimit)
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}*/
-
 // finalizeMemcached will perform the required operations before delete the CR.
-func (r *NSXMigrationReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alpha1.NSXMigration) {
+/*func (r *NSXMigrationReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alpha1.NSXMigration) {
 	// TODO(user): Add the cleanup steps that the operator
 	// needs to do before the CR can be deleted. Examples
 	// of finalizers include performing backups and deleting
@@ -453,7 +418,7 @@ func (r *NSXMigrationReconciler) doFinalizerOperationsForMigrateNSX(cr *nsxv1alp
 		fmt.Sprintf("Custom Resource %s is being deleted from the namespace %s",
 			cr.Name,
 			cr.Namespace))
-}
+}*/
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *NSXMigrationReconciler) SetupWithManager(mgr ctrl.Manager) error {

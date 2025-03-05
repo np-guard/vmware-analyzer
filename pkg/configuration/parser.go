@@ -53,42 +53,83 @@ type nsxConfigParser struct {
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
 	topology              *nsxTopology
+	ruleBlockPerEP        map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
 }
 
 func (p *nsxConfigParser) init() {
-	p.configRes = &Config{}
+	p.configRes = &Config{origNSXResources: p.rc}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+	p.ruleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
 	logging.Debugf("started parsing the given NSX config")
-	p.init()
-	p.getVMs()    // get vms config
-	p.getGroups() // get groups config
+
+	p.init() // initialize relevant maps objects
+
+	// the parsing of relevant NSX objects is done here
+	p.storeParsedVMs()    // get vms config
+	p.storeParsedGroups() // get groups config
 	if err := p.getTopology(); err != nil {
 		return err
 	}
+	p.storeParsedSegments() // get NSX segments config
+
 	p.removeVMsWithoutGroups()
-	p.getDFW() // get distributed firewall config
+	p.storeParsedDFW() // get distributed firewall config
+
+	// additional mappings for more details on log and config fields
 	p.addPathsToDisplayNames()
 	return nil
+}
+
+// storeParsedVMs assigns the parsed VM objects from the NSX resources container into the res config object
+func (p *nsxConfigParser) storeParsedVMs() {
+	p.configRes.VMsMap = map[string]topology.Endpoint{}
+	for i := range p.rc.VirtualMachineList {
+		vm := &p.rc.VirtualMachineList[i]
+		if vm.DisplayName == nil || vm.ExternalId == nil {
+			// skip vm without name
+			logging.Debugf("warning: skipped vm without name/uid at index %d", i)
+			continue
+		}
+		vmObj := topology.NewVM(*vm.DisplayName, *vm.ExternalId)
+		vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
+		for _, tag := range vm.Tags {
+			vmObj.AddTag(tag.Tag)
+			// currently ignoring tag scope
+			if tag.Scope != "" {
+				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
+			}
+		}
+		p.configRes.VMs = append(p.configRes.VMs, vmObj)
+		p.configRes.VMsMap[vmObj.ID()] = vmObj
+	}
+}
+
+func (p *nsxConfigParser) storeParsedSegments() {
+	for i := range p.rc.SegmentList {
+		segment := &p.rc.SegmentList[i]
+		vms := p.configRes.GetVMs(p.rc.GetVMsOfSegment(segment))
+		p.configRes.segments = append(p.configRes.segments, topology.NewSegmentDetails(segment, vms))
+	}
 }
 
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 {
+		if len(groups) == 0 && len(p.ruleBlockPerEP[vm]) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}
 	}
 	for _, vm := range toRemove {
 		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.Vms = slices.DeleteFunc(p.configRes.Vms, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
-		delete(p.configRes.VmsMap, vm.ID())
+		p.configRes.VMs = slices.DeleteFunc(p.configRes.VMs, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
+		delete(p.configRes.VMsMap, vm.ID())
 	}
 }
 
@@ -113,7 +154,7 @@ func (p *nsxConfigParser) vMsGroups() map[topology.Endpoint][]*collector.Group {
 }
 
 func (p *nsxConfigParser) VMs() []topology.Endpoint {
-	return p.configRes.Vms
+	return p.configRes.VMs
 }
 
 // update mapping from groups and services paths to their names
@@ -125,41 +166,18 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	p.configRes.Fw.SetPathsToDisplayNames(res)
+	p.configRes.FW.SetPathsToDisplayNames(res)
 }
 
-func (p *nsxConfigParser) getGroups() {
+func (p *nsxConfigParser) storeParsedGroups() {
 	p.getAllGroups()
 	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
 }
 
-// getVMs assigns the parsed VM objects from the NSX resources container into the res config object
-func (p *nsxConfigParser) getVMs() {
-	p.configRes.VmsMap = map[string]topology.Endpoint{}
-	for i := range p.rc.VirtualMachineList {
-		vm := &p.rc.VirtualMachineList[i]
-		if vm.DisplayName == nil || vm.ExternalId == nil {
-			// skip vm without name
-			logging.Debugf("warning: skipped vm without name/uid at index %d", i)
-			continue
-		}
-		vmObj := topology.NewVM(*vm.DisplayName, *vm.ExternalId)
-		vmObj.SetIPAddresses(p.rc.GetVirtualMachineAddresses(*vm.ExternalId))
-		for _, tag := range vm.Tags {
-			vmObj.AddTag(tag.Tag)
-			// currently ignoring tag scope
-			if tag.Scope != "" {
-				logging.Debugf("warning: ignoring tag scope for VM %s, tag: %s, scope: %s", *vm.DisplayName, tag.Tag, tag.Scope)
-			}
-		}
-		p.configRes.Vms = append(p.configRes.Vms, vmObj)
-		p.configRes.VmsMap[vmObj.ID()] = vmObj
-	}
-}
-
-func (p *nsxConfigParser) getDFW() {
-	p.configRes.Fw = dfw.NewEmptyDFW()
+// func (p *nsxConfigParser) getDFW() {}
+func (p *nsxConfigParser) storeParsedDFW() {
+	p.configRes.FW = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
 		for j := range domainRsc.SecurityPolicyList {
@@ -208,7 +226,7 @@ func (p *nsxConfigParser) getDFW() {
 }
 
 func (p *nsxConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.Fw.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
+	p.configRes.FW.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
 		r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
@@ -292,7 +310,8 @@ func (p *nsxConfigParser) getAllGroups() {
 
 func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]topology.Endpoint, []*collector.Group) {
 	if slices.Contains(groupsPaths, anyStr) {
-		return append(p.allGroupsVMs, p.configRes.externalIPs...), p.allGroups // all endpoints and groups
+		// in scope - "any" are all the vms and external endpoints
+		return p.configRes.Endpoints(), p.allGroups // all endpoints and groups
 	}
 	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return endPoints, groups
@@ -484,7 +503,7 @@ func (p *nsxConfigParser) groupToVMsList(group *collector.Group) []topology.Endp
 	}
 	res := []topology.Endpoint{}
 	for vmID := range ids {
-		if vmObj, ok := p.configRes.VmsMap[vmID]; ok {
+		if vmObj, ok := p.configRes.VMsMap[vmID]; ok {
 			res = append(res, vmObj)
 		} else {
 			// else: add warning that could not find that vm name in the config
