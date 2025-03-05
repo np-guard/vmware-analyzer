@@ -43,7 +43,6 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 		return &res
 	}
 	// atom was not an ipBlockTerm or c did not yet have an ipBlockTerm
-	res = Conjunction{} // empty slice
 	res = append(*c, atom)
 
 	return &res

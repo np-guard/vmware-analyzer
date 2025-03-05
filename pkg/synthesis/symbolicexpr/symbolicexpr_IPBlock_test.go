@@ -2,20 +2,21 @@ package symbolicexpr
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func getIPBlocksTerms() (allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm *ipBlockAtomicTerm) {
+func getIPBlocksTerms() (allIPBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm *ipBlockAtomicTerm) {
 	allIPBlock, _ := netset.IPBlockFromCidr("0.0.0.0/0")
 	ipBlock1, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
 	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
 	ipAddrSingle, _ := netset.IPBlockFromCidr("192.0.2.0/32")
-	allIpBlockTerm = NewIPBlockTermTerm(&topology.IpBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
+	allIPBlockTerm = NewIPBlockTermTerm(&topology.IpBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
 	ipBlockTerm1 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
 	ipBlockTerm2 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
 	ipBlockTerm3 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
@@ -24,20 +25,20 @@ func getIPBlocksTerms() (allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm
 }
 
 func TestIpBlockTerm(t *testing.T) {
-	allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
-	fmt.Println("allIpBlockTerm is", allIpBlockTerm)
+	allIPBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
+	fmt.Println("allIPBlockTerm is", allIPBlockTerm)
 	fmt.Println("ipBlockTerm1 is", ipBlockTerm1)
 	fmt.Println("ipBlockTerm2 is", ipBlockTerm2)
 	fmt.Println("ipBlockTerm3 is", ipBlockTerm3)
 	fmt.Println("ipAddrSingleTerm is", ipAddrSingleTerm)
 
 	// tests String and Name
-	require.Equal(t, "IP addr in 0.0.0.0/0", allIpBlockTerm.String())
+	require.Equal(t, "IP addr in 0.0.0.0/0", allIPBlockTerm.String())
 	require.Equal(t, "IP addr in 192.0.2.0/24", ipBlockTerm3.String())
 	require.Equal(t, "IP addr in 192.0.2.0 originalIP", ipAddrSingleTerm.String())
 
 	// tests IsTautology()
-	require.Equal(t, true, allIpBlockTerm.IsTautology(), "0.0.0.0/0 is a tautology")
+	require.Equal(t, true, allIPBlockTerm.IsTautology(), "0.0.0.0/0 is a tautology")
 	require.Equal(t, false, ipBlockTerm1.IsTautology(), "1.2.3.0/8 is not a tautology")
 	require.Equal(t, false, ipAddrSingleTerm.IsTautology(), "192.0.2.0 is not a tautology")
 
@@ -51,11 +52,11 @@ func TestIpBlockTerm(t *testing.T) {
 	require.Equal(t, true, ipAddrSingleTerm.negate().isNegateOf(ipAddrSingleTerm),
 		"negation is isNegateOf under term with OriginalIP")
 	require.Equal(t, true, ipBlockTerm1.negate().isNegateOf(ipBlockTerm1), "negation is isNegateOf")
-	require.Equal(t, true, allIpBlockTerm.negate().isNegateOf(allIpBlockTerm),
+	require.Equal(t, true, allIPBlockTerm.negate().isNegateOf(allIPBlockTerm),
 		"negation is isNegateOf also for 0.0.0.0/0 which negation is empty set")
 	require.Equal(t, false, ipBlockTerm1.isNegateOf(ipAddrSingleTerm), "disjoint blocks are not "+
 		"negation of each other")
-	require.Equal(t, false, allIpBlockTerm.isNegateOf(ipAddrSingleTerm), "blocks with containment "+
+	require.Equal(t, false, allIPBlockTerm.isNegateOf(ipAddrSingleTerm), "blocks with containment "+
 		"relations are not negation of each other")
 	require.Equal(t, false, ipBlockTerm2.isNegateOf(ipBlockTerm3), "blocks with containment "+
 		"relations are not negation of each other")
@@ -67,15 +68,15 @@ func TestIpBlockTerm(t *testing.T) {
 		"192.0.2.0/24 disjoint to 1.2.3.0/8")
 	require.Equal(t, false, ipBlockTerm2.disjoint(ipBlockTerm1, &Hints{}),
 		"1.2.3.0/16 not disjoint to 1.2.3.0/8")
-	require.Equal(t, false, ipBlockTerm2.disjoint(allIpBlockTerm, &Hints{}),
+	require.Equal(t, false, ipBlockTerm2.disjoint(allIPBlockTerm, &Hints{}),
 		"1.2.3.0/16 not disjoint to 0.0.0.0/0")
-	require.Equal(t, false, allIpBlockTerm.disjoint(ipBlockTerm1, &Hints{}),
+	require.Equal(t, false, allIPBlockTerm.disjoint(ipBlockTerm1, &Hints{}),
 		"0.0.0.0/0 not disjoint to 1.2.3.0/8")
 
 	// tests supersetOf
-	require.Equal(t, false, ipBlockTerm2.supersetOf(allIpBlockTerm, &Hints{}),
+	require.Equal(t, false, ipBlockTerm2.supersetOf(allIPBlockTerm, &Hints{}),
 		"1.2.3.0/16 not superset of 0.0.0.0/0")
-	require.Equal(t, true, allIpBlockTerm.supersetOf(ipBlockTerm1, &Hints{}),
+	require.Equal(t, true, allIPBlockTerm.supersetOf(ipBlockTerm1, &Hints{}),
 		"0.0.0.0/0 superset of 1.2.3.0/8")
 	require.Equal(t, true, ipBlockTerm1.supersetOf(ipBlockTerm2, &Hints{}),
 		"1.2.3.0/8 superset of 1.2.3.0/16")
@@ -88,16 +89,16 @@ func TestIpBlockTerm(t *testing.T) {
 }
 
 func TestIpBlockWithConj(t *testing.T) {
-	allIpBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
+	allIPBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
 	slytherin, gryffindor := "Slytherin", "Gryffindor"
 	atomicSly := NewTagTerm(slytherin, false)
 	atomicGry := NewTagTerm(gryffindor, false)
-	conjAllIpBlockTermOnly := &Conjunction{allIpBlockTerm}
+	conjAllIPBlockTermOnly := &Conjunction{allIPBlockTerm}
 	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1, atomicSly, atomicGry}
 	conjIPBlockTerm2Only := &Conjunction{ipBlockTerm2}
 	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3, atomicSly, atomicGry}
 	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm, atomicSly, atomicGry}
-	fmt.Println("conjAllIpBlockTerm is", conjAllIpBlockTermOnly)
+	fmt.Println("conjAllIPBlockTermOnly is", conjAllIPBlockTermOnly)
 	fmt.Println("conjIPBlockTerm1 is", conjIPBlockTerm1)
 	fmt.Println("conjIPBlockTerm2 is", conjIPBlockTerm2Only)
 	fmt.Println("conjIPBlockTerm3 is", conjIPBlockTerm3)
@@ -106,7 +107,7 @@ func TestIpBlockWithConj(t *testing.T) {
 
 	// tests add
 	term2AddTerm3 := conjIPBlockTerm2Only.add(ipBlockTerm3)
-	allAddTerm3 := conjAllIpBlockTermOnly.add(ipBlockTerm3)
+	allAddTerm3 := conjAllIPBlockTermOnly.add(ipBlockTerm3)
 	singleAddTerm3 := conjIPAddrSingleTerm.add(ipBlockTerm3)
 	term3AddSingle := conjIPBlockTerm3.add(ipAddrSingleTerm)
 	term1AddTerm3 := conjIPBlockTerm1.add(ipBlockTerm3)
@@ -133,7 +134,7 @@ func TestIpBlockWithConj(t *testing.T) {
 	// tests isFalse
 	require.Equal(t, true, conjIPBlockTerm2Only.add(ipBlockTerm3).isFalse(&Hints{}),
 		"1.2.3.0/16 intersected with 192.0.2.0/24 is empty (false)")
-	require.Equal(t, false, conjAllIpBlockTermOnly.add(ipBlockTerm3).isFalse(&Hints{}),
+	require.Equal(t, false, conjAllIPBlockTermOnly.add(ipBlockTerm3).isFalse(&Hints{}),
 		"0.0.0.0/0 intersected with 192.0.2.0/24 is not empty")
 	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isFalse(&Hints{}),
 		"192.0.2.0/24 intersected with 192.0.2.0 is not empty")
@@ -141,8 +142,8 @@ func TestIpBlockWithConj(t *testing.T) {
 		"1.2.3.0/8 intersected with 192.0.2.0/24 is empty")
 
 	// test isTautology
-	require.Equal(t, true, conjAllIpBlockTermOnly.isTautology(), "1.2.3.0/16 is tautology")
-	require.Equal(t, false, conjAllIpBlockTermOnly.add(atomicSly).isTautology(), "adding a "+
+	require.Equal(t, true, conjAllIPBlockTermOnly.isTautology(), "1.2.3.0/16 is tautology")
+	require.Equal(t, false, conjAllIPBlockTermOnly.add(atomicSly).isTautology(), "adding a "+
 		"non tautology block to 0.0.0.0/0 is not a tautology")
 	require.Equal(t, false, conjIPBlockTerm2Only.isTautology(), "1.2.3.0/16 with OriginalIP not tautology")
 	require.Equal(t, false, conjIPBlockTerm3.isTautology(), "192.0.2.0/24 not tautology")
@@ -150,8 +151,8 @@ func TestIpBlockWithConj(t *testing.T) {
 	// test contains
 	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm2), "ip block implies itself")
 	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm1), "1.2.3.0/16 implies 1.2.3.0/16")
-	require.Equal(t, true, conjIPBlockTerm2Only.contains(allIpBlockTerm), "1.2.3.0/16 implies 0.0.0.0/0")
-	require.Equal(t, true, conjIPBlockTerm3.contains(allIpBlockTerm),
+	require.Equal(t, true, conjIPBlockTerm2Only.contains(allIPBlockTerm), "1.2.3.0/16 implies 0.0.0.0/0")
+	require.Equal(t, true, conjIPBlockTerm3.contains(allIPBlockTerm),
 		"conj with ipBlock and other terms implies 0.0.0.0/0")
 	require.Equal(t, true, conjIPAddrSingleTerm.contains(ipBlockTerm3),
 		"conj with 192.0.2.0 implies 192.0.2.0/24")
@@ -164,11 +165,11 @@ func TestIpBlockWithConj(t *testing.T) {
 	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2),
 		"result of add to conj with no only ip addr implies its right term")
 	nonIPBlockConj := &Conjunction{atomicSly, atomicGry}
-	require.Equal(t, true, nonIPBlockConj.contains(allIpBlockTerm), "conj with no ip Block still implies"+
+	require.Equal(t, true, nonIPBlockConj.contains(allIPBlockTerm), "conj with no ip Block still implies"+
 		"0.0.0.0/0")
 
 	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2), "conj with 1.2.3.0/8 does not "+
 		"imply 1.2.3.0/16")
-	require.Equal(t, false, conjAllIpBlockTermOnly.contains(ipBlockTerm3), "conj with 0.0.0.0/0 does not "+
+	require.Equal(t, false, conjAllIPBlockTermOnly.contains(ipBlockTerm3), "conj with 0.0.0.0/0 does not "+
 		"imply non 0.0.0.0/0 ip term")
 }
