@@ -3,6 +3,7 @@ package synthesis
 import (
 	"fmt"
 	"path"
+	"regexp"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -175,7 +176,7 @@ func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPo
 	pol := &networking.NetworkPolicy{}
 	pol.TypeMeta.Kind = "NetworkPolicy"
 	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
-	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Name = toLegalK8SString(name)
 	pol.ObjectMeta.Namespace = meta.NamespaceDefault
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
@@ -188,7 +189,7 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 	pol := &admin.AdminNetworkPolicy{}
 	pol.TypeMeta.Kind = "AdminNetworkPolicy"
 	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
-	pol.ObjectMeta.Name = name
+	pol.ObjectMeta.Name = toLegalK8SString(name)
 	pol.ObjectMeta.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
@@ -204,9 +205,21 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	for _, a := range con {
 		if !a.IsTautology() {
 			label, notIn := a.AsSelector()
+			label = toLegalK8SString(label)
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			selector.MatchExpressions = append(selector.MatchExpressions, req)
 		}
 	}
 	return selector
+}
+
+// toLegalK8SString() replaces all the k8s illegal characters with "-NLC"
+// allowed characters are letters, numbers, '-', '.', '_'
+// this is a temp fix, still todo:
+// 1. two different illegal tags might create the same tag
+// 2. fix for pods names should be more restrict (only lower, no '_', ...)
+var reg = regexp.MustCompile(`[^-A-Za-z0-9_.]`)
+
+func toLegalK8SString(s string) string {
+	return reg.ReplaceAllString(s, "-NLC")
 }
