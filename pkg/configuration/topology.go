@@ -1,7 +1,9 @@
 package configuration
 
 import (
+	"fmt"
 	"maps"
+	"net"
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
@@ -127,7 +129,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 		// iterate over VMs, look if the vm address is in the block:
 		for _, vm := range p.configRes.VMs {
 			for _, address := range vm.(*topology.VM).IPAddresses() {
-				address, err := netset.IPBlockFromIPAddress(address)
+				address, err := iIPBlockFromIPAddress(address)
 				if err != nil {
 					logging.Warnf("Could not resolve address %s of vm %s", address, vm.Name())
 					continue
@@ -152,4 +154,13 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 	for _, vm := range p.configRes.VMs {
 		p.ruleBlockPerEP[vm] = common.SliceCompact(p.ruleBlockPerEP[vm])
 	}
+}
+
+// tmp function till netset is fixed:
+func iIPBlockFromIPAddress(ipAddress string) (*netset.IPBlock, error) {
+	startIP := net.ParseIP(ipAddress)
+	if startIP == nil || startIP.To4() == nil {
+		return nil, fmt.Errorf("%s is not a valid IPv4 address", ipAddress)
+	}
+	return netset.IPBlockFromIPAddress(ipAddress)
 }
