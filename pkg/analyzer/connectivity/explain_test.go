@@ -24,7 +24,7 @@ func TestDisjointExplanationsPerEndpoints(t *testing.T) {
 	detailedConn := &DetailedConnection{Conn: netset.AllTransports(), ExplanationObj: exp}
 
 	cmap := ConnMap{}
-	cmap.InitPairs(false, []topology.Endpoint{vmA, vmB}, nil)
+	cmap.InitPairs(false, []topology.Endpoint{vmA, vmB}, []topology.Endpoint{vmA, vmB}, nil)
 	cmap.Add(vmA, vmB, detailedConn)
 
 	res := cmap.GetDisjointConnecionSetsPerExplanationsForEndpoints(vmA.Name(), vmB.Name())

@@ -19,25 +19,20 @@ func (c ConnMap) Add(src, dst topology.Endpoint, conn *DetailedConnection) {
 }
 
 // InitPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c ConnMap) InitPairs(initAllow bool, vms []topology.Endpoint, vmsFilter []string) {
-	vmsToaAnalyze := map[string]bool{}
-	if len(vmsFilter) > 0 {
-		for _, vmName := range vmsFilter {
-			vmsToaAnalyze[vmName] = true
-		}
-	}
-	for _, src := range vms {
-		for _, dst := range vms {
+func (c ConnMap) InitPairs(initAllow bool, vms, referencedEP []topology.Endpoint, vmsFilter []string) {
+	filteredVMs := slices.DeleteFunc(slices.Clone(vms), func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && slices.Contains(vmsFilter, ep.Name()) })
+	filteredReferencedEP := referencedEP
+	for _, src := range filteredVMs {
+		for _, dst := range filteredReferencedEP {
 			if src == dst {
-				continue
-			}
-			if len(vmsFilter) > 0 && !(vmsToaAnalyze[src.Name()] && vmsToaAnalyze[dst.Name()]) {
 				continue
 			}
 			if initAllow {
 				c.Add(src, dst, NewAllDetailedConnection())
+				c.Add(dst, src, NewAllDetailedConnection())
 			} else {
 				c.Add(src, dst, NewEmptyDetailedConnection())
+				c.Add(dst, src, NewEmptyDetailedConnection())
 			}
 		}
 	}
