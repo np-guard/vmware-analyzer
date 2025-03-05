@@ -5,11 +5,11 @@ import (
 )
 
 type ExternalIP struct {
-	IpBlock
+	IPBlock
 }
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
-	e := &ExternalIP{IpBlock: IpBlock{Block: block, OriginalIP: block.String()}}
+	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: block.String()}}
 	return e
 }
 

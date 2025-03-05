@@ -27,7 +27,7 @@ type tagAtomicTerm struct {
 
 type ipBlockAtomicTerm struct {
 	atomicTerm
-	*topology.IpBlock
+	*topology.IPBlock
 }
 
 // tautology represents a condition that always holds.

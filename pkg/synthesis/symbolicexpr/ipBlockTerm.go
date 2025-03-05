@@ -5,8 +5,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func NewIPBlockTermTerm(ipBlock *topology.IpBlock) *ipBlockAtomicTerm {
-	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IpBlock: ipBlock}
+func NewIPBlockTermTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
+	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: ipBlock}
 }
 
 // OrigIP is non-empty for an ipTerm that is in its original rule form, or a negation of such ipTerm
@@ -20,7 +20,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 		ipStr = ipBlockTerm.Block.String()
 	}
 	// prefer the OrigIP if exists
-	origIP := ipBlockTerm.IpBlock.OriginalIP
+	origIP := ipBlockTerm.IPBlock.OriginalIP
 	if origIP != "" {
 		ipStr = origIP
 	}
@@ -72,11 +72,11 @@ func getBlock(atom atomic) *netset.IPBlock {
 // negate an ipBlockAtomicTerm; if it has the OrigIP component then uses neg; otherwise complement the IP block
 func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 	if ipBlockTerm.OriginalIP != "" { // orig block from rule
-		return &ipBlockAtomicTerm{IpBlock: &topology.IpBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
+		return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
 	}
 	// block not kept in the form of original rule form
-	return &ipBlockAtomicTerm{IpBlock: &topology.IpBlock{Block: complementary(ipBlockTerm.Block), OriginalIP: ""},
+	return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: complementary(ipBlockTerm.Block), OriginalIP: ""},
 		atomicTerm: atomicTerm{}}
 }
 

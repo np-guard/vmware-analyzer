@@ -33,7 +33,7 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 				// note that there could be at most one IPBlock in a conjunction, by design
 				// since the Conjunction's items are added, we should intersect the IPBlocks
 				newIPBlockAtomicTerm := &ipBlockAtomicTerm{atomicTerm: atomicTerm{},
-					IpBlock: &topology.IpBlock{Block: block.Intersect(itemBlock)}}
+					IPBlock: &topology.IPBlock{Block: block.Intersect(itemBlock)}}
 				res = append(res, newIPBlockAtomicTerm)
 				ipBlockAddedToExisting = true
 			}

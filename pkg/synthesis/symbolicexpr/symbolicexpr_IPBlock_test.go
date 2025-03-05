@@ -16,11 +16,11 @@ func getIPBlocksTerms() (allIPBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm
 	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
 	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
 	ipAddrSingle, _ := netset.IPBlockFromCidr("192.0.2.0/32")
-	allIPBlockTerm = NewIPBlockTermTerm(&topology.IpBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
-	ipBlockTerm1 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
-	ipBlockTerm2 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
-	ipBlockTerm3 = NewIPBlockTermTerm(&topology.IpBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
-	ipAddrSingleTerm = NewIPBlockTermTerm(&topology.IpBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0 originalIP"})
+	allIPBlockTerm = NewIPBlockTermTerm(&topology.IPBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
+	ipBlockTerm1 = NewIPBlockTermTerm(&topology.IPBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
+	ipBlockTerm2 = NewIPBlockTermTerm(&topology.IPBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
+	ipBlockTerm3 = NewIPBlockTermTerm(&topology.IPBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
+	ipAddrSingleTerm = NewIPBlockTermTerm(&topology.IPBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0 originalIP"})
 	return
 }
 
