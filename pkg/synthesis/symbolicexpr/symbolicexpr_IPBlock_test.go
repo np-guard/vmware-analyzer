@@ -121,5 +121,9 @@ func TestIpBlockWithConj(t *testing.T) {
 	require.Equal(t, false, conjIPBlockTerm3.add(ipAddrSingleTerm).isEmptySet(&Hints{}))
 	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isEmptySet(&Hints{}))
 
-	// todo: test IsTautology
+	// test isTautology
+	require.Equal(t, true, conjAllIpBlockTermOnly.isTautology())
+	require.Equal(t, false, conjAllIpBlockTermOnly.add(atomicSly).isTautology())
+	require.Equal(t, false, conjIPBlockTerm2Only.isTautology())
+	require.Equal(t, false, conjIPBlockTerm3.isTautology())
 }
