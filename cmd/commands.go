@@ -51,17 +51,16 @@ const (
 	outputFileHelp              = "file path to store analysis results"
 	explainHelp                 = "flag to explain connectivity output with rules explanations per allowed/denied connections (default false)"
 	synthesisDumpDirHelp        = "run synthesis; specify directory path to store k8s synthesis results"
-	synthesizeAdminPoliciesHelp = "synthesize category environment into admin network policies" +
-		" (which included deny, pass and priority) (default false)"
-	outputFormatHelp     = "output format; must be one of "
-	outputFilterFlagHelp = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
-	quietHelp            = "flag to run quietly, report only severe errors and result (default false)"
-	verboseHelp          = "flag to run with more informative messages printed to log (default false)"
-	colorHelp            = "flag to enable color output (default false)"
-	createDNSPolicyHelp  = "flag to create a policy allowing access to target env dns pod"
-	synthHelp            = "flag to run synthesis, even if synthesis-dump-dir is not specified"
+	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis (default false)"
+	outputFormatHelp            = "output format; must be one of "
+	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
+	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
+	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
+	colorHelp                   = "flag to enable color output (default false)"
+	createDNSPolicyHelp         = "flag to create a policy allowing access to target env dns pod"
+	synthHelp                   = "flag to run synthesis, even if synthesis-dump-dir is not specified"
 	insecureSkipVerifyHelp      = "flag to enable NSX connection with insecureSkipVerify (default false)"
-	disjointHintsHelp    = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
+	disjointHintsHelp           = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
 )
