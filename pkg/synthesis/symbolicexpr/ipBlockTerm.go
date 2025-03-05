@@ -49,11 +49,9 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 	return "to implement", false
 }
 
-const cidrAll = "0.0.0.0/0"
-
 // todo: move to netset??
 func complementary(block *netset.IPBlock) *netset.IPBlock {
-	allIPBlock, _ := netset.IPBlockFromCidr(cidrAll)
+	allIPBlock, _ := netset.IPBlockFromCidr(netset.CidrAll)
 	return allIPBlock.Subtract(block)
 }
 
