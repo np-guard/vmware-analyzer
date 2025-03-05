@@ -28,6 +28,11 @@ func (tagAtomicTerm) IsTautology() bool {
 	return false
 }
 
+// IsContradiction false since an groupAtomicTerm is a non-empty cond on a group
+func (tagAtomicTerm) IsContradiction() bool {
+	return false
+}
+
 func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", tagConst, tagTerm.name()), tagTerm.neg
 }

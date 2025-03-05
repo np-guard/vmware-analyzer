@@ -31,9 +31,14 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 	return "IP addr" + op + ipStr
 }
 
-// IsTautology an atomicTerm is a non empty cond on a group, a tag etc and is thus not a tautology
+// IsTautology an atomicTerm is a non-empty cond on a group, a tag etc and is thus not a tautology
 func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
 	return complementary(getBlock(ipBlockTerm)).IsEmpty()
+}
+
+func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
+	block := getBlock(ipBlockTerm)
+	return block.IsEmpty()
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) name() string {

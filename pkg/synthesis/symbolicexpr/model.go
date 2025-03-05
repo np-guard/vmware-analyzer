@@ -47,6 +47,7 @@ type atomic interface {
 	negate() atomic                 // negation of the atomic term todo: once tag scope is supported will return []atomic
 	isNegation() bool               // is term not-equal
 	IsTautology() bool              // is term tautology?
+	IsContradiction() bool          // is term tautology?
 	isNegateOf(atomic) bool         // is the term negation of the other given term
 	AsSelector() (string, bool)     // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool   // based on hints

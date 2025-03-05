@@ -22,6 +22,10 @@ func (contradiction) IsTautology() bool {
 	return false
 }
 
+func (contradiction) IsContradiction() bool {
+	return true
+}
+
 // returns true iff otherAt is negation of
 // once we cache the atomic terms, we can just compare pointers
 func (contradiction) isNegateOf(atom atomic) bool {

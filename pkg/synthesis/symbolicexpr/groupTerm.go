@@ -15,8 +15,13 @@ func (groupTerm groupAtomicTerm) String() string {
 	return grp + eqSign(groupTerm) + groupTerm.name()
 }
 
-// IsTautology an groupAtomicTerm is a non-empty cond on a group
+// IsTautology false since an groupAtomicTerm is a non-empty cond on a group
 func (groupAtomicTerm) IsTautology() bool {
+	return false
+}
+
+// IsContradiction false since an groupAtomicTerm is a non-empty cond on a group
+func (groupAtomicTerm) IsContradiction() bool {
 	return false
 }
 
