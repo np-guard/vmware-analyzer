@@ -171,39 +171,82 @@ var Example1d = Example{
 		},
 	},
 }
-
-var Example1External = Example{
-	Name:        "Example1External",
-	VMs:         Example1d.VMs,
-	GroupsByVMs: Example1d.GroupsByVMs,
+var Example1dExternalWithSegments = Example{
+	Name: "Example1dExternalWithSegments",
+	VMs:  []string{"A", "B", "C-no-address"},
+	VMsAddress: map[string]string{
+		"A": "0.0.1.0",
+		"B": "0.0.1.192",
+	},
+	SegmentsByVMs: map[string][]string{
+		"seg_a_and_b": {"A", "B"},
+		"seg_c":       {"C-no-address"},
+	},
+	SegmentsBlock: map[string]string{
+		"seg_a_and_b": "0.0.1.0/24",
+		"seg_c":       "0.0.2.0/24",
+	},
 	Policies: []Category{
 		{
 			Name:         "app-x",
 			CategoryType: "Application",
 			Rules: []Rule{
 				{
-					Name:     "allow_http_from_123",
+					Name:     "allow_smb_a_to_b",
 					ID:       1004,
-					Source:   "1.2.3.0/8",
-					Dest:     "frontend",
-					Services: []string{"/infra/services/HTTP"},
-					Action:   Allow,
-				},
-				{
-					Name:     "allow_smb_incoming",
-					ID:       1005,
-					Source:   "frontend",
-					Dest:     "backend",
+					Source:   "0.0.1.0/25",
+					Dest:     "0.0.1.128/25",
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 				{
-					Name:     "allow_https_db_incoming",
-					ID:       1006,
-					Source:   "backend",
-					Dest:     "db",
+					Name:     "allow_https_b_to_c",
+					ID:       1005,
+					Source:   "0.0.1.128/25",
+					Dest:     "0.0.2.0/24",
 					Services: []string{"/infra/services/HTTPS"},
 					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+var Example1External = Example{
+	Name: "Example1External",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:   "allow_tcp_0_1",
+					ID:     1004,
+					Source: "1.2.0.0-1.2.1.255",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_udp_3_4",
+					ID:     1005,
+					Source: "1.2.3.0-1.2.4.255",
+					Dest:   "frontend",
+					Conn:   netset.AllUDPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_icmp_1_3",
+					ID:     1006,
+					Source: "1.2.1.0-1.2.3.255",
+					Dest:   "frontend",
+					Conn:   netset.AllICMPTransport(),
+					Action: Allow,
 				},
 				DefaultDenyRule(denyRuleIDApp),
 			},

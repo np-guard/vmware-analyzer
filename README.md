@@ -25,6 +25,7 @@ Flags:
   -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
       --host string                  NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
+      --insecure-skip-verify         flag to enable NSX connection with insecureSkipVerify (default false)
       --log-file string              file path to write nsxanalyzer log
   -o, --output string                output format; must be one of txt,dot,svg,json (default "txt")
       --output-filter strings        filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")

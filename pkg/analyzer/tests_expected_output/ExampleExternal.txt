@@ -1,5 +1,8 @@
 Analyzed connectivity:
-Source |Destination |Permitted connections
-A      |B           |TCP dst-ports: 445
-B      |C           |TCP dst-ports: 443
+Source     |Destination |Permitted connections
+1.2.0.0/24 |A           |TCP
+1.2.1.0/24 |A           |ICMP,TCP
+1.2.2.0/24 |A           |ICMP
+1.2.3.0/24 |A           |ICMP,UDP
+1.2.4.0/24 |A           |UDP
 

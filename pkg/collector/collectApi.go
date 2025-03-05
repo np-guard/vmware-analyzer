@@ -128,7 +128,7 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 
 	//nolint:gosec // need insecure TLS option for testing and development
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: server.insecureSkipVerify},
 	}
 	client := &http.Client{Transport: tr}
 

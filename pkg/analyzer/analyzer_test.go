@@ -49,6 +49,10 @@ var allTests = []analyzerTest{
 		name:   "ExampleExclude",
 		exData: data.ExampleExclude,
 	},
+	{
+		name:   "Example1dExternalWithSegments",
+		exData: data.Example1dExternalWithSegments,
+	},
 }
 
 func (a *analyzerTest) file() string {
@@ -68,7 +72,7 @@ func (a *analyzerTest) run(t *testing.T) {
 		runner.WithHighVerbosity(true),
 	)
 	require.Nil(t, err)
-	err = runnerObj.Run()
+	_, err = runnerObj.Run()
 	require.Nil(t, err)
 	res := runnerObj.GetConnectivityOutput()
 

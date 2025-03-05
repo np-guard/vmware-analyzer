@@ -30,9 +30,9 @@ func compareConfigToTraceflows(
 
 func createTraceflows(resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
-	config configuration.ParsedNSXConfig, connMap connectivity.ConnMap, vmFilter vmFilter) *collector.TraceFlows {
+	config *configuration.Config, connMap connectivity.ConnMap, vmFilter vmFilter) *collector.TraceFlows {
 	traceFlows := collector.NewTraceflows(resources, server)
-	for srcUID, srcVM := range config.VMsMap() {
+	for srcUID, srcVM := range config.VMsMap {
 		if !vmFilter(srcVM) {
 			continue
 		}
@@ -49,7 +49,7 @@ func createTraceflows(resources *collector.ResourcesContainerModel,
 		if port == nil {
 			continue
 		}
-		for dstUID, dstVM := range config.VMsMap() {
+		for dstUID, dstVM := range config.VMsMap {
 			if srcUID == dstUID {
 				continue
 			}
