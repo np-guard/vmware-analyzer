@@ -222,7 +222,7 @@ func TestOverrideJsonFiles(t *testing.T) {
 		_, err := data.ExamplesGeneration(test.exData, true)
 		require.Nil(t, err)
 	}
-	overrideJSON := true // change to true in case examples were modified, so JSON file gets updated
+	overrideJSON := false // change to true in case examples were modified, so JSON file gets updated
 	if overrideJSON {
 		parallelTestsRun(t, overrideFunc)
 	}
@@ -261,7 +261,7 @@ func TestLiveNSXServer(t *testing.T) {
 // the TestNsxResourceFile() get the resource from resources.json, and call serialTestsRun()
 func TestNsxResourceFile(t *testing.T) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
-	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
+	inputFile := data.GetExamplesJSONPath("userResources")
 	if !common.FileExist(inputFile) {
 		logging.Debugf("resource file %s does not exist, nothing to test\n", inputFile)
 		return

@@ -37,5 +37,5 @@ pkg/nsx
 out/
 
 # empty files to be edited for testing:
-pkg/synthesis/tests/resources.json
+pkg/data/json/userResources.json
 cmd/examples/input/resources.json
