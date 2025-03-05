@@ -491,10 +491,6 @@ func getTestsDirActualOut() string {
 	currentDir, _ := os.Getwd()
 	return filepath.Join(currentDir, actualOutput)
 }
-func getTestsDirIn() string {
-	currentDir, _ := os.Getwd()
-	return filepath.Join(currentDir, "tests")
-}
 
 // /////////////////////////////////////////////////////////////////////////
 // comparing / generating files and dirs:
