@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/models/pkg/netset"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
@@ -55,6 +56,10 @@ func (tagTerm tagAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 // returns true iff tagTerm is superset of otherAtom as given by hints
 func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
+}
+
+func (tagAtomicTerm) getBlock() *netset.IPBlock {
+	return nil
 }
 
 // evaluates symbolic Conjunctions from a given Expression

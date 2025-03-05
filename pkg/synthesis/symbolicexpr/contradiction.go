@@ -1,5 +1,7 @@
 package symbolicexpr
 
+import "github.com/np-guard/models/pkg/netset"
+
 // contradiction implementation; contradiction is the negation of tautology
 
 func (contradiction) String() string {
@@ -42,4 +44,8 @@ func (contradiction) disjoint(atomic, *Hints) bool {
 
 func (contradiction) supersetOf(atom atomic, hints *Hints) bool {
 	return false
+}
+
+func (contradiction) getBlock() *netset.IPBlock {
+	return nil
 }

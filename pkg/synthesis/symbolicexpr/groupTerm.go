@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/models/pkg/netset"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -87,4 +88,8 @@ func (groupTerm groupAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 // returns true iff groupTerm is superset of otherAtom as given by hints
 func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(groupTerm, otherAtom, hints)
+}
+
+func (groupAtomicTerm) getBlock() *netset.IPBlock {
+	return nil
 }

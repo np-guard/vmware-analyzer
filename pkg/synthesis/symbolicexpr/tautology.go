@@ -1,5 +1,7 @@
 package symbolicexpr
 
+import "github.com/np-guard/models/pkg/netset"
+
 // tautology implementation
 
 func (tautology) String() string {
@@ -43,4 +45,8 @@ func (tautology) disjoint(atomic, *Hints) bool {
 
 func (tautology) supersetOf(atom atomic, hints *Hints) bool {
 	return atom.IsTautology()
+}
+
+func (tautology) getBlock() *netset.IPBlock {
+	return nil
 }
