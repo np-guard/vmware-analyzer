@@ -5,6 +5,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -206,6 +208,22 @@ var resourceFileTest = synthesisTest{
 var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
 var allTests = append(allSyntheticTests, []synthesisTest{liveNsxTest, resourceFileTest}...)
 
+// //////////////////////////////////////////////////////////////////////
+type testMethod func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)
+
+func (f testMethod) name() string {
+	name := strings.Split(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), ".")
+	return name[len(name)-1]
+}
+
+var testsMethods = []testMethod{
+	runPreprocessing,
+	runConvertToAbstract,
+	runK8SSynthesis,
+	runK8STraceFlow,
+	runCompareNSXConnectivity,
+}
+
 ///////////////////////////////////////////////////////////////////////
 // the tests:
 //////////////////////////////////////////////////////////////////////
@@ -217,20 +235,31 @@ func TestDoNotAllowSameName(t *testing.T) {
 		names[test.name] = true
 	}
 }
+func TestOverrideJsonFiles(t *testing.T) {
+	overrideFunc := func(test *synthesisTest, t *testing.T, _ *collector.ResourcesContainerModel) {
+		_, err := data.ExamplesGeneration(test.exData, true)
+		require.Nil(t, err)
+	}
+	overrideJSON := false // change to true in case examples were modified, so JSON file gets updated
+	if overrideJSON {
+		subTestsRunByTestName(t, overrideFunc)
+	}
+}
+
 func TestPreprocessing(t *testing.T) {
-	parallelTestsRun(t, runPreprocessing)
+	subTestsRunByTestName(t, runPreprocessing)
 }
 func TestConvertToAbsract(t *testing.T) {
-	parallelTestsRun(t, runConvertToAbstract)
+	subTestsRunByTestName(t, runConvertToAbstract)
 }
 func TestK8SSynthesis(t *testing.T) {
-	parallelTestsRun(t, runK8SSynthesis)
+	subTestsRunByTestName(t, runK8SSynthesis)
 }
 func TestK8STraceFlow(t *testing.T) {
-	parallelTestsRun(t, runK8STraceFlow)
+	subTestsRunByTestName(t, runK8STraceFlow)
 }
 func TestCompareNSXConnectivity(t *testing.T) {
-	parallelTestsRun(t, runCompareNSXConnectivity)
+	subTestsRunByTestName(t, runCompareNSXConnectivity)
 }
 
 // the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
@@ -244,16 +273,33 @@ func TestLiveNSXServer(t *testing.T) {
 	rc, err := collector.CollectResources(server)
 	require.Nil(t, err)
 	require.NotNil(t, rc)
-	serialTestsRun(&liveNsxTest, t, rc)
+	// since collection is long, here the test methods does not run as subtest
+	for _, f := range testsMethods {
+		f(&liveNsxTest, t, rc)
+	}
 }
 
-// the TestNsxResourceFile() get the resource from resources.json, and call serialTestsRun()
+// the TestNsxResourceFile() get the resource from resources.json, and run the testsMethods on it
 func TestNsxResourceFile(t *testing.T) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
-	inputFile := filepath.Join(getTestsDirIn(), "resources.json")
+	rc := readUserResourceFile(t)
+	if rc == nil {
+		return
+	}
+	// running each test method as a sub test with method name:
+	for _, f := range testsMethods {
+		t.Run(f.name(), func(t *testing.T) {
+			f(&resourceFileTest, t, rc)
+		},
+		)
+	}
+}
+
+func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
+	inputFile := data.GetExamplesJSONPath("userResources")
 	if !common.FileExist(inputFile) {
 		logging.Debugf("resource file %s does not exist, nothing to test\n", inputFile)
-		return
+		return nil
 	}
 	b, err := os.ReadFile(inputFile)
 	require.Nil(t, err)
@@ -262,28 +308,17 @@ func TestNsxResourceFile(t *testing.T) {
 	require.NotNil(t, rc)
 	if len(rc.DomainList) == 0 {
 		logging.Debugf("%s has no domains\n", inputFile)
-		return
+		return nil
 	}
-	serialTestsRun(&resourceFileTest, t, rc)
+	return rc
 }
 
-// ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// serialTestsRun() gets a resource, and run the test functions serially
-// we need it to be serially, because we have only one resource
-func serialTestsRun(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	runPreprocessing(synTest, t, rc)
-	runConvertToAbstract(synTest, t, rc)
-	runK8SSynthesis(synTest, t, rc)
-	runK8STraceFlow(synTest, t, rc)
-	runCompareNSXConnectivity(synTest, t, rc)
-}
-
-// parallelTestsRun() gets a test function to run, and run it on all the syntheticTests in parallel
-func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel)) {
+// ///////////////////////////////////////////////////////////////////////////////////
+// subTestsRunByTestName() gets a test function to run, and run it on all the syntheticTests as subtests
+func subTestsRunByTestName(t *testing.T, f testMethod) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		overrideJSON := false // change to true in case examples were modified, so JSON file gets updated
-		rc, err := data.ExamplesGeneration(test.exData, overrideJSON)
+		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
@@ -293,7 +328,7 @@ func parallelTestsRun(t *testing.T, f func(synTest *synthesisTest, t *testing.T,
 }
 
 //////////////////////////////////////////
-// the test functions:
+// the test methods:
 //////////////////////////////////////////
 
 func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
@@ -455,10 +490,6 @@ func getTestsDirExpectedOut() string {
 func getTestsDirActualOut() string {
 	currentDir, _ := os.Getwd()
 	return filepath.Join(currentDir, actualOutput)
-}
-func getTestsDirIn() string {
-	currentDir, _ := os.Getwd()
-	return filepath.Join(currentDir, "tests")
 }
 
 // /////////////////////////////////////////////////////////////////////////
