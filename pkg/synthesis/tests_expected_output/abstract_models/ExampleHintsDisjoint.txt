@@ -1,0 +1,25 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group       |Expression |VM
+Dumbledore1 |           |Dumbledore1
+Dumbledore2 |           |Dumbledore2
+Gryffindor  |           |Gryffindor
+Hufflepuff  |           |Hufflepuff
+Slytherin   |           |Slytherin
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                   |Dst                   |Connection
+0                            |9200    |(group = Dumbledore1) |(group != Slytherin)  |All Connections
+1                            |9201    |(group = Dumbledore2) |(group != Gryffindor) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                   |Dst                   |Connection
+0                            |9200    |(group = Dumbledore1) |(group != Slytherin)  |All Connections
+1                            |9201    |(group = Dumbledore2) |(group != Gryffindor) |All Connections
+
