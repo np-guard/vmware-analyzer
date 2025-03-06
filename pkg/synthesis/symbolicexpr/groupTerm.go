@@ -43,6 +43,8 @@ func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
 
+// Evaluates group and translates it into []*Conjunction
+// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
 func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction,
 	ruleID int) []*Conjunction {
 	res := []*Conjunction{}
