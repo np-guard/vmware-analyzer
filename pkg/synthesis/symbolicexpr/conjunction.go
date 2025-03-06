@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 const emptySet = "empty set "
@@ -17,7 +18,33 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	if c.contains(atom) {
 		return c
 	}
-	res := append(*c, atom)
+	var ipBlockAddedToExisting bool
+	// if c is an IPBlock, adds it to other IPBlock in the Conjunction, if any. Otherwise, just appends it
+	// in the former case we lose the OriginalIP
+	block := atom.getBlock()
+	var res Conjunction
+	if block != nil { // atom is an IPBlockTerm
+		// looks for an  IPBlock in c
+		for _, itemAtom := range *c {
+			itemBlock := itemAtom.getBlock()
+			if itemBlock == nil { // itemAtom not an IPBlock
+				res = append(res, itemAtom)
+			} else {
+				// note that there could be at most one IPBlock in a conjunction, by design
+				// since the Conjunction's items are added, we should intersect the IPBlocks
+				newIPBlockAtomicTerm := &ipBlockAtomicTerm{atomicTerm: atomicTerm{},
+					IPBlock: &topology.IPBlock{Block: block.Intersect(itemBlock)}}
+				res = append(res, newIPBlockAtomicTerm)
+				ipBlockAddedToExisting = true
+			}
+		}
+	}
+	if ipBlockAddedToExisting {
+		return &res
+	}
+	// atom was not an ipBlockTerm or c did not yet have an ipBlockTerm
+	res = append(*c, atom)
+
 	return &res
 }
 
@@ -27,8 +54,12 @@ func (c *Conjunction) copy() *Conjunction {
 	return &newC
 }
 
+// tautology: ipBlock 0.0.0.0/0 or tautology struct; at most 2 items
 func (c *Conjunction) isTautology() bool {
-	if len(*c) == 1 && (*c)[0].IsTautology() {
+	if len(*c) > 2 || len(*c) == 0 || !(*c)[0].IsTautology() {
+		return false
+	}
+	if len(*c) == 1 || (len(*c) == 2 && (*c)[1].IsTautology()) {
 		return true
 	}
 	return false
@@ -55,7 +86,8 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	return newC
 }
 
-// atomic atom is a redundant in Conjunction c, if it is a superset of one of c's terms
+// atomic atom is a redundant in Conjunction c, if it is a superset of one of c's terms; this applies to tagTerm and
+// groupTerm; as to ipBlockTerm - there is at most one such term which is not redundant by design
 func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false
@@ -68,13 +100,21 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	return false
 }
 
-// checks whether the conjunction is empty: either syntactically, or contains an groupAtomicTerm and its negation
+// isEmpty: checks whether the conjunction is false:
+// either contains an empty ipBlockTerm
+// or contains groupAtomicTerm and its negation
 // or contains two atoms that are disjoint to each other by hints
-func (c *Conjunction) isEmptySet(hints *Hints) bool {
+func (c *Conjunction) isEmpty(hints *Hints) bool {
 	if len(*c) == 0 {
-		return true
+		return false
 	}
 	for i, outAtomicTerm := range *c {
+		if outAtomicTerm.IsContradiction() {
+			return true
+		}
+		if outAtomicTerm.getBlock() != nil {
+			continue
+		}
 		reminder := *c
 		reminder = reminder[i+1:]
 		for _, inAtomicTerm := range reminder {
@@ -104,12 +144,26 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 	return false
 }
 
+// a Conjunction c contains an atom atomic if:
+// semantically: the condition in atom is already implied by c
+// syntactically:
+// if atom is a tagTerm or a groupTerm, then if the Conjunction c contains the atom literally
+// if atom is an IPBlock, if there is already an IPBlock in c that atom is a superset of it.
 func (c *Conjunction) contains(atom atomic) bool {
-	for _, atomicTerm := range *c {
-		if atomicTerm.String() == (atom).String() {
+	if atom.IsTautology() {
+		return true
+	}
+	for _, atomicItem := range *c {
+		// the following is relevant only when both atom and atomicItem are ipBlockTerms;
+		// in the other cases supersetOf is based on hints
+		if atom.supersetOf(atomicItem, &Hints{}) {
+			return true
+		}
+		if atomicItem.String() == (atom).String() {
 			return true
 		}
 	}
+
 	return false
 }
 
@@ -143,7 +197,8 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 
 // Conjunction c is a superset of atomic atom if any resource satisfying atom also satisfies c
 // this is the case if each of c's term is a superset of atom
-// e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
+// e.g.,  1.2.1.0/8 is a superset of 1.2.1.0/16;
+// given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
 func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 	if len(*c) == 0 { // nil Conjunction is equiv to tautology
 		return false

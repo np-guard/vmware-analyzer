@@ -3,6 +3,7 @@ package symbolicexpr
 import (
 	"fmt"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -10,6 +11,7 @@ import (
 
 const tagConst = "tag"
 
+// NewTagTerm new tag term
 // todo: support scope as well
 func NewTagTerm(tagName string, neg bool) *tagAtomicTerm {
 	return &tagAtomicTerm{atomicTerm: atomicTerm{neg: neg}, tag: &resources.Tag{Tag: tagName}}
@@ -20,11 +22,17 @@ func (tagTerm tagAtomicTerm) name() string {
 }
 
 func (tagTerm tagAtomicTerm) String() string {
-	equalSign := equalSignConst
-	if tagTerm.neg {
-		equalSign = nonEqualSignConst
-	}
-	return tagConst + equalSign + tagTerm.name()
+	return tagConst + eqSign(tagTerm) + tagTerm.name()
+}
+
+// IsTautology an tagAtomicTerm is a non-empty cond on a tag
+func (tagAtomicTerm) IsTautology() bool {
+	return false
+}
+
+// IsContradiction false since an groupAtomicTerm is a non-empty cond on a group
+func (tagAtomicTerm) IsContradiction() bool {
+	return false
 }
 
 func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
@@ -49,6 +57,10 @@ func (tagTerm tagAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 // returns true iff tagTerm is superset of otherAtom as given by hints
 func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
+}
+
+func (tagAtomicTerm) getBlock() *netset.IPBlock {
+	return nil
 }
 
 // evaluates symbolic Conjunctions from a given Expression
