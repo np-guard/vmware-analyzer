@@ -128,7 +128,7 @@ func (e *Example) storeAsJSON(override bool, rc *collector.ResourcesContainerMod
 	if e.Name == "" {
 		return fmt.Errorf("invalid example with empty name")
 	}
-	jsonPath := getExamplesJSONPath(e.Name)
+	jsonPath := GetExamplesJSONPath(e.Name)
 	if !override {
 		if _, err := os.Stat(jsonPath); err == nil {
 			// jsonPath exists - not re-generating
@@ -215,7 +215,7 @@ type ExampleExpr struct {
 
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "data")
 
-func getExamplesJSONPath(name string) string {
+func GetExamplesJSONPath(name string) string {
 	return filepath.Join(dataPkgPath, "json", name+".json")
 }
 
