@@ -77,12 +77,12 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 }
 
 var groupsByVmsTests = []synthesisTest{
-	//{
-	//	name:            "Example1c",
-	//	exData:          &data.Example1c,
-	//	synthesizeAdmin: false,
-	//	noHint:          true,
-	//},
+	{
+		name:            "Example1c",
+		exData:          &data.Example1c,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
 	{
 		name:            "Example1External",
 		exData:          &data.Example1External,
@@ -95,100 +95,100 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
-	//{
-	//	name:            "ExampleDumbeldore",
-	//	exData:          &data.ExampleDumbeldore,
-	//	synthesizeAdmin: false,
-	//	noHint:          true,
-	//},
-	//{
-	//	name:            "ExampleTwoDeniesSimple",
-	//	exData:          &data.ExampleTwoDeniesSimple,
-	//	synthesizeAdmin: false,
-	//	noHint:          true,
-	//},
-	//{
-	//	name:            "ExampleDenyPassSimple",
-	//	exData:          &data.ExampleDenyPassSimple,
-	//	synthesizeAdmin: false,
-	//	noHint:          true,
-	//},
-	//{
-	//	name:            "ExampleHintsDisjoint",
-	//	exData:          &data.ExampleHintsDisjoint,
-	//	synthesizeAdmin: false,
-	//	noHint:          true,
-	//},
-	//{
-	//	name:            "ExampleHogwartsSimpler",
-	//	exData:          &data.ExampleHogwartsSimpler,
-	//	synthesizeAdmin: false,
-	//	noHint:          true,
-	//},
-	//{
-	//	name:            "ExampleHogwartsNoDumbledore",
-	//	exData:          &data.ExampleHogwartsNoDumbledore,
-	//	synthesizeAdmin: false,
-	//	noHint:          false,
-	//},
-	//{
-	//	name:            "ExampleHogwarts",
-	//	exData:          &data.ExampleHogwarts,
-	//	synthesizeAdmin: false,
-	//	noHint:          false,
-	//},
-	//{
-	//	name:            "ExampleHogwartsAdmin",
-	//	exData:          &data.ExampleHogwarts,
-	//	synthesizeAdmin: true,
-	//	noHint:          false,
-	//},
-	//{
-	//	name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
-	//	exData:          &data.ExampleHogwartsSimplerNonSymInOut,
-	//	synthesizeAdmin: true,
-	//	noHint:          false,
-	//},
+	{
+		name:            "ExampleDumbeldore",
+		exData:          &data.ExampleDumbeldore,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleTwoDeniesSimple",
+		exData:          &data.ExampleTwoDeniesSimple,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleDenyPassSimple",
+		exData:          &data.ExampleDenyPassSimple,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleHintsDisjoint",
+		exData:          &data.ExampleHintsDisjoint,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleHogwartsSimpler",
+		exData:          &data.ExampleHogwartsSimpler,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleHogwartsNoDumbledore",
+		exData:          &data.ExampleHogwartsNoDumbledore,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleHogwarts",
+		exData:          &data.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleHogwartsAdmin",
+		exData:          &data.ExampleHogwarts,
+		synthesizeAdmin: true,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
+		exData:          &data.ExampleHogwartsSimplerNonSymInOut,
+		synthesizeAdmin: true,
+		noHint:          false,
+	},
 }
 
 var groupsByExprTests = []synthesisTest{
-	//{
-	//	name:   "ExampleExprSingleScope",
-	//	exData: &data.ExampleExprSingleScope,
-	//	noHint: false,
-	//},
-	//{
-	//	name:   "ExampleExprTwoScopes",
-	//	exData: &data.ExampleExprTwoScopes,
-	//	noHint: false,
-	//},
-	//{
-	//	name:   "ExampleExprTwoScopesAbstract",
-	//	exData: &data.ExampleExprTwoScopesAbstract,
-	//	noHint: false,
-	//},
-	//{
-	//	name:   "ExampleExprAndConds",
-	//	exData: &data.ExampleExprAndConds,
-	//	noHint: false,
-	//},
-	//{
-	//	name:   "ExampleExprOrConds",
-	//	exData: &data.ExampleExprOrConds,
-	//	noHint: false,
-	//},
-	//{
-	//	name:            "ExampleExprAndCondsAdmin",
-	//	exData:          &data.ExampleExprAndConds,
-	//	noHint:          false,
-	//	synthesizeAdmin: true,
-	//},
-	//{
-	//	name:            "ExampleExprOrCondsAdmin",
-	//	exData:          &data.ExampleExprOrConds,
-	//	noHint:          false,
-	//	synthesizeAdmin: true,
-	//},
+	{
+		name:   "ExampleExprSingleScope",
+		exData: &data.ExampleExprSingleScope,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprTwoScopes",
+		exData: &data.ExampleExprTwoScopes,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprTwoScopesAbstract",
+		exData: &data.ExampleExprTwoScopesAbstract,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprAndConds",
+		exData: &data.ExampleExprAndConds,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprOrConds",
+		exData: &data.ExampleExprOrConds,
+		noHint: false,
+	},
+	{
+		name:            "ExampleExprAndCondsAdmin",
+		exData:          &data.ExampleExprAndConds,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
+	{
+		name:            "ExampleExprOrCondsAdmin",
+		exData:          &data.ExampleExprOrConds,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
 }
 var liveNsxTest = synthesisTest{
 	name:            "fromCollection",
@@ -472,7 +472,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputGeneration
+const runTestMode = OutputComparison
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
