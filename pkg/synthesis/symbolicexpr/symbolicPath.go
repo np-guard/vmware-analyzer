@@ -154,15 +154,8 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
-	tarmAny := Conjunction{tautology{}}
-	srcConjunctions := []*Conjunction{&tarmAny}
-	dstConjunctions := []*Conjunction{&tarmAny}
-	if !rule.IsAllSrcGroups {
-		srcConjunctions = getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
-	}
-	if !rule.IsAllDstGroups {
-		dstConjunctions = getConjunctionForGroups(rule.DstGroups, groupToConjunctions, rule.RuleID)
-	}
+	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllSrcGroups, rule.SrcGroups)
+	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllDstGroups, rule.DstGroups)
 	for _, srcConjunction := range srcConjunctions {
 		for _, dstConjunction := range dstConjunctions {
 			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
@@ -177,7 +170,7 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 	tarmAny := Conjunction{tautology{}}
 	res := []*Conjunction{&tarmAny}
 	if !isAllGroups {
-		res = getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
+		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)
 	}
 	return res
 }
