@@ -28589,6 +28589,16 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "Dumbledore1",
+                        "path": "Dumbledore1",
+                        "vm_members": [
+                            {
+                                "display_name": "Dumbledore1",
+                                "id": "Dumbledore1"
+                            }
+                        ]
+                    },
+                    {
                         "display_name": "Dumbledore2",
                         "path": "Dumbledore2",
                         "vm_members": [
@@ -28625,16 +28635,6 @@
                             {
                                 "display_name": "Gryffindor",
                                 "id": "Gryffindor"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Dumbledore1",
-                        "path": "Dumbledore1",
-                        "vm_members": [
-                            {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
                             }
                         ]
                     }

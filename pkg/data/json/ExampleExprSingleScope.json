@@ -28442,6 +28442,15 @@
     ],
     "virtual_machines": [
         {
+            "display_name": "Slytherin",
+            "external_id": "Slytherin",
+            "tags": [
+                {
+                    "tag": "Slytherin"
+                }
+            ]
+        },
+        {
             "display_name": "Hufflepuff",
             "external_id": "Hufflepuff",
             "tags": [
@@ -28699,8 +28708,32 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "Dumbledore",
+                        "path": "Dumbledore",
+                        "vm_members": [
+                            {
+                                "display_name": "Dumbledore",
+                                "id": "Dumbledore"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "value": "Dumbledore"
+                            }
+                        ]
+                    },
+                    {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin",
+                                "id": "Slytherin"
+                            }
+                        ],
                         "expression": [
                             {
                                 "key": "Tag",
@@ -28743,24 +28776,6 @@
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
                                 "value": "Hufflepuff"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Dumbledore",
-                        "path": "Dumbledore",
-                        "vm_members": [
-                            {
-                                "display_name": "Dumbledore",
-                                "id": "Dumbledore"
-                            }
-                        ],
-                        "expression": [
-                            {
-                                "key": "Tag",
-                                "member_type": "VirtualMachine",
-                                "operator": "EQUALS",
-                                "value": "Dumbledore"
                             }
                         ]
                     }
