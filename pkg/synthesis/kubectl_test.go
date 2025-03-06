@@ -75,7 +75,11 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 // /////////////////////////////////////////////////////////////////////
 func podTestName(testName, vmName string) string {
-	return strings.ReplaceAll(strings.ToLower(fmt.Sprintf("%s-%s", testName, vmName)), " ", "-")
+	name := fmt.Sprintf("%s-%s", testName, vmName)
+	name = strings.ToLower(name)
+	name = strings.ReplaceAll(name, " ", "-")
+	name = strings.ReplaceAll(name, "0", "") // we have names with too much zeros, making it too long 
+	 return name
 }
 
 func fixPodsResources(testName string, pods []*core.Pod) {
@@ -182,7 +186,7 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 		return err
 	}
 	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{})
+	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{Format: "txt"})
 	if err != nil {
 		return err
 	}
@@ -192,8 +196,8 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 		for dst, conn := range dsts {
 			test := &connTest{
 				connTestFile: connTestFile,
-				src:          podTestName(testName, src.Name()),
-				dst:          podTestName(testName, dst.Name()),
+				src:          podTestName(testName, toLegalK8SString(src.Name())),
+				dst:          podTestName(testName, toLegalK8SString(dst.Name())),
 				allowed:      !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
 			}
 			tests = append(tests, test)
