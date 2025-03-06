@@ -10,10 +10,12 @@ Group |Expression |VM
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-Original allow rule priority |Rule id |Src |Dst |Connection
-
+Original allow rule priority |Rule id |Src                       |Dst                       |Connection
+0                            |1004    |(IP addr in 0.0.1.0/25)   |(IP addr in 0.0.1.128/25) |TCP dst-ports: 445
+1                            |1005    |(IP addr in 0.0.1.128/25) |(IP addr in 0.0.2.0/24)   |TCP dst-ports: 443
 
 outbound rules
-Original allow rule priority |Rule id |Src |Dst |Connection
-
+Original allow rule priority |Rule id |Src                       |Dst                       |Connection
+0                            |1004    |(IP addr in 0.0.1.0/25)   |(IP addr in 0.0.1.128/25) |TCP dst-ports: 445
+1                            |1005    |(IP addr in 0.0.1.128/25) |(IP addr in 0.0.2.0/24)   |TCP dst-ports: 443
 

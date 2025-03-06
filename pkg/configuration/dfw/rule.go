@@ -52,8 +52,8 @@ type FwRule struct {
 	SrcVMs    []topology.Endpoint
 	DstVMs    []topology.Endpoint
 	scope     []topology.Endpoint
-	srcBlocks []*topology.RuleIPBlock
-	dstBlocks []*topology.RuleIPBlock
+	SrcBlocks []*topology.RuleIPBlock
+	DstBlocks []*topology.RuleIPBlock
 
 	// todo: the following 5 fields are needed for the symbolic expr in synthesis, and are temp until we handle the
 	//       entire expr properly
@@ -104,8 +104,8 @@ func NewFwRule(
 	return &FwRule{
 		SrcVMs:             srcVMs,
 		DstVMs:             dstVMs,
-		srcBlocks:          srcBlocks,
-		dstBlocks:          dstBlocks,
+		SrcBlocks:          srcBlocks,
+		DstBlocks:          dstBlocks,
 		scope:              scope,
 		SrcGroups:          srcGroups,
 		IsAllSrcGroups:     isAllSrcGroups,
@@ -246,7 +246,7 @@ func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
 }
 
 func (f *FwRule) clone() *FwRule {
-	return NewFwRule(f.SrcVMs, f.DstVMs, f.srcBlocks, f.dstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
+	return NewFwRule(f.SrcVMs, f.DstVMs, f.SrcBlocks, f.DstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
 		f.IsAllDstGroups, f.ScopeGroups, f.Conn, f.Action,
 		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
