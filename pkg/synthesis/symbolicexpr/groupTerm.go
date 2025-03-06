@@ -3,6 +3,7 @@ package symbolicexpr
 import (
 	"fmt"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
@@ -12,11 +13,17 @@ const equalSignConst = " = "
 const nonEqualSignConst = " != "
 
 func (groupTerm groupAtomicTerm) String() string {
-	equalSign := equalSignConst
-	if groupTerm.neg {
-		equalSign = nonEqualSignConst
-	}
-	return grp + equalSign + groupTerm.name()
+	return grp + eqSign(groupTerm) + groupTerm.name()
+}
+
+// IsTautology false since an groupAtomicTerm is a non-empty cond on a group
+func (groupAtomicTerm) IsTautology() bool {
+	return false
+}
+
+// IsContradiction false since an groupAtomicTerm is a non-empty cond on a group
+func (groupAtomicTerm) IsContradiction() bool {
+	return false
 }
 
 func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
@@ -81,4 +88,8 @@ func (groupTerm groupAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 // returns true iff groupTerm is superset of otherAtom as given by hints
 func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(groupTerm, otherAtom, hints)
+}
+
+func (groupAtomicTerm) getBlock() *netset.IPBlock {
+	return nil
 }
