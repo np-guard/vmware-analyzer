@@ -20,7 +20,7 @@ func (c ConnMap) Add(src, dst topology.Endpoint, conn *DetailedConnection) {
 
 // InitPairs adds all possible pairs from/to endpoints1 to/from endpoints2, with allow-all or deny-all, based on initAllow
 func (c ConnMap) InitPairs(initAllow bool, endpoints1, endpoints2 []topology.Endpoint, vmsFilter []string) {
-	filterFunc := func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && slices.Contains(vmsFilter, ep.Name()) }
+	filterFunc := func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && !slices.Contains(vmsFilter, ep.Name()) }
 	endpoints1 = slices.DeleteFunc(slices.Clone(endpoints1), filterFunc)
 	endpoints2 = slices.DeleteFunc(slices.Clone(endpoints2), filterFunc)
 	for _, src := range endpoints1 {
