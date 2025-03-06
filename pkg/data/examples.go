@@ -255,6 +255,64 @@ var Example1External = Example{
 	},
 }
 
+var ExampleExternalWithDenySimple = Example{
+	Name: "ExampleExternalWithDenySimple",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:   "deny_tcp_0_1",
+					ID:     1004,
+					Source: "1.2.0.0/30",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Drop,
+				},
+				{
+					Name:   "allow_tcp_0_1",
+					ID:     1005,
+					Source: "1.2.0.0-1.2.1.255",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_udp_3_4",
+					ID:     1006,
+					Source: "1.2.3.0-1.2.4.255",
+					Dest:   "frontend",
+					Conn:   netset.AllUDPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_icmp_1_3",
+					ID:     1007,
+					Source: "1.2.1.0-1.2.3.255",
+					Dest:   "frontend",
+					Conn:   netset.AllICMPTransport(),
+					Action: Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+//{
+//Name:     "allow_smb_a_to_b",
+//ID:       1004,
+//Source:   "0.0.1.0/30",
+//Dest:     "0.0.1.128/29",
+//Services: []string{"/infra/services/SMB"},
+//Action:   Allow,
+//},
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleExclude = Example{
