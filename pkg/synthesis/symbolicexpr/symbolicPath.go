@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 )
 
@@ -169,4 +170,14 @@ func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[stri
 		}
 	}
 	return &resSymbolicPaths
+}
+
+func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
+	isAllGroups bool, groups []*collector.Group) []*Conjunction {
+	tarmAny := Conjunction{tautology{}}
+	res := []*Conjunction{&tarmAny}
+	if !isAllGroups {
+		res = getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
+	}
+	return res
 }

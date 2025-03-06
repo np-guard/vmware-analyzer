@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -43,6 +44,8 @@ func (groupTerm groupAtomicTerm) name() string {
 	return groupTerm.group.Name()
 }
 
+// Evaluates group and translates it into []*Conjunction
+// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
 func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[string][]*Conjunction,
 	ruleID int) []*Conjunction {
 	res := []*Conjunction{}
@@ -70,6 +73,16 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 		}
 		groupToConjunctions[group.Name()] = groupConj
 		res = append(res, groupConj...)
+	}
+	return res
+}
+
+// Evaluates group and translates it into []*Conjunction
+// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
+func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) []*Conjunction {
+	res := make([]*Conjunction, len(ipBlocks))
+	for i, ipBlock := range ipBlocks {
+		res[i] = &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: &ipBlock.IPBlock}}
 	}
 	return res
 }
