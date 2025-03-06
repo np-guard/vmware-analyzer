@@ -33,11 +33,11 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 
 // IsTautology an atomicTerm is a non-empty cond on a group, a tag etc and is thus not a tautology
 func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
-	return complementary(ipBlockTerm.getBlock()).IsEmpty()
+	return complementary(ipBlockTerm.GetBlock()).IsEmpty()
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
-	block := ipBlockTerm.getBlock()
+	block := ipBlockTerm.GetBlock()
 	return block.IsEmpty()
 }
 
@@ -55,7 +55,7 @@ func complementary(block *netset.IPBlock) *netset.IPBlock {
 	return allIPBlock.Subtract(block)
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) getBlock() *netset.IPBlock {
+func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
 		block = complementary(block)
@@ -76,17 +76,17 @@ func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
 func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
-	otherBlock := otherAtom.getBlock()
+	otherBlock := otherAtom.GetBlock()
 	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.getBlock().Equal(complementary(otherBlock))
+	return ipBlockTerm.GetBlock().Equal(complementary(otherBlock))
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
 func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	block := ipBlockTerm.getBlock()
-	otherBlock := otherAtom.getBlock()
+	block := ipBlockTerm.GetBlock()
+	otherBlock := otherAtom.GetBlock()
 	if otherAtom == nil {
 		return true // otherAtom is not an IPBlock
 	}
@@ -95,7 +95,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom as given by hints
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.getBlock() == nil {
+	if otherAtom.GetBlock() == nil {
 		return false
 	}
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)

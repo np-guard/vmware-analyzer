@@ -92,6 +92,6 @@ func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool
 	return supersetOf(groupTerm, otherAtom, hints)
 }
 
-func (groupAtomicTerm) getBlock() *netset.IPBlock {
+func (groupAtomicTerm) GetBlock() *netset.IPBlock {
 	return nil
 }

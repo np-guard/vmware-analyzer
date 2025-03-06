@@ -59,7 +59,7 @@ func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
 }
 
-func (tagAtomicTerm) getBlock() *netset.IPBlock {
+func (tagAtomicTerm) GetBlock() *netset.IPBlock {
 	return nil
 }
 
