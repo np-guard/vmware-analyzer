@@ -2,7 +2,9 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 func (path *SymbolicPath) String() string {
@@ -153,15 +155,8 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
-	tarmAny := Conjunction{tautology{}}
-	srcConjunctions := []*Conjunction{&tarmAny}
-	dstConjunctions := []*Conjunction{&tarmAny}
-	if !rule.IsAllSrcGroups {
-		srcConjunctions = getConjunctionForGroups(rule.SrcGroups, groupToConjunctions, rule.RuleID)
-	}
-	if !rule.IsAllDstGroups {
-		dstConjunctions = getConjunctionForGroups(rule.DstGroups, groupToConjunctions, rule.RuleID)
-	}
+	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllSrcGroups, rule.SrcGroups, rule.SrcBlocks)
+	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllDstGroups, rule.DstGroups, rule.DstBlocks)
 	for _, srcConjunction := range srcConjunctions {
 		for _, dstConjunction := range dstConjunctions {
 			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
@@ -169,4 +164,15 @@ func ConvertFWRuleToSymbolicPaths(rule *dfw.FwRule, groupToConjunctions map[stri
 		}
 	}
 	return &resSymbolicPaths
+}
+
+func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
+	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) []*Conjunction {
+	tarmAny := Conjunction{tautology{}}
+	res := []*Conjunction{&tarmAny}
+	if !isAllGroups {
+		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)
+	}
+	res = append(res, getConjunctionForIPBlock(ruleBlocks)...)
+	return res
 }

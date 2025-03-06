@@ -100,3 +100,13 @@ func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints)
 	}
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
 }
+
+// Evaluates group and translates it into []*Conjunction
+// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
+func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) []*Conjunction {
+	res := make([]*Conjunction, len(ipBlocks))
+	for i, ipBlock := range ipBlocks {
+		res[i] = &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: &ipBlock.IPBlock}}
+	}
+	return res
+}
