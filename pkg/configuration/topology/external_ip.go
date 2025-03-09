@@ -9,7 +9,13 @@ type ExternalIP struct {
 }
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
-	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: block.String()}}
+	// look for the shortest name:
+	asCidrs, asRanges := block.String(), block.ToIPRanges()
+	origIP := asCidrs
+	if len(asRanges) < len(asCidrs) {
+		origIP = asRanges
+	}
+	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: origIP}}
 	return e
 }
 
@@ -22,3 +28,4 @@ func (ip *ExternalIP) InfoStr() []string {
 }
 func (ip *ExternalIP) Tags() []string         { return nil }
 func (ip *ExternalIP) IPAddressesStr() string { return ip.OriginalIP }
+func (ip *ExternalIP) IsExternal() bool       { return true }

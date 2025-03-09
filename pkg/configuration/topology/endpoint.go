@@ -8,6 +8,7 @@ type Endpoint interface {
 	InfoStr() []string
 	Tags() []string
 	IPAddressesStr() string
+	IsExternal() bool
 }
 
 func Intersection(a, b []Endpoint) []Endpoint {

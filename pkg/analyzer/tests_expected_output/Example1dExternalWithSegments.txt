@@ -1,5 +1,21 @@
 Analyzed connectivity:
-Source |Destination  |Permitted connections
-A      |B            |TCP dst-ports: 445
-B      |C-no-address |TCP dst-ports: 443
+Source                  |Destination             |Permitted connections
+0.0.0.0/24              |A                       |ICMP
+0.0.0.0/24              |B                       |ICMP
+0.0.0.0/24              |C-no-address            |ICMP
+0.0.3.0-255.255.255.255 |A                       |ICMP
+0.0.3.0-255.255.255.255 |B                       |ICMP
+0.0.3.0-255.255.255.255 |C-no-address            |ICMP
+A                       |0.0.0.0/24              |ICMP
+A                       |0.0.3.0-255.255.255.255 |ICMP
+A                       |B                       |ICMP;TCP dst-ports: 445
+A                       |C-no-address            |ICMP
+B                       |0.0.0.0/24              |ICMP
+B                       |0.0.3.0-255.255.255.255 |ICMP
+B                       |A                       |ICMP
+B                       |C-no-address            |ICMP;TCP dst-ports: 443
+C-no-address            |0.0.0.0/24              |ICMP
+C-no-address            |0.0.3.0-255.255.255.255 |ICMP
+C-no-address            |A                       |ICMP
+C-no-address            |B                       |ICMP
 
