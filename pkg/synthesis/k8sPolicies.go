@@ -66,6 +66,10 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
 	srcSelector := toSelector(p.Src)
 	dstSelector := toSelector(p.Dst)
+	// a tmp check, this check should be at the abstract phase:
+	if (!inbound && len(srcSelector.cidrs) > 0) || (inbound && len(dstSelector.cidrs) > 0) {
+		return
+	}
 	if isAdmin {
 		ports := connToAdminPolicyPort(p.Conn)
 		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
@@ -77,23 +81,23 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////
-func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
+func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector selector,
 	ports []networking.NetworkPolicyPort, inbound bool,
 	description, nsxRuleID string) {
 	pol := newNetworkPolicy(fmt.Sprintf("policy-%d", len(policies.networkPolicies)), description, nsxRuleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	if inbound {
-		from := []networking.NetworkPolicyPeer{{PodSelector: srcSelector}}
+		from := srcSelector.toPeers()
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		pol.Spec.Ingress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
-		pol.Spec.PodSelector = *dstSelector
+		pol.Spec.PodSelector = *dstSelector.label
 	} else {
-		to := []networking.NetworkPolicyPeer{{PodSelector: dstSelector}}
+		to := dstSelector.toPeers()
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		pol.Spec.Egress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
-		pol.Spec.PodSelector = *srcSelector
+		pol.Spec.PodSelector = *srcSelector.label
 	}
 }
 
@@ -123,11 +127,11 @@ func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
 var namespaceNameKey = path.Join("kubernetes.io", meta.ObjectNameField)
 var defaultNamespaceSelector = meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}
 
-func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector *meta.LabelSelector,
+func (policies *k8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector selector,
 	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
 	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.adminNetworkPolicies)), description, nsxRuleID)
-	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector, NamespaceSelector: defaultNamespaceSelector}
-	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector, NamespaceSelector: defaultNamespaceSelector}
+	srcPodsSelector := &admin.NamespacedPod{PodSelector: *srcSelector.label, NamespaceSelector: defaultNamespaceSelector}
+	dstPodsSelector := &admin.NamespacedPod{PodSelector: *dstSelector.label, NamespaceSelector: defaultNamespaceSelector}
 	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcPodsSelector, dstPodsSelector)
 }
 
@@ -197,20 +201,38 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 	return pol
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////////////////////////
+type selector struct {
+	label *meta.LabelSelector
+	cidrs []string
+}
 
-func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
+func (selector selector) toPeers() []networking.NetworkPolicyPeer {
+	if len(selector.cidrs) > 0 {
+		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
+		for i, cidr := range selector.cidrs {
+			res[i] = networking.NetworkPolicyPeer{IPBlock: &networking.IPBlock{CIDR: cidr}}
+		}
+		return res
+	}
+	return []networking.NetworkPolicyPeer{{PodSelector: selector.label}}
+}
+func toSelector(con symbolicexpr.Conjunction) selector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
-	selector := &meta.LabelSelector{}
+	res := selector{label: &meta.LabelSelector{}}
 	for _, a := range con {
-		if !a.IsTautology() {
+		switch {
+		case a.IsTautology():
+		case a.GetBlock() != nil:
+			res.cidrs = a.GetBlock().ToCidrList()
+		default:
 			label, notIn := a.AsSelector()
 			label = toLegalK8SString(label)
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
-			selector.MatchExpressions = append(selector.MatchExpressions, req)
+			res.label.MatchExpressions = append(res.label.MatchExpressions, req)
 		}
 	}
-	return selector
+	return res
 }
 
 // toLegalK8SString() replaces all the k8s illegal characters with "-NLC"

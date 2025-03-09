@@ -31,37 +31,10 @@ metadata:
     name: policy-1
     namespace: default
 spec:
-    egress:
-        - ports:
-            - protocol: TCP
-          to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__frontend
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: to-NLCimplement
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (IP addr in 1.2.0.0-1.2.1.255) dst: (group = frontend) conn: TCP'
-        nsx-id: "1004"
-    creationTimestamp: null
-    name: policy-2
-    namespace: default
-spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 1.2.0.0/23
           ports:
             - protocol: TCP
     podSelector:
@@ -78,40 +51,15 @@ metadata:
         description: 'src: (IP addr in 1.2.3.0-1.2.4.255) dst: (group = frontend) conn: UDP'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-3
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - protocol: UDP
-          to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__frontend
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: to-NLCimplement
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (IP addr in 1.2.3.0-1.2.4.255) dst: (group = frontend) conn: UDP'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-4
+    name: policy-2
     namespace: default
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 1.2.3.0/24
+            - ipBlock:
+                cidr: 1.2.4.0/24
           ports:
             - protocol: UDP
     podSelector:
