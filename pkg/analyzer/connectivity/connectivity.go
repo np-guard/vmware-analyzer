@@ -18,26 +18,22 @@ func (c ConnMap) Add(src, dst topology.Endpoint, conn *DetailedConnection) {
 	c[src][dst] = conn
 }
 
-// InitPairs adds all possible pairs with allow-all or deny-all, based on initAllow
-func (c ConnMap) InitPairs(initAllow bool, vms []topology.Endpoint, vmsFilter []string) {
-	vmsToaAnalyze := map[string]bool{}
-	if len(vmsFilter) > 0 {
-		for _, vmName := range vmsFilter {
-			vmsToaAnalyze[vmName] = true
-		}
-	}
-	for _, src := range vms {
-		for _, dst := range vms {
+// InitPairs adds all possible pairs from/to endpoints1 to/from endpoints2, with allow-all or deny-all, based on initAllow
+func (c ConnMap) InitPairs(initAllow bool, endpoints1, endpoints2 []topology.Endpoint, vmsFilter []string) {
+	filterFunc := func(ep topology.Endpoint) bool { return len(vmsFilter) > 0 && !slices.Contains(vmsFilter, ep.Name()) }
+	endpoints1 = slices.DeleteFunc(slices.Clone(endpoints1), filterFunc)
+	endpoints2 = slices.DeleteFunc(slices.Clone(endpoints2), filterFunc)
+	for _, src := range endpoints1 {
+		for _, dst := range endpoints2 {
 			if src == dst {
-				continue
-			}
-			if len(vmsFilter) > 0 && !(vmsToaAnalyze[src.Name()] && vmsToaAnalyze[dst.Name()]) {
 				continue
 			}
 			if initAllow {
 				c.Add(src, dst, NewAllDetailedConnection())
+				c.Add(dst, src, NewAllDetailedConnection())
 			} else {
 				c.Add(src, dst, NewEmptyDetailedConnection())
+				c.Add(dst, src, NewEmptyDetailedConnection())
 			}
 		}
 	}

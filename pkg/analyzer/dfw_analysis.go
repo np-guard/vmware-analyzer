@@ -56,7 +56,11 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 	if isIngress {
 		remainingRulesNum = d.TotalEffectiveIngressRules
 	}
-
+	if src.IsExternal() && !isIngress || dst.IsExternal() && isIngress {
+		// if src/dst is external, all connection is allowed.
+		allAllowedConns.accumulatedConns = netset.AllTransports()
+		return allAllowedConns, allDeniedConns, delegatedConns
+	}
 	for _, dfwCategory := range d.CategoriesSpecs {
 		if dfwCategory.Category == collector.EthernetCategory {
 			continue // cuurently skip L2 rules
