@@ -96,6 +96,12 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
+		name:            "ExampleExternalWithDenySimple",
+		exData:          &data.ExampleExternalWithDenySimple,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
 		name:            "ExampleDumbeldore",
 		exData:          &data.ExampleDumbeldore,
 		synthesizeAdmin: false,
@@ -176,6 +182,12 @@ var groupsByExprTests = []synthesisTest{
 		name:   "ExampleExprOrConds",
 		exData: &data.ExampleExprOrConds,
 		noHint: false,
+	},
+	{
+		name:            "ExampleHogwartsExternal",
+		exData:          &data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: false,
 	},
 	{
 		name:            "ExampleExprAndCondsAdmin",
@@ -472,7 +484,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputComparison
+const runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)

@@ -911,19 +911,20 @@ micro segmentation
 
 */
 
+var hogwartsBidimensionalGroups = map[string][]string{
+	sly: {slyWeb, slyApp, slyDB},
+	huf: {hufWeb, hufApp, hufDB},
+	gry: {gryWeb, gryApp, gryDB},
+	dum: {dum1, dum2},
+	web: {slyWeb, gryWeb, hufWeb},
+	app: {slyApp, gryApp, hufApp},
+	db:  {slyDB, gryDB, hufDB}}
+
 var ExampleHogwarts = Example{
 	Name: "ExampleHogwarts",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
-	GroupsByVMs: map[string][]string{
-		sly: {slyWeb, slyApp, slyDB},
-		huf: {hufWeb, hufApp, hufDB},
-		gry: {gryWeb, gryApp, gryDB},
-		dum: {dum1, dum2},
-		web: {slyWeb, gryWeb, hufWeb},
-		app: {slyApp, gryApp, hufApp},
-		db:  {slyDB, gryDB, hufDB},
-	},
+	GroupsByVMs: hogwartsBidimensionalGroups,
 	Policies: []Category{
 		{
 			Name:         "Gryffindor-to-Gryffindor-allow",
@@ -1633,3 +1634,137 @@ var ExampleHogwartsSimplerNonSymInOut = Example{
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleHogwartsExternal = Example{
+	Name: "ExampleHogwartsOut",
+	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+		gryWeb, gryApp, gryDB, dum1, dum2},
+	GroupsByVMs: hogwartsBidimensionalGroups,
+	Policies: []Category{
+		{
+			Name:         "Gryffindor-to-External-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-Gryffindor-to-External",
+					ID:        10218,
+					Source:    gry,
+					Dest:      "0.0.0.0/0",
+					Action:    JumpToApp,
+					Conn:      netset.AllTCPTransport(),
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "Hufflepuff-to-External-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Hufflepuff-to-External",
+					ID:     10219,
+					Source: huf,
+					Dest:   "0.0.0.0/0",
+					Action: JumpToApp,
+					//nolint:mnd // these are the port numbers for the test
+					Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "Slytherin-to-External-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-Slytherin-to-External",
+					ID:        10220,
+					Source:    sly,
+					Dest:      "0.0.0.0/0",
+					Services:  []string{anyStr},
+					Action:    JumpToApp,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "Dumbledore-connection",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-all-to-dumb-Dumbledore",
+					ID:        10221,
+					Source:    "0.0.0.0/0",
+					Dest:      dum,
+					Services:  []string{anyStr},
+					Direction: string(nsx.RuleDirectionIN),
+					Action:    JumpToApp,
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10300,
+					Source:   anyStr,
+					Dest:     "0.0.0.0/0",
+					Services: []string{anyStr},
+					Action:   Drop,
+				},
+			},
+		},
+
+		{
+			Name:         "Web-to-external",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:      "Client-Access",
+					ID:        10400,
+					Source:    web,
+					Dest:      "0.0.1.0/16",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "App-to-external",
+					ID:        10401,
+					Source:    app,
+					Dest:      "146.2.0/16",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "DB-to-external",
+					ID:        10405,
+					Source:    app,
+					Dest:      "220.0.1.0/28",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "to-Dumb",
+					ID:        10406,
+					Source:    "122.0.0.0/8",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: [][]string{
+		{sly, huf, gry, dum},
+		{web, app, db},
+		{web, dum},
+		{app, dum},
+		{db, dum},
+	},
+}
