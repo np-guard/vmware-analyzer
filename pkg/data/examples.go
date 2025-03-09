@@ -304,6 +304,55 @@ var ExampleExternalWithDenySimple = Example{
 	},
 }
 
+var ExampleExternalSimpleWithInterlDenyAllow = Example{
+	Name: "ExampleExternalWithDenySimple",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:   "deny_tcp_0_1",
+					ID:     1004,
+					Source: "1.2.0.0/30",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Drop,
+				},
+				{
+					Name:   "allow_tcp_0_1",
+					ID:     1005,
+					Source: "1.2.0.0/24",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "deny_all_conn_0_1",
+					ID:     1006,
+					Source: "1.2.0.0/24",
+					Dest:   "frontend",
+					Conn:   netset.AllTransports(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_all_conn_0_1",
+					ID:     1007,
+					Source: "1.2.0.0/16",
+					Dest:   "frontend",
+					Conn:   netset.AllTransports(),
+					Action: Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
 //{
 //Name:     "allow_smb_a_to_b",
 //ID:       1004,
@@ -1728,7 +1777,7 @@ var ExampleHogwartsExternal = Example{
 					Name:      "App-to-external",
 					ID:        10401,
 					Source:    app,
-					Dest:      "146.2.0/16",
+					Dest:      "146.2.0.0/16",
 					Services:  []string{anyStr},
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionOUT),
