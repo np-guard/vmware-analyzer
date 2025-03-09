@@ -375,15 +375,6 @@ var ExampleExternalSimpleWithInterlDenyAllow = Example{
 	},
 }
 
-//{
-//Name:     "allow_smb_a_to_b",
-//ID:       1004,
-//Source:   "0.0.1.0/30",
-//Dest:     "0.0.1.128/29",
-//Services: []string{"/infra/services/SMB"},
-//Action:   Allow,
-//},
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleExclude = Example{
