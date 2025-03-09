@@ -1785,7 +1785,7 @@ var ExampleHogwartsExternal = Example{
 				{
 					Name:      "DB-to-external",
 					ID:        10405,
-					Source:    app,
+					Source:    db,
 					Dest:      "220.0.1.0/28",
 					Services:  []string{anyStr},
 					Action:    Allow,
@@ -1795,6 +1795,7 @@ var ExampleHogwartsExternal = Example{
 					Name:      "to-Dumb",
 					ID:        10406,
 					Source:    "122.0.0.0/8",
+					Dest:      dum,
 					Services:  []string{anyStr},
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionIN),
