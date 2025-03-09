@@ -337,7 +337,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = Example{
 					Source: "1.2.0.0/24",
 					Dest:   "frontend",
 					Conn:   netset.AllTransports(),
-					Action: Allow,
+					Action: Drop,
 				},
 				{
 					Name:   "allow_all_conn_0_1",
