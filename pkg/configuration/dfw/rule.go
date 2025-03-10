@@ -61,7 +61,7 @@ type FwRule struct {
 	IsAllSrcGroups bool
 	DstGroups      []*collector.Group
 	IsAllDstGroups bool
-	// Scope implies additional condition on any Src and any Dst; will be added in one of the last stages
+	// Scope implies additional condition on any Src and any Dst
 	ScopeGroups        []*collector.Group
 	Conn               *netset.TransportSet
 	Action             RuleAction

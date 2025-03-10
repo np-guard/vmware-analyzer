@@ -282,7 +282,6 @@ type parsedRule struct {
 	direction      string
 	ruleID         int
 	scope          []topology.Endpoint
-	// todo: scopeGroups tmp same as srcGroups and fields above
 	scopeGroups    []*collector.Group
 	secPolicyName  string
 	defaultRuleObj *collector.FirewallRule
