@@ -212,7 +212,8 @@ type policySelector struct {
 func createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
-	res := policySelector{pods: &meta.LabelSelector{}, namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
+	res := policySelector{pods: &meta.LabelSelector{},
+		namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
@@ -243,7 +244,8 @@ func (selector policySelector) toPodSelector() meta.LabelSelector {
 }
 
 func (selector policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
-	return []admin.AdminNetworkPolicyIngressPeer{{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	return []admin.AdminNetworkPolicyIngressPeer{
+		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
 func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
 	if len(selector.cidrs) > 0 {
@@ -253,10 +255,12 @@ func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPo
 		}
 		return res
 	}
-	return []admin.AdminNetworkPolicyEgressPeer{{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	return []admin.AdminNetworkPolicyEgressPeer{
+		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
 func (selector policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
-	return admin.AdminNetworkPolicySubject{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
+	return admin.AdminNetworkPolicySubject{
+		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////
