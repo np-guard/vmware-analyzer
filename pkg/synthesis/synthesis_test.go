@@ -423,9 +423,12 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
-	if k8sConnectivityFileCreated && !strings.Contains(synTest.name, "External") {
-		// todo - remove "External" condition when examples supported
-		compareToNetpol(t, rc, k8sConnectivityFile)
+
+	if k8sConnectivityFileCreated {
+		if !strings.Contains(synTest.name, "External") || slices.Contains([]string{"ExampleHogwartsExternal"},synTest.name) {
+			// todo - remove "External" condition when examples supported
+			compareToNetpol(t, rc, k8sConnectivityFile)
+		}
 	}
 }
 func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
