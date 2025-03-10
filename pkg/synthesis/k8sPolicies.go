@@ -96,13 +96,13 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		pol.Spec.Ingress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
-		pol.Spec.PodSelector = *dstSelector.pods
+		pol.Spec.PodSelector = dstSelector.toPodSelector()
 	} else {
 		to := dstSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		pol.Spec.Egress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
-		pol.Spec.PodSelector = *srcSelector.pods
+		pol.Spec.PodSelector = srcSelector.toPodSelector()
 	}
 }
 
@@ -236,6 +236,10 @@ func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 		return res
 	}
 	return []networking.NetworkPolicyPeer{{PodSelector: selector.pods}}
+}
+
+func (selector policySelector) toPodSelector() meta.LabelSelector {
+	return *selector.pods
 }
 
 func (selector policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
