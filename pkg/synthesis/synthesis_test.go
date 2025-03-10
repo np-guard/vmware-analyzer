@@ -431,6 +431,8 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		}
 	}
 }
+
+// the following method is work in progress - the netpol analyzer and the nsx analyser have different granularity of external IPs
 func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
 	// we get a file with lines in the foramt:
 	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
@@ -469,14 +471,14 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 	for src, dsts := range connMap {
 		for dst, conn := range dsts {
 			// todo - set the real vm namespaces:
-			asName := func(ep topology.Endpoint) string {
+			endpointName := func(ep topology.Endpoint) string {
 				if ep.IsExternal() {
 					return ep.IPAddressesStr()
 				} else {
 					return "default/" + toLegalK8SString(ep.Name())
 				}
 			}
-			netpolFormat := fmt.Sprintf("%s=>%s", asName(src), asName(dst))
+			netpolFormat := fmt.Sprintf("%s=>%s", endpointName(src), endpointName(dst))
 			netpolConn, ok := netpolConnMap[netpolFormat]
 			fmt.Println(netpolFormat + conn.Conn.String())
 			require.Equal(t, ok, !conn.Conn.TCPUDPSet().IsEmpty())

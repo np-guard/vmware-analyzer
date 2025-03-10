@@ -74,7 +74,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	if isAdmin {
 		ports := connToAdminPolicyPort(p.Conn)
 		if inbound && len(srcSelector.cidrs) > 0 {
-			logging.Warnf("Ignoring %s admin network policy peer with IPs are not supported", p.String())
+			logging.Warnf("Ignoring %s. admin network policy peer with IPs are not supported", p.String())
 		} else {
 			policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
 				abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()), nsxRuleID)
@@ -203,6 +203,10 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////
+// policySelector represent a k8s selector. to be later translated to peer, pod selector, etc..
+// ite represent one of the follow:
+// 1. OR of cidrs.
+// 2. a label selector of pods
 type policySelector struct {
 	pods      *meta.LabelSelector
 	cidrs     []string
@@ -228,6 +232,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	}
 	return res
 }
+
 func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	if len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
