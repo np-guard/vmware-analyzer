@@ -63,6 +63,7 @@ type FwRule struct {
 	IsAllDstGroups bool
 	// Scope implies additional condition on any Src and any Dst
 	ScopeGroups        []*collector.Group
+	IsAllScopeGroups   bool
 	Conn               *netset.TransportSet
 	Action             RuleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
@@ -89,6 +90,7 @@ func NewFwRule(
 	dstGroups []*collector.Group,
 	isAllDstGroups bool,
 	scopeGroups []*collector.Group,
+	isAllScopeGroups bool,
 	conn *netset.TransportSet,
 	action RuleAction,
 	direction string,
@@ -112,6 +114,7 @@ func NewFwRule(
 		DstGroups:          dstGroups,
 		IsAllDstGroups:     isAllDstGroups,
 		ScopeGroups:        scopeGroups,
+		IsAllScopeGroups:   isAllScopeGroups,
 		Conn:               conn,
 		Action:             action,
 		direction:          direction,
@@ -247,7 +250,7 @@ func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
 
 func (f *FwRule) clone() *FwRule {
 	return NewFwRule(f.SrcVMs, f.DstVMs, f.SrcBlocks, f.DstBlocks, f.scope, f.SrcGroups, f.IsAllSrcGroups, f.DstGroups,
-		f.IsAllDstGroups, f.ScopeGroups, f.Conn, f.Action,
+		f.IsAllDstGroups, f.ScopeGroups, f.IsAllScopeGroups, f.Conn, f.Action,
 		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
 }

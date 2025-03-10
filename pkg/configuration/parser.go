@@ -199,6 +199,7 @@ func (p *nsxConfigParser) storeParsedDFW() {
 				r.scope = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
+					r.isAllScopeGroup = slices.Equal(rule.Scope, []string{anyStr})
 					r.scope, r.scopeGroups = p.getEndpointsFromScopePaths(rule.Scope)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
@@ -226,8 +227,8 @@ func (p *nsxConfigParser) storeParsedDFW() {
 }
 
 func (p *nsxConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.FW.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks,
-		r.srcGroups, r.dstGroups, r.scopeGroups, r.isAllSrcGroups, r.isAllDstGroups,
+	p.configRes.FW.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks, r.srcGroups, r.dstGroups, r.scopeGroups,
+		r.isAllScopeGroup, r.isAllSrcGroups, r.isAllDstGroups,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
 }
 
@@ -271,20 +272,21 @@ type parsedRule struct {
 	dstVMs []topology.Endpoint
 	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
 	//       defined by groups, thus the following temp 4 fields
-	srcGroups      []*collector.Group
-	isAllSrcGroups bool
-	srcBlocks      []*topology.RuleIPBlock
-	dstGroups      []*collector.Group
-	isAllDstGroups bool
-	dstBlocks      []*topology.RuleIPBlock
-	action         string
-	conn           *netset.TransportSet
-	direction      string
-	ruleID         int
-	scope          []topology.Endpoint
-	scopeGroups    []*collector.Group
-	secPolicyName  string
-	defaultRuleObj *collector.FirewallRule
+	srcGroups       []*collector.Group
+	isAllSrcGroups  bool
+	srcBlocks       []*topology.RuleIPBlock
+	dstGroups       []*collector.Group
+	isAllDstGroups  bool
+	dstBlocks       []*topology.RuleIPBlock
+	action          string
+	conn            *netset.TransportSet
+	direction       string
+	ruleID          int
+	scope           []topology.Endpoint
+	scopeGroups     []*collector.Group
+	isAllScopeGroup bool
+	secPolicyName   string
+	defaultRuleObj  *collector.FirewallRule
 }
 
 func (p *nsxConfigParser) getAllGroups() {
