@@ -1,0 +1,33 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression |VM
+App        |           |Slytherin-App, Gryffindor-App, Hufflepuff-App
+DB         |           |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB
+Dumbledore |           |Dumbledore1, Dumbledore2
+Gryffindor |           |Gryffindor-Web, Gryffindor-App, Gryffindor-DB
+Hufflepuff |           |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
+Slytherin  |           |Slytherin-Web, Slytherin-App, Slytherin-DB
+Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                      |Dst                  |Connection
+0                            |10406   |(IP addr in 122.0.0.0/8) |(group = Dumbledore) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                                  |Dst                       |Connection
+0                            |10400   |(group = Web and group = Gryffindor) |(IP addr in 0.0.1.0/16)   |TCP
+0                            |10400   |(group = Web and group = Hufflepuff) |(IP addr in 0.0.1.0/16)   |UDP dst-ports: 300-320
+0                            |10400   |(group = Web and group = Slytherin)  |(IP addr in 0.0.1.0/16)   |All Connections
+1                            |10401   |(group = App and group = Gryffindor) |(IP addr in 146.2.0.0/16) |TCP
+1                            |10401   |(group = App and group = Hufflepuff) |(IP addr in 146.2.0.0/16) |UDP dst-ports: 300-320
+1                            |10401   |(group = App and group = Slytherin)  |(IP addr in 146.2.0.0/16) |All Connections
+2                            |10405   |(group = DB and group = Gryffindor)  |(IP addr in 220.0.1.0/28) |TCP
+2                            |10405   |(group = DB and group = Hufflepuff)  |(IP addr in 220.0.1.0/28) |UDP dst-ports: 300-320
+2                            |10405   |(group = DB and group = Slytherin)   |(IP addr in 220.0.1.0/28) |All Connections
+

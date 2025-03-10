@@ -1,0 +1,23 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group    |Expression |VM
+frontend |           |A
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                                                                                                  |Dst                |Connection
+0                            |1005    |(IP addr in 1.2.0.4/30, 1.2.0.8/29, 1.2.0.16/28, 1.2.0.32/27, 1.2.0.64/26, 1.2.0.128/25, 1.2.1.0/24) |(group = frontend) |TCP
+1                            |1006    |(IP addr in 1.2.3.0-1.2.4.255)                                                                       |(group = frontend) |UDP
+2                            |1007    |(IP addr in 1.2.1.0-1.2.3.255)                                                                       |(group = frontend) |ICMP
+
+outbound rules
+Original allow rule priority |Rule id |Src                                                                                                  |Dst                |Connection
+0                            |1005    |(IP addr in 1.2.0.4/30, 1.2.0.8/29, 1.2.0.16/28, 1.2.0.32/27, 1.2.0.64/26, 1.2.0.128/25, 1.2.1.0/24) |(group = frontend) |TCP
+1                            |1006    |(IP addr in 1.2.3.0-1.2.4.255)                                                                       |(group = frontend) |UDP
+2                            |1007    |(IP addr in 1.2.1.0-1.2.3.255)                                                                       |(group = frontend) |ICMP
+
