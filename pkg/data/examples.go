@@ -390,7 +390,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = Example{
 }
 
 var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
-	Name: "ExampleExternalSimpleWithInterlDenyAllow",
+	Name: "ExampleExternalSimpleWithInterlDenyAllowDst",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
 		"frontend": {"A"},
@@ -407,7 +407,7 @@ var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
 					Source:    "frontend",
 					Conn:      netset.AllTCPTransport(),
 					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "allow_tcp_0_1",
@@ -416,7 +416,7 @@ var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
 					Source:    "frontend",
 					Conn:      netset.AllTCPTransport(),
 					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "deny_all_conn_0_1",
@@ -425,7 +425,7 @@ var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
 					Source:    "frontend",
 					Conn:      netset.AllTransports(),
 					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "allow_all_conn_0_1",
@@ -434,7 +434,7 @@ var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
 					Source:    "frontend",
 					Conn:      netset.AllTransports(),
 					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 			},
 		},
@@ -449,7 +449,7 @@ var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
 					Source:    "frontend",
 					Conn:      netset.AllTCPTransport(),
 					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "allow_all_conn_0_2",
@@ -458,7 +458,7 @@ var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
 					Source:    "frontend",
 					Conn:      netset.AllTransports(),
 					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				DefaultDenyRule(denyRuleIDApp),
 			},
