@@ -262,6 +262,132 @@ var Example1External = Example{
 	},
 }
 
+var ExampleExternalWithDenySimple = Example{
+	Name: "ExampleExternalWithDenySimple",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:   "deny_tcp_0_1",
+					ID:     1004,
+					Source: "1.2.0.0/30",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Drop,
+				},
+				{
+					Name:   "allow_tcp_0_1",
+					ID:     1005,
+					Source: "1.2.0.0-1.2.1.255",
+					Dest:   "frontend",
+					Conn:   netset.AllTCPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_udp_3_4",
+					ID:     1006,
+					Source: "1.2.3.0-1.2.4.255",
+					Dest:   "frontend",
+					Conn:   netset.AllUDPTransport(),
+					Action: Allow,
+				},
+				{
+					Name:   "allow_icmp_1_3",
+					ID:     1007,
+					Source: "1.2.1.0-1.2.3.255",
+					Dest:   "frontend",
+					Conn:   netset.AllICMPTransport(),
+					Action: Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
+var ExampleExternalSimpleWithInterlDenyAllow = Example{
+	Name: "ExampleExternalSimpleWithInterlDenyAllow",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Environment",
+			Rules: []Rule{
+				{
+					Name:      "deny_tcp_0_1",
+					ID:        1004,
+					Source:    "1.2.0.0/30",
+					Dest:      "frontend",
+					Conn:      netset.AllTCPTransport(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_tcp_0_1",
+					ID:        1005,
+					Source:    "1.2.0.0/24",
+					Dest:      "frontend",
+					Conn:      netset.AllTCPTransport(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "deny_all_conn_0_1",
+					ID:        1006,
+					Source:    "1.2.0.0/24",
+					Dest:      "frontend",
+					Conn:      netset.AllTransports(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_all_conn_0_1",
+					ID:        1007,
+					Source:    "1.2.0.0/16",
+					Dest:      "frontend",
+					Conn:      netset.AllTransports(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:      "deny_tcp_0_2",
+					ID:        1008,
+					Source:    "1.240.0.0/28",
+					Dest:      "frontend",
+					Conn:      netset.AllTCPTransport(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_all_conn_0_2",
+					ID:        1009,
+					Source:    "1.240.0.0/28",
+					Dest:      "frontend",
+					Conn:      netset.AllTransports(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleExclude = Example{
@@ -1358,3 +1484,138 @@ var ExampleHogwartsSimplerNonSymInOut = Example{
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleHogwartsExternal = Example{
+	Name: "ExampleHogwartsOut",
+	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+		gryWeb, gryApp, gryDB, dum1, dum2},
+	GroupsByVMs: hogwartsBidimensionalGroups,
+	Policies: []Category{
+		{
+			Name:         "Gryffindor-to-External-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-Gryffindor-to-External",
+					ID:        10218,
+					Source:    gry,
+					Dest:      "0.0.0.0/0",
+					Action:    JumpToApp,
+					Conn:      netset.AllTCPTransport(),
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "Hufflepuff-to-External-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Hufflepuff-to-External",
+					ID:     10219,
+					Source: huf,
+					Dest:   "0.0.0.0/0",
+					Action: JumpToApp,
+					//nolint:mnd // these are the port numbers for the test
+					Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "Slytherin-to-External-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-Slytherin-to-External",
+					ID:        10220,
+					Source:    sly,
+					Dest:      "0.0.0.0/0",
+					Services:  []string{anyStr},
+					Action:    JumpToApp,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "Dumbledore-connection",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-all-to-dumb-Dumbledore",
+					ID:        10221,
+					Source:    "0.0.0.0/0",
+					Dest:      dum,
+					Services:  []string{anyStr},
+					Direction: string(nsx.RuleDirectionIN),
+					Action:    JumpToApp,
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10300,
+					Source:   anyStr,
+					Dest:     "0.0.0.0/0",
+					Services: []string{anyStr},
+					Action:   Drop,
+				},
+			},
+		},
+
+		{
+			Name:         "Web-to-external",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:      "Client-Access",
+					ID:        10400,
+					Source:    web,
+					Dest:      "0.0.1.0/16",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "App-to-external",
+					ID:        10401,
+					Source:    app,
+					Dest:      "146.2.0.0/16",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "DB-to-external",
+					ID:        10405,
+					Source:    db,
+					Dest:      "220.0.1.0/28",
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "to-Dumb",
+					ID:        10406,
+					Source:    "122.0.0.0/8",
+					Dest:      dum,
+					Services:  []string{anyStr},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: [][]string{
+		{sly, huf, gry, dum},
+		{web, app, db},
+		{web, dum},
+		{app, dum},
+		{db, dum},
+	},
+}
