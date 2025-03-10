@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (IP addr in 1.240.0.0/28) dst: (group = frontend) conn: ICMP,UDP'
+        nsx-id: "1009"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: to-NLCimplement
+                      operator: Exists
+          ports:
+            - protocol: UDP
+    podSelector:
+        matchExpressions:
+            - key: group__frontend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
