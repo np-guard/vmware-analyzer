@@ -45,14 +45,14 @@ func (d *DFW) AllEffectiveRules() string {
 }
 
 func (d *DFW) AddRule(src, dst []topology.Endpoint, srcBlocks, dstBlocks []*topology.RuleIPBlock,
-	srcGroups, dstGroups, scopeGroups []*collector.Group,
+	srcGroups, dstGroups, scopeGroups []*collector.Group, isAllScopeGroup,
 	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, scope []topology.Endpoint, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {
 		if fwCategory.Category.String() == categoryStr {
-			fwCategory.addRule(src, dst, srcBlocks, dstBlocks, srcGroups, dstGroups, scopeGroups, isAllSrcGroups, isAllDstGroups, conn,
-				actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
+			fwCategory.addRule(src, dst, srcBlocks, dstBlocks, srcGroups, dstGroups, scopeGroups, isAllScopeGroup,
+				isAllSrcGroups, isAllDstGroups, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
 		}
 	}
 }
