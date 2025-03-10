@@ -425,7 +425,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	}
 
 	if k8sConnectivityFileCreated {
-		if !strings.Contains(synTest.name, "External") || slices.Contains([]string{"ExampleHogwartsExternal"},synTest.name) {
+		if !strings.Contains(synTest.name, "External") || slices.Contains([]string{"ExampleHogwartsExternal"}, synTest.name) {
 			// todo - remove "External" condition when examples supported
 			compareToNetpol(t, rc, k8sConnectivityFile)
 		}
