@@ -1,0 +1,41 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression |VM
+App        |           |Slytherin-App, Gryffindor-App, Hufflepuff-App
+DB         |           |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB
+Dumbledore |           |Dumbledore1, Dumbledore2
+Gryffindor |           |Gryffindor-Web, Gryffindor-App, Gryffindor-DB
+Hufflepuff |           |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
+Slytherin  |           |Slytherin-Web, Slytherin-App, Slytherin-DB
+Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
+
+Admin policy rules
+~~~~~~~~~~~~~~~~~~
+inbound rules
+Priority |Rule Id |Action              |Src                    |Dst                    |Connection
+0        |10221   |jump_to_application |(IP addr in 0.0.0.0/0) |(group = Dumbledore)   |All Connections
+1        |10300   |deny                |(*)                    |(IP addr in 0.0.0.0/0) |All Connections
+
+outbound rules
+Priority |Rule Id |Action              |Src                  |Dst                    |Connection
+0        |10218   |jump_to_application |(group = Gryffindor) |(IP addr in 0.0.0.0/0) |TCP
+1        |10219   |jump_to_application |(group = Hufflepuff) |(IP addr in 0.0.0.0/0) |UDP dst-ports: 300-320
+2        |10220   |jump_to_application |(group = Slytherin)  |(IP addr in 0.0.0.0/0) |All Connections
+3        |10300   |deny                |(*)                  |(IP addr in 0.0.0.0/0) |All Connections
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                      |Dst                  |Connection
+2                            |10406   |(IP addr in 122.0.0.0/8) |(group = Dumbledore) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src           |Dst                       |Connection
+4                            |10400   |(group = Web) |(IP addr in 0.0.1.0/16)   |All Connections
+5                            |10401   |(group = App) |(IP addr in 146.2.0.0/16) |All Connections
+6                            |10405   |(group = DB)  |(IP addr in 220.0.1.0/28) |All Connections
+

@@ -1,0 +1,31 @@
+category: Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action              |Src                    |Dst                    |Connection
+0        |10221   |jump_to_application |(IP addr in 0.0.0.0/0) |(group = Dumbledore)   |All Connections
+1        |10300   |deny                |(*)                    |(IP addr in 0.0.0.0/0) |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action              |Src                  |Dst                    |Connection
+0        |10218   |jump_to_application |(group = Gryffindor) |(IP addr in 0.0.0.0/0) |TCP
+1        |10219   |jump_to_application |(group = Hufflepuff) |(IP addr in 0.0.0.0/0) |UDP dst-ports: 300-320
+2        |10220   |jump_to_application |(group = Slytherin)  |(IP addr in 0.0.0.0/0) |All Connections
+3        |10300   |deny                |(*)                  |(IP addr in 0.0.0.0/0) |All Connections
+
+
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src                      |Dst                  |Connection
+0        |10406   |allow  |(IP addr in 122.0.0.0/8) |(group = Dumbledore) |All Connections
+1        |10230   |deny   |(*)                      |(*)                  |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src           |Dst                       |Connection
+0        |10400   |allow  |(group = Web) |(IP addr in 0.0.1.0/16)   |All Connections
+1        |10401   |allow  |(group = App) |(IP addr in 146.2.0.0/16) |All Connections
+2        |10405   |allow  |(group = DB)  |(IP addr in 220.0.1.0/28) |All Connections
+3        |10230   |deny   |(*)           |(*)                       |All Connections
+
