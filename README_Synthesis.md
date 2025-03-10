@@ -14,7 +14,7 @@ Flags:
 
 ## Overview
 The tool can synthesize a given `NSX DFW` policy into `k8s network policy`.
-The result may not be totally equivalent, due to limitations of the target policy; more details regarding the k8s synthesis [here](#limitation).
+The result may not be entirely equivalent, due to limitations of the target policy; more details regarding the k8s synthesis [here](#limitation).
 There are two main challenges here: 
 * *The flattening challenge*: translating prioritized set of rules with actions `allow/deny/jump-to-app` into a flat set of  `allow` rules (which is what k8s network policies support).
 * *The intent preserving challenge*: maintain the original semantic intent of the rules
