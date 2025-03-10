@@ -91,7 +91,7 @@ The labels are added based on original VMs' tags and groups in NSX env.
 
 The combination of the policies and the pods' labels:
 1. Satisfies the snapshot of the connectivity at the time of the synthesis
-2. Preserve the policy's intent, as expressed e.g. by *tags*, for future changes 
+2. Preserves the policy's intent, as expressed e.g. by *tags*, for future changes 
 (e.g. adding a `VM` or changing its functionality and thus its labeling)
 
 
