@@ -24,7 +24,7 @@ and not just generate a set of rules that preserves the connectivity between VMs
 ### The flattening challenge
 There are two modes of policies synthesis, depending on the value of `synthesize-admin-policies`; when
 it is not active then prioritized `allow, deny, jump-to-app` rules from all `NSX categories` are synthesized to 
-`k8s network policy`, namely, to `flat allow rules`; when it is activated then rules from `NSX categories` lower then
+`k8s network policy`, namely, to `flat allow rules`; when it is activated then rules from `NSX categories` lower than
 and including`NSX category environment` are synthesized to `admin network policy` which rules have 
 `allow, deny, pass` and priority; the remaining category, `NSX category application`, 
 is synthesized, as before, to `k8s network policy`. 
@@ -39,7 +39,7 @@ is synthesized to admin polices that can use `deny/pass/allow` and priorities. F
 for non-admin polices and [here](pkg/synthesis/tests_expected_output/k8s_resources/ExampleHogwartsAdmin_AdminPoliciesEnabled) 
 for admin policies.
 
-The translation of priortized `allow,deny,jump-to-app` rules into flat `allow` rules is exponential in the size of the
+The translation of priortized `allow, deny, jump-to-app` rules into flat `allow` rules is exponential in the size of the
 original rules (to be accurate, the number of allow rules generated for each original allow rule is
 exponential in the number of term in this allow rule and in higher priority deny and pass rules). To tackle this we:
 1. Ask the user to provide the tool with `hints` -  lists of disjoint tags/groups.
