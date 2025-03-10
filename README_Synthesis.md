@@ -23,10 +23,11 @@ and not just generate a set of rules that preserves the connectivity between VMs
 
 ### The flattening challenge
 There are two modes of policies synthesis, depending on the value of `synthesize-admin-policies`; when
-it is not active then priortized `allow, deny, jump-to-app` rules from all `NSX categories` should be synthesized to 
-`k8s network policy`, namely, to `flat allow rules`; when it is activated then rules from `NSX category environment` should be synthesized to  
-`admin network policy` which rules have `allow, deny, pass` and priority; other categories should be synthesized as
-before to `k8s network policy`. 
+it is not active then prioritized `allow, deny, jump-to-app` rules from all `NSX categories` are synthesized to 
+`k8s network policy`, namely, to `flat allow rules`; when it is activated then rules from `NSX categories` lower then
+and including`NSX category environment` are synthesized to `admin network policy` which rules have 
+`allow, deny, pass` and priority; the remaining category, `NSX category application`, 
+is synthesized, as before, to `k8s network policy`. 
 
 For example, for [this example](pkg/data/exampleHogwarts.go) there are two related files: 
 [no admin policies](pkg/synthesis/tests_expected_output/abstract_models/ExampleHogwarts.txt), which is the result of execution
