@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

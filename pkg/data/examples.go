@@ -389,6 +389,83 @@ var ExampleExternalSimpleWithInterlDenyAllow = Example{
 	},
 }
 
+var ExampleExternalSimpleWithInterlDenyAllowDst = Example{
+	Name: "ExampleExternalSimpleWithInterlDenyAllow",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Environment",
+			Rules: []Rule{
+				{
+					Name:      "deny_tcp_0_1",
+					ID:        1004,
+					Dest:      "1.2.0.0/30",
+					Source:    "frontend",
+					Conn:      netset.AllTCPTransport(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_tcp_0_1",
+					ID:        1005,
+					Dest:      "1.2.0.0/24",
+					Source:    "frontend",
+					Conn:      netset.AllTCPTransport(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "deny_all_conn_0_1",
+					ID:        1006,
+					Dest:      "1.2.0.0/24",
+					Source:    "frontend",
+					Conn:      netset.AllTransports(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_all_conn_0_1",
+					ID:        1007,
+					Dest:      "1.2.0.0/16",
+					Source:    "frontend",
+					Conn:      netset.AllTransports(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:      "deny_tcp_0_2",
+					ID:        1008,
+					Dest:      "1.240.0.0/28",
+					Source:    "frontend",
+					Conn:      netset.AllTCPTransport(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_all_conn_0_2",
+					ID:        1009,
+					Dest:      "1.240.0.0/28",
+					Source:    "frontend",
+					Conn:      netset.AllTransports(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleExclude = Example{

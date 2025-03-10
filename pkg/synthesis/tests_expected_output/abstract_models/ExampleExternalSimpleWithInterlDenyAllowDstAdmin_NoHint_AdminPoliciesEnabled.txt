@@ -1,0 +1,32 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group    |Expression |VM
+frontend |           |A
+
+Admin policy rules
+~~~~~~~~~~~~~~~~~~
+inbound rules
+Priority |Rule Id |Action |Src                |Dst                     |Connection
+0        |1004    |deny   |(group = frontend) |(IP addr in 1.2.0.0/30) |TCP
+1        |1005    |allow  |(group = frontend) |(IP addr in 1.2.0.0/24) |TCP
+2        |1006    |deny   |(group = frontend) |(IP addr in 1.2.0.0/24) |All Connections
+3        |1007    |allow  |(group = frontend) |(IP addr in 1.2.0.0/16) |All Connections
+
+outbound rules
+Priority |Rule Id |Action |Src |Dst |Connection
+
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                |Dst                       |Connection
+4                            |1009    |(group = frontend) |(IP addr in 1.240.0.0/28) |ICMP,UDP
+
+outbound rules
+Original allow rule priority |Rule id |Src |Dst |Connection
+
+
