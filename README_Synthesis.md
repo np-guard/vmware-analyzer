@@ -70,10 +70,11 @@ Each `VM`'s  pod is granted labels reflecting the `NSX's` `tags` and `groups`.
 
 #### Policy synthesis
 To preserve the original intent of the policy, the synthesized policy prioritizes referencing non-ephemeral features.
-E.g., it prefers referencing `frontend` label instead of referencing `VMs'` names, or even `VMs' groups`. `VMs` may be deleted and added, while
-the `frontend` label is always granted to any `frontend` `VM`.  
-Specifically,  given a rule with `src` defined as group `aaa` which is defined as `tag = backend and tag != DB`,
-the synthesized policy will reference the labels corresponding to the `backend` and `DB`  values, and not the group `aaa`
+E.g., it prefers referencing strings originating in an `NSX's tag` over referencing strings originating in `VMs'` 
+names, or even `VMs' groups`. After the synthesis`VMs` may be deleted and added, but `VMs` with `frontend` functionality 
+can easily be granted the proper labeling that will guarantee the desired `frontend` connectivity is preserved. 
+For example,  given a rule with `src` defined as group `aaa` which is defined as `tag = backend and tag != DB`,
+the synthesized policy will reference the newly defined `labels` corresponding to the `backend` and `DB`  values, and not the group `aaa`
 or the names of the`VMs'` that resides in the group at the time of synthesis.
 
 ## Currently supported
