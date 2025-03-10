@@ -74,7 +74,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	if isAdmin {
 		ports := connToAdminPolicyPort(p.Conn)
 		if inbound && len(srcSelector.cidrs) > 0 {
-			logging.Warnf("Ignoring %s admin network policy peer with IPs are not supported", p.String())
+			logging.Warnf("Ignoring %s. admin network policy peer with IPs are not supported", p.String())
 		} else {
 			policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
 				abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()), nsxRuleID)
@@ -96,13 +96,13 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		pol.Spec.Ingress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
-		pol.Spec.PodSelector = *dstSelector.pods
+		pol.Spec.PodSelector = dstSelector.toPodSelector()
 	} else {
 		to := dstSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		pol.Spec.Egress = rules
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
-		pol.Spec.PodSelector = *srcSelector.pods
+		pol.Spec.PodSelector = srcSelector.toPodSelector()
 	}
 }
 
@@ -203,6 +203,10 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////
+// policySelector represent a k8s selector. to be later translated to peer, pod selector, etc..
+// ite represent one of the follow:
+// 1. OR of cidrs.
+// 2. a label selector of pods
 type policySelector struct {
 	pods      *meta.LabelSelector
 	cidrs     []string
@@ -212,7 +216,8 @@ type policySelector struct {
 func createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
-	res := policySelector{pods: &meta.LabelSelector{}, namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
+	res := policySelector{pods: &meta.LabelSelector{},
+		namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
@@ -227,6 +232,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	}
 	return res
 }
+
 func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	if len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
@@ -238,8 +244,13 @@ func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	return []networking.NetworkPolicyPeer{{PodSelector: selector.pods}}
 }
 
+func (selector policySelector) toPodSelector() meta.LabelSelector {
+	return *selector.pods
+}
+
 func (selector policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
-	return []admin.AdminNetworkPolicyIngressPeer{{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	return []admin.AdminNetworkPolicyIngressPeer{
+		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
 func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
 	if len(selector.cidrs) > 0 {
@@ -249,10 +260,12 @@ func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPo
 		}
 		return res
 	}
-	return []admin.AdminNetworkPolicyEgressPeer{{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	return []admin.AdminNetworkPolicyEgressPeer{
+		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
 func (selector policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
-	return admin.AdminNetworkPolicySubject{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
+	return admin.AdminNetworkPolicySubject{
+		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////
