@@ -321,7 +321,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = Example{
 	Policies: []Category{
 		{
 			Name:         "app-x",
-			CategoryType: "Application",
+			CategoryType: "Environment",
 			Rules: []Rule{
 				{
 					Name:      "deny_tcp_0_1",
@@ -359,6 +359,12 @@ var ExampleExternalSimpleWithInterlDenyAllow = Example{
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionIN),
 				},
+			},
+		},
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
 				{
 					Name:      "deny_tcp_0_2",
 					ID:        1008,
