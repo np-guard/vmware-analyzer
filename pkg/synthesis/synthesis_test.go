@@ -100,6 +100,36 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
+		name:            "ExampleExternalWithDenySimple",
+		exData:          &data.ExampleExternalWithDenySimple,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalSimpleWithInterlDenyAllow",
+		exData:          &data.ExampleExternalSimpleWithInterlDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
+		exData:          &data.ExampleExternalSimpleWithInterlDenyAllow,
+		synthesizeAdmin: true,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleHogwartsExternal",
+		exData:          &data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: false,
+	},
+	{
+		name:            "ExampleHogwartsExternalAdmin",
+		exData:          &data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
+	{
 		name:            "ExampleDumbeldore",
 		exData:          &data.ExampleDumbeldore,
 		synthesizeAdmin: false,
