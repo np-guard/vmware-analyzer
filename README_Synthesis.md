@@ -55,7 +55,10 @@ tool is provided, the more concise and readable rules it will synthesize.
 The synthesis maintains the original semantic intent of the rules
 and not just generates a set of rules that preserves the connectivity between `VMs` given the current state of the configuration.
 For example:
-* When a `frontend` `VM` is added it should be granted the policies defined for the `frontend`
+* When a `VM` is added it should be granted policies as per its functionality. 
+E.g., say that the original `NSX policies` imply certain connectivity for `VMs` with tag `frontend`. 
+After the synthesis a `VM` with `frontend` functionality should be granted the `frontend` desired connectivity;
+this should be done by proper labeling of the new `VM`.
 * A `DFW` rule that uses an `NSX group` with no `VMs` at the moment of the synthesis,
 will still be relevant to maintain in the conversion to network policies.
 
