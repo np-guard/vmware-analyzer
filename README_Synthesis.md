@@ -53,7 +53,7 @@ tool is provided, the more concise and readable rules it will synthesize.
 
 ### The policy preserving challenge
 The synthesis maintains the original semantic intent of the rules
-and not just generates a set of rules that preserves the connectivity between VMs given the current state of the configuration.
+and not just generates a set of rules that preserves the connectivity between `VMs` given the current state of the configuration.
 For example:
 * When a `frontend` `VM` is added it should be granted the policies defined for the `frontend`
 * A `DFW` rule that uses an `NSX group` with no `VMs` at the moment of the synthesis,
