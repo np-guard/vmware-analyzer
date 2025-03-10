@@ -105,30 +105,3 @@ The combination of the policies and the pods' labels:
 There are differences in the expression power between `NSX DFW` to `Kubernetes Network Policies`; e.g. `ICMP` protocols
 are not supported by `k8s` network policies. 
 
-## Debugging
-The synthesize process is a complex one. Along it, in order to have the intent preserving synthesis as explained above,
-we use a *symbolic* representation of the *rules*: each *symbolic rule* is a `priority`, an `action`, a
-`src`, a `dst` and a `connection`; The priority in a natural number; the action is `allow/deny/pass`; The `src` and the `dst` are `Conjunctions` of simple expressions 
-(equal/not equal) over e.g. `tags`;  the `connection` is a protocol and potentially `src/dst` min and max ports.
-
-The synthesis dump directory (specified in `synthesis-dump-dir`) contains (among others) the following files:
-* under subdirectory **debug_dir**
-  * **config.txt** Contains the NSX config as being read by the tool; this includes `VMs`, `groups` and `firewall rules`.
-  * **pre_processing.txt** Contains the translation of the firewall rule into `symbolic rules` ; e.g., if a specific 
-src is a group which is an expression over tags, then this file will have this rule's `src` defined over tags.
-  * **abstract_model.txt** The tool translates the *allow/deny/pass* rules from `pre_processing.txt` into an abstract model that
-    contains the rules to be syntactically translated to `k8s policies`. If `synthesize-admin-policies`  is off then all rules must
-    be `flat allow rules`, and so all the rules in the abstract model are non-prioritized with action `allow`;
-    otherwise rules originating from the `environment` category are translated to admin policies with
-    a priority and an allow/deny/pass action; rules that originate from the other categories are flat allow rules.
-  `abstract_model.txt` contains these rules and a list of the groups, each groups with the expression that defined
-  it and the snapshot of the *VMs* in the group. 
-
- The following log files contain warning messages and various debug printing of the different stages
- of the synthesis, as following:
-
-  * **runPreprocessing.log** Log of the stage in which the NSX rules are translated to symbolic rules.
-  * **runConvertToAbstract.log** Log of the stage in which the symbolic rules from the preprocessing stage 
-are translated to the abstract model's rules.  
-  * **runK8SSynthesis.log** Log of the stage in which the k8s yaml pods and polices files are synthesized from 
-the abstract model.
