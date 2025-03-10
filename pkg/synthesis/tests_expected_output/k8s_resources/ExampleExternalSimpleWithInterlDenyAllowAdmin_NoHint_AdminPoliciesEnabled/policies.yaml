@@ -10,10 +10,8 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 1.240.0.0/28
           ports:
             - protocol: UDP
     podSelector:
