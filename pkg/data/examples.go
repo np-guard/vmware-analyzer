@@ -313,7 +313,7 @@ var ExampleExternalWithDenySimple = Example{
 }
 
 var ExampleExternalSimpleWithInterlDenyAllow = Example{
-	Name: "ExampleExternalWithDenySimple",
+	Name: "ExampleExternalSimpleWithInterlDenyAllow",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
 		"frontend": {"A"},
