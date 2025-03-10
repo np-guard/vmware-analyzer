@@ -28444,14 +28444,6 @@
         {
             "display_name": "A",
             "external_id": "A"
-        },
-        {
-            "display_name": "B",
-            "external_id": "B"
-        },
-        {
-            "display_name": "C",
-            "external_id": "C"
         }
     ],
     "virtual_network_interface": null,
@@ -28477,54 +28469,68 @@
                                     "frontend"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "allow_ftp_from_123",
+                                "display_name": "allow_tcp_0_1",
                                 "rule_id": 1004,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "/infra/services/FTP"
-                                ],
                                 "source_groups": [
-                                    "1.2.3.0/8"
+                                    "1.2.0.0-1.2.1.255"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "TCP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    }
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "backend"
+                                    "frontend"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "allow_smb_incoming",
+                                "display_name": "allow_udp_3_4",
                                 "rule_id": 1005,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "/infra/services/SMB"
-                                ],
                                 "source_groups": [
-                                    "frontend"
+                                    "1.2.3.0-1.2.4.255"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "UDP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    }
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "db"
+                                    "frontend"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "allow_https_db_incoming",
+                                "display_name": "allow_icmp_1_3",
                                 "rule_id": 1006,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "/infra/services/HTTPS"
-                                ],
                                 "source_groups": [
-                                    "backend"
+                                    "1.2.1.0-1.2.3.255"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "resource_type": "ICMPTypeServiceEntry"
+                                    }
                                 ]
                             },
                             {
@@ -28559,26 +28565,6 @@
                             {
                                 "display_name": "A",
                                 "id": "A"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "backend",
-                        "path": "backend",
-                        "vm_members": [
-                            {
-                                "display_name": "B",
-                                "id": "B"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "db",
-                        "path": "db",
-                        "vm_members": [
-                            {
-                                "display_name": "C",
-                                "id": "C"
                             }
                         ]
                     }
