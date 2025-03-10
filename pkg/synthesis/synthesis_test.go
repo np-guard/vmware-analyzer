@@ -431,7 +431,8 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	}
 
 	if k8sConnectivityFileCreated {
-		if !strings.Contains(synTest.name, "External") || slices.Contains([]string{"ExampleHogwartsExternal"}, synTest.name) {
+		if !strings.Contains(synTest.name, "External") ||
+		 slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
 			// todo - remove "External" condition when examples supported
 			compareToNetpol(t, rc, k8sConnectivityFile)
 		}
@@ -479,14 +480,13 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 			// todo - set the real vm namespaces:
 			endpointName := func(ep topology.Endpoint) string {
 				if ep.IsExternal() {
-					return ep.IPAddressesStr()
+					return ep.(*topology.ExternalIP).Block.String()
 				} else {
 					return "default/" + toLegalK8SString(ep.Name())
 				}
 			}
 			netpolFormat := fmt.Sprintf("%s=>%s", endpointName(src), endpointName(dst))
 			netpolConn, ok := netpolConnMap[netpolFormat]
-			fmt.Println(netpolFormat + conn.Conn.String())
 			require.Equal(t, ok, !conn.Conn.TCPUDPSet().IsEmpty())
 			if ok {
 				compareConns(t, conn.Conn.String(), netpolConn)
@@ -498,6 +498,7 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 func compareConns(t *testing.T, vmFormat, k8sFormat string) {
 	vmFormat = strings.ReplaceAll(vmFormat, "dst-ports: ", "")
 	vmFormat = strings.ReplaceAll(vmFormat, "ICMP;", "")
+	vmFormat = strings.ReplaceAll(vmFormat, "ICMP,", "")
 	if vmFormat == "TCP,UDP" {
 		vmFormat = "All Connections"
 	}
