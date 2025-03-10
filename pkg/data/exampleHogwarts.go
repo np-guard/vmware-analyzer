@@ -35,6 +35,15 @@ micro segmentation
 
 */
 
+var hogwartsBidimensionalGroups = map[string][]string{
+	sly: {slyWeb, slyApp, slyDB},
+	huf: {hufWeb, hufApp, hufDB},
+	gry: {gryWeb, gryApp, gryDB},
+	dum: {dum1, dum2},
+	web: {slyWeb, gryWeb, hufWeb},
+	app: {slyApp, gryApp, hufApp},
+	db:  {slyDB, gryDB, hufDB}}
+
 var ExampleHogwarts = Example{
 	Name: "ExampleHogwarts",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
