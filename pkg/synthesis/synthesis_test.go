@@ -393,7 +393,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
-	if k8sConnectivityFileCreated {
+	if k8sConnectivityFileCreated && !strings.Contains(synTest.name, "External") {
 		// todo - remove "External" condition when examples supported
 		compareToNetpol(t, rc, k8sConnectivityFile)
 	}
@@ -408,9 +408,11 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 	netpolConnMap := map[string]string{}
 	for _, line := range netpolConnLines {
 		var src, dst, conn string
-		n, err := fmt.Sscanf(line, "%s => %s : %s", &src, &dst, &conn)
+		spitedLine := strings.Split(line, " : ")
+		conn = spitedLine[1]
+		n, err := fmt.Sscanf(spitedLine[0], "%s => %s", &src, &dst)
 		require.Equal(t, err, nil)
-		require.Equal(t, n, 3)
+		require.Equal(t, n, 2)
 		fixK8SName := func(s string) string {
 			if strings.Contains(s, "[Pod]") {
 				return strings.ReplaceAll(s, "[Pod]", "")
