@@ -97,8 +97,8 @@ The combination of the policies and the pods' labels:
 
 <a id="limitation"></a>
 #### limitations
-There are differences in the expression power between `NSX DFW` to `Kubernetes Network Policies`; e.g. `ICMP protocols`
-support depends on the network plugin and is not supported by our synthesis. 
+There are differences in the expression power between `NSX DFW` to `Kubernetes Network Policies`; e.g. `ICMP` protocols
+are not supported by `k8s` network policies. 
 
 ## Debugging
 The synthesize process is a complex one. Along it, in order to have the intent preserving synthesis as explained above,
