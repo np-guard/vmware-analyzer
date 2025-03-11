@@ -1,6 +1,8 @@
 package analyzer
 
 import (
+	"fmt"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -14,14 +16,14 @@ import (
 //nolint:gocritic // temporarily keep commented-out code
 func dfwAllowedConnections(d *dfw.DFW, src, dst topology.Endpoint) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := dfwAllowedConnectionsIngressOrEgress(d, src, dst, true)
-	logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
-	logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
-	logging.Debugf("ingressDenied: %s", ingressDenied.String())
-	logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
+	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
+	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
+	// logging.Debugf("ingressDenied: %s", ingressDenied.String())
+	// logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
 	egressAllowed, egressDenied, egressDelegated /*egressDenied*/ := dfwAllowedConnectionsIngressOrEgress(d, src, dst, false)
-	logging.Debugf("egressAllowed: %s", egressAllowed.String())
-	logging.Debugf("egressDenied: %s", egressDenied.String())
-	logging.Debugf("egressDelegated: %s", egressDelegated.String())
+	// logging.Debugf("egressAllowed: %s", egressAllowed.String())
+	// logging.Debugf("egressDenied: %s", egressDenied.String())
+	// logging.Debugf("egressDelegated: %s", egressDelegated.String())
 
 	return buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied,
 		egressDenied, ingressDelegated, egressDelegated)
@@ -141,9 +143,13 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 	// TODO: add test and issue warning on allNotDeterminedConns.accumulatedConns if there is no defaule rule in last category
 	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
 		// logging.Debugf("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
-		logging.Debugf("no default rule - unexpected connections for which no decision was found: %s",
+		msg := fmt.Sprintf("no default rule - unexpected connections %s to %s for which no decision was found: %s", src.Name(), dst.Name(),
 			allNotDeterminedConns.accumulatedConns.String())
-		panic("should not get here")
+		if src.IsExternal() || dst.IsExternal() {
+			logging.Warn(msg)
+		} else {
+			logging.InternalErrorf(msg)
+		}
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
 	return allAllowedConns, allDeniedConns, delegatedConns
