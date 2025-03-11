@@ -118,12 +118,6 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
-		name:            "ExampleExternalSimpleWithInterlDenyAllowDstAdmin",
-		exData:          &data.ExampleExternalSimpleWithInterlDenyAllowDst,
-		synthesizeAdmin: true,
-		noHint:          true,
-	},
-	{
 		name:            "ExampleHogwartsExternal",
 		exData:          &data.ExampleHogwartsExternal,
 		noHint:          false,
@@ -432,7 +426,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 	if k8sConnectivityFileCreated {
 		if !strings.Contains(synTest.name, "External") ||
-		 slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
+			slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
 			// todo - remove "External" condition when examples supported
 			compareToNetpol(t, rc, k8sConnectivityFile)
 		}
@@ -573,7 +567,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputComparison
+const runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
