@@ -485,6 +485,11 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, true, tautologyConj.isSuperset(&allGroupConjNeg, emptyHints))
 	require.Equal(t, true, tautologyConj.isSuperset(&conjTag, emptyHints))
 	require.Equal(t, true, tautologyConj.isSuperset(&conjGroup, emptyHints))
+	// and is not disjoint to any
+	require.Equal(t, false, tautologyConj.disjoint(&allGroupConj, emptyHints))
+	require.Equal(t, false, tautologyConj.disjoint(&allGroupConjNeg, emptyHints))
+	require.Equal(t, false, tautologyConj.disjoint(&conjTag, emptyHints))
+	require.Equal(t, false, tautologyConj.disjoint(&conjGroup, emptyHints))
 }
 
 /*
