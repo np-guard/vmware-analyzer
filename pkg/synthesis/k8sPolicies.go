@@ -62,7 +62,7 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 		if !p.Conn.TCPUDPSet().IsEmpty() {
 			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, rule.origRule.RuleIDStr())
 		} else {
-			logging.Debugf("do not create the following k8s %s policy for rule %d, since connection %s is not supported:\n%s",
+			logging.Debugf("did not create the following k8s %s policy for rule %d, since connection %s is not supported:\n%s",
 				inboundToDirection[inbound], rule.origRule.RuleID, p.Conn.String(), p.String())
 		}
 	}
