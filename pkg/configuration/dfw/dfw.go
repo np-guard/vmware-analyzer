@@ -51,7 +51,7 @@ type RuleSrcOrDst struct {
 	Blocks      []*topology.RuleIPBlock
 }
 
-func (d *DFW) AddRule(src, dst, scope RuleSrcOrDst, conn *netset.TransportSet, categoryStr, actionStr, direction string,
+func (d *DFW) AddRule(src, dst, scope *RuleSrcOrDst, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {

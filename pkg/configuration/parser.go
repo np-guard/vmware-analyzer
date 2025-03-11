@@ -227,7 +227,7 @@ func (p *nsxConfigParser) storeParsedDFW() {
 }
 
 func (p *nsxConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.FW.AddRule(r.src, r.dst, r.scope,
+	p.configRes.FW.AddRule(&r.src, &r.dst, &r.scope,
 		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.secPolicyName, r.defaultRuleObj)
 }
 

@@ -70,9 +70,9 @@ type FwRule struct {
 // NewFwRule - create new FWRule object from input fields,
 // expecting any such object to be created from this function
 func NewFwRule(
-	src RuleSrcOrDst,
-	dst RuleSrcOrDst,
-	scope RuleSrcOrDst,
+	src *RuleSrcOrDst,
+	dst *RuleSrcOrDst,
+	scope *RuleSrcOrDst,
 	conn *netset.TransportSet,
 	action RuleAction,
 	direction string,
@@ -86,9 +86,9 @@ func NewFwRule(
 	priority int,
 ) *FwRule {
 	return &FwRule{
-		Src:                src,
-		Dst:                dst,
-		Scope:              scope,
+		Src:                *src,
+		Dst:                *dst,
+		Scope:              *scope,
 		Conn:               conn,
 		Action:             action,
 		direction:          direction,
@@ -223,7 +223,7 @@ func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
 }
 
 func (f *FwRule) clone() *FwRule {
-	return NewFwRule(f.Src, f.Dst, f.Scope, f.Conn, f.Action,
+	return NewFwRule(&f.Src, &f.Dst, &f.Scope, f.Conn, f.Action,
 		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
 		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
 }
