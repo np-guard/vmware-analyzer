@@ -516,3 +516,24 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.disjoint(&conjTag, emptyHints))
 	require.Equal(t, false, allGroupConj.disjoint(&conjGroupTag, emptyHints))
 }
+
+func TestInterectionBetweenIPConjInternalResourceCong(t *testing.T) {
+	atomicTag := NewTagTerm("myTag", false)
+	conjTag := Conjunction{}
+	conjTag = *conjTag.add(atomicTag)
+	atomicGroup := NewDummyGroupTerm("group1", false)
+	conjGroup := Conjunction{}
+	conjGroup = *conjGroup.add(*atomicGroup)
+	conjGroupTag := Conjunction{}
+	conjGroupTag = *conjGroupTag.add(atomicTag)
+	conjGroupTag = *conjGroupTag.add(atomicGroup)
+	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
+	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
+	ipBlockConj := Conjunction{ipBlockTerm}
+	emptyHints := &Hints{GroupsDisjoint: [][]string{}}
+
+	// conj with ipBlock is disjoint to conj with tag or group terms
+	require.Equal(t, true, ipBlockConj.disjoint(&conjTag, emptyHints))
+	require.Equal(t, true, ipBlockConj.disjoint(&conjGroup, emptyHints))
+	require.Equal(t, true, ipBlockConj.disjoint(&conjGroupTag, emptyHints))
+}

@@ -101,7 +101,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
 func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 	block := ipBlockTerm.getBlock()
 	otherBlock := otherAtom.getBlock()
-	if otherAtom == nil {
+	if otherBlock == nil {
 		return true // otherAtom is not an IPBlock
 	}
 	return !block.Overlap(otherBlock)
