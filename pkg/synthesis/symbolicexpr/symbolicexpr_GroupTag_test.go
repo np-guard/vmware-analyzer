@@ -445,7 +445,7 @@ func TestSymbolicPathsImplied(t *testing.T) {
 		"path2 is a superset of path3 and path5, is not a superset of path4")
 }
 
-func TestIPTermsAndInternalTerms(t *testing.T) {
+func TestAllGroupAndTautology(t *testing.T) {
 	var myAllGroup = allGroup{}
 	var myTautology = tautology{}
 	allGroupConj := Conjunction{myAllGroup}
@@ -473,13 +473,33 @@ func TestIPTermsAndInternalTerms(t *testing.T) {
 	require.Equal(t, false, allGroupConjNeg.hasIpBlockTerm())
 	require.Equal(t, false, tautologyConjNeg.hasTagOrGroupTerm())
 	require.Equal(t, false, tautologyConjNeg.hasIpBlockTerm())
-	// add: disjoint, isSuperset
-
 	atomicTag := NewTagTerm("myTag", false)
 	conjTag := Conjunction{}
 	conjTag = *conjTag.add(atomicTag)
 	atomicGroup := NewDummyGroupTerm("group1", false)
 	conjGroup := Conjunction{}
 	conjGroup = *conjGroup.add(*atomicGroup)
-	// tautologyConj is a super
+
+	// tautology is a superset of all
+	require.Equal(t, true, tautologyConj.isSuperset(&allGroupConj, emptyHints))
+	require.Equal(t, true, tautologyConj.isSuperset(&allGroupConjNeg, emptyHints))
+	require.Equal(t, true, tautologyConj.isSuperset(&conjTag, emptyHints))
+	require.Equal(t, true, tautologyConj.isSuperset(&conjGroup, emptyHints))
 }
+
+/*
+func TestInterectionBetweenIPConjInternalResourceCong(t *testing.T) {
+	var myAllGroup = allGroup{}
+	var myTautology = tautology{}
+	allGroupConj := Conjunction{myAllGroup}
+	tautologyConj := Conjunction{myTautology}
+	emptyHints := &Hints{GroupsDisjoint: [][]string{}}
+	atomicTag := NewTagTerm("myTag", false)
+	conjTag := Conjunction{}
+	conjTag = *conjTag.add(atomicTag)
+	atomicGroup := NewDummyGroupTerm("group1", false)
+	conjGroup := Conjunction{}
+	conjGroup = *conjGroup.add(*atomicGroup)
+	// add: disjoint, isSuperset
+	// tautologyConj is a super
+} */
