@@ -480,6 +480,9 @@ func TestAllGroupAndTautology(t *testing.T) {
 	atomicGroup := NewDummyGroupTerm("group1", false)
 	conjGroup := Conjunction{}
 	conjGroup = *conjGroup.add(*atomicGroup)
+	conjGroupTag := Conjunction{}
+	conjGroupTag = *conjGroupTag.add(atomicTag)
+	conjGroupTag = *conjGroupTag.add(atomicGroup)
 	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
 	ipBlockConj := Conjunction{ipBlockTerm}
@@ -502,6 +505,9 @@ func TestAllGroupAndTautology(t *testing.T) {
 	// it is not a superSet of Conj with ipBlockTerm
 	require.Equal(t, false, allGroupConj.isSuperset(&ipBlockConj, emptyHints))
 	// it is a super set of Conj with tag term, group term or both
+	require.Equal(t, true, allGroupConj.isSuperset(&conjGroup, emptyHints))
+	require.Equal(t, true, allGroupConj.isSuperset(&conjTag, emptyHints))
+	require.Equal(t, true, allGroupConj.isSuperset(&conjGroupTag, emptyHints))
 }
 
 /*
