@@ -166,7 +166,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	for _, block := range p.topology.allRuleIPBlocks{
+	for _, block := range p.topology.allRuleIPBlocks {
 		res[block.OriginalIP] = block.OriginalIP
 	}
 	p.configRes.FW.SetPathsToDisplayNames(res)
