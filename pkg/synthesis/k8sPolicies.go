@@ -21,6 +21,12 @@ var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleA
 	dfw.ActionDeny:      admin.AdminNetworkPolicyRuleActionDeny,
 	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
 }
+var inboundToDirection = map[bool]networking.PolicyType{
+	false: networking.PolicyTypeEgress,
+	true: networking.PolicyTypeIngress,
+}
+
+
 
 const dnsPort = 53
 const dnsLabelKey = "k8s-app"
@@ -58,7 +64,8 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 		if !p.Conn.TCPUDPSet().IsEmpty() {
 			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, rule.origRule.RuleIDStr())
 		} else {
-			logging.Debugf("do not create a k8s policy for rule %s - connection %s is not supported", rule.origRule.String(), p.Conn.String())
+			logging.Debugf("do not create the following k8s %s policy for rule %d, since connection %s is not supported:\n%s",
+			inboundToDirection[inbound], rule.origRule.RuleID, p.Conn.String(), p.String())
 		}
 	}
 }
@@ -67,18 +74,23 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	srcSelector := createSelector(p.Src)
 	dstSelector := createSelector(p.Dst)
 	// a tmp check, this case should be filtered the abstract phase:
-	if (!inbound && len(srcSelector.cidrs) > 0) || (inbound && len(dstSelector.cidrs) > 0) {
-		logging.Warnf("did not synthesize policy %s, both src and dst have IPs", p.String())
+	if !inbound && len(srcSelector.cidrs) > 0 {
+		logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+		return
+	}
+	// a tmp check, this case should be filtered the abstract phase:
+	if inbound && len(dstSelector.cidrs) > 0 {
+		logging.Warnf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+		return
+	}
+	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
+		logging.Warnf("Ignoring %s. admin network policy peer with IPs for Ingress are not supported", p.String())
 		return
 	}
 	if isAdmin {
 		ports := connToAdminPolicyPort(p.Conn)
-		if inbound && len(srcSelector.cidrs) > 0 {
-			logging.Warnf("Ignoring %s. admin network policy peer with IPs are not supported", p.String())
-		} else {
-			policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
-				abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()), nsxRuleID)
-		}
+		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
+			abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()), nsxRuleID)
 	} else {
 		ports := connToPolicyPort(p.Conn)
 		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
