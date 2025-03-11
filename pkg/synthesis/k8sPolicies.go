@@ -23,10 +23,8 @@ var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleA
 }
 var inboundToDirection = map[bool]networking.PolicyType{
 	false: networking.PolicyTypeEgress,
-	true: networking.PolicyTypeIngress,
+	true:  networking.PolicyTypeIngress,
 }
-
-
 
 const dnsPort = 53
 const dnsLabelKey = "k8s-app"
@@ -65,7 +63,7 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, rule.origRule.RuleIDStr())
 		} else {
 			logging.Debugf("do not create the following k8s %s policy for rule %d, since connection %s is not supported:\n%s",
-			inboundToDirection[inbound], rule.origRule.RuleID, p.Conn.String(), p.String())
+				inboundToDirection[inbound], rule.origRule.RuleID, p.Conn.String(), p.String())
 		}
 	}
 }
