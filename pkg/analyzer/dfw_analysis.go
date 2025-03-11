@@ -148,7 +148,7 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 		if src.IsExternal() || dst.IsExternal() {
 			logging.Warn(msg)
 		} else {
-			logging.InternalErrorf(msg)
+			logging.InternalError(msg)
 		}
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
