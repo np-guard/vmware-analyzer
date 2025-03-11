@@ -267,9 +267,9 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	src            dfw.RuleSrcOrDst
-	dst            dfw.RuleSrcOrDst
-	scope          dfw.RuleSrcOrDst
+	src            dfw.RuleEndPoints
+	dst            dfw.RuleEndPoints
+	scope          dfw.RuleEndPoints
 	action         string
 	conn           *netset.TransportSet
 	direction      string

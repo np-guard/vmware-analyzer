@@ -6,7 +6,6 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 type DFW struct {
@@ -44,14 +43,7 @@ func (d *DFW) AllEffectiveRules() string {
 	return inbound + outbound
 }
 
-type RuleSrcOrDst struct {
-	VMs         []topology.Endpoint
-	Groups      []*collector.Group
-	IsAllGroups bool
-	Blocks      []*topology.RuleIPBlock
-}
-
-func (d *DFW) AddRule(src, dst, scope *RuleSrcOrDst, conn *netset.TransportSet, categoryStr, actionStr, direction string,
+func (d *DFW) AddRule(src, dst, scope *RuleEndPoints, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {

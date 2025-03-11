@@ -47,11 +47,18 @@ func actionFromString(s string) RuleAction {
 	}
 }
 
+type RuleEndPoints struct {
+	VMs         []topology.Endpoint
+	Groups      []*collector.Group
+	IsAllGroups bool
+	Blocks      []*topology.RuleIPBlock
+}
+
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	Src   RuleSrcOrDst
-	Dst   RuleSrcOrDst
-	Scope RuleSrcOrDst
+	Src   RuleEndPoints
+	Dst   RuleEndPoints
+	Scope RuleEndPoints
 
 	// Scope implies additional condition on any Src and any Dst
 	Conn               *netset.TransportSet
@@ -70,9 +77,9 @@ type FwRule struct {
 // NewFwRule - create new FWRule object from input fields,
 // expecting any such object to be created from this function
 func NewFwRule(
-	src *RuleSrcOrDst,
-	dst *RuleSrcOrDst,
-	scope *RuleSrcOrDst,
+	src *RuleEndPoints,
+	dst *RuleEndPoints,
+	scope *RuleEndPoints,
 	conn *netset.TransportSet,
 	action RuleAction,
 	direction string,
@@ -234,7 +241,7 @@ func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []
 	res := f.clone()
 	res.Src.VMs = src
 	res.Dst.VMs = dest
-	res.Scope = RuleSrcOrDst{}
+	res.Scope = RuleEndPoints{}
 	res.direction = string(direction)
 
 	return res
