@@ -1,11 +1,13 @@
 package symbolicexpr
 
+// ipBlockTerm represents external IPs
+
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func NewIPBlockTermTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
+func NewIPBlockTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
 	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: ipBlock}
 }
 
@@ -31,15 +33,27 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 	return "IP addr" + op + ipStr
 }
 
-// IsTautology an atomicTerm is a non-empty cond on a group, a tag etc and is thus not a tautology
+// following 2 functions are false and the last one true for ipBlock since ipBlock presents only external IPs
+
 func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
-	return complementary(ipBlockTerm.getBlock()).IsEmpty()
+	return ipBlockTerm.Block.Equal(netset.GetCidrAll())
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
-	block := ipBlockTerm.getBlock()
-	return block.IsEmpty()
+func (*ipBlockAtomicTerm) IsAllGroups() bool {
+	return false
 }
+
+// IsNoGroup ipBlockAtomicTerm presents external addresses, thus IsNoGroup is true
+func (*ipBlockAtomicTerm) IsNoGroup() bool {
+	return true
+}
+
+// IsContradiction true iff the ipBlock is empty
+func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
+	return ipBlockTerm.getBlock().IsEmpty()
+}
+
+//
 
 func (ipBlockTerm *ipBlockAtomicTerm) name() string {
 	return ipBlockTerm.String()
@@ -49,7 +63,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 	return "to implement", false
 }
 
-// todo: move to netset??
+// todo: new release of netSet and use Complementary from there
 func complementary(block *netset.IPBlock) *netset.IPBlock {
 	allIPBlock := netset.GetCidrAll()
 	return allIPBlock.Subtract(block)
@@ -93,7 +107,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 	return !block.Overlap(otherBlock)
 }
 
-// returns true iff ipBlock tagTerm is superset of ipBlock otherAtom as given by hints
+// returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	if otherAtom.getBlock() == nil {
 		return false

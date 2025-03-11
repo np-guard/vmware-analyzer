@@ -70,3 +70,12 @@ func eqSign(atom atomic) string {
 	}
 	return equalSign
 }
+
+func isTagOrAtomicTerm(atom atomic) bool {
+	switch atom.(type) {
+	case groupAtomicTerm, tagAtomicTerm, allGroup:
+		return true
+	default:
+		return false
+	}
+}

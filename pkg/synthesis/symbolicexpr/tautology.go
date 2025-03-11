@@ -2,14 +2,14 @@ package symbolicexpr
 
 import "github.com/np-guard/models/pkg/netset"
 
-// tautology implementation
+// tautology represents *everything* namely 0.0.0.0/0
 
 func (tautology) String() string {
-	return "*"
+	return "0.0.0.0/0"
 }
 
-func (tautology) name() string {
-	return ""
+func (t tautology) name() string {
+	return t.String()
 }
 
 func (tautology) negate() atomic {
@@ -28,14 +28,21 @@ func (tautology) IsContradiction() bool {
 	return false
 }
 
-// returns true iff otherAt is negation of
-// once we cache the atomic terms, we can just compare pointers
+func (tautology) IsAllGroups() bool {
+	return true
+}
+
+func (tautology) IsNoGroup() bool {
+	return false
+}
+
+// tautology is negation of contradiction
 func (tautology) isNegateOf(atom atomic) bool {
 	_, isContradict := atom.(contradiction)
 	return isContradict
 }
 func (tautology) AsSelector() (string, bool) {
-	return "", false
+	return "to implement", false
 }
 
 // tautology is not disjoint to any atomic term

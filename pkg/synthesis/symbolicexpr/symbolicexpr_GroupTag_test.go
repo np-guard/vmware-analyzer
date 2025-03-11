@@ -263,7 +263,7 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 // src: (*) dst: (group != dst1`)
 // src: (*) dst: (group != dst2`)
 // src: (*) dst: (group != dst3`)
-func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
+func TestComputeAllowGivenDenyAllowAllGroup(t *testing.T) {
 	conjDenySrc, conjDenyDst := Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
 		atomicDenySrc := newDummyGroupTerm(fmt.Sprintf("src%v`", i), false)
@@ -271,8 +271,8 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 		atomicDenyDst := newDummyGroupTerm(fmt.Sprintf("dst%v`", i), false)
 		conjDenyDst = *conjDenyDst.add(*atomicDenyDst)
 	}
-	tautologyConj := Conjunction{tautology{}}
-	allowPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
+	allGroupConj := Conjunction{allGroup{}}
+	allowPath := SymbolicPath{Src: allGroupConj, Dst: allGroupConj, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
@@ -283,7 +283,7 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 			"src: (*) dst: (group != dst1`) conn: All Connections\n"+
 			"src: (*) dst: (group != dst2`) conn: All Connections\nsrc: (*) dst: (group != dst3`) conn: All Connections\n"+
 			"src: (*) dst: (*) conn: ICMP,TCP", allowGivenDeny.String(),
-		"allowGivenDeny allow tautology computation not as expected")
+		"allowGivenDeny allow allGroup computation not as expected")
 }
 
 // Input:
@@ -292,7 +292,7 @@ func TestComputeAllowGivenDenyAllowTautology(t *testing.T) {
 // deny symbolic path:
 // src: * dst: *
 // Output allow paths: empty
-func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
+func TestComputeAllowGivenDenyDenyAllGroup(t *testing.T) {
 	conjAllowSrc, conjAllowDst := Conjunction{}, Conjunction{}
 	for i := 1; i <= 3; i++ {
 		atomicAllowSrc := newDummyGroupTerm(fmt.Sprintf("src%v", i), false)
@@ -300,14 +300,14 @@ func TestComputeAllowGivenDenyDenyTautology(t *testing.T) {
 		atomicAllowDst := newDummyGroupTerm(fmt.Sprintf("dst%v", i), false)
 		conjAllowDst = *conjAllowDst.add(*atomicAllowDst)
 	}
-	tautologyConj := Conjunction{tautology{}}
+	allGroupConj := Conjunction{allGroup{}}
 	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTransports()}
-	denyPath := SymbolicPath{Src: tautologyConj, Dst: tautologyConj, Conn: netset.AllTransports()}
+	denyPath := SymbolicPath{Src: allGroupConj, Dst: allGroupConj, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t, emptySet, allowGivenDeny.String(),
-		"allowGivenDeny deny tautology computation not as expected")
+		"allowGivenDeny deny allGroup computation not as expected")
 }
 
 // Input:
@@ -387,7 +387,7 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjSrc1 = *conjSrc1.add(*atomicSrc1)
 	atomicDst1 := newDummyGroupTerm("dst1", false)
 	conjDst1 = *conjDst1.add(*atomicDst1)
-	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{tautology{}}, Conn: netset.AllTransports()}
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{allGroup{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})

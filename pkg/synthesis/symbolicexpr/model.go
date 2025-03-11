@@ -30,13 +30,20 @@ type ipBlockAtomicTerm struct {
 	*topology.IPBlock
 }
 
-// tautology represents a condition that always holds.
-// To be used as src or dst for cases where only dst or only src is restricted
+// tautology represents 0.0.0.0/0
 type tautology struct {
 }
 
 // contradiction represents a condition that never holds; the negation of tautology
 type contradiction struct {
+}
+
+// allGroups: represents all internal resources (e.g. VMs)
+type allGroup struct {
+}
+
+// noGroups: negation of allGroup
+type noGroup struct {
 }
 
 // atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
@@ -45,9 +52,11 @@ type atomic interface {
 	name() string                   // name of group/tag/...
 	String() string                 // full expression e.g. "group = slytherin"
 	negate() atomic                 // negation of the atomic term todo: once tag scope is supported will return []atomic
-	isNegation() bool               // is term not-equal
-	IsTautology() bool              // is term tautology?
-	IsContradiction() bool          // is term tautology?
+	isNegation() bool               // is term negation
+	IsTautology() bool              // is term tautology (0.0.0.0/0)?
+	IsContradiction() bool          // is term contradiction (negation of tautology)?
+	IsAllGroups() bool              // term is true for any internal resource (allGroup, tautology)?
+	IsNoGroup() bool                // term is false for any internal resource (noGroup, contradiction)?
 	isNegateOf(atomic) bool         // is the term negation of the other given term
 	AsSelector() (string, bool)     // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool   // based on hints

@@ -1,5 +1,7 @@
 package symbolicexpr
 
+// groupTerm represents condition of "group = xx" or negation of such a condition
+
 import (
 	"fmt"
 
@@ -16,15 +18,25 @@ func (groupTerm groupAtomicTerm) String() string {
 	return grp + eqSign(groupTerm) + groupTerm.name()
 }
 
-// IsTautology false since an groupAtomicTerm is a non-empty cond on a group
+// following 4 functions are false since an groupAtomicTerm is a non-empty cond on a group which may or may not hold
+
 func (groupAtomicTerm) IsTautology() bool {
 	return false
 }
 
-// IsContradiction false since an groupAtomicTerm is a non-empty cond on a group
 func (groupAtomicTerm) IsContradiction() bool {
 	return false
 }
+
+func (groupAtomicTerm) IsAllGroups() bool {
+	return false
+}
+
+func (groupAtomicTerm) IsNoGroup() bool {
+	return false
+}
+
+//
 
 func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", grp, groupTerm.name()), groupTerm.neg

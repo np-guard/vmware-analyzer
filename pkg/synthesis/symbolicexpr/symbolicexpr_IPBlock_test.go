@@ -16,11 +16,11 @@ func getIPBlocksTerms() (allIPBlockTerm, ipBlockTerm1, ipBlockTerm2, ipBlockTerm
 	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
 	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
 	ipAddrSingle, _ := netset.IPBlockFromCidr("192.0.2.0/32")
-	allIPBlockTerm = NewIPBlockTermTerm(&topology.IPBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
-	ipBlockTerm1 = NewIPBlockTermTerm(&topology.IPBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
-	ipBlockTerm2 = NewIPBlockTermTerm(&topology.IPBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
-	ipBlockTerm3 = NewIPBlockTermTerm(&topology.IPBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
-	ipAddrSingleTerm = NewIPBlockTermTerm(&topology.IPBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0 originalIP"})
+	allIPBlockTerm = NewIPBlockTerm(&topology.IPBlock{Block: allIPBlock, OriginalIP: "0.0.0.0/0"})
+	ipBlockTerm1 = NewIPBlockTerm(&topology.IPBlock{Block: ipBlock1, OriginalIP: "1.2.3.0/8"})
+	ipBlockTerm2 = NewIPBlockTerm(&topology.IPBlock{Block: ipBlock2, OriginalIP: "1.2.3.0/16"})
+	ipBlockTerm3 = NewIPBlockTerm(&topology.IPBlock{Block: ipBlock3, OriginalIP: "192.0.2.0/24"})
+	ipAddrSingleTerm = NewIPBlockTerm(&topology.IPBlock{Block: ipAddrSingle, OriginalIP: "192.0.2.0 originalIP"})
 	return
 }
 
@@ -141,12 +141,12 @@ func TestIpBlockWithConj(t *testing.T) {
 	require.Equal(t, true, conjIPBlockTerm1.add(ipBlockTerm3).isEmpty(&Hints{}),
 		"1.2.3.0/8 intersected with 192.0.2.0/24 is empty")
 
-	// test isTautology
-	require.Equal(t, true, conjAllIPBlockTermOnly.isTautology(), "1.2.3.0/16 is tautology")
-	require.Equal(t, false, conjAllIPBlockTermOnly.add(atomicSly).isTautology(), "adding a "+
+	// test isTautologyOrAllGroups
+	require.Equal(t, true, conjAllIPBlockTermOnly.isTautologyOrAllGroups(), "1.2.3.0/16 is tautology")
+	require.Equal(t, false, conjAllIPBlockTermOnly.add(atomicSly).isTautologyOrAllGroups(), "adding a "+
 		"non tautology block to 0.0.0.0/0 is not a tautology")
-	require.Equal(t, false, conjIPBlockTerm2Only.isTautology(), "1.2.3.0/16 with OriginalIP not tautology")
-	require.Equal(t, false, conjIPBlockTerm3.isTautology(), "192.0.2.0/24 not tautology")
+	require.Equal(t, false, conjIPBlockTerm2Only.isTautologyOrAllGroups(), "1.2.3.0/16 with OriginalIP not tautology")
+	require.Equal(t, false, conjIPBlockTerm3.isTautologyOrAllGroups(), "192.0.2.0/24 not tautology")
 
 	// test contains
 	require.Equal(t, true, conjIPBlockTerm2Only.contains(ipBlockTerm2), "ip block implies itself")

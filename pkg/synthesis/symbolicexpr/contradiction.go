@@ -1,15 +1,15 @@
 package symbolicexpr
 
-import "github.com/np-guard/models/pkg/netset"
+// contradiction is the negation of tautology
 
-// contradiction implementation; contradiction is the negation of tautology
+import "github.com/np-guard/models/pkg/netset"
 
 func (contradiction) String() string {
 	return "empty set"
 }
 
-func (contradiction) name() string {
-	return ""
+func (c contradiction) name() string {
+	return c.String()
 }
 
 func (contradiction) negate() atomic {
@@ -28,22 +28,30 @@ func (contradiction) IsContradiction() bool {
 	return true
 }
 
-// returns true iff otherAt is negation of
-// once we cache the atomic terms, we can just compare pointers
+func (contradiction) IsAllGroups() bool {
+	return false
+}
+
+func (contradiction) IsNoGroup() bool {
+	return true
+}
+
+// contradiction negates tautology
 func (contradiction) isNegateOf(atom atomic) bool {
 	return atom.IsTautology()
 }
 func (contradiction) AsSelector() (string, bool) {
-	return "", false
+	return "to implement", false
 }
 
-// contradiction is disjoint to any atomic term
-func (contradiction) disjoint(atomic, *Hints) bool {
-	return true
+// contradiction is disjoint to any no-contradiction
+func (c contradiction) disjoint(atomic, *Hints) bool {
+	return !c.IsContradiction()
 }
 
-func (contradiction) supersetOf(atom atomic, hints *Hints) bool {
-	return false
+// contradiction, which is the empty set, is a superset of itself only
+func (c contradiction) supersetOf(atom atomic, hints *Hints) bool {
+	return c.IsContradiction()
 }
 
 func (contradiction) getBlock() *netset.IPBlock {

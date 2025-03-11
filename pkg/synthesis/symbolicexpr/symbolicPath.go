@@ -131,14 +131,14 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
 	resAllowPaths := &SymbolicPaths{}
 	for _, srcAtom := range denyPath.Src {
-		if !srcAtom.IsTautology() {
+		if !srcAtom.IsAllGroups() {
 			srcAtomNegate := srcAtom.negate()
 			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
 				Dst: allowPath.Dst, Conn: allowPath.Conn}, hints)
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
-		if !dstAtom.IsTautology() {
+		if !dstAtom.IsAllGroups() {
 			dstAtomNegate := dstAtom.negate()
 			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
 				Conn: allowPath.Conn}, hints)

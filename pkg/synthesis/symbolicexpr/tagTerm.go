@@ -1,5 +1,7 @@
 package symbolicexpr
 
+// tagTerm represents condition of "tag = xx" or negation of such a condition
+
 import (
 	"fmt"
 
@@ -25,15 +27,25 @@ func (tagTerm tagAtomicTerm) String() string {
 	return tagConst + eqSign(tagTerm) + tagTerm.name()
 }
 
-// IsTautology an tagAtomicTerm is a non-empty cond on a tag
+// following 4 functions are false since an tagAtomicTerm is a non-empty cond on a tag which may or may not hold
+
 func (tagAtomicTerm) IsTautology() bool {
 	return false
 }
 
-// IsContradiction false since an groupAtomicTerm is a non-empty cond on a group
 func (tagAtomicTerm) IsContradiction() bool {
 	return false
 }
+
+func (tagAtomicTerm) IsAllGroups() bool {
+	return false
+}
+
+func (tagAtomicTerm) IsNoGroup() bool {
+	return false
+}
+
+//
 
 func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", tagConst, tagTerm.name()), tagTerm.neg
