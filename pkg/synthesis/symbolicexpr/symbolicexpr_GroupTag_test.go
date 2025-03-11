@@ -469,6 +469,10 @@ func TestIPTermsAndInternalTerms(t *testing.T) {
 	require.Equal(t, false, allGroupConjNeg.isEmpty(emptyHints))
 	require.Equal(t, false, allGroupConjNeg.isAllGroup())
 	require.Equal(t, false, allGroupConjNeg.isTautology())
+	require.Equal(t, false, allGroupConjNeg.hasTagOrGroupTerm())
+	require.Equal(t, false, allGroupConjNeg.hasIpBlockTerm())
+	require.Equal(t, false, tautologyConjNeg.hasTagOrGroupTerm())
+	require.Equal(t, false, tautologyConjNeg.hasIpBlockTerm())
 	// add: disjoint, isSuperset
 
 	atomicTag := NewTagTerm("myTag", false)
