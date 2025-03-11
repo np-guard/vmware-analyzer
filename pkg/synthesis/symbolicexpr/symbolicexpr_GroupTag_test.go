@@ -536,4 +536,12 @@ func TestInterectionBetweenIPConjInternalResourceCong(t *testing.T) {
 	require.Equal(t, true, ipBlockConj.disjoint(&conjTag, emptyHints))
 	require.Equal(t, true, ipBlockConj.disjoint(&conjGroup, emptyHints))
 	require.Equal(t, true, ipBlockConj.disjoint(&conjGroupTag, emptyHints))
+	// and is not a superSet of these
+	require.Equal(t, false, ipBlockConj.isSuperset(&conjTag, emptyHints))
+	require.Equal(t, false, ipBlockConj.isSuperset(&conjGroup, emptyHints))
+	require.Equal(t, false, ipBlockConj.isSuperset(&conjGroupTag, emptyHints))
+	// and vice versa
+	require.Equal(t, false, conjTag.isSuperset(&ipBlockConj, emptyHints))
+	require.Equal(t, false, conjGroup.isSuperset(&ipBlockConj, emptyHints))
+	require.Equal(t, false, conjGroupTag.isSuperset(&ipBlockConj, emptyHints))
 }
