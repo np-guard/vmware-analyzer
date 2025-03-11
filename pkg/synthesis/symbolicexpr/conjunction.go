@@ -168,7 +168,7 @@ func (c *Conjunction) isEmpty(hints *Hints) bool {
 // this is the case if there's a term in c and its contradiction in other
 // or if there are two terms that are disjoint to each other by hints
 func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
-	if len(*c) == 0 || len(*other) == 0 {
+	if len(*c) == 0 || len(*other) == 0 || c.isTautology() {
 		return false
 	}
 	// empty sets are disjoint to anything

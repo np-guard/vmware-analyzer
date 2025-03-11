@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -479,17 +480,28 @@ func TestAllGroupAndTautology(t *testing.T) {
 	atomicGroup := NewDummyGroupTerm("group1", false)
 	conjGroup := Conjunction{}
 	conjGroup = *conjGroup.add(*atomicGroup)
+	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
+	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
+	ipBlockConj := Conjunction{ipBlockTerm}
 
 	// tautology is a superset of all
 	require.Equal(t, true, tautologyConj.isSuperset(&allGroupConj, emptyHints))
 	require.Equal(t, true, tautologyConj.isSuperset(&allGroupConjNeg, emptyHints))
 	require.Equal(t, true, tautologyConj.isSuperset(&conjTag, emptyHints))
 	require.Equal(t, true, tautologyConj.isSuperset(&conjGroup, emptyHints))
+	require.Equal(t, true, tautologyConj.isSuperset(&ipBlockConj, emptyHints))
 	// and is not disjoint to any
 	require.Equal(t, false, tautologyConj.disjoint(&allGroupConj, emptyHints))
 	require.Equal(t, false, tautologyConj.disjoint(&allGroupConjNeg, emptyHints))
 	require.Equal(t, false, tautologyConj.disjoint(&conjTag, emptyHints))
 	require.Equal(t, false, tautologyConj.disjoint(&conjGroup, emptyHints))
+	require.Equal(t, false, tautologyConj.disjoint(&ipBlockConj, emptyHints))
+
+	// allGroups is not a superSet of tautology
+	require.Equal(t, false, allGroupConj.isSuperset(&tautologyConj, emptyHints))
+	// it is not a superSet of Conj with ipBlockTerm
+	require.Equal(t, false, allGroupConj.isSuperset(&ipBlockConj, emptyHints))
+	// it is a super set of Conj with tag term, group term or both
 }
 
 /*
