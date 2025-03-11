@@ -115,6 +115,9 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 
 func (c *Conjunction) hasIpBlockTerm() bool {
 	for _, term := range *c {
+		if term.IsTautology() {
+			return true
+		}
 		if term.getBlock() != nil {
 			return true
 		}

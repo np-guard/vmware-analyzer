@@ -446,8 +446,10 @@ func TestSymbolicPathsImplied(t *testing.T) {
 }
 
 func TestIPTermsAndInternalTerms(t *testing.T) {
-	allGroupConj := Conjunction{allGroup{}}
-	tautologyConj := Conjunction{tautology{}}
+	var myAllGroup = allGroup{}
+	var myTautology = tautology{}
+	allGroupConj := Conjunction{myAllGroup}
+	tautologyConj := Conjunction{myTautology}
 	require.Equal(t, true, allGroupConj.isAllGroup())
 	require.Equal(t, false, allGroupConj.isTautology())
 	require.Equal(t, true, allGroupConj.hasTagOrGroupTerm())

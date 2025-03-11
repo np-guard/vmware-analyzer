@@ -73,7 +73,7 @@ func eqSign(atom atomic) string {
 
 func isTagOrAtomicTerm(atom atomic) bool {
 	switch atom.(type) {
-	case groupAtomicTerm, tagAtomicTerm, allGroup:
+	case groupAtomicTerm, tagAtomicTerm, allGroup, tautology:
 		return true
 	default:
 		return false
