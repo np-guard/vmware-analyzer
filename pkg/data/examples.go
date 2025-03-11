@@ -175,7 +175,7 @@ var Example1d = Example{
 var Example1dExternalWithSegments = Example{
 	Name:        "Example1dExternalWithSegments",
 	VMs:         []string{"A", "B", "C-no-address"},
-	GroupsByVMs: map[string][]string{"default-group": []string{"A", "B", "C-no-address"}},
+	GroupsByVMs: map[string][]string{"default-group": {"A", "B", "C-no-address"}},
 	VMsAddress: map[string]string{
 		"A": "0.0.1.0",
 		"B": "0.0.1.192",
