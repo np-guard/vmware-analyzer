@@ -203,7 +203,7 @@ func toSelector(con symbolicexpr.Conjunction) *meta.LabelSelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 	selector := &meta.LabelSelector{}
 	for _, a := range con {
-		if !a.IsTautology() {
+		if !a.IsAllGroups() {
 			label, notIn := a.AsSelector()
 			label = toLegalK8SString(label)
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
