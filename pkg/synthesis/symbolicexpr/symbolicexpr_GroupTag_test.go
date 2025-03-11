@@ -508,21 +508,11 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, true, allGroupConj.isSuperset(&conjGroup, emptyHints))
 	require.Equal(t, true, allGroupConj.isSuperset(&conjTag, emptyHints))
 	require.Equal(t, true, allGroupConj.isSuperset(&conjGroupTag, emptyHints))
-}
 
-/*
-func TestInterectionBetweenIPConjInternalResourceCong(t *testing.T) {
-	var myAllGroup = allGroup{}
-	var myTautology = tautology{}
-	allGroupConj := Conjunction{myAllGroup}
-	tautologyConj := Conjunction{myTautology}
-	emptyHints := &Hints{GroupsDisjoint: [][]string{}}
-	atomicTag := NewTagTerm("myTag", false)
-	conjTag := Conjunction{}
-	conjTag = *conjTag.add(atomicTag)
-	atomicGroup := NewDummyGroupTerm("group1", false)
-	conjGroup := Conjunction{}
-	conjGroup = *conjGroup.add(*atomicGroup)
-	// add: disjoint, isSuperset
-	// tautologyConj is a super
-} */
+	// allGroup is disjoint to Conj with ipBlockTerm
+	require.Equal(t, true, allGroupConj.disjoint(&ipBlockConj, emptyHints))
+	// it is not disjoint to Conj with tag term, group term or both
+	require.Equal(t, false, allGroupConj.disjoint(&conjGroup, emptyHints))
+	require.Equal(t, false, allGroupConj.disjoint(&conjTag, emptyHints))
+	require.Equal(t, false, allGroupConj.disjoint(&conjGroupTag, emptyHints))
+}
