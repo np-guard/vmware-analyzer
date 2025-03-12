@@ -30,8 +30,8 @@ func (e *Example) syncJSONWithExample() error {
 	jsonPath := GetExamplesJSONPath(e.Name)
 	var exampleConfig, jsonConfig *configuration.Config
 
-	// get from example its parsed config object
-	rc, err := ExamplesGeneration(e, false)
+	// get from example its parsed config object (creates JSON file only if it does not exist)
+	rc, err := ExamplesGeneration(e)
 	if err != nil {
 		return err
 	}
