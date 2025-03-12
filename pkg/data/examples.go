@@ -1724,7 +1724,7 @@ var ExampleHogwartsSimplerNonSymInOut = registerExample(&Example{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleHogwartsExternal = registerExample(&Example{
-	Name: "ExampleHogwartsOut",
+	Name: "ExampleHogwartsExternal",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
 	GroupsByVMs: hogwartsBidimensionalGroups,
