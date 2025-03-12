@@ -14,17 +14,20 @@ import (
 )
 
 type nsxTopology struct {
-	segments        []*topology.Segment
-	vmSegments      map[topology.Endpoint][]*topology.Segment
-	allRuleIPBlocks map[string]*topology.RuleIPBlock // a map from the ip string,to the block
-	externalBlock   *netset.IPBlock
+	segments           []*topology.Segment
+	vmSegments         map[topology.Endpoint][]*topology.Segment
+	allRuleIPBlocks    map[string]*topology.RuleIPBlock // a map from the ip string,to the block
+	allIPBlock         *netset.IPBlock                  // the union of segments and rule path IPs
+	allInternalIPBlock *netset.IPBlock
+	allExternalIPBlock *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
 	return &nsxTopology{
-		vmSegments:      map[topology.Endpoint][]*topology.Segment{},
-		externalBlock:   netset.GetCidrAll(),
-		allRuleIPBlocks: map[string]*topology.RuleIPBlock{},
+		vmSegments:         map[topology.Endpoint][]*topology.Segment{},
+		allRuleIPBlocks:    map[string]*topology.RuleIPBlock{},
+		allIPBlock:         netset.NewIPBlock(),
+		allInternalIPBlock: netset.NewIPBlock(),
 	}
 }
 
@@ -61,7 +64,8 @@ func (p *nsxConfigParser) getSegments() (err error) {
 				segment.VMs = append(segment.VMs, vm)
 			}
 		}
-		p.topology.externalBlock = p.topology.externalBlock.Subtract(segment.Block)
+		p.topology.allInternalIPBlock = p.topology.allInternalIPBlock.Union(segment.Block)
+		p.topology.allIPBlock = p.topology.allIPBlock.Union(segment.Block)
 		p.topology.segments = append(p.topology.segments, segment)
 	}
 	return nil
@@ -95,16 +99,22 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 			continue
 		}
+		p.topology.allIPBlock = p.topology.allIPBlock.Union(block)
 		p.topology.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
 	}
 }
 
 // creating external endpoints
 func (p *nsxConfigParser) getExternalIPs() {
+	// calc external range:
+	p.topology.allExternalIPBlock = p.topology.allIPBlock.Subtract(p.topology.allInternalIPBlock)
+	if p.topology.allExternalIPBlock.IsEmpty() {
+		return
+	}
 	// collect all the blocks:
 	exBlocks := make([]*netset.IPBlock, len(p.topology.allRuleIPBlocks))
 	for i, ruleBlock := range slices.Collect(maps.Values(p.topology.allRuleIPBlocks)) {
-		exBlocks[i] = ruleBlock.Block.Intersect(p.topology.externalBlock)
+		exBlocks[i] = ruleBlock.Block.Intersect(p.topology.allExternalIPBlock)
 	}
 	// creating disjoint blocks:
 	disjointBlocks := netset.DisjointIPBlocks(exBlocks, nil)

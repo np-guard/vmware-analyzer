@@ -114,3 +114,12 @@ func Warnf(format string, o ...interface{}) {
 func Errorf(format string, o ...interface{}) {
 	logger.l.Printf("ERROR	%s", fmt.Sprintf(format, o...))
 }
+
+func InternalError(msg string) {
+	InternalErrorf(stringFormat, msg)
+}
+
+func InternalErrorf(format string, o ...interface{}) {
+	logger.l.Printf("INTERNAL ERROR	%s", fmt.Sprintf(format, o...))
+	panic(fmt.Sprintf(format, o...))
+}

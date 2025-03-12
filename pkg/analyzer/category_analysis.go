@@ -90,5 +90,5 @@ func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *nets
 func evaluatedRuleCapturesPair(f *dfw.FwRule, src, dst topology.Endpoint) bool {
 	// in evaluated rule the src/dst vms already consider the original scope rule
 	// and the separation to inound/outbound is done in advance
-	return slices.Contains(f.SrcVMs, src) && slices.Contains(f.DstVMs, dst)
+	return slices.Contains(f.Src.VMs, src) && slices.Contains(f.Dst.VMs, dst)
 }

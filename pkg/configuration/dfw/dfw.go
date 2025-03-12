@@ -6,7 +6,6 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 type DFW struct {
@@ -44,15 +43,12 @@ func (d *DFW) AllEffectiveRules() string {
 	return inbound + outbound
 }
 
-func (d *DFW) AddRule(src, dst []topology.Endpoint, srcBlocks, dstBlocks []*topology.RuleIPBlock,
-	srcGroups, dstGroups, scopeGroups []*collector.Group, isAllScopeGroup,
-	isAllSrcGroups, isAllDstGroups bool, conn *netset.TransportSet, categoryStr, actionStr, direction string,
-	ruleID int, origRule *collector.Rule, scope []topology.Endpoint, secPolicyName string,
+func (d *DFW) AddRule(src, dst, scope *RuleEndPoints, conn *netset.TransportSet, categoryStr, actionStr, direction string,
+	ruleID int, origRule *collector.Rule, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {
 		if fwCategory.Category.String() == categoryStr {
-			fwCategory.addRule(src, dst, srcBlocks, dstBlocks, srcGroups, dstGroups, scopeGroups, isAllScopeGroup,
-				isAllSrcGroups, isAllDstGroups, conn, actionStr, direction, ruleID, origRule, scope, secPolicyName, origDefaultRule)
+			fwCategory.addRule(src, dst, scope, conn, actionStr, direction, ruleID, origRule, secPolicyName, origDefaultRule)
 		}
 	}
 }
