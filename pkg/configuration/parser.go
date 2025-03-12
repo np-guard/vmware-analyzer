@@ -199,11 +199,11 @@ func (p *nsxConfigParser) storeParsedDFW() {
 			for i := range rules {
 				rule := &rules[i]
 				r := p.getDFWRule(rule)
-				r.scope = scope // scope from policy
+				r.scope.VMs = scope // scope from policy
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
-					r.isAllScopeGroup = slices.Equal(rule.Scope, []string{anyStr})
-					r.scope, r.scopeGroups = p.getEndpointsFromScopePaths(rule.Scope)
+					r.scope.IsAllGroups = slices.Equal(rule.Scope, []string{anyStr})
+					r.scope.VMs, r.scope.Groups = p.getEndpointsFromScopePaths(rule.Scope)
 				}
 				r.secPolicyName = *secPolicy.DisplayName
 				p.addFWRule(r, category, rule)
@@ -220,7 +220,7 @@ func (p *nsxConfigParser) storeParsedDFW() {
 				if defaultRule == nil {
 					logging.Debugf("skipping default rule for policy %s\n", *secPolicy.DisplayName)
 				} else {
-					defaultRule.scope = scope
+					defaultRule.scope.VMs = scope
 					defaultRule.secPolicyName = *secPolicy.DisplayName
 					p.addFWRule(defaultRule, category, nil)
 				}
@@ -230,9 +230,8 @@ func (p *nsxConfigParser) storeParsedDFW() {
 }
 
 func (p *nsxConfigParser) addFWRule(r *parsedRule, category string, origRule *collector.Rule) {
-	p.configRes.FW.AddRule(r.srcVMs, r.dstVMs, r.srcBlocks, r.dstBlocks, r.srcGroups, r.dstGroups, r.scopeGroups,
-		r.isAllScopeGroup, r.isAllSrcGroups, r.isAllDstGroups,
-		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.scope, r.secPolicyName, r.defaultRuleObj)
+	p.configRes.FW.AddRule(&r.src, &r.dst, &r.scope,
+		r.conn, category, r.action, r.direction, r.ruleID, origRule, r.secPolicyName, r.defaultRuleObj)
 }
 
 func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *parsedRule {
@@ -244,12 +243,12 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 	scope := secPolicy.Scope
 	vms, groups := p.getEndpointsFromScopePaths(scope)
 	// rule applied as any-to-any only for ths VMs in the scope of the SecurityPolicy
-	res.srcVMs = vms
-	res.dstVMs = vms
-	res.srcGroups = groups
-	res.isAllSrcGroups = true
-	res.dstGroups = groups
-	res.isAllSrcGroups = true
+	res.src.VMs = vms
+	res.dst.VMs = vms
+	res.src.Groups = groups
+	res.src.IsAllGroups = true
+	res.dst.Groups = groups
+	res.dst.IsAllGroups = true
 
 	switch string(*secPolicy.ConnectivityPreference) {
 	case string(nsx.SecurityPolicyConnectivityPreferenceALLOWLIST),
@@ -271,25 +270,15 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	srcVMs []topology.Endpoint
-	dstVMs []topology.Endpoint
-	// todo: In this stage we are not analyzing the complete expr, yet. In this stage we will only handle src and dst
-	//       defined by groups, thus the following temp 4 fields
-	srcGroups       []*collector.Group
-	isAllSrcGroups  bool
-	srcBlocks       []*topology.RuleIPBlock
-	dstGroups       []*collector.Group
-	isAllDstGroups  bool
-	dstBlocks       []*topology.RuleIPBlock
-	action          string
-	conn            *netset.TransportSet
-	direction       string
-	ruleID          int
-	scope           []topology.Endpoint
-	scopeGroups     []*collector.Group
-	isAllScopeGroup bool
-	secPolicyName   string
-	defaultRuleObj  *collector.FirewallRule
+	src            dfw.RuleEndPoints
+	dst            dfw.RuleEndPoints
+	scope          dfw.RuleEndPoints
+	action         string
+	conn           *netset.TransportSet
+	direction      string
+	ruleID         int
+	secPolicyName  string
+	defaultRuleObj *collector.FirewallRule
 }
 
 func (p *nsxConfigParser) getAllGroups() {
@@ -376,10 +365,10 @@ func (p *nsxConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	// the source groups. If false, the rule applies to the source groups
 	// TODO: handle excluded fields
 	// srcExclude := rule.SourcesExcluded
-	res.srcVMs, res.srcGroups, res.srcBlocks = p.getEndpointsFromGroupsPaths(srcGroups, rule.SourcesExcluded)
-	res.isAllSrcGroups = slices.Contains(srcGroups, anyStr)
-	res.dstVMs, res.dstGroups, res.dstBlocks = p.getEndpointsFromGroupsPaths(dstGroups, rule.DestinationsExcluded)
-	res.isAllDstGroups = slices.Contains(dstGroups, anyStr)
+	res.src.VMs, res.src.Groups, res.src.Blocks = p.getEndpointsFromGroupsPaths(srcGroups, rule.SourcesExcluded)
+	res.src.IsAllGroups = slices.Contains(srcGroups, anyStr)
+	res.dst.VMs, res.dst.Groups, res.dst.Blocks = p.getEndpointsFromGroupsPaths(dstGroups, rule.DestinationsExcluded)
+	res.dst.IsAllGroups = slices.Contains(dstGroups, anyStr)
 
 	res.action = string(*rule.Action)
 	res.conn = p.getRuleConnections(rule)

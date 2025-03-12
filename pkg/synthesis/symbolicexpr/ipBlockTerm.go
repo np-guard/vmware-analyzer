@@ -5,6 +5,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
+// IpBlockTerm represents an external block
+
 func NewIPBlockTermTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
 	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: ipBlock}
 }
@@ -88,7 +90,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 	block := ipBlockTerm.GetBlock()
 	otherBlock := otherAtom.GetBlock()
 	if otherAtom == nil {
-		return true // otherAtom is not an IPBlock
+		return true // otherAtom is not an IPBlock; external IP block is disjoint to tag/group terms referring to VMs
 	}
 	return !block.Overlap(otherBlock)
 }

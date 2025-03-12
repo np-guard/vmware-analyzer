@@ -84,6 +84,9 @@ func (groupTerm groupAtomicTerm) isNegateOf(otherAtom atomic) bool {
 
 // returns true iff otherAtom is disjoint to groupTerm as given by hints
 func (groupTerm groupAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+	if otherAtom.getBlock() != nil {
+		return true // otherAtom is an IPBlock; external IP block is disjoint to group terms referring to VMs
+	}
 	return disjoint(groupTerm, otherAtom, hints)
 }
 
