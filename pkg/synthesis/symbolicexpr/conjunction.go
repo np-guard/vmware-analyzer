@@ -193,7 +193,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 }
 
 func (c *Conjunction) isIPBlockInternalResource(other *Conjunction) bool {
-	return c.isIPBlockInternalResource(other)
+	return c.hasTagOrGroupTerm() && other.hasIPBlockTerm() || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm())
 }
 
 // a Conjunction c contains an atom atomic if:
@@ -237,7 +237,7 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if c.isTautology() || len(*c) == 0 { // tautology superset of anything;  nil Conjunction is equiv to tautology
 		return true
 	}
-	if (c.hasTagOrGroupTerm() && other.hasIPBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm()) {
+	if c.isIPBlockInternalResource(other) {
 		return false
 	}
 	// got here: both conjunctions refer to external ips or both refer to internal resources, c not tautology
