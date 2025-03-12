@@ -314,7 +314,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		if exclude {
 			return res // no group
 		}
-		return &dfw.RuleEndPoints{VMs:p.allGroupsVMs, Groups: p.allGroups, IsAllGroups: true} // all groups
+		return &dfw.RuleEndPoints{VMs: p.allGroupsVMs, Groups: p.allGroups, IsAllGroups: true} // all groups
 	}
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
