@@ -1,6 +1,8 @@
 package analyzer
 
 import (
+	"fmt"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
@@ -141,8 +143,13 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 	// TODO: add test and issue warning on allNotDeterminedConns.accumulatedConns if there is no defaule rule in last category
 	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
 		// logging.Debugf("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
-		logging.Debugf("no default rule - unexpected connections for which no decision was found: %s",
+		msg := fmt.Sprintf("no default rule - unexpected connections %s to %s for which no decision was found: %s", src.Name(), dst.Name(),
 			allNotDeterminedConns.accumulatedConns.String())
+		if src.IsExternal() || dst.IsExternal() {
+			logging.Warn(msg)
+		} else {
+			logging.InternalError(msg)
+		}
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
 	return allAllowedConns, allDeniedConns, delegatedConns

@@ -155,10 +155,10 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
-	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllSrcGroups, rule.SrcGroups, rule.SrcBlocks)
-	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllDstGroups, rule.DstGroups, rule.DstBlocks)
-	if !rule.IsAllScopeGroups {
-		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.ScopeGroups, nil)
+	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
+	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
+	if !rule.Scope.IsAllGroups {
+		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.Scope.Groups, nil)
 		if isInbound {
 			dstConjunctions = append(dstConjunctions, scopeConjunctions...)
 		} else { // outbound
