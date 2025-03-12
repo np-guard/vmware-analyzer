@@ -129,7 +129,7 @@ func (f *FwRule) pathToShortPathString(path string) string {
 }
 
 func (f *FwRule) getShortPathsString(paths []string) string {
-	return common.JoinCustomStrFuncSlice(paths,
+	return common.SortedJoinCustomStrFuncSlice(paths,
 		func(p string) string { return f.pathToShortPathString(p) }, common.CommaSeparator)
 }
 

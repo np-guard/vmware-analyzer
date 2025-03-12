@@ -35,7 +35,7 @@ type Example struct {
 
 // ExamplesGeneration - main function to generate ResourcesContainerModel from specified Example object.
 // It also stores the generated example in the path pkg/data/json .
-func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesContainerModel, error) {
+func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
 	for _, vmName := range e.VMs {
@@ -118,7 +118,7 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 	res.ServiceList = getServices()
 
 	// store the example resources object generated as JSON file
-	if err := e.storeAsJSON(overrideJSON, res); err != nil {
+	if err := e.storeAsJSON(false, res); err != nil {
 		return nil, err
 	}
 	return res, nil
