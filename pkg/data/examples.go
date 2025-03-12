@@ -680,7 +680,8 @@ var Example2 = registerExample(&Example{
 var Example3 = registerExample(example3FromExample2())
 
 func example3FromExample2() *Example {
-	res := Example2
+	res := *Example2
+
 	// add a default deny for env Category
 	defaultDenyEnvCategory := Category{
 		Name:         "defaultDenyEnvCategory",
@@ -700,7 +701,7 @@ func example3FromExample2() *Example {
 		}
 	}
 	res.Name = "Example3"
-	return res
+	return &res
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
