@@ -28686,57 +28686,6 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Gryffindor-Or-no-DB",
-                        "path": "Gryffindor-Or-no-DB",
-                        "vm_members": [
-                            {
-                                "display_name": "Gryffindor-DB",
-                                "id": "Gryffindor-DB"
-                            },
-                            {
-                                "display_name": "Gryffindor-Web",
-                                "id": "Gryffindor-Web"
-                            },
-                            {
-                                "display_name": "Gryffindor-App",
-                                "id": "Gryffindor-App"
-                            },
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            },
-                            {
-                                "display_name": "Hufflepuff-Web",
-                                "id": "Hufflepuff-Web"
-                            },
-                            {
-                                "display_name": "Hufflepuff-App",
-                                "id": "Hufflepuff-App"
-                            }
-                        ],
-                        "expression": [
-                            {
-                                "key": "Tag",
-                                "member_type": "VirtualMachine",
-                                "operator": "EQUALS",
-                                "value": "Gryffindor"
-                            },
-                            {
-                                "conjunction_operator": "OR"
-                            },
-                            {
-                                "key": "Tag",
-                                "member_type": "VirtualMachine",
-                                "operator": "NOTEQUALS",
-                                "value": "DB"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
                         "vm_members": [
@@ -28758,6 +28707,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Slytherin"
                             }
                         ]
@@ -28784,6 +28734,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Gryffindor"
                             }
                         ]
@@ -28810,6 +28761,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Hufflepuff"
                             }
                         ]
@@ -28852,15 +28804,18 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Slytherin"
                             },
                             {
-                                "conjunction_operator": "OR"
+                                "conjunction_operator": "OR",
+                                "resource_type": "ConjunctionOperator"
                             },
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "NOTEQUALS",
+                                "resource_type": "Condition",
                                 "value": "DB"
                             }
                         ]
@@ -28903,15 +28858,72 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Hufflepuff"
                             },
                             {
-                                "conjunction_operator": "OR"
+                                "conjunction_operator": "OR",
+                                "resource_type": "ConjunctionOperator"
                             },
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "NOTEQUALS",
+                                "resource_type": "Condition",
+                                "value": "DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Gryffindor-Or-no-DB",
+                        "path": "Gryffindor-Or-no-DB",
+                        "vm_members": [
+                            {
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
+                            },
+                            {
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
+                            },
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            },
+                            {
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            },
+                            {
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
+                            },
+                            {
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Gryffindor"
+                            },
+                            {
+                                "conjunction_operator": "OR",
+                                "resource_type": "ConjunctionOperator"
+                            },
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "NOTEQUALS",
+                                "resource_type": "Condition",
                                 "value": "DB"
                             }
                         ]
