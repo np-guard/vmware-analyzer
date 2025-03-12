@@ -39,8 +39,8 @@ func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
 	return ipBlockTerm.Block.Equal(netset.GetCidrAll())
 }
 
-func (*ipBlockAtomicTerm) IsAllGroups() bool {
-	return false
+func (ipBlockTerm *ipBlockAtomicTerm) IsAllGroups() bool {
+	return ipBlockTerm.IsTautology()
 }
 
 // IsNoGroup ipBlockAtomicTerm presents external addresses, thus IsNoGroup is true
