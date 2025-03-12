@@ -17,7 +17,7 @@ import (
 
 type analyzerTest struct {
 	name   string
-	exData data.Example
+	exData *data.Example
 }
 
 var allTests = []analyzerTest{
@@ -64,7 +64,7 @@ func (a *analyzerTest) run(t *testing.T) {
 	//nolint:gocritic // comment here should stay
 	// overrideAll = true // uncommnet to override expected output and config as JSON
 	// overrideOnlyConnOutput = true // uncommnet to override expected output
-	rc, err := data.ExamplesGeneration(&a.exData, overrideAll)
+	rc, err := data.ExamplesGeneration(a.exData, overrideAll)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

@@ -44,17 +44,17 @@ const (
 	defaultL3   = "Default-L3-Section"
 )
 
-var allExamples = map[int]Example{}
+var allExamples = map[int]*Example{}
 var examplesCount = 0
 
-func registerExample(e Example) Example {
+func registerExample(e *Example) *Example {
 	allExamples[examplesCount] = e
 	examplesCount++
 	return e
 }
 
 //nolint:all
-var Example1 = registerExample(Example{
+var Example1 = registerExample(&Example{
 	Name: "Example1",
 	VMs:  []string{"A", "B"},
 	GroupsByVMs: map[string][]string{
@@ -82,7 +82,7 @@ var Example1 = registerExample(Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var Example1a = registerExample(Example{
+var Example1a = registerExample(&Example{
 	Name: "Example1a",
 	VMs:  []string{"A", "B"},
 	GroupsByVMs: map[string][]string{
@@ -118,7 +118,7 @@ var Example1a = registerExample(Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var Example1c = registerExample(Example{
+var Example1c = registerExample(&Example{
 	Name: "Example1c",
 	VMs:  []string{"A", "B", "C"},
 	GroupsByVMs: map[string][]string{
@@ -147,7 +147,7 @@ var Example1c = registerExample(Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var Example1d = registerExample(Example{
+var Example1d = registerExample(&Example{
 	Name: "Example1d",
 	VMs:  []string{"A", "B", "C"},
 	GroupsByVMs: map[string][]string{
@@ -182,7 +182,7 @@ var Example1d = registerExample(Example{
 	},
 })
 
-var Example1dExternalWithSegments = registerExample(Example{
+var Example1dExternalWithSegments = registerExample(&Example{
 	Name:        "Example1dExternalWithSegments",
 	VMs:         []string{"A", "B", "C-no-address"},
 	GroupsByVMs: map[string][]string{"default-group": {"A", "B", "C-no-address"}},
@@ -233,7 +233,7 @@ var Example1dExternalWithSegments = registerExample(Example{
 	},
 })
 
-var Example1External = registerExample(Example{
+var Example1External = registerExample(&Example{
 	Name: "Example1External",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
@@ -274,7 +274,7 @@ var Example1External = registerExample(Example{
 	},
 })
 
-var ExampleExternalWithDenySimple = registerExample(Example{
+var ExampleExternalWithDenySimple = registerExample(&Example{
 	Name: "ExampleExternalWithDenySimple",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
@@ -323,7 +323,7 @@ var ExampleExternalWithDenySimple = registerExample(Example{
 	},
 })
 
-var ExampleExternalSimpleWithInterlDenyAllow = registerExample(Example{
+var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 	Name: "ExampleExternalSimpleWithInterlDenyAllow",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
@@ -402,7 +402,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var ExampleExclude = registerExample(Example{
+var ExampleExclude = registerExample(&Example{
 	Name: "ExampleExclude",
 	VMs: []string{"Slytherin1", "Slytherin2", "Hufflepuff1", "Hufflepuff2",
 		"Gryffindor1", "Gryffindor2", "Dumbledore1", "Dumbledore2", "Aladdin"},
@@ -479,7 +479,7 @@ micro segmentation
 
 */
 
-var Example2 = registerExample(Example{
+var Example2 = registerExample(&Example{
 	Name: "Example2",
 	VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
 		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
@@ -679,7 +679,7 @@ var Example2 = registerExample(Example{
 
 var Example3 = registerExample(example3FromExample2())
 
-func example3FromExample2() Example {
+func example3FromExample2() *Example {
 	res := Example2
 	// add a default deny for env Category
 	defaultDenyEnvCategory := Category{
@@ -708,7 +708,7 @@ func example3FromExample2() Example {
 // ExampleDumbeldore
 // Dumbledore1 can communicate to all
 // Dumbledore2 can communicate to all but slytherin
-var ExampleDumbeldore = registerExample(Example{
+var ExampleDumbeldore = registerExample(&Example{
 	Name: "ExampleDumbeldore",
 	VMs:  []string{huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
@@ -766,7 +766,7 @@ var ExampleDumbeldore = registerExample(Example{
 // Simple example with two denies
 // Slytherin can talk to all but Dumbledore
 // Gryffindor can talk to all but Dumbledore
-var ExampleTwoDeniesSimple = registerExample(Example{
+var ExampleTwoDeniesSimple = registerExample(&Example{
 	Name: "ExampleTwoDeniesSimple",
 	VMs:  []string{sly, huf, gry, dum2},
 	GroupsByVMs: map[string][]string{
@@ -835,7 +835,7 @@ var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, dum1, dum2}}
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
-var ExampleDenyPassSimple = registerExample(Example{
+var ExampleDenyPassSimple = registerExample(&Example{
 	Name: "ExampleDenyPassSimple",
 	VMs:  []string{sly, huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
@@ -907,7 +907,7 @@ var ExampleDenyPassSimple = registerExample(Example{
 // ExampleHintsDisjoint for testing the hint of disjoint groups/tags and relevant optimization
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
-var ExampleHintsDisjoint = registerExample(Example{
+var ExampleHintsDisjoint = registerExample(&Example{
 	Name: "ExampleHintsDisjoint",
 	VMs:  []string{sly, huf, gry, dum1, dum2},
 	GroupsByVMs: map[string][]string{
@@ -1007,7 +1007,7 @@ var hogwartsBidimensionalGroups = map[string][]string{
 	app: {slyApp, gryApp, hufApp},
 	db:  {slyDB, gryDB, hufDB}}
 
-var ExampleHogwarts = registerExample(Example{
+var ExampleHogwarts = registerExample(&Example{
 	Name: "ExampleHogwarts",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
@@ -1139,7 +1139,7 @@ var simpleHogwartsGroups = map[string][]string{
 	web: {slyWeb, gryWeb},
 	app: {slyApp, gryApp}}
 
-var ExampleHogwartsSimpler = registerExample(Example{
+var ExampleHogwartsSimpler = registerExample(&Example{
 	Name: "ExampleHogwartsSimpler",
 	VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
@@ -1306,7 +1306,7 @@ var hogwartsAppToHousesPolicy = []Category{
 	},
 }
 
-var ExampleHogwartsNoDumbledore = registerExample(Example{
+var ExampleHogwartsNoDumbledore = registerExample(&Example{
 	Name: "ExampleHogwartsNoDumbledore",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB},
@@ -1328,7 +1328,7 @@ var ExampleHogwartsNoDumbledore = registerExample(Example{
 
 var disjointHouses = [][]string{{sly, huf, gry, dum}}
 
-var ExampleExprSingleScope = registerExample(Example{
+var ExampleExprSingleScope = registerExample(&Example{
 	Name:    "ExampleExprSingleScope",
 	VMs:     []string{huf, gry, dum},
 	VMsTags: map[string][]nsx.Tag{huf: {{Tag: huf}}, gry: {{Tag: gry}}, dum: {{Tag: dum}}},
@@ -1457,7 +1457,7 @@ var twoScopeGroupsByExpr = map[string]ExampleExpr{
 	web: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
 	app: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
 
-var ExampleExprTwoScopes = registerExample(Example{
+var ExampleExprTwoScopes = registerExample(&Example{
 	Name: "ExampleExprTwoScopes",
 	VMs: []string{slyDB, slyWeb, slyApp,
 		hufDB, hufWeb, hufApp,
@@ -1469,7 +1469,7 @@ var ExampleExprTwoScopes = registerExample(Example{
 })
 
 // ExampleExprTwoScopesAbstract is like ExampleExprTwoScopes expect it has no VMs
-var ExampleExprTwoScopesAbstract = registerExample(Example{
+var ExampleExprTwoScopesAbstract = registerExample(&Example{
 	Name:               "ExampleExprTwoScopesAbstract",
 	VMs:                []string{},
 	VMsTags:            map[string][]nsx.Tag{},
@@ -1485,7 +1485,7 @@ var vmsHouses = []string{slyDB, slyWeb, slyApp,
 	gryDB, gryWeb, gryApp}
 
 // ExampleExprAndConds todo: this example uses not yet supported scope
-var ExampleExprAndConds = registerExample(Example{
+var ExampleExprAndConds = registerExample(&Example{
 	Name:               "ExampleExprAndConds",
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
@@ -1497,7 +1497,7 @@ var ExampleExprAndConds = registerExample(Example{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
-var ExampleExprOrConds = registerExample(Example{
+var ExampleExprOrConds = registerExample(&Example{
 	Name:               "ExampleExprOrConds",
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
@@ -1605,7 +1605,7 @@ func getAndOrOrPolicies(op ExampleOp) []Category {
 	}
 }
 
-var ExampleHogwartsSimplerNonSymInOut = registerExample(Example{
+var ExampleHogwartsSimplerNonSymInOut = registerExample(&Example{
 	Name: "ExampleHogwartsSimplerNonSymInOut",
 	VMs: []string{slyWeb, slyApp, slyDB,
 		gryWeb, gryApp, gryDB},
@@ -1722,7 +1722,7 @@ var ExampleHogwartsSimplerNonSymInOut = registerExample(Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var ExampleHogwartsExternal = registerExample(Example{
+var ExampleHogwartsExternal = registerExample(&Example{
 	Name: "ExampleHogwartsOut",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},

@@ -1,14 +1,16 @@
 package data
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
-	"github.com/stretchr/testify/require"
 )
 
 // this test should be run to keep the example JSON files in-sync with examples defined here.
@@ -20,7 +22,6 @@ func TestUpdateModifiedExamplesInJSONFiles(t *testing.T) {
 			fmt.Printf("error for test %s: %s\n", example.Name, err.Error())
 		}
 		require.Nilf(t, err, example.Name)
-
 	}
 	fmt.Printf("done")
 }
@@ -64,8 +65,11 @@ func (e *Example) syncJSONWithExample() error {
 
 	if exampleConfigStr != jsonConfigStr {
 		// generating text files wilt config str - for easy comparison and gaps review
-		common.WriteToFile(e.Name+"_example-config-str.txt", exampleConfigStr)
-		common.WriteToFile(e.Name+"_json-config-str.txt", jsonConfigStr)
+		err1 := common.WriteToFile(e.Name+"_example-config-str.txt", exampleConfigStr)
+		err2 := common.WriteToFile(e.Name+"_json-config-str.txt", jsonConfigStr)
+		if err := errors.Join(err1, err2); err != nil {
+			fmt.Printf("error creating txt files for comparison of config gaps: %s", err.Error())
+		}
 
 		// sync is required if config json str is not the same
 		fmt.Printf("sync required for example %s -- overriding JSON!\n", e.Name)

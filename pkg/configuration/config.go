@@ -121,7 +121,8 @@ func (c *Config) getVMGroupsStr(color bool) string {
 	header := []string{"VM", "Groups"}
 	lines := [][]string{}
 	for vm, groups := range c.GroupsPerVM {
-		groupsStr := common.SortedJoinCustomStrFuncSlice(groups, func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
+		groupsStr := common.SortedJoinCustomStrFuncSlice(groups,
+			func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{vm.Name(), groupsStr})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
