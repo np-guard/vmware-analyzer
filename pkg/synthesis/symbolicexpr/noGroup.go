@@ -47,7 +47,7 @@ func (noGroup) isNegateOf(atom atomic) bool {
 	return isAllGroup
 }
 func (noGroup) AsSelector() (string, bool) {
-	return "to implement", false
+	return toImplement, false
 }
 
 // noGroup disjoint to tagTerm and to groupTerm

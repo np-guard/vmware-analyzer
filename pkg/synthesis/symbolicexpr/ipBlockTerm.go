@@ -60,7 +60,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) name() string {
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
-	return "to implement", false
+	return toImplement, false
 }
 
 // todo: new release of netSet and use Complementary from there

@@ -41,7 +41,7 @@ func (contradiction) isNegateOf(atom atomic) bool {
 	return atom.IsTautology()
 }
 func (contradiction) AsSelector() (string, bool) {
-	return "to implement", false
+	return toImplement, false
 }
 
 // contradiction is disjoint to any no-contradiction

@@ -42,7 +42,7 @@ func (tautology) isNegateOf(atom atomic) bool {
 	return isContradict
 }
 func (tautology) AsSelector() (string, bool) {
-	return "to implement", false
+	return toImplement, false
 }
 
 // tautology is not disjoint to any atomic term

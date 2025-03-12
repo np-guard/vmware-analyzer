@@ -47,7 +47,7 @@ func (allGroup) isNegateOf(atom atomic) bool {
 	return isNoGroup
 }
 func (allGroup) AsSelector() (string, bool) {
-	return "to implement", false
+	return toImplement, false
 }
 
 // allGroup disjoint to ipBlockTerm which presents external address

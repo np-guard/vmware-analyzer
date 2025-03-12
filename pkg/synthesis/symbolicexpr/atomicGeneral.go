@@ -4,6 +4,8 @@ import (
 	"slices"
 )
 
+const toImplement = "to implement"
+
 // general atomic functionality
 
 // are two given by name atomicTerms in disjoint list
