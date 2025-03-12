@@ -35,7 +35,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 
 // IsTautology an atomicTerm is a non-empty cond on a group, a tag etc and is thus not a tautology
 func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
-	return complementary(ipBlockTerm.GetBlock()).IsEmpty()
+	return ipBlockTerm.GetBlock().Complementary().IsEmpty()
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
@@ -51,16 +51,10 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 	return "to implement", false
 }
 
-// todo: move to netset??
-func complementary(block *netset.IPBlock) *netset.IPBlock {
-	allIPBlock := netset.GetCidrAll()
-	return allIPBlock.Subtract(block)
-}
-
 func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
-		block = complementary(block)
+		block = block.Complementary()
 	}
 	return block
 }
@@ -72,7 +66,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
 	}
 	// block not kept in the form of original rule form
-	return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: complementary(ipBlockTerm.Block), OriginalIP: ""},
+	return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block.Complementary(), OriginalIP: ""},
 		atomicTerm: atomicTerm{}}
 }
 
@@ -82,7 +76,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
 	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.GetBlock().Equal(complementary(otherBlock))
+	return ipBlockTerm.GetBlock().Equal(otherBlock.Complementary())
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint

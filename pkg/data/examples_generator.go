@@ -35,7 +35,7 @@ type Example struct {
 
 // ExamplesGeneration - main function to generate ResourcesContainerModel from specified Example object.
 // It also stores the generated example in the path pkg/data/json .
-func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesContainerModel, error) {
+func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
 	for _, vmName := range e.VMs {
@@ -118,7 +118,7 @@ func ExamplesGeneration(e *Example, overrideJSON bool) (*collector.ResourcesCont
 	res.ServiceList = getServices()
 
 	// store the example resources object generated as JSON file
-	if err := e.storeAsJSON(overrideJSON, res); err != nil {
+	if err := e.storeAsJSON(false, res); err != nil {
 		return nil, err
 	}
 	return res, nil
@@ -270,7 +270,8 @@ func (exp *ExampleExpr) exampleExprToExpr() *collector.Expression {
 	}
 	res := make(collector.Expression, nonTrivialExprSize)
 	res[0] = cond1
-	expOp := collector.ConjunctionOperator{}
+	expOp := collector.ConjunctionOperator{ConjunctionOperator: nsx.ConjunctionOperator{
+		ResourceType: common.PointerTo(nsx.ConjunctionOperatorResourceTypeConjunctionOperator)}}
 	conjOp := nsx.ConjunctionOperatorConjunctionOperatorAND
 	if exp.Op == Or {
 		conjOp = nsx.ConjunctionOperatorConjunctionOperatorOR
@@ -289,7 +290,7 @@ func (cond *ExampleCond) exampleCondToCond() *collector.Condition {
 		operator = nsx.ConditionOperatorNOTEQUALS
 	}
 	res := collector.Condition{Condition: nsx.Condition{Key: &condKey, MemberType: &memberType, Operator: &operator,
-		Value: &cond.Tag.Tag}}
+		Value: &cond.Tag.Tag, ResourceType: common.PointerTo(nsx.ConditionResourceTypeCondition)}}
 	res.Condition.Value = &cond.Tag.Tag
 	return &res
 }

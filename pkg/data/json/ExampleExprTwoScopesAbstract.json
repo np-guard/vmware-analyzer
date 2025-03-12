@@ -28440,35 +28440,7 @@
             ]
         }
     ],
-    "virtual_machines": [
-        {
-            "display_name": "Hufflepuff",
-            "external_id": "Hufflepuff",
-            "tags": [
-                {
-                    "tag": "Hufflepuff"
-                }
-            ]
-        },
-        {
-            "display_name": "Gryffindor",
-            "external_id": "Gryffindor",
-            "tags": [
-                {
-                    "tag": "Gryffindor"
-                }
-            ]
-        },
-        {
-            "display_name": "Dumbledore",
-            "external_id": "Dumbledore",
-            "tags": [
-                {
-                    "tag": "Dumbledore"
-                }
-            ]
-        }
-    ],
+    "virtual_machines": null,
     "virtual_network_interface": null,
     "segments": null,
     "tier0": null,
@@ -28479,87 +28451,21 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Application",
-                        "display_name": "From-Dumbledore-connection",
+                        "category": "Environment",
+                        "display_name": "Gryffindor-to-Gryffindor-allow",
                         "scope": [
                             "ANY"
                         ],
                         "rules": [
                             {
-                                "action": "DROP",
+                                "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Slytherin"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb-No-Slytherin",
-                                "rule_id": 9198,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Dumbledore"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "ANY"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb-All",
-                                "rule_id": 9199,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Dumbledore"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Gryffindor-connections",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
-                            {
-                                "action": "DROP",
-                                "description": "",
-                                "destination_groups": [
-                                    "Hufflepuff"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "Gryffindor-not-Hufflepuff",
-                                "rule_id": 9200,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
                                     "Gryffindor"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "ANY"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "Gryffindor-All",
-                                "rule_id": 9201,
+                                "display_name": "allow-Gryffindor-to-Gryffindor",
+                                "rule_id": 10218,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28573,40 +28479,21 @@
                         ]
                     },
                     {
-                        "category": "Application",
-                        "display_name": "Hufflepuff-connection",
+                        "category": "Environment",
+                        "display_name": "Hufflepuff-to-Hufflepuff-allow",
                         "scope": [
                             "ANY"
                         ],
                         "rules": [
                             {
-                                "action": "DROP",
+                                "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Slytherin"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "Hufflepuff-No-Slytherin",
-                                "rule_id": 9202,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
                                     "Hufflepuff"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "ANY"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "Hufflepuff-All",
-                                "rule_id": 9203,
+                                "display_name": "allow-Hufflepuff-to-Hufflepuff",
+                                "rule_id": 10219,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28620,21 +28507,21 @@
                         ]
                     },
                     {
-                        "category": "Application",
-                        "display_name": "Slytherin-connection",
+                        "category": "Environment",
+                        "display_name": "Slytherin-to-Slytherin-allow",
                         "scope": [
                             "ANY"
                         ],
                         "rules": [
                             {
-                                "action": "DROP",
+                                "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Gryffindor"
+                                    "Slytherin"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "Slytherin-no-Gryffindor",
-                                "rule_id": 9204,
+                                "display_name": "allow-Slytherin-to-Slytherin",
+                                "rule_id": 10220,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28646,14 +28533,14 @@
                                 ]
                             },
                             {
-                                "action": "ALLOW",
+                                "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
                                     "ANY"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "Slytherin-All",
-                                "rule_id": 9205,
+                                "display_name": "default-deny-env",
+                                "rule_id": 10230,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28661,7 +28548,73 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Slytherin"
+                                    "ANY"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "category": "Application",
+                        "display_name": "Intra-App-Policy",
+                        "scope": [
+                            "ANY"
+                        ],
+                        "rules": [
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "Web"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "Client-Access",
+                                "rule_id": 9195,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "ANY"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "App"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "Web-To-App-Access",
+                                "rule_id": 9196,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "Web"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "DB"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "App-To-DB-Access",
+                                "rule_id": 9197,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "App"
                                 ]
                             }
                         ]
@@ -28699,6 +28652,19 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "App",
+                        "path": "App",
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "App"
+                            }
+                        ]
+                    },
+                    {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
                         "expression": [
@@ -28714,12 +28680,6 @@
                     {
                         "display_name": "Gryffindor",
                         "path": "Gryffindor",
-                        "vm_members": [
-                            {
-                                "display_name": "Gryffindor",
-                                "id": "Gryffindor"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
@@ -28733,12 +28693,6 @@
                     {
                         "display_name": "Hufflepuff",
                         "path": "Hufflepuff",
-                        "vm_members": [
-                            {
-                                "display_name": "Hufflepuff",
-                                "id": "Hufflepuff"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
@@ -28750,21 +28704,28 @@
                         ]
                     },
                     {
-                        "display_name": "Dumbledore",
-                        "path": "Dumbledore",
-                        "vm_members": [
-                            {
-                                "display_name": "Dumbledore",
-                                "id": "Dumbledore"
-                            }
-                        ],
+                        "display_name": "DB",
+                        "path": "DB",
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
                                 "resource_type": "Condition",
-                                "value": "Dumbledore"
+                                "value": "DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Web",
+                        "path": "Web",
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Web"
                             }
                         ]
                     }

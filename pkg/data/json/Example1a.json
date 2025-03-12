@@ -28468,26 +28468,7 @@
                         "rules": [
                             {
                                 "action": "ALLOW",
-                                "destination_groups": [
-                                    "backend"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow_frontend_to_backend_any",
-                                "rule_id": 1005,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "frontend"
-                                ],
-                                "firewall_rule": {},
-                                "service_entries": null
-                            },                            
-                            {
-                                "action": "ALLOW",
+                                "description": "",
                                 "destination_groups": [
                                     "backend"
                                 ],
@@ -28502,13 +28483,30 @@
                                 ],
                                 "source_groups": [
                                     "frontend"
-                                ],
-                                "firewall_rule": {},
-                                "service_entries": null
+                                ]
                             },
-
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "backend"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow_all_frontend_to_backend",
+                                "rule_id": 1005,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "frontend"
+                                ]
+                            },
                             {
                                 "action": "DROP",
+                                "description": "",
                                 "destination_groups": [
                                     "ANY"
                                 ],
@@ -28523,26 +28521,14 @@
                                 ],
                                 "source_groups": [
                                     "ANY"
-                                ],
-                                "firewall_rule": {},
-                                "service_entries": null
+                                ]
                             }
-                        ],
-                        "default_rule": null
+                        ]
                     }
                 ],
+                "gateway_policies": null,
+                "redirection_policies": null,
                 "groups": [
-                    {
-                        "display_name": "backend",
-                        "path": "backend",
-                        "vm_members": [
-                            {
-                                "display_name": "B",
-                                "id": "B"
-                            }
-                        ],
-                        "expression": null
-                    },
                     {
                         "display_name": "frontend",
                         "path": "frontend",
@@ -28551,8 +28537,17 @@
                                 "display_name": "A",
                                 "id": "A"
                             }
-                        ],
-                        "expression": null
+                        ]
+                    },
+                    {
+                        "display_name": "backend",
+                        "path": "backend",
+                        "vm_members": [
+                            {
+                                "display_name": "B",
+                                "id": "B"
+                            }
+                        ]
                     }
                 ]
             }

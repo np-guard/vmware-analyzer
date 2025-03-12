@@ -28456,13 +28456,6 @@
     ],
     "virtual_network_interface": [
         {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        ""
-                    ]
-                }
-            ],
             "lport_attachment_id": "port_C-no-address",
             "owner_vm_id": "C-no-address"
         },
@@ -28592,6 +28585,27 @@
                                 ]
                             },
                             {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "0.0.0.0/0"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow_icmp_all",
+                                "rule_id": 1006,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "0.0.0.0/0"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "resource_type": "ICMPTypeServiceEntry"
+                                    }
+                                ]
+                            },
+                            {
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
@@ -28615,7 +28629,26 @@
                 ],
                 "gateway_policies": null,
                 "redirection_policies": null,
-                "groups": []
+                "groups": [
+                    {
+                        "display_name": "default-group",
+                        "path": "default-group",
+                        "vm_members": [
+                            {
+                                "display_name": "A",
+                                "id": "A"
+                            },
+                            {
+                                "display_name": "B",
+                                "id": "B"
+                            },
+                            {
+                                "display_name": "C-no-address",
+                                "id": "C-no-address"
+                            }
+                        ]
+                    }
+                ]
             }
         }
     ]
