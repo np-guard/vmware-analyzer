@@ -146,10 +146,16 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
-		name:            "ExampleHintsDisjoint",
+		name:            "ExampleHintsDisjoint_NoHint",
 		exData:          &data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          true,
+	},
+	{
+		name:            "ExampleHintsDisjoint",
+		exData:          &data.ExampleHintsDisjoint,
+		synthesizeAdmin: false,
+		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsSimpler",
