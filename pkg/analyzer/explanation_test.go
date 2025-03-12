@@ -483,7 +483,6 @@ func (r *rulesTest) ruleIDFromName(ruleName string) int {
 
 func (r *rulesTest) runTest(t *testing.T) {
 	// build example from input
-	overrideJSON := false
 	example := basicExampleTopology.CopyTopology()
 	example.Name = r.testName
 	example.InitEmptyEnvAppCategories()
@@ -496,7 +495,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object
-	rc, err := data.ExamplesGeneration(example, overrideJSON)
+	rc, err := data.ExamplesGeneration(example)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

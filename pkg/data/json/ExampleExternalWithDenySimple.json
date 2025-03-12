@@ -28456,7 +28456,7 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Environment",
+                        "category": "Application",
                         "display_name": "app-x",
                         "scope": [
                             "ANY"
@@ -28468,7 +28468,7 @@
                                 "destination_groups": [
                                     "frontend"
                                 ],
-                                "direction": "IN",
+                                "direction": "IN_OUT",
                                 "display_name": "deny_tcp_0_1",
                                 "rule_id": 1004,
                                 "scope": [
@@ -28493,14 +28493,14 @@
                                 "destination_groups": [
                                     "frontend"
                                 ],
-                                "direction": "IN",
+                                "direction": "IN_OUT",
                                 "display_name": "allow_tcp_0_1",
                                 "rule_id": 1005,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.2.0.0/24"
+                                    "1.2.0.0-1.2.1.255"
                                 ],
                                 "service_entries": [
                                     {
@@ -28513,73 +28513,26 @@
                                 ]
                             },
                             {
-                                "action": "DROP",
+                                "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
                                     "frontend"
                                 ],
-                                "direction": "IN",
-                                "display_name": "deny_all_conn_0_1",
+                                "direction": "IN_OUT",
+                                "display_name": "allow_udp_3_4",
                                 "rule_id": 1006,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "ANY"
-                                ],
                                 "source_groups": [
-                                    "1.2.0.0/24"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "frontend"
-                                ],
-                                "direction": "IN",
-                                "display_name": "allow_all_conn_0_1",
-                                "rule_id": 1007,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "1.2.0.0/16"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "app-x",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
-                            {
-                                "action": "DROP",
-                                "description": "",
-                                "destination_groups": [
-                                    "frontend"
-                                ],
-                                "direction": "IN",
-                                "display_name": "deny_tcp_0_2",
-                                "rule_id": 1008,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "1.240.0.0/28"
+                                    "1.2.3.0-1.2.4.255"
                                 ],
                                 "service_entries": [
                                     {
                                         "destination_ports": [
                                             "1-65535"
                                         ],
-                                        "l4_protocol": "TCP",
+                                        "l4_protocol": "UDP",
                                         "resource_type": "L4PortSetServiceEntry"
                                     }
                                 ]
@@ -28590,17 +28543,19 @@
                                 "destination_groups": [
                                     "frontend"
                                 ],
-                                "direction": "IN",
-                                "display_name": "allow_all_conn_0_2",
-                                "rule_id": 1009,
+                                "direction": "IN_OUT",
+                                "display_name": "allow_icmp_1_3",
+                                "rule_id": 1007,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "ANY"
-                                ],
                                 "source_groups": [
-                                    "1.240.0.0/28"
+                                    "1.2.1.0-1.2.3.255"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "resource_type": "ICMPTypeServiceEntry"
+                                    }
                                 ]
                             },
                             {
