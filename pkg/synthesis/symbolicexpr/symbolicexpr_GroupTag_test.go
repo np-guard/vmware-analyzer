@@ -500,6 +500,23 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, tautologyConj.disjoint(&conjGroup, emptyHints))
 	require.Equal(t, false, tautologyConj.disjoint(&ipBlockConj, emptyHints))
 
+	// 0.0.0.0/0 behaves as a tautology
+	ipBlockAll, _ := netset.IPBlockFromCidr("0.0.0.0/0")
+	ipBlockAllTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlockAll, OriginalIP: "0.0.0.0/0"})
+	ipBlockAllConj := Conjunction{ipBlockAllTerm}
+	// superset of all
+	require.Equal(t, true, ipBlockAllConj.isSuperset(&allGroupConj, emptyHints))
+	require.Equal(t, true, ipBlockAllConj.isSuperset(&allGroupConjNeg, emptyHints))
+	require.Equal(t, true, ipBlockAllConj.isSuperset(&conjTag, emptyHints))
+	require.Equal(t, true, ipBlockAllConj.isSuperset(&conjGroup, emptyHints))
+	require.Equal(t, true, ipBlockAllConj.isSuperset(&ipBlockConj, emptyHints))
+	// and is not disjoint to any
+	require.Equal(t, false, ipBlockAllConj.disjoint(&allGroupConj, emptyHints))
+	require.Equal(t, false, ipBlockAllConj.disjoint(&allGroupConjNeg, emptyHints))
+	require.Equal(t, false, ipBlockAllConj.disjoint(&conjTag, emptyHints))
+	require.Equal(t, false, ipBlockAllConj.disjoint(&conjGroup, emptyHints))
+	require.Equal(t, false, ipBlockAllConj.disjoint(&ipBlockConj, emptyHints))
+
 	// allGroups is not a superSet of tautology
 	require.Equal(t, false, allGroupConj.isSuperset(&tautologyConj, emptyHints))
 	// it is not a superSet of Conj with ipBlockTerm
@@ -517,7 +534,7 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.disjoint(&conjGroupTag, emptyHints))
 }
 
-func TestInterectionBetweenIPConjInternalResourceCong(t *testing.T) {
+func TestIPConjWithInternalResourceConj(t *testing.T) {
 	atomicTag := NewTagTerm("myTag", false)
 	conjTag := Conjunction{}
 	conjTag = *conjTag.add(atomicTag)
