@@ -22,6 +22,8 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 	// in debug/verbose mode -- print the parsed config
 	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(color))
+	logging.Debugf("the dfw processed rules details: %s", config.FW.String())
+	logging.Debugf("the dfw effective rules details: %s", config.FW.AllEffectiveRules())
 
 	return config, nil
 }
@@ -59,14 +61,18 @@ func (c *Config) GetVMs(collectorVMs []*collector.VirtualMachine) (res []*topolo
 // GetConfigInfoStr returns string describing the captured configuration content
 func (c *Config) GetConfigInfoStr(color bool) string {
 	var sb strings.Builder
+
+	// vms
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
+	// segments
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Segments:\n")
 	sb.WriteString(c.getSegmentsInfoStr(color))
 
+	// segments ports
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Segments ports:\n")
 	sb.WriteString(c.getSegmentsPortsInfoStr(color))
@@ -76,13 +82,10 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("Groups:\n")
 	sb.WriteString(c.getVMGroupsStr(color))
 
+	// dfw
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("DFW:\n")
 	sb.WriteString(c.FW.OriginalRulesStrFormatted(color))
-	sb.WriteString(common.ShortSep)
-	sb.WriteString(c.FW.String())
-	sb.WriteString(common.ShortSep)
-	sb.WriteString(c.FW.AllEffectiveRules())
 	sb.WriteString(common.OutputSectionSep)
 
 	return sb.String()
@@ -118,7 +121,8 @@ func (c *Config) getVMGroupsStr(color bool) string {
 	header := []string{"VM", "Groups"}
 	lines := [][]string{}
 	for vm, groups := range c.GroupsPerVM {
-		groupsStr := common.JoinCustomStrFuncSlice(groups, func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
+		groupsStr := common.SortedJoinCustomStrFuncSlice(groups,
+			func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{vm.Name(), groupsStr})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})

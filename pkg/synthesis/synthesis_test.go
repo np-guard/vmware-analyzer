@@ -81,109 +81,109 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 var groupsByVmsTests = []synthesisTest{
 	{
 		name:            "Example1c",
-		exData:          &data.Example1c,
+		exData:          data.Example1c,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "Example1External",
-		exData:          &data.Example1External,
+		exData:          data.Example1External,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "Example1dExternalWithSegments",
-		exData:          &data.Example1dExternalWithSegments,
+		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleExternalWithDenySimple",
-		exData:          &data.ExampleExternalWithDenySimple,
+		exData:          data.ExampleExternalWithDenySimple,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleExternalSimpleWithInterlDenyAllow",
-		exData:          &data.ExampleExternalSimpleWithInterlDenyAllow,
+		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
-		exData:          &data.ExampleExternalSimpleWithInterlDenyAllow,
+		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
 		synthesizeAdmin: true,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHogwartsExternal",
-		exData:          &data.ExampleHogwartsExternal,
+		exData:          data.ExampleHogwartsExternal,
 		noHint:          false,
 		synthesizeAdmin: false,
 	},
 	{
 		name:            "ExampleHogwartsExternalAdmin",
-		exData:          &data.ExampleHogwartsExternal,
+		exData:          data.ExampleHogwartsExternal,
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
 	{
 		name:            "ExampleDumbeldore",
-		exData:          &data.ExampleDumbeldore,
+		exData:          data.ExampleDumbeldore,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleTwoDeniesSimple",
-		exData:          &data.ExampleTwoDeniesSimple,
+		exData:          data.ExampleTwoDeniesSimple,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleDenyPassSimple",
-		exData:          &data.ExampleDenyPassSimple,
+		exData:          data.ExampleDenyPassSimple,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHintsDisjoint_NoHint",
-		exData:          &data.ExampleHintsDisjoint,
+		exData:          data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHintsDisjoint",
-		exData:          &data.ExampleHintsDisjoint,
+		exData:          data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsSimpler",
-		exData:          &data.ExampleHogwartsSimpler,
+		exData:          data.ExampleHogwartsSimpler,
 		synthesizeAdmin: false,
 		noHint:          true,
 	},
 	{
 		name:            "ExampleHogwartsNoDumbledore",
-		exData:          &data.ExampleHogwartsNoDumbledore,
+		exData:          data.ExampleHogwartsNoDumbledore,
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwarts",
-		exData:          &data.ExampleHogwarts,
+		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsAdmin",
-		exData:          &data.ExampleHogwarts,
+		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
-		exData:          &data.ExampleHogwartsSimplerNonSymInOut,
+		exData:          data.ExampleHogwartsSimplerNonSymInOut,
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
@@ -192,38 +192,38 @@ var groupsByVmsTests = []synthesisTest{
 var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
-		exData: &data.ExampleExprSingleScope,
+		exData: data.ExampleExprSingleScope,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprTwoScopes",
-		exData: &data.ExampleExprTwoScopes,
+		exData: data.ExampleExprTwoScopes,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprTwoScopesAbstract",
-		exData: &data.ExampleExprTwoScopesAbstract,
+		exData: data.ExampleExprTwoScopesAbstract,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprAndConds",
-		exData: &data.ExampleExprAndConds,
+		exData: data.ExampleExprAndConds,
 		noHint: false,
 	},
 	{
 		name:   "ExampleExprOrConds",
-		exData: &data.ExampleExprOrConds,
+		exData: data.ExampleExprOrConds,
 		noHint: false,
 	},
 	{
 		name:            "ExampleExprAndCondsAdmin",
-		exData:          &data.ExampleExprAndConds,
+		exData:          data.ExampleExprAndConds,
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
 	{
 		name:            "ExampleExprOrCondsAdmin",
-		exData:          &data.ExampleExprOrConds,
+		exData:          data.ExampleExprOrConds,
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
@@ -267,18 +267,8 @@ var testsMethods = []testMethod{
 func TestDoNotAllowSameName(t *testing.T) {
 	names := map[string]bool{}
 	for _, test := range allTests {
-		require.False(t, names[test.name], "There are two tests with the same name %s", names[test.name])
+		require.False(t, names[test.name], "There are two tests with the same name %s", test.name)
 		names[test.name] = true
-	}
-}
-func TestOverrideJsonFiles(t *testing.T) {
-	overrideFunc := func(test *synthesisTest, t *testing.T, _ *collector.ResourcesContainerModel) {
-		_, err := data.ExamplesGeneration(test.exData, true)
-		require.Nil(t, err)
-	}
-	overrideJSON := false // change to true in case examples were modified, so JSON file gets updated
-	if overrideJSON {
-		subTestsRunByTestName(t, overrideFunc)
 	}
 }
 
@@ -354,7 +344,7 @@ func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
 func subTestsRunByTestName(t *testing.T, f testMethod) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		rc, err := data.ExamplesGeneration(test.exData, false)
+		rc, err := data.ExamplesGeneration(test.exData)
 		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
