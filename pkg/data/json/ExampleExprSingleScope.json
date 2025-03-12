@@ -28706,6 +28706,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Slytherin"
                             }
                         ]
@@ -28724,6 +28725,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Gryffindor"
                             }
                         ]
@@ -28742,6 +28744,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Hufflepuff"
                             }
                         ]
@@ -28760,6 +28763,10 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+<<<<<<< HEAD
+=======
+                                "resource_type": "Condition",
+>>>>>>> main
                                 "value": "Dumbledore"
                             }
                         ]
