@@ -64,16 +64,10 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
-// todo: new release of netSet and use Complementary from there
-func complementary(block *netset.IPBlock) *netset.IPBlock {
-	allIPBlock := netset.GetCidrAll()
-	return allIPBlock.Subtract(block)
-}
-
 func (ipBlockTerm *ipBlockAtomicTerm) getBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
-		block = complementary(block)
+		block = block.Complementary()
 	}
 	return block
 }
@@ -85,7 +79,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
 	}
 	// block not kept in the form of original rule form
-	return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: complementary(ipBlockTerm.Block), OriginalIP: ""},
+	return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block.Complementary(), OriginalIP: ""},
 		atomicTerm: atomicTerm{}}
 }
 
@@ -95,7 +89,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
 	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.getBlock().Equal(complementary(otherBlock))
+	return ipBlockTerm.getBlock().Equal(otherBlock.Complementary())
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
