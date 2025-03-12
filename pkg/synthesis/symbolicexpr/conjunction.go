@@ -177,7 +177,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 		return false
 	}
 	// external ips disjoint to internal resources
-	if (c.hasTagOrGroupTerm() && other.hasIPBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm()) {
+	if c.isIPBlockInternalResource(other) {
 		return true
 	}
 	// both conjunctions refer to external ips or both refer to internal resources, and neither is tautology
@@ -190,6 +190,10 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 		}
 	}
 	return false
+}
+
+func (c *Conjunction) isIPBlockInternalResource(other *Conjunction) bool {
+	return c.isIPBlockInternalResource(other)
 }
 
 // a Conjunction c contains an atom atomic if:
