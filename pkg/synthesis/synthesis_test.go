@@ -261,7 +261,7 @@ var testsMethods = []testMethod{
 func TestDoNotAllowSameName(t *testing.T) {
 	names := map[string]bool{}
 	for _, test := range allTests {
-		require.False(t, names[test.name], "There are two tests with the same name %s", names[test.name])
+		require.False(t, names[test.name], "There are two tests with the same name %s", test.name)
 		names[test.name] = true
 	}
 }

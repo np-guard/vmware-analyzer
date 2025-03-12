@@ -44,6 +44,35 @@ const (
 	defaultL3   = "Default-L3-Section"
 )
 
+// allTests list should be synced with Example objects below.
+var allTests = []Example{
+	Example1,
+	Example1a,
+	Example1c,
+	Example1d,
+	Example1dExternalWithSegments,
+	Example1External,
+	ExampleExternalWithDenySimple,
+	ExampleExternalSimpleWithInterlDenyAllow,
+	ExampleExclude,
+	Example2,
+	Example3,
+	ExampleDumbeldore,
+	ExampleTwoDeniesSimple,
+	ExampleDenyPassSimple,
+	ExampleHintsDisjoint,
+	ExampleHogwarts,
+	ExampleHogwartsSimpler,
+	ExampleHogwartsNoDumbledore,
+	ExampleExprSingleScope,
+	ExampleExprTwoScopes,
+	ExampleExprTwoScopesAbstract,
+	ExampleExprAndConds,
+	ExampleExprOrConds,
+	ExampleHogwartsSimplerNonSymInOut,
+	ExampleHogwartsExternal,
+}
+
 //nolint:all
 var Example1 = Example{
 	Name: "Example1",
@@ -1460,7 +1489,7 @@ var ExampleExprTwoScopes = Example{
 
 // ExampleExprTwoScopesAbstract is like ExampleExprTwoScopes expect it has no VMs
 var ExampleExprTwoScopesAbstract = Example{
-	Name:               "ExampleExprTwoScopes",
+	Name:               "ExampleExprTwoScopesAbstract",
 	VMs:                []string{},
 	VMsTags:            map[string][]nsx.Tag{},
 	GroupsByExpr:       twoScopeGroupsByExpr,
