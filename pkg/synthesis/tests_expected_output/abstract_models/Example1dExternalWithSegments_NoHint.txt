@@ -4,8 +4,8 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group |Expression |VM
-
+Group         |Expression |VM
+default-group |           |A, B, C-no-address
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
