@@ -114,7 +114,8 @@ func (p *nsxConfigParser) getExternalIPs() {
 	// collect all the blocks:
 	exBlocks := make([]*netset.IPBlock, len(p.topology.allRuleIPBlocks))
 	for i, ruleBlock := range slices.Collect(maps.Values(p.topology.allRuleIPBlocks)) {
-		exBlocks[i] = ruleBlock.Block.Intersect(p.topology.allExternalIPBlock)
+		ruleBlock.ExternalRange = ruleBlock.Block.Intersect(p.topology.allExternalIPBlock)
+		exBlocks[i] = ruleBlock.ExternalRange
 	}
 	// creating disjoint blocks:
 	disjointBlocks := netset.DisjointIPBlocks(exBlocks, nil)

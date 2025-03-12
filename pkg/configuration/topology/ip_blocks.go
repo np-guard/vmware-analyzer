@@ -14,21 +14,24 @@ type IPBlock struct {
 }
 type RuleIPBlock struct {
 	IPBlock
-	internal InternalRuleIPBlock
-	external ExternalRuleIPBlock
-}
-type InternalRuleIPBlock struct {
-	OriginalIP string
-	VMs         []Endpoint
-	Segments    []*Segment
-}
-type ExternalRuleIPBlock struct {
-	IPBlock
-	ExternalIPs []Endpoint
+	ExternalRange *netset.IPBlock
+	VMs           []Endpoint
+	ExternalIPs   []Endpoint
+	Segments      []*Segment
 }
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
 	return &RuleIPBlock{IPBlock: IPBlock{Block: block, OriginalIP: ip}}
+}
+
+func (block *RuleIPBlock) IsAll() bool {
+	return block.Block.Equal(netset.GetCidrAll())
+}
+func (block *RuleIPBlock) HasInternal() bool {
+	return len(block.VMs) > 0
+}
+func (block *RuleIPBlock) HasExternal() bool {
+	return !block.ExternalRange.IsEmpty()
 }
 
 type Segment struct {
