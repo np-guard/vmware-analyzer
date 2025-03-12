@@ -14,12 +14,14 @@ import (
 // groups are interpreted to VM members in this representation
 func (f *FwRule) String() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.SrcVMs), vmsString(f.DstVMs), f.Conn.String(), string(f.Action), f.direction, vmsString(f.scope), f.secPolicyName)
+		f.RuleID, vmsString(f.Src.VMs), vmsString(f.Dst.VMs),
+		f.Conn.String(), string(f.Action), f.direction, vmsString(f.Scope.VMs), f.secPolicyName)
 }
 
 func (f *FwRule) effectiveRuleStr() string {
 	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.SrcVMs), vmsString(f.DstVMs), f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
+		f.RuleID, vmsString(f.Src.VMs), vmsString(f.Dst.VMs),
+		f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
 }
 
 func getRulesHeader() []string {
