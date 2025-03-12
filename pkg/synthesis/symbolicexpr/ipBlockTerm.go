@@ -43,9 +43,9 @@ func (ipBlockTerm *ipBlockAtomicTerm) IsAllGroups() bool {
 	return ipBlockTerm.IsTautology()
 }
 
-// IsNoGroup ipBlockAtomicTerm presents external addresses, thus IsNoGroup is true
-func (*ipBlockAtomicTerm) IsNoGroup() bool {
-	return true
+// IsNoGroup ipBlockAtomicTerm neq 0.0.0.0/0 presents external addresses, thus IsNoGroup is true
+func (ipBlockTerm *ipBlockAtomicTerm) IsNoGroup() bool {
+	return ipBlockTerm.IsTautology()
 }
 
 // IsContradiction true iff the ipBlock is empty
@@ -99,6 +99,9 @@ func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
 func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+	if ipBlockTerm.IsTautology() {
+		return false // 0.0.0.0/0 not disjoint to anything
+	}
 	block := ipBlockTerm.getBlock()
 	otherBlock := otherAtom.getBlock()
 	if otherBlock == nil {
@@ -109,6 +112,9 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+	if ipBlockTerm.IsTautology() {
+		return otherAtom.IsTautology()
+	}
 	if otherAtom.getBlock() == nil {
 		return false
 	}
