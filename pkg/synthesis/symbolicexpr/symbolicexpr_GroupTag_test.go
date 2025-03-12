@@ -2,7 +2,6 @@ package symbolicexpr
 
 import (
 	"fmt"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,6 +10,7 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 func NewDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
@@ -454,8 +454,8 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, true, allGroupConj.isAllGroup())
 	require.Equal(t, false, allGroupConj.isTautology())
 	require.Equal(t, true, allGroupConj.hasTagOrGroupTerm())
-	require.Equal(t, false, allGroupConj.hasIpBlockTerm())
-	require.Equal(t, true, tautologyConj.hasIpBlockTerm())
+	require.Equal(t, false, allGroupConj.hasIPBlockTerm())
+	require.Equal(t, true, tautologyConj.hasIPBlockTerm())
 	require.Equal(t, true, tautologyConj.hasTagOrGroupTerm())
 	require.Equal(t, true, tautologyConj.isAllGroup())
 	require.Equal(t, true, tautologyConj.isTautology())
@@ -471,9 +471,9 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConjNeg.isAllGroup())
 	require.Equal(t, false, allGroupConjNeg.isTautology())
 	require.Equal(t, false, allGroupConjNeg.hasTagOrGroupTerm())
-	require.Equal(t, false, allGroupConjNeg.hasIpBlockTerm())
+	require.Equal(t, false, allGroupConjNeg.hasIPBlockTerm())
 	require.Equal(t, false, tautologyConjNeg.hasTagOrGroupTerm())
-	require.Equal(t, false, tautologyConjNeg.hasIpBlockTerm())
+	require.Equal(t, false, tautologyConjNeg.hasIPBlockTerm())
 	atomicTag := NewTagTerm("myTag", false)
 	conjTag := Conjunction{}
 	conjTag = *conjTag.add(atomicTag)

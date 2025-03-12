@@ -81,7 +81,7 @@ func (c *Conjunction) isTautologyOrAllGroups() bool {
 // then "a and not b" - b is redundant
 // relevant only to Conjunctions referring to internal resources
 func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
-	if len(*c) <= 1 || c.hasIpBlockTerm() {
+	if len(*c) <= 1 || c.hasIPBlockTerm() {
 		return *c
 	}
 	newC := Conjunction{}
@@ -113,7 +113,7 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	return false
 }
 
-func (c *Conjunction) hasIpBlockTerm() bool {
+func (c *Conjunction) hasIPBlockTerm() bool {
 	for _, term := range *c {
 		if term.IsTautology() {
 			return true
@@ -143,7 +143,7 @@ func (c *Conjunction) isEmpty(hints *Hints) bool {
 	if len(*c) == 0 {
 		return false
 	}
-	if c.hasTagOrGroupTerm() && c.hasIpBlockTerm() {
+	if c.hasTagOrGroupTerm() && c.hasIPBlockTerm() {
 		return false
 	}
 	for i, outAtomicTerm := range *c {
@@ -177,7 +177,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 		return false
 	}
 	// external ips disjoint to internal resources
-	if (c.hasTagOrGroupTerm() && other.hasIpBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIpBlockTerm()) {
+	if (c.hasTagOrGroupTerm() && other.hasIPBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm()) {
 		return true
 	}
 	// both conjunctions refer to external ips or both refer to internal resources, and neither is tautology
@@ -233,7 +233,7 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if c.isTautology() || len(*c) == 0 { // tautology superset of anything;  nil Conjunction is equiv to tautology
 		return true
 	}
-	if (c.hasTagOrGroupTerm() && other.hasIpBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIpBlockTerm()) {
+	if (c.hasTagOrGroupTerm() && other.hasIPBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm()) {
 		return false
 	}
 	// got here: both conjunctions refer to external ips or both refer to internal resources, c not tautology
