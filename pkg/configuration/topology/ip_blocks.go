@@ -16,6 +16,7 @@ type RuleIPBlock struct {
 	IPBlock
 	ExternalRange *netset.IPBlock
 	VMs           []Endpoint
+	SegmentsVMs   []Endpoint
 	ExternalIPs   []Endpoint
 	Segments      []*Segment
 }
@@ -32,6 +33,16 @@ func (block *RuleIPBlock) HasInternal() bool {
 }
 func (block *RuleIPBlock) HasExternal() bool {
 	return !block.ExternalRange.IsEmpty()
+}
+
+func (block *RuleIPBlock) InternalInfo() ([]*Segment, []Endpoint, string) {
+	if len(block.VMs) > len(block.SegmentsVMs) {
+		return block.Segments, block.VMs, block.OriginalIP
+	}
+	return block.Segments, nil, block.OriginalIP
+}
+func (block *RuleIPBlock) ExternalInfo() *IPBlock {
+	return &IPBlock{block.ExternalRange, block.OriginalIP}
 }
 
 type Segment struct {

@@ -155,6 +155,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 		for _, segment := range p.topology.segments {
 			if segment.Block.IsSubset(block.Block) {
 				block.VMs = append(block.VMs, segment.VMs...)
+				block.SegmentsVMs = append(block.SegmentsVMs, segment.VMs...)
 				block.Segments = append(block.Segments, segment)
 				for _, vm := range segment.VMs {
 					p.ruleBlockPerEP[vm] = append(p.ruleBlockPerEP[vm], block)
