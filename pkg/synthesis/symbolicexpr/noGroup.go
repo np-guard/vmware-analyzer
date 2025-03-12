@@ -55,14 +55,9 @@ func (noGroup) disjoint(atom atomic, hints *Hints) bool {
 	return isTagOrAtomicTerm(atom)
 }
 
-// noGroup is a superSet of itself only
+// noGroup is not a superset of anything
 func (noGroup) supersetOf(atom atomic, hints *Hints) bool {
-	switch atom.(type) {
-	case noGroup:
-		return true
-	default:
-		return false
-	}
+	return false
 }
 
 func (noGroup) getBlock() *netset.IPBlock {

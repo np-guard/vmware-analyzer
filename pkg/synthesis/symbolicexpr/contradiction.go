@@ -49,9 +49,9 @@ func (c contradiction) disjoint(atomic, *Hints) bool {
 	return !c.IsContradiction()
 }
 
-// contradiction, which is the empty set, is a superset of itself only
+// contradiction, which is the empty set, is not a superset of anything
 func (c contradiction) supersetOf(atom atomic, hints *Hints) bool {
-	return c.IsContradiction()
+	return false
 }
 
 func (contradiction) getBlock() *netset.IPBlock {

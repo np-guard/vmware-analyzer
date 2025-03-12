@@ -50,8 +50,9 @@ func (tautology) disjoint(atomic, *Hints) bool {
 	return false
 }
 
+// tautology is a superset of everything
 func (tautology) supersetOf(atom atomic, hints *Hints) bool {
-	return atom.IsTautology()
+	return true
 }
 
 func (tautology) getBlock() *netset.IPBlock {

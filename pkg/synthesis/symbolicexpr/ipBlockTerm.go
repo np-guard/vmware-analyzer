@@ -113,7 +113,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	if ipBlockTerm.IsTautology() {
-		return otherAtom.IsTautology()
+		return true
 	}
 	if otherAtom.getBlock() == nil {
 		return false
