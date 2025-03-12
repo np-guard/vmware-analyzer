@@ -156,10 +156,10 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
-	srcConjunctions := getConjunctionsFromGroup(rule, groupToConjunctions, rule.IsAllSrcGroups, rule.SrcGroups, rule.SrcBlocks)
-	dstConjunctions := getConjunctionsFromGroup(rule, groupToConjunctions, rule.IsAllDstGroups, rule.DstGroups, rule.DstBlocks)
+	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllSrcGroups, rule.SrcGroups, rule.SrcBlocks)
+	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.IsAllDstGroups, rule.DstGroups, rule.DstBlocks)
 	if !rule.IsAllScopeGroups {
-		scopeConjunctions := getConjunctionsFromGroup(rule, groupToConjunctions, false, rule.ScopeGroups, nil)
+		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.ScopeGroups, nil)
 		if isInbound {
 			dstConjunctions = append(dstConjunctions, scopeConjunctions...)
 		} else { // outbound
@@ -175,7 +175,7 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	return &resSymbolicPaths
 }
 
-func getConjunctionsFromGroup(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
+func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) []*Conjunction {
 	tarmAny := Conjunction{allGroup{}}
 	res := []*Conjunction{&tarmAny}
