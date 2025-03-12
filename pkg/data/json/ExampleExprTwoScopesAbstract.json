@@ -28652,18 +28652,6 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Web",
-                        "path": "Web",
-                        "expression": [
-                            {
-                                "key": "Tag",
-                                "member_type": "VirtualMachine",
-                                "operator": "EQUALS",
-                                "value": "Web"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "App",
                         "path": "App",
                         "expression": [
@@ -28671,6 +28659,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "App"
                             }
                         ]
@@ -28683,6 +28672,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Slytherin"
                             }
                         ]
@@ -28695,6 +28685,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Gryffindor"
                             }
                         ]
@@ -28707,6 +28698,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Hufflepuff"
                             }
                         ]
@@ -28719,7 +28711,21 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Web",
+                        "path": "Web",
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Web"
                             }
                         ]
                     }

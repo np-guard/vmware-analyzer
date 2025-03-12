@@ -16,10 +16,10 @@ import (
 func TestUpdateModifiedExamplesInJSONFiles(t *testing.T) {
 	for _, example := range allExamples {
 		err := example.syncJSONWithExample()
-		//require.Nilf(t, err, example.Name)
 		if err != nil {
 			fmt.Printf("error for test %s: %s\n", example.Name, err.Error())
 		}
+		require.Nilf(t, err, example.Name)
 
 	}
 	fmt.Printf("done")

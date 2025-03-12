@@ -28763,10 +28763,7 @@
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
-<<<<<<< HEAD
-=======
                                 "resource_type": "Condition",
->>>>>>> main
                                 "value": "Dumbledore"
                             }
                         ]
