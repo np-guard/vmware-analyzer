@@ -28440,134 +28440,7 @@
             ]
         }
     ],
-    "virtual_machines": [
-        {
-            "display_name": "Slytherin-DB",
-            "external_id": "Slytherin-DB",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Slytherin"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "DB"
-                }
-            ]
-        },
-        {
-            "display_name": "Slytherin-Web",
-            "external_id": "Slytherin-Web",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Slytherin"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "Web"
-                }
-            ]
-        },
-        {
-            "display_name": "Slytherin-App",
-            "external_id": "Slytherin-App",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Slytherin"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "App"
-                }
-            ]
-        },
-        {
-            "display_name": "Hufflepuff-DB",
-            "external_id": "Hufflepuff-DB",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Hufflepuff"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "DB"
-                }
-            ]
-        },
-        {
-            "display_name": "Hufflepuff-Web",
-            "external_id": "Hufflepuff-Web",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Hufflepuff"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "Web"
-                }
-            ]
-        },
-        {
-            "display_name": "Hufflepuff-App",
-            "external_id": "Hufflepuff-App",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Hufflepuff"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "App"
-                }
-            ]
-        },
-        {
-            "display_name": "Gryffindor-DB",
-            "external_id": "Gryffindor-DB",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Gryffindor"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "DB"
-                }
-            ]
-        },
-        {
-            "display_name": "Gryffindor-Web",
-            "external_id": "Gryffindor-Web",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Gryffindor"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "Web"
-                }
-            ]
-        },
-        {
-            "display_name": "Gryffindor-App",
-            "external_id": "Gryffindor-App",
-            "tags": [
-                {
-                    "scope": "House",
-                    "tag": "Gryffindor"
-                },
-                {
-                    "scope": "Function",
-                    "tag": "App"
-                }
-            ]
-        }
-    ],
+    "virtual_machines": null,
     "virtual_network_interface": null,
     "segments": null,
     "tier0": null,
@@ -28781,25 +28654,12 @@
                     {
                         "display_name": "Web",
                         "path": "Web",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Hufflepuff-Web",
-                                "id": "Hufflepuff-Web"
-                            },
-                            {
-                                "display_name": "Gryffindor-Web",
-                                "id": "Gryffindor-Web"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Web"
                             }
                         ]
@@ -28807,25 +28667,12 @@
                     {
                         "display_name": "App",
                         "path": "App",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            },
-                            {
-                                "display_name": "Hufflepuff-App",
-                                "id": "Hufflepuff-App"
-                            },
-                            {
-                                "display_name": "Gryffindor-App",
-                                "id": "Gryffindor-App"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "App"
                             }
                         ]
@@ -28833,25 +28680,12 @@
                     {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-DB",
-                                "id": "Slytherin-DB"
-                            },
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Slytherin"
                             }
                         ]
@@ -28859,25 +28693,12 @@
                     {
                         "display_name": "Gryffindor",
                         "path": "Gryffindor",
-                        "vm_members": [
-                            {
-                                "display_name": "Gryffindor-DB",
-                                "id": "Gryffindor-DB"
-                            },
-                            {
-                                "display_name": "Gryffindor-Web",
-                                "id": "Gryffindor-Web"
-                            },
-                            {
-                                "display_name": "Gryffindor-App",
-                                "id": "Gryffindor-App"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Gryffindor"
                             }
                         ]
@@ -28885,25 +28706,12 @@
                     {
                         "display_name": "Hufflepuff",
                         "path": "Hufflepuff",
-                        "vm_members": [
-                            {
-                                "display_name": "Hufflepuff-DB",
-                                "id": "Hufflepuff-DB"
-                            },
-                            {
-                                "display_name": "Hufflepuff-Web",
-                                "id": "Hufflepuff-Web"
-                            },
-                            {
-                                "display_name": "Hufflepuff-App",
-                                "id": "Hufflepuff-App"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "Hufflepuff"
                             }
                         ]
@@ -28911,25 +28719,12 @@
                     {
                         "display_name": "DB",
                         "path": "DB",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-DB",
-                                "id": "Slytherin-DB"
-                            },
-                            {
-                                "display_name": "Hufflepuff-DB",
-                                "id": "Hufflepuff-DB"
-                            },
-                            {
-                                "display_name": "Gryffindor-DB",
-                                "id": "Gryffindor-DB"
-                            }
-                        ],
                         "expression": [
                             {
                                 "key": "Tag",
                                 "member_type": "VirtualMachine",
                                 "operator": "EQUALS",
+                                "resource_type": "Condition",
                                 "value": "DB"
                             }
                         ]
