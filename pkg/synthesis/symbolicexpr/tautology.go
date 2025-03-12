@@ -56,5 +56,5 @@ func (tautology) supersetOf(atom atomic, hints *Hints) bool {
 }
 
 func (tautology) getBlock() *netset.IPBlock {
-	return nil
+	return netset.GetCidrAll()
 }
