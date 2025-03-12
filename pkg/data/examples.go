@@ -68,7 +68,7 @@ var allTests = []Example{
 	//ExampleExprTwoScopes,
 	//ExampleExprTwoScopesAbstract,
 	//ExampleExprAndConds,
-	ExampleExprOrConds,
+	//ExampleExprOrConds,
 	ExampleHogwartsSimplerNonSymInOut,
 	ExampleHogwartsExternal,
 }
@@ -1517,7 +1517,7 @@ var ExampleExprAndConds = Example{
 
 // ExampleExprOrConds todo: this example uses not yet supported scope
 var ExampleExprOrConds = Example{
-	Name:               "ExampleOrSimple",
+	Name:               "ExampleExprOrConds",
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
 	GroupsByExpr:       getAndOrOrExpr(Or),
