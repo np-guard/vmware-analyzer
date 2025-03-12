@@ -14,7 +14,16 @@ type IPBlock struct {
 }
 type RuleIPBlock struct {
 	IPBlock
+	internal InternalRuleIPBlock
+	external ExternalRuleIPBlock
+}
+type InternalRuleIPBlock struct {
+	OriginalIP string
 	VMs         []Endpoint
+	Segments    []*Segment
+}
+type ExternalRuleIPBlock struct {
+	IPBlock
 	ExternalIPs []Endpoint
 }
 
