@@ -5,7 +5,7 @@ import "github.com/np-guard/models/pkg/netset"
 // tautology represents *everything* namely 0.0.0.0/0
 
 func (tautology) String() string {
-	return "0.0.0.0/0"
+	return "IP addr in 0.0.0.0/0"
 }
 
 func (t tautology) name() string {

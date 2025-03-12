@@ -168,20 +168,20 @@ func (c *Conjunction) isEmpty(hints *Hints) bool {
 // this is the case if there's a term in c and its contradiction in other
 // or if there are two terms that are disjoint to each other by hints
 func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
-	if len(*c) == 0 || len(*other) == 0 || c.isTautology() {
-		return false
-	}
 	// empty sets are disjoint to anything
 	if c.isEmpty(hints) || other.isEmpty(hints) {
 		return true
+	}
+	// empty Conjunction equiv to tautology; tautology not disjoint to any non-empty set
+	if len(*c) == 0 || len(*other) == 0 || c.isTautology() || other.isTautology() {
+		return false
 	}
 	// external ips disjoint to internal resources
 	if (c.hasTagOrGroupTerm() && other.hasIpBlockTerm()) || (other.hasTagOrGroupTerm() && c.hasIpBlockTerm()) {
 		return true
 	}
-	// got here: both conjunctions refer to external ips or both refer to internal resources
-
-	if c.isTautologyOrAllGroups() || other.isTautologyOrAllGroups() {
+	// both conjunctions refer to external ips or both refer to internal resources, and neither is tautology
+	if c.isAllGroup() || other.isAllGroup() {
 		return false
 	}
 	for _, atomicTerm := range *other {
