@@ -304,18 +304,21 @@ func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]to
 		// in scope - "any" are all the vms
 		return p.configRes.VMs, p.allGroups // all endpoints and groups
 	}
-	ruleEndPoints := p.getEndpointsFromGroupsPaths(groupsPaths, false)
-	return ruleEndPoints.VMs, ruleEndPoints.Groups
+	endPoints, groups, _ := p.getEndpointsFromGroupsPaths(groupsPaths, false)
+	return endPoints, groups
 }
-func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) *dfw.RuleEndPoints {
-	res := &dfw.RuleEndPoints{}
+func (p *nsxConfigParser) getEndpointsFromGroupsPaths(
+	groupsPaths []string, exclude bool) (
+	[]topology.Endpoint, []*collector.Group, []*topology.RuleIPBlock) {
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
-			return res // no group
+			return nil, nil, nil // no group
 		}
-		return &dfw.RuleEndPoints{VMs:p.allGroupsVMs, Groups: p.allGroups, IsAllGroups: true} // all groups
+		return p.allGroupsVMs, p.allGroups, nil // all groups
 	}
+	var vms []topology.Endpoint
+	var ruleBlocks []*topology.RuleIPBlock
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
 	if exclude {
@@ -327,19 +330,19 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	} else {
 		for _, ip := range ips {
 			ruleBlock := p.topology.allRuleIPBlocks[ip]
-			res.VMs = append(res.VMs, ruleBlock.VMs...)
-			res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
-			res.Blocks = append(res.Blocks, ruleBlock)
+			vms = append(vms, ruleBlock.VMs...)
+			vms = append(vms, ruleBlock.ExternalIPs...)
+			ruleBlocks = append(ruleBlocks, ruleBlock)
 		}
 	}
-	res.Groups = make([]*collector.Group, len(groupsPaths))
+	groups := make([]*collector.Group, len(groupsPaths))
 	for i, groupPath := range groupsPaths {
 		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
-		res.VMs = append(res.VMs, thisGroupVMs...)
-		res.Groups[i] = thisGroup
+		vms = append(vms, thisGroupVMs...)
+		groups[i] = thisGroup
 	}
-	res.VMs = common.SliceCompact(res.VMs)
-	return res
+	vms = common.SliceCompact(vms)
+	return vms, groups, ruleBlocks
 }
 
 // type *collector.FirewallRule is deprecated but used to collect default rule per securityPolicy
@@ -359,8 +362,10 @@ func (p *nsxConfigParser) getDFWRule(rule *collector.Rule) *parsedRule {
 	// the source groups. If false, the rule applies to the source groups
 	// TODO: handle excluded fields
 	// srcExclude := rule.SourcesExcluded
-	res.src = *p.getEndpointsFromGroupsPaths(srcGroups, rule.SourcesExcluded)
-	res.dst = *p.getEndpointsFromGroupsPaths(dstGroups, rule.DestinationsExcluded)
+	res.src.VMs, res.src.Groups, res.src.Blocks = p.getEndpointsFromGroupsPaths(srcGroups, rule.SourcesExcluded)
+	res.src.IsAllGroups = slices.Contains(srcGroups, anyStr)
+	res.dst.VMs, res.dst.Groups, res.dst.Blocks = p.getEndpointsFromGroupsPaths(dstGroups, rule.DestinationsExcluded)
+	res.dst.IsAllGroups = slices.Contains(dstGroups, anyStr)
 
 	res.action = string(*rule.Action)
 	res.conn = p.getRuleConnections(rule)
