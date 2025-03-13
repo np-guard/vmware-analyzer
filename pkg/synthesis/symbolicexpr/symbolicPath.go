@@ -160,9 +160,17 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	if !rule.Scope.IsAllGroups {
 		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.Scope.Groups, nil)
 		if isInbound {
-			dstConjunctions = append(dstConjunctions, scopeConjunctions...)
+			if rule.Dst.IsAllGroups {
+				dstConjunctions = scopeConjunctions
+			} else {
+				dstConjunctions = append(dstConjunctions, scopeConjunctions...)
+			}
 		} else { // outbound
-			srcConjunctions = append(srcConjunctions, scopeConjunctions...)
+			if rule.Src.IsAllGroups {
+				srcConjunctions = scopeConjunctions
+			} else {
+				srcConjunctions = append(srcConjunctions, scopeConjunctions...)
+			}
 		}
 	}
 	for _, srcConjunction := range srcConjunctions {
@@ -181,6 +189,8 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 	if !isAllGroups {
 		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)
 	}
+	// todo: this should not be here!! handle after https://github.com/np-guard/vmware-analyzer/pull/333 is merged
+	//       should work for now since in "our" examples Any Group implies no IPBlocks
 	res = append(res, getConjunctionForIPBlock(ruleBlocks)...)
 	return res
 }
