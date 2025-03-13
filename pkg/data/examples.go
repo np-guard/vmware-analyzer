@@ -42,6 +42,9 @@ const (
 	application = "Application"
 	environment = "Environment"
 	defaultL3   = "Default-L3-Section"
+
+	frontEnd = "frontend"
+	backEnd  = "backend"
 )
 
 var allExamples = map[int]*Example{}
@@ -58,8 +61,8 @@ var Example1 = registerExample(&Example{
 	Name: "Example1",
 	VMs:  []string{"A", "B"},
 	GroupsByVMs: map[string][]string{
-		"frontend": {"A"},
-		"backend":  {"B"},
+		frontEnd: {"A"},
+		backEnd:  {"B"},
 	},
 	Policies: []Category{
 		{
@@ -69,8 +72,8 @@ var Example1 = registerExample(&Example{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
-					Source:   "frontend",
-					Dest:     "backend",
+					Source:   frontEnd,
+					Dest:     backEnd,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
@@ -86,8 +89,8 @@ var Example1a = registerExample(&Example{
 	Name: "Example1a",
 	VMs:  []string{"A", "B"},
 	GroupsByVMs: map[string][]string{
-		"frontend": {"A"},
-		"backend":  {"B"},
+		frontEnd: {"A"},
+		backEnd:  {"B"},
 	},
 	Policies: []Category{
 		{
@@ -97,17 +100,17 @@ var Example1a = registerExample(&Example{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
-					Source:   "frontend",
-					Dest:     "backend",
+					Source:   frontEnd,
+					Dest:     backEnd,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 				{
 					Name:     "allow_all_frontend_to_backend",
 					ID:       1005,
-					Source:   "frontend",
-					Dest:     "backend",
-					Services: []string{"ANY"},
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{anyStr},
 					Action:   Allow,
 				},
 				DefaultDenyRule(denyRuleIDApp),
@@ -122,8 +125,8 @@ var Example1c = registerExample(&Example{
 	Name: "Example1c",
 	VMs:  []string{"A", "B", "C"},
 	GroupsByVMs: map[string][]string{
-		"frontend":  {"A"},
-		"backend":   {"B"},
+		frontEnd:    {"A"},
+		backEnd:     {"B"},
 		"frontend1": {"C"},
 	},
 	Policies: []Category{
@@ -134,8 +137,8 @@ var Example1c = registerExample(&Example{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
-					Source:   "frontend",
-					Dest:     "backend",
+					Source:   frontEnd,
+					Dest:     backEnd,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
@@ -151,9 +154,9 @@ var Example1d = registerExample(&Example{
 	Name: "Example1d",
 	VMs:  []string{"A", "B", "C"},
 	GroupsByVMs: map[string][]string{
-		"frontend": {"A"},
-		"backend":  {"B"},
-		"db":       {"C"},
+		frontEnd: {"A"},
+		backEnd:  {"B"},
+		"db":     {"C"},
 	},
 	Policies: []Category{
 		{
@@ -163,15 +166,15 @@ var Example1d = registerExample(&Example{
 				{
 					Name:     "allow_smb_incoming",
 					ID:       1004,
-					Source:   "frontend",
-					Dest:     "backend",
+					Source:   frontEnd,
+					Dest:     backEnd,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
 				{
 					Name:     "allow_https_db_incoming",
 					ID:       1005,
-					Source:   "backend",
+					Source:   backEnd,
 					Dest:     "db",
 					Services: []string{"/infra/services/HTTPS"},
 					Action:   Allow,
@@ -237,7 +240,7 @@ var Example1External = registerExample(&Example{
 	Name: "Example1External",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
-		"frontend": {"A"},
+		frontEnd: {"A"},
 	},
 	Policies: []Category{
 		{
@@ -248,7 +251,7 @@ var Example1External = registerExample(&Example{
 					Name:   "allow_tcp_0_1",
 					ID:     1004,
 					Source: "1.2.0.0-1.2.1.255",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllTCPTransport(),
 					Action: Allow,
 				},
@@ -256,7 +259,7 @@ var Example1External = registerExample(&Example{
 					Name:   "allow_udp_3_4",
 					ID:     1005,
 					Source: "1.2.3.0-1.2.4.255",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllUDPTransport(),
 					Action: Allow,
 				},
@@ -264,7 +267,7 @@ var Example1External = registerExample(&Example{
 					Name:   "allow_icmp_1_3",
 					ID:     1006,
 					Source: "1.2.1.0-1.2.3.255",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllICMPTransport(),
 					Action: Allow,
 				},
@@ -278,7 +281,7 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 	Name: "ExampleExternalWithDenySimple",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
-		"frontend": {"A"},
+		frontEnd: {"A"},
 	},
 	Policies: []Category{
 		{
@@ -289,7 +292,7 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 					Name:   "deny_tcp_0_1",
 					ID:     1004,
 					Source: "1.2.0.0/30",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllTCPTransport(),
 					Action: Drop,
 				},
@@ -297,7 +300,7 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 					Name:   "allow_tcp_0_1",
 					ID:     1005,
 					Source: "1.2.0.0-1.2.1.255",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllTCPTransport(),
 					Action: Allow,
 				},
@@ -305,7 +308,7 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 					Name:   "allow_udp_3_4",
 					ID:     1006,
 					Source: "1.2.3.0-1.2.4.255",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllUDPTransport(),
 					Action: Allow,
 				},
@@ -313,7 +316,7 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 					Name:   "allow_icmp_1_3",
 					ID:     1007,
 					Source: "1.2.1.0-1.2.3.255",
-					Dest:   "frontend",
+					Dest:   frontEnd,
 					Conn:   netset.AllICMPTransport(),
 					Action: Allow,
 				},
@@ -323,11 +326,21 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 	},
 })
 
+/*func getExampleExternalWithDenySimple(useScope bool) *map[string]ExampleExpr {
+	dst, scope :=
+	if useScope {
+
+	} else {
+
+	}
+
+}*/
+
 var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 	Name: "ExampleExternalSimpleWithInterlDenyAllow",
 	VMs:  []string{"A"},
 	GroupsByVMs: map[string][]string{
-		"frontend": {"A"},
+		frontEnd: {"A"},
 	},
 	Policies: []Category{
 		{
@@ -338,7 +351,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Name:      "deny_tcp_0_1",
 					ID:        1004,
 					Source:    "1.2.0.0/30",
-					Dest:      "frontend",
+					Dest:      frontEnd,
 					Conn:      netset.AllTCPTransport(),
 					Action:    Drop,
 					Direction: string(nsx.RuleDirectionIN),
@@ -347,7 +360,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Name:      "allow_tcp_0_1",
 					ID:        1005,
 					Source:    "1.2.0.0/24",
-					Dest:      "frontend",
+					Dest:      frontEnd,
 					Conn:      netset.AllTCPTransport(),
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionIN),
@@ -356,7 +369,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Name:      "deny_all_conn_0_1",
 					ID:        1006,
 					Source:    "1.2.0.0/24",
-					Dest:      "frontend",
+					Dest:      frontEnd,
 					Conn:      netset.AllTransports(),
 					Action:    Drop,
 					Direction: string(nsx.RuleDirectionIN),
@@ -365,7 +378,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Name:      "allow_all_conn_0_1",
 					ID:        1007,
 					Source:    "1.2.0.0/16",
-					Dest:      "frontend",
+					Dest:      frontEnd,
 					Conn:      netset.AllTransports(),
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionIN),
@@ -380,7 +393,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Name:      "deny_tcp_0_2",
 					ID:        1008,
 					Source:    "1.240.0.0/28",
-					Dest:      "frontend",
+					Dest:      frontEnd,
 					Conn:      netset.AllTCPTransport(),
 					Action:    Drop,
 					Direction: string(nsx.RuleDirectionIN),
@@ -389,7 +402,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Name:      "allow_all_conn_0_2",
 					ID:        1009,
 					Source:    "1.240.0.0/28",
-					Dest:      "frontend",
+					Dest:      frontEnd,
 					Conn:      netset.AllTransports(),
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionIN),
@@ -424,7 +437,7 @@ var ExampleExclude = registerExample(&Example{
 					Source:               "Aladdin",
 					Dest:                 "Aladdin",
 					DestinationsExcluded: true,
-					Services:             []string{"ANY"},
+					Services:             []string{anyStr},
 					Action:               Allow,
 				},
 				{
@@ -433,7 +446,7 @@ var ExampleExclude = registerExample(&Example{
 					Source:          "Aladdin",
 					Dest:            "Aladdin",
 					SourcesExcluded: true,
-					Services:        []string{"ANY"},
+					Services:        []string{anyStr},
 					Action:          Allow,
 				},
 			},
@@ -508,7 +521,7 @@ var Example2 = registerExample(&Example{
 					ID:       10218,
 					Source:   "Gryffindor",
 					Dest:     "Gryffindor",
-					Services: []string{"ANY"},
+					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
 			},
@@ -522,7 +535,7 @@ var Example2 = registerExample(&Example{
 					ID:       10219,
 					Source:   "Hufflepuff",
 					Dest:     "Hufflepuff",
-					Services: []string{"ANY"},
+					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
 			},
@@ -536,7 +549,7 @@ var Example2 = registerExample(&Example{
 					ID:       10220,
 					Source:   "Slytherin",
 					Dest:     "Slytherin",
-					Services: []string{"ANY"},
+					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
 			},
@@ -550,7 +563,7 @@ var Example2 = registerExample(&Example{
 					ID:       10216,
 					Source:   "Gryffindor",
 					Dest:     "Dumbledore",
-					Services: []string{"ANY"},
+					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
 				{
@@ -558,7 +571,7 @@ var Example2 = registerExample(&Example{
 					ID:       10217,
 					Source:   "Dumbledore",
 					Dest:     "Gryffindor",
-					Services: []string{"ANY"},
+					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
 			},
@@ -573,13 +586,13 @@ var Example2 = registerExample(&Example{
 					ID:       newRuleID,
 					Source:   "Gryffindor-App",
 					Dest:     "Hufflepuff-App",
-					Services: []string{"ANY"},
+					Services: []string{anyStr},
 					Action:   Allow,
 				},
 				{
 					Name:     "Gryffindor-Client-Access",
 					ID:       9195,
-					Source:   "ANY",
+					Source:   anyStr,
 					Dest:     "Gryffindor-Web",
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
@@ -610,7 +623,7 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "Slytherin-Client-Access",
 					ID:       3048,
-					Source:   "ANY",
+					Source:   anyStr,
 					Dest:     "Slytherin-Web",
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
@@ -641,7 +654,7 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "Hufflepuff-Client-Access",
 					ID:       2048,
-					Source:   "ANY",
+					Source:   anyStr,
 					Dest:     "Hufflepuff-Web",
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
