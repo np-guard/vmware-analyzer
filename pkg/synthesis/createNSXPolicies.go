@@ -3,6 +3,7 @@ package synthesis
 import (
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
@@ -148,7 +149,7 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 			if len(con) != 1 {
 				logging.InternalErrorf("got a multi atom Conjunction with external IP %s", ip.String())
 			}
-			return ip.String()
+			return strings.ReplaceAll(ip.String(), " ", "")
 		}
 		label, not := atom.AsSelector()
 		atomVMs := a.labelsVMs[label]
