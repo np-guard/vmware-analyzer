@@ -278,64 +278,70 @@ var Example1External = registerExample(&Example{
 	},
 })
 
-var ExampleExternalWithDenySimple = registerExample(&Example{
-	Name: "ExampleExternalWithDenySimple",
-	VMs:  []string{"A"},
-	GroupsByVMs: map[string][]string{
-		frontEnd: {"A"},
-	},
-	Policies: []Category{
-		{
-			Name:         "app-x",
-			CategoryType: "Application",
-			Rules: []Rule{
-				{
-					Name:   "deny_tcp_0_1",
-					ID:     1004,
-					Source: "1.2.0.0/30",
-					Dest:   frontEnd,
-					Conn:   netset.AllTCPTransport(),
-					Action: Drop,
+func getExampleExternalWithDenySimple(useScope bool) *Example {
+	dst, scope := anyStr, anyStr
+	if useScope {
+		scope = frontEnd
+	} else {
+		dst = frontEnd
+	}
+	return &Example{
+		Name: "ExampleExternalWithDenySimple",
+		VMs:  []string{"A"},
+		GroupsByVMs: map[string][]string{
+			frontEnd: {"A"},
+		},
+		Policies: []Category{
+			{
+				Name:         "app-x",
+				CategoryType: "Application",
+				Rules: []Rule{
+					{
+						Name:   "deny_tcp_0_1",
+						ID:     1004,
+						Source: "1.2.0.0/30",
+						Dest:   dst,
+						Scope:  scope,
+						Conn:   netset.AllTCPTransport(),
+						Action: Drop,
+					},
+					{
+						Name:   "allow_tcp_0_1",
+						ID:     1005,
+						Source: "1.2.0.0-1.2.1.255",
+						Dest:   dst,
+						Scope:  scope,
+						Conn:   netset.AllTCPTransport(),
+						Action: Allow,
+					},
+					{
+						Name:   "allow_udp_3_4",
+						ID:     1006,
+						Source: "1.2.3.0-1.2.4.255",
+						Dest:   dst,
+						Scope:  scope,
+						Conn:   netset.AllUDPTransport(),
+						Action: Allow,
+					},
+					{
+						Name:   "allow_icmp_1_3",
+						ID:     1007,
+						Source: "1.2.1.0-1.2.3.255",
+						Dest:   dst,
+						Scope:  scope,
+						Conn:   netset.AllICMPTransport(),
+						Action: Allow,
+					},
+					DefaultDenyRule(denyRuleIDApp),
 				},
-				{
-					Name:   "allow_tcp_0_1",
-					ID:     1005,
-					Source: "1.2.0.0-1.2.1.255",
-					Dest:   frontEnd,
-					Conn:   netset.AllTCPTransport(),
-					Action: Allow,
-				},
-				{
-					Name:   "allow_udp_3_4",
-					ID:     1006,
-					Source: "1.2.3.0-1.2.4.255",
-					Dest:   frontEnd,
-					Conn:   netset.AllUDPTransport(),
-					Action: Allow,
-				},
-				{
-					Name:   "allow_icmp_1_3",
-					ID:     1007,
-					Source: "1.2.1.0-1.2.3.255",
-					Dest:   frontEnd,
-					Conn:   netset.AllICMPTransport(),
-					Action: Allow,
-				},
-				DefaultDenyRule(denyRuleIDApp),
 			},
 		},
-	},
-})
-
-/*func getExampleExternalWithDenySimple(useScope bool) *map[string]ExampleExpr {
-	dst, scope :=
-	if useScope {
-
-	} else {
-
 	}
+}
 
-}*/
+var ExampleExternalWithDenySimple = registerExample(getExampleExternalWithDenySimple(false))
+
+var ExampleExternalWithDenySimpleScope = registerExample(getExampleExternalWithDenySimple(true))
 
 var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 	Name: "ExampleExternalSimpleWithInterlDenyAllow",
