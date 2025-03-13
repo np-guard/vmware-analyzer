@@ -141,7 +141,7 @@ func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
 func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
-		if atom.IsTautology() {
+		if atom.IsAllGroups() {
 			continue
 		}
 		if ip := atom.GetBlock(); ip != nil {

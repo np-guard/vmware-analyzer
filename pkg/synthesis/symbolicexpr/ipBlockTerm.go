@@ -1,13 +1,14 @@
 package symbolicexpr
 
+// ipBlockTerm represents external IPs
+
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-// IpBlockTerm represents an external block
-
-func NewIPBlockTermTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
+func NewIPBlockTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
+	// todo: dump if ipBlock has internal address
 	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: ipBlock}
 }
 
@@ -33,22 +34,34 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 	return "IP addr" + op + ipStr
 }
 
-// IsTautology an atomicTerm is a non-empty cond on a group, a tag etc and is thus not a tautology
+// following 2 functions are false and the last one true for ipBlock since ipBlock presents only external IPs
+
 func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
-	return ipBlockTerm.GetBlock().Complementary().IsEmpty()
+	return false
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
-	block := ipBlockTerm.GetBlock()
-	return block.IsEmpty()
+func (ipBlockTerm *ipBlockAtomicTerm) IsAllGroups() bool {
+	return false
 }
+
+// IsNoGroup ipBlockAtomicTerm neq 0.0.0.0/0 presents external addresses, thus IsNoGroup is true
+func (ipBlockTerm *ipBlockAtomicTerm) IsNoGroup() bool {
+	return true
+}
+
+// IsContradiction true iff the ipBlock is empty
+func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
+	return ipBlockTerm.GetBlock().IsEmpty()
+}
+
+//
 
 func (ipBlockTerm *ipBlockAtomicTerm) name() string {
 	return ipBlockTerm.String()
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
-	return "to implement", false
+	return toImplement, false
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
@@ -83,13 +96,13 @@ func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
 func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 	block := ipBlockTerm.GetBlock()
 	otherBlock := otherAtom.GetBlock()
-	if otherAtom == nil {
+	if otherBlock == nil {
 		return true // otherAtom is not an IPBlock; external IP block is disjoint to tag/group terms referring to VMs
 	}
 	return !block.Overlap(otherBlock)
 }
 
-// returns true iff ipBlock tagTerm is superset of ipBlock otherAtom as given by hints
+// returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	if otherAtom.GetBlock() == nil {
 		return false
