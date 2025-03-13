@@ -241,7 +241,7 @@ func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []
 	res := f.clone()
 	res.Src.VMs = src
 	res.Dst.VMs = dest
-	res.Scope = RuleEndPoints{}
+	res.Scope = f.Scope
 	res.direction = string(direction)
 
 	return res
