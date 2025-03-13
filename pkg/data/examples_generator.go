@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -348,8 +349,8 @@ func (r *Rule) toCollectorRule() collector.Rule {
 			DisplayName:          &r.Name,
 			RuleId:               &r.ID,
 			Action:               (*nsx.RuleAction)(&r.Action),
-			SourceGroups:         []string{r.Source},
-			DestinationGroups:    []string{r.Dest},
+			SourceGroups:         strings.Split(r.Source, common.CommaSpaceSeparator),
+			DestinationGroups:    strings.Split(r.Dest, common.CommaSpaceSeparator),
 			SourcesExcluded:      r.SourcesExcluded,
 			DestinationsExcluded: r.DestinationsExcluded,
 			Services:             services,
