@@ -525,6 +525,14 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_resources.json"), jsonOut)
 	require.Nil(t, err)
 
+	// get the config from generated_rc:
+	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	require.Nil(t, err)
+	// write the config summary into a file, for debugging:
+	configStr := config.GetConfigInfoStr(false)
+	err = common.WriteToFile(path.Join(synTest.debugDir(), "generated_nsx_config.txt"), configStr)
+	require.Nil(t, err)
+
 	// run the analyzer on the new NSX config (from abstract), and store in text file
 	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
@@ -533,7 +541,12 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	if !strings.Contains(synTest.name, "External") {
+	if !strings.Contains(synTest.name, "External") ||
+		slices.Contains([]string{
+			"Example1External",
+			"ExampleHogwartsExternal",
+			"ExampleExternalSimpleWithInterlDenyAllowDstAdmin",
+		}, synTest.name) {
 		// todo - remove "External" condition when examples supported
 		require.Equal(t, connectivity, analyzed,
 			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
