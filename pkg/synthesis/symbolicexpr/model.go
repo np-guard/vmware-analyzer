@@ -61,7 +61,7 @@ type atomic interface {
 	AsSelector() (string, bool)     // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool   // based on hints
 	supersetOf(atomic, *Hints) bool // super set of resources satisfying atom, given Hints based on hints
-	getBlock() *netset.IPBlock      // gets block for ipBlockTerm; nil otherwise
+	GetBlock() *netset.IPBlock      // gets block for ipBlockTerm; nil otherwise
 }
 
 // Conjunction a DNF Conjunction of Atomics

@@ -51,7 +51,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) IsNoGroup() bool {
 
 // IsContradiction true iff the ipBlock is empty
 func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
-	return ipBlockTerm.getBlock().IsEmpty()
+	return ipBlockTerm.GetBlock().IsEmpty()
 }
 
 //
@@ -64,7 +64,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) getBlock() *netset.IPBlock {
+func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
 		block = block.Complementary()
@@ -85,26 +85,26 @@ func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
 func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
-	otherBlock := otherAtom.getBlock()
+	otherBlock := otherAtom.GetBlock()
 	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.getBlock().Equal(otherBlock.Complementary())
+	return ipBlockTerm.GetBlock().Equal(otherBlock.Complementary())
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
 func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	block := ipBlockTerm.getBlock()
-	otherBlock := otherAtom.getBlock()
+	block := ipBlockTerm.GetBlock()
+	otherBlock := otherAtom.GetBlock()
 	if otherBlock == nil {
-		return true // otherAtom is not an IPBlock
+		return true // otherAtom is not an IPBlock; external IP block is disjoint to tag/group terms referring to VMs
 	}
 	return !block.Overlap(otherBlock)
 }
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.getBlock() == nil {
+	if otherAtom.GetBlock() == nil {
 		return false
 	}
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)

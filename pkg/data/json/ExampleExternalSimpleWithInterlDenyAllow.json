@@ -28466,16 +28466,16 @@
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "1.2.0.0/30"
                                 ],
-                                "direction": "IN",
+                                "direction": "OUT",
                                 "display_name": "deny_tcp_0_1",
                                 "rule_id": 1004,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.2.0.0/30"
+                                    "frontend"
                                 ],
                                 "service_entries": [
                                     {
@@ -28491,16 +28491,16 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "1.2.0.0/24"
                                 ],
-                                "direction": "IN",
+                                "direction": "OUT",
                                 "display_name": "allow_tcp_0_1",
                                 "rule_id": 1005,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.2.0.0/24"
+                                    "frontend"
                                 ],
                                 "service_entries": [
                                     {
@@ -28516,9 +28516,9 @@
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "1.2.0.0/24"
                                 ],
-                                "direction": "IN",
+                                "direction": "OUT",
                                 "display_name": "deny_all_conn_0_1",
                                 "rule_id": 1006,
                                 "scope": [
@@ -28528,16 +28528,16 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.2.0.0/24"
+                                    "frontend"
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "1.2.0.0/16"
                                 ],
-                                "direction": "IN",
+                                "direction": "OUT",
                                 "display_name": "allow_all_conn_0_1",
                                 "rule_id": 1007,
                                 "scope": [
@@ -28547,7 +28547,7 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.2.0.0/16"
+                                    "frontend"
                                 ]
                             }
                         ]
@@ -28563,16 +28563,16 @@
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "1.240.0.0/28"
                                 ],
-                                "direction": "IN",
+                                "direction": "OUT",
                                 "display_name": "deny_tcp_0_2",
                                 "rule_id": 1008,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.240.0.0/28"
+                                    "frontend"
                                 ],
                                 "service_entries": [
                                     {
@@ -28588,9 +28588,9 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "1.240.0.0/28"
                                 ],
-                                "direction": "IN",
+                                "direction": "OUT",
                                 "display_name": "allow_all_conn_0_2",
                                 "rule_id": 1009,
                                 "scope": [
@@ -28600,7 +28600,7 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "1.240.0.0/28"
+                                    "frontend"
                                 ]
                             },
                             {

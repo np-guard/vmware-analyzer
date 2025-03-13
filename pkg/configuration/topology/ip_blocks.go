@@ -14,12 +14,32 @@ type IPBlock struct {
 }
 type RuleIPBlock struct {
 	IPBlock
-	VMs         []Endpoint
-	ExternalIPs []Endpoint
+	ExternalRange *netset.IPBlock
+	VMs           []Endpoint
+	ExternalIPs   []Endpoint
+	Segments      []*Segment // the segments that there subnet is a subset of this block
+	SegmentsVMs   []Endpoint // all the VMs in the block segments
 }
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
 	return &RuleIPBlock{IPBlock: IPBlock{Block: block, OriginalIP: ip}}
+}
+
+func (block *RuleIPBlock) IsAll() bool {
+	return block.Block.Equal(netset.GetCidrAll())
+}
+func (block *RuleIPBlock) HasInternal() bool {
+	return len(block.VMs) > 0
+}
+func (block *RuleIPBlock) HasExternal() bool {
+	return !block.ExternalRange.IsEmpty()
+}
+
+func (block *RuleIPBlock) ExternalIPBlock() *IPBlock {
+	return &IPBlock{block.ExternalRange, block.OriginalIP}
+}
+func (block *RuleIPBlock) HasVMsNotInSubnet() bool {
+	return len(block.VMs) > len(block.SegmentsVMs)
 }
 
 type Segment struct {

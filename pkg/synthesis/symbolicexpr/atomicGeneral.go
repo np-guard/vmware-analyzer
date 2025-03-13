@@ -39,8 +39,8 @@ func isNegateOf(atom, otherAtom atomic) bool {
 // returns true iff otherAtom is disjoint to atom as given by hints
 // todo: could e.g. groups and tags have the same name????
 func disjoint(atom, otherAtom atomic, hints *Hints) bool {
-	atomBlock := atom.getBlock()
-	otherAtomBlock := otherAtom.getBlock()
+	atomBlock := atom.GetBlock()
+	otherAtomBlock := otherAtom.GetBlock()
 	switch {
 	case atomBlock != nil && otherAtomBlock != nil:
 		return atomBlock.Intersect(otherAtomBlock).IsEmpty()

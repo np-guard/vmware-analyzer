@@ -13,10 +13,12 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -417,23 +419,47 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
-	if k8sConnectivityFileCreated && !strings.Contains(synTest.name, "External") {
-		// todo - remove "External" condition when examples supported
-		compareToNetpol(t, rc, k8sConnectivityFile)
+
+	if k8sConnectivityFileCreated {
+		if !strings.Contains(synTest.name, "External") ||
+			slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
+			// todo - remove "External" condition when examples supported
+			compareToNetpol(t, rc, k8sConnectivityFile)
+		}
 	}
 }
+
+// the following method is work in progress - the netpol analyzer and the nsx analyser have different granularity of external IPs
 func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
 	// we get a file with lines in the foramt:
-	// default/Dumbledore1[Pod] => default/Gryffindor-Web[Pod] : All Connections
+	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
 	netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
 	require.Nil(t, err)
 	netpolConnLines := strings.Split(string(netpolConnBytes), "\n")
 	netpolConnLines = slices.DeleteFunc(netpolConnLines, func(s string) bool { return s == "" })
 	netpolConnMap := map[string]string{}
 	for _, line := range netpolConnLines {
-		namesAndConn := strings.Split(line, " : ")
-		require.Equal(t, len(namesAndConn), 2)
-		netpolConnMap[namesAndConn[0]] = namesAndConn[1]
+		var src, dst, conn string
+		spitedLine := strings.Split(line, " : ")
+		conn = spitedLine[1]
+		n, err := fmt.Sscanf(spitedLine[0], "%s => %s", &src, &dst)
+		require.Equal(t, err, nil)
+		require.Equal(t, n, 2)
+		fixK8SName := func(s string) string {
+			if strings.Contains(s, "[Pod]") {
+				return strings.ReplaceAll(s, "[Pod]", "")
+			} else {
+				block, err := netset.IPBlockFromCidrOrAddress(s)
+				if err != nil {
+					block, err = netset.IPBlockFromIPRangeStr(s)
+				}
+				require.Equal(t, err, nil)
+				return block.String()
+			}
+		}
+		src = fixK8SName(src)
+		dst = fixK8SName(dst)
+		netpolConnMap[src+"=>"+dst] = conn
 	}
 	// get analyzed connectivity:
 	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
@@ -442,9 +468,16 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 	for src, dsts := range connMap {
 		for dst, conn := range dsts {
 			// todo - set the real vm namespaces:
-			netpolFormat := fmt.Sprintf("default/%s[Pod] => default/%s[Pod]", toLegalK8SString(src.Name()), toLegalK8SString(dst.Name()))
+			endpointName := func(ep topology.Endpoint) string {
+				if ep.IsExternal() {
+					return ep.(*topology.ExternalIP).Block.String()
+				} else {
+					return "default/" + toLegalK8SString(ep.Name())
+				}
+			}
+			netpolFormat := fmt.Sprintf("%s=>%s", endpointName(src), endpointName(dst))
 			netpolConn, ok := netpolConnMap[netpolFormat]
-			require.Equal(t, ok, !conn.Conn.IsEmpty())
+			require.Equal(t, ok, !conn.Conn.TCPUDPSet().IsEmpty())
 			if ok {
 				compareConns(t, conn.Conn.String(), netpolConn)
 			}
@@ -455,6 +488,7 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 func compareConns(t *testing.T, vmFormat, k8sFormat string) {
 	vmFormat = strings.ReplaceAll(vmFormat, "dst-ports: ", "")
 	vmFormat = strings.ReplaceAll(vmFormat, "ICMP;", "")
+	vmFormat = strings.ReplaceAll(vmFormat, "ICMP,", "")
 	if vmFormat == "TCP,UDP" {
 		vmFormat = "All Connections"
 	}
