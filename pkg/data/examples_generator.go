@@ -172,6 +172,9 @@ func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
 		// add policy rules
 		for i := range policy.Rules {
 			rule := policy.Rules[i]
+			//if rule.Scope == "" {
+			//	rule.Scope
+			//}
 			newPolicy.Rules[i] = rule.toCollectorRule()
 			newPolicy.SecurityPolicy.Rules[i] = newPolicy.Rules[i].Rule
 		}
@@ -334,6 +337,7 @@ type Rule struct {
 	SourcesExcluded      bool
 	Dest                 string
 	DestinationsExcluded bool
+	Scope                string
 	Services             []string
 	Conn                 *netset.TransportSet
 	Action               string
@@ -343,6 +347,10 @@ type Rule struct {
 
 func (r *Rule) toCollectorRule() collector.Rule {
 	services, entries := calcServiceAndEntries(r.Services, r.Conn)
+	scope := []string{AnyStr}
+	if r.Scope != "" {
+		scope = []string{r.Scope}
+	}
 	return collector.Rule{
 		Rule: nsx.Rule{
 			DisplayName:          &r.Name,
@@ -354,7 +362,7 @@ func (r *Rule) toCollectorRule() collector.Rule {
 			DestinationsExcluded: r.DestinationsExcluded,
 			Services:             services,
 			Direction:            r.directionStr(),
-			Scope:                []string{AnyStr}, // TODO: add scope as configurable
+			Scope:                scope,
 			Description:          &r.Description,
 		},
 		ServiceEntries: entries,
