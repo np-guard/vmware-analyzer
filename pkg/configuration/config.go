@@ -22,8 +22,8 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 	// in debug/verbose mode -- print the parsed config
 	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(color))
-	logging.Debugf("the dfw processed rules details: %s", config.FW.String())
-	logging.Debugf("the dfw effective rules details: %s", config.FW.AllEffectiveRules())
+	logging.Debugf("the dfw processed rules details:\n%s", config.FW.String())
+	logging.Debugf("the dfw effective rules details:\n%s", config.FW.AllEffectiveRules())
 
 	return config, nil
 }

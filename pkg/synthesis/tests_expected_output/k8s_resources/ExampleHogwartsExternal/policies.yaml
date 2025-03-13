@@ -35,10 +35,8 @@ spec:
         - ports:
             - protocol: TCP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 0.0.0.0/16
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -64,10 +62,8 @@ spec:
               port: 300
               protocol: UDP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 0.0.0.0/16
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -89,10 +85,8 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 0.0.0.0/16
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -116,10 +110,8 @@ spec:
         - ports:
             - protocol: TCP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 146.2.0.0/16
     podSelector:
         matchExpressions:
             - key: group__App
@@ -145,10 +137,8 @@ spec:
               port: 300
               protocol: UDP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 146.2.0.0/16
     podSelector:
         matchExpressions:
             - key: group__App
@@ -170,10 +160,8 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 146.2.0.0/16
     podSelector:
         matchExpressions:
             - key: group__App
@@ -197,10 +185,8 @@ spec:
         - ports:
             - protocol: TCP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 220.0.1.0/28
     podSelector:
         matchExpressions:
             - key: group__DB
@@ -226,10 +212,8 @@ spec:
               port: 300
               protocol: UDP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 220.0.1.0/28
     podSelector:
         matchExpressions:
             - key: group__DB
@@ -251,10 +235,8 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 220.0.1.0/28
     podSelector:
         matchExpressions:
             - key: group__DB
@@ -276,10 +258,8 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 122.0.0.0/8
     podSelector:
         matchExpressions:
             - key: group__Dumbledore
