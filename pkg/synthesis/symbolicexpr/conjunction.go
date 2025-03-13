@@ -177,7 +177,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 		return false
 	}
 	// external ips disjoint to internal resources
-	if c.isIPBlockInternalResource(other) {
+	if c.areConjunctionNotSameType(other) {
 		return true
 	}
 	// both conjunctions refer to external ips or both refer to internal resources, and neither is tautology
@@ -192,7 +192,7 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 	return false
 }
 
-func (c *Conjunction) isIPBlockInternalResource(other *Conjunction) bool {
+func (c *Conjunction) areConjunctionNotSameType(other *Conjunction) bool {
 	return c.hasTagOrGroupTerm() && other.hasIPBlockTerm() || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm())
 }
 
@@ -237,7 +237,7 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if c.isTautology() || len(*c) == 0 { // tautology superset of anything;  nil Conjunction is equiv to tautology
 		return true
 	}
-	if c.isIPBlockInternalResource(other) {
+	if c.areConjunctionNotSameType(other) {
 		return false
 	}
 	// got here: both conjunctions refer to external ips or both refer to internal resources, c not tautology
