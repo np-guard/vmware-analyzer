@@ -43,7 +43,7 @@ func (d *DFW) AllEffectiveRules() string {
 	return inbound + outbound
 }
 
-func (d *DFW) AddRule(src, dst, scope *RuleEndPoints, conn *netset.TransportSet, categoryStr, actionStr, direction string,
+func (d *DFW) AddRule(src, dst, scope *RuleEndpoints, conn *netset.TransportSet, categoryStr, actionStr, direction string,
 	ruleID int, origRule *collector.Rule, secPolicyName string,
 	origDefaultRule *collector.FirewallRule) {
 	for _, fwCategory := range d.CategoriesSpecs {

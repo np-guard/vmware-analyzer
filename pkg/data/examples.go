@@ -365,7 +365,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Dest:      frontEnd,
 					Conn:      netset.AllTCPTransport(),
 					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "allow_tcp_0_1",
@@ -374,16 +374,16 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Dest:      frontEnd,
 					Conn:      netset.AllTCPTransport(),
 					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "deny_all_conn_0_1",
 					ID:        1006,
 					Source:    "1.2.0.0/24",
-					Dest:      frontEnd,
+					Dest:      "frontend",
 					Conn:      netset.AllTransports(),
 					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "allow_all_conn_0_1",
@@ -392,7 +392,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Dest:      frontEnd,
 					Conn:      netset.AllTransports(),
 					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 			},
 		},
@@ -407,7 +407,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Dest:      frontEnd,
 					Conn:      netset.AllTCPTransport(),
 					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name:      "allow_all_conn_0_2",
@@ -416,7 +416,7 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 					Dest:      frontEnd,
 					Conn:      netset.AllTransports(),
 					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+					Direction: string(nsx.RuleDirectionOUT),
 				},
 				DefaultDenyRule(denyRuleIDApp),
 			},
@@ -1748,7 +1748,7 @@ var ExampleHogwartsSimplerNonSymInOut = registerExample(&Example{
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleHogwartsExternal = registerExample(&Example{
-	Name: "ExampleHogwartsOut",
+	Name: "ExampleHogwartsExternal",
 	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
 		gryWeb, gryApp, gryDB, dum1, dum2},
 	GroupsByVMs: hogwartsBidimensionalGroups,
