@@ -267,9 +267,9 @@ func (p *nsxConfigParser) getDefaultRule(secPolicy *collector.SecurityPolicy) *p
 }
 
 type parsedRule struct {
-	src            dfw.RuleEndPoints
-	dst            dfw.RuleEndPoints
-	scope          dfw.RuleEndPoints
+	src            dfw.RuleEndpoints
+	dst            dfw.RuleEndpoints
+	scope          dfw.RuleEndpoints
 	action         string
 	conn           *netset.TransportSet
 	direction      string
@@ -304,17 +304,17 @@ func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]to
 		// in scope - "any" are all the vms
 		return p.configRes.VMs, p.allGroups // all endpoints and groups
 	}
-	ruleEndPoints := p.getEndpointsFromGroupsPaths(groupsPaths, false)
-	return ruleEndPoints.VMs, ruleEndPoints.Groups
+	ruleEndpoints := p.getEndpointsFromGroupsPaths(groupsPaths, false)
+	return ruleEndpoints.VMs, ruleEndpoints.Groups
 }
-func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) *dfw.RuleEndPoints {
-	res := &dfw.RuleEndPoints{}
+func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) *dfw.RuleEndpoints {
+	res := &dfw.RuleEndpoints{}
 	if slices.Contains(groupsPaths, anyStr) {
 		// TODO: if a VM is not within any group, this should not include that VM?
 		if exclude {
 			return res // no group
 		}
-		return &dfw.RuleEndPoints{VMs: p.allGroupsVMs, Groups: p.allGroups, IsAllGroups: true} // all groups
+		return &dfw.RuleEndpoints{VMs: p.allGroupsVMs, Groups: p.allGroups, IsAllGroups: true} // all groups
 	}
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
