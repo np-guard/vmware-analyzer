@@ -62,7 +62,7 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 		if !p.Conn.TCPUDPSet().IsEmpty() {
 			policies.addNewPolicy(p, inbound, isAdmin, rule.origRule.Action, rule.origRule.RuleIDStr())
 		} else {
-			logging.Debugf("did not create the following k8s %s policy for rule %d, since connection %s is not supported:\n%s",
+			logging.Debugf("did not create the following k8s %s policy for rule %d, since connection %s is not supported: %s",
 				inboundToDirection[inbound], rule.origRule.RuleID, p.Conn.String(), p.String())
 		}
 	}
@@ -73,16 +73,16 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	dstSelector := createSelector(p.Dst)
 	// a tmp check, this case should be filtered the abstract phase:
 	if !inbound && len(srcSelector.cidrs) > 0 {
-		logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+		logging.Debugf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
 		return
 	}
 	// a tmp check, this case should be filtered the abstract phase:
 	if inbound && len(dstSelector.cidrs) > 0 {
-		logging.Warnf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+		logging.Debugf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
 		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
-		logging.Warnf("Ignoring %s. admin network policy peer with IPs for Ingress are not supported", p.String())
+		logging.Debugf("Ignoring %s. admin network policy peer with IPs for Ingress are not supported", p.String())
 		return
 	}
 	if isAdmin {

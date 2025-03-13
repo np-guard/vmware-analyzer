@@ -146,7 +146,7 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 		msg := fmt.Sprintf("no default rule - unexpected connections %s to %s for which no decision was found: %s", src.Name(), dst.Name(),
 			allNotDeterminedConns.accumulatedConns.String())
 		if src.IsExternal() || dst.IsExternal() {
-			logging.Warn(msg)
+			logging.Debug(msg)
 		} else {
 			logging.InternalError(msg)
 		}
