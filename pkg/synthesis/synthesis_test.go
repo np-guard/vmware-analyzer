@@ -542,7 +542,8 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
 	if !strings.Contains(synTest.name, "External") ||
-		slices.Contains([]string{"Example1External",
+		slices.Contains([]string{
+			"Example1External",
 			"ExampleHogwartsExternal",
 			"ExampleExternalSimpleWithInterlDenyAllowDstAdmin",
 		}, synTest.name) {
