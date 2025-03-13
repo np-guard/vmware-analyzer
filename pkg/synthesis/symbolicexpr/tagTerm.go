@@ -51,7 +51,7 @@ func (tagTerm tagAtomicTerm) isNegateOf(otherAtom atomic) bool {
 
 // returns true iff otherAt is disjoint to otherAtom as given by hints
 func (tagTerm tagAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.getBlock() != nil {
+	if otherAtom.GetBlock() != nil {
 		return true // otherAtom is an IPBlock; external IP block is disjoint to tag terms referring to VMs
 	}
 	return disjoint(tagTerm, otherAtom, hints)
@@ -62,7 +62,7 @@ func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
 }
 
-func (tagAtomicTerm) getBlock() *netset.IPBlock {
+func (tagAtomicTerm) GetBlock() *netset.IPBlock {
 	return nil
 }
 

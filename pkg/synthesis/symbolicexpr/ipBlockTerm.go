@@ -35,11 +35,11 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 
 // IsTautology an atomicTerm is a non-empty cond on a group, a tag etc and is thus not a tautology
 func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
-	return ipBlockTerm.getBlock().Complementary().IsEmpty()
+	return ipBlockTerm.GetBlock().Complementary().IsEmpty()
 }
 
 func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
-	block := ipBlockTerm.getBlock()
+	block := ipBlockTerm.GetBlock()
 	return block.IsEmpty()
 }
 
@@ -51,7 +51,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
 	return "to implement", false
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) getBlock() *netset.IPBlock {
+func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
 		block = block.Complementary()
@@ -72,17 +72,17 @@ func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
 func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
-	otherBlock := otherAtom.getBlock()
+	otherBlock := otherAtom.GetBlock()
 	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.getBlock().Equal(otherBlock.Complementary())
+	return ipBlockTerm.GetBlock().Equal(otherBlock.Complementary())
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
 func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	block := ipBlockTerm.getBlock()
-	otherBlock := otherAtom.getBlock()
+	block := ipBlockTerm.GetBlock()
+	otherBlock := otherAtom.GetBlock()
 	if otherAtom == nil {
 		return true // otherAtom is not an IPBlock; external IP block is disjoint to tag/group terms referring to VMs
 	}
@@ -91,7 +91,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom as given by hints
 func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.getBlock() == nil {
+	if otherAtom.GetBlock() == nil {
 		return false
 	}
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
