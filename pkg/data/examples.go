@@ -45,6 +45,7 @@ const (
 
 	frontEnd = "frontend"
 	backEnd  = "backend"
+	aladdin  = "Aladdin"
 )
 
 var allExamples = map[int]*Example{}
@@ -418,13 +419,13 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 var ExampleExclude = registerExample(&Example{
 	Name: "ExampleExclude",
 	VMs: []string{"Slytherin1", "Slytherin2", "Hufflepuff1", "Hufflepuff2",
-		"Gryffindor1", "Gryffindor2", "Dumbledore1", "Dumbledore2", "Aladdin"},
+		"Gryffindor1", "Gryffindor2", dum1, dum2, aladdin},
 	GroupsByVMs: map[string][]string{
-		"Slytherin":  {"Slytherin1", "Slytherin2"},
-		"Hufflepuff": {"Hufflepuff1", "Hufflepuff2"},
-		"Gryffindor": {"Gryffindor1", "Gryffindor2"},
-		"Dumbledore": {"Dumbledore1", "Dumbledore2"},
-		"Aladdin":    {"Aladdin"},
+		sly:     {"Slytherin1", "Slytherin2"},
+		huf:     {"Hufflepuff1", "Hufflepuff2"},
+		gry:     {"Gryffindor1", "Gryffindor2"},
+		dum:     {dum1, dum2},
+		aladdin: {aladdin},
 	},
 	Policies: []Category{
 		{
@@ -434,8 +435,8 @@ var ExampleExclude = registerExample(&Example{
 				{
 					Name:                 "allow-Aladdin-to-others",
 					ID:                   10218,
-					Source:               "Aladdin",
-					Dest:                 "Aladdin",
+					Source:               aladdin,
+					Dest:                 aladdin,
 					DestinationsExcluded: true,
 					Services:             []string{anyStr},
 					Action:               Allow,
@@ -443,8 +444,8 @@ var ExampleExclude = registerExample(&Example{
 				{
 					Name:            "allow-others-to-Aladdin",
 					ID:              10219,
-					Source:          "Aladdin",
-					Dest:            "Aladdin",
+					Source:          aladdin,
+					Dest:            aladdin,
 					SourcesExcluded: true,
 					Services:        []string{anyStr},
 					Action:          Allow,
@@ -494,22 +495,22 @@ micro segmentation
 
 var Example2 = registerExample(&Example{
 	Name: "Example2",
-	VMs: []string{"Slytherin-Web", "Slytherin-App", "Slytherin-DB", "Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB",
-		"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB", "Dumbledore1", "Dumbledore2"},
+	VMs: []string{slyWeb, slyApp, slyDB, hufWeb, hufApp, hufDB,
+		gryWeb, gryApp, gryDB, dum1, dum2},
 	GroupsByVMs: map[string][]string{
-		"Slytherin":      {"Slytherin-Web", "Slytherin-App", "Slytherin-DB"},
-		"Hufflepuff":     {"Hufflepuff-Web", "Hufflepuff-App", "Hufflepuff-DB"},
-		"Gryffindor":     {"Gryffindor-Web", "Gryffindor-App", "Gryffindor-DB"},
-		"Dumbledore":     {"Dumbledore1", "Dumbledore2"},
-		"Slytherin-Web":  {"Slytherin-Web"},
-		"Slytherin-App":  {"Slytherin-App"},
-		"Slytherin-DB":   {"Slytherin-DB"},
-		"Gryffindor-Web": {"Gryffindor-Web"},
-		"Gryffindor-App": {"Gryffindor-App"},
-		"Gryffindor-DB":  {"Gryffindor-DB"},
-		"Hufflepuff-Web": {"Hufflepuff-Web"},
-		"Hufflepuff-App": {"Hufflepuff-App"},
-		"Hufflepuff-DB":  {"Hufflepuff-DB"},
+		sly:    {slyWeb, slyApp, slyDB},
+		huf:    {hufWeb, hufApp, hufDB},
+		gry:    {gryWeb, gryApp, gryDB},
+		dum:    {dum1, dum2},
+		slyWeb: {slyWeb},
+		slyApp: {slyApp},
+		slyDB:  {slyDB},
+		gryWeb: {gryWeb},
+		gryApp: {gryApp},
+		gryDB:  {gryDB},
+		hufWeb: {hufWeb},
+		hufApp: {hufApp},
+		hufDB:  {hufDB},
 	},
 	Policies: []Category{
 		{
@@ -519,8 +520,8 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "allow-Gryffindor-to-Gryffindor",
 					ID:       10218,
-					Source:   "Gryffindor",
-					Dest:     "Gryffindor",
+					Source:   gry,
+					Dest:     gry,
 					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
@@ -533,8 +534,8 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "allow-Hufflepuff-to-Hufflepuff",
 					ID:       10219,
-					Source:   "Hufflepuff",
-					Dest:     "Hufflepuff",
+					Source:   huf,
+					Dest:     huf,
 					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
@@ -547,8 +548,8 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "allow-Slytherin-to-Slytherin",
 					ID:       10220,
-					Source:   "Slytherin",
-					Dest:     "Slytherin",
+					Source:   sly,
+					Dest:     sly,
 					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
@@ -561,16 +562,16 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "allow-Gryffindor-to-Dumbledore",
 					ID:       10216,
-					Source:   "Gryffindor",
-					Dest:     "Dumbledore",
+					Source:   gry,
+					Dest:     dum,
 					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
 				{
 					Name:     "allow-Dumbledore-to-Gryffindor",
 					ID:       10217,
-					Source:   "Dumbledore",
-					Dest:     "Gryffindor",
+					Source:   dum,
+					Dest:     gry,
 					Services: []string{anyStr},
 					Action:   JumpToApp,
 				},
@@ -584,8 +585,8 @@ var Example2 = registerExample(&Example{
 				{
 					Name:     "new-rule",
 					ID:       newRuleID,
-					Source:   "Gryffindor-App",
-					Dest:     "Hufflepuff-App",
+					Source:   gryApp,
+					Dest:     hufApp,
 					Services: []string{anyStr},
 					Action:   Allow,
 				},
@@ -593,23 +594,23 @@ var Example2 = registerExample(&Example{
 					Name:     "Gryffindor-Client-Access",
 					ID:       9195,
 					Source:   anyStr,
-					Dest:     "Gryffindor-Web",
+					Dest:     gryWeb,
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
 				},
 				{
 					Name:     "Gryffindor-Web-To-App-Access",
 					ID:       9196,
-					Source:   "Gryffindor-Web",
-					Dest:     "Gryffindor-App",
+					Source:   gryWeb,
+					Dest:     gryApp,
 					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
 					Action:   Allow,
 				},
 				{
 					Name:     "Gryffindor-App-To-DB-Access",
 					ID:       9197,
-					Source:   "Gryffindor-App",
-					Dest:     "Gryffindor-DB",
+					Source:   gryApp,
+					Dest:     gryDB,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
@@ -624,23 +625,23 @@ var Example2 = registerExample(&Example{
 					Name:     "Slytherin-Client-Access",
 					ID:       3048,
 					Source:   anyStr,
-					Dest:     "Slytherin-Web",
+					Dest:     slyWeb,
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
 				},
 				{
 					Name:     "Slytherin-Web-To-App-Access",
 					ID:       3049,
-					Source:   "Slytherin-Web",
-					Dest:     "Slytherin-App",
+					Source:   slyWeb,
+					Dest:     slyApp,
 					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
 					Action:   Allow,
 				},
 				{
 					Name:     "Slytherin-App-To-DB-Access",
 					ID:       3050,
-					Source:   "Slytherin-App",
-					Dest:     "Slytherin-DB",
+					Source:   slyApp,
+					Dest:     slyDB,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
@@ -655,23 +656,23 @@ var Example2 = registerExample(&Example{
 					Name:     "Hufflepuff-Client-Access",
 					ID:       2048,
 					Source:   anyStr,
-					Dest:     "Hufflepuff-Web",
+					Dest:     hufWeb,
 					Services: []string{"/infra/services/HTTP", "/infra/services/HTTPS"},
 					Action:   Allow,
 				},
 				{
 					Name:     "Hufflepuff-Web-To-App-Access",
 					ID:       2049,
-					Source:   "Hufflepuff-Web",
-					Dest:     "Hufflepuff-App",
+					Source:   hufWeb,
+					Dest:     hufApp,
 					Services: []string{"/infra/services/Vmware-VC-WebAccess"},
 					Action:   Allow,
 				},
 				{
 					Name:     "Hufflepuff-App-To-DB-Access",
 					ID:       2050,
-					Source:   "Hufflepuff-App",
-					Dest:     "Hufflepuff-DB",
+					Source:   hufApp,
+					Dest:     hufDB,
 					Services: []string{"/infra/services/SMB"},
 					Action:   Allow,
 				},
@@ -709,7 +710,7 @@ func example3FromExample2() *Example {
 	for i := range res.Policies {
 		for j := range res.Policies[i].Rules {
 			if res.Policies[i].Rules[j].ID == newRuleID {
-				res.Policies[i].Rules[j].Dest = "Gryffindor-App"
+				res.Policies[i].Rules[j].Dest = gryApp
 			}
 		}
 	}
