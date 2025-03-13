@@ -60,6 +60,6 @@ func (noGroup) supersetOf(atom atomic, hints *Hints) bool {
 	return false
 }
 
-func (noGroup) getBlock() *netset.IPBlock {
+func (noGroup) GetBlock() *netset.IPBlock {
 	return nil
 }

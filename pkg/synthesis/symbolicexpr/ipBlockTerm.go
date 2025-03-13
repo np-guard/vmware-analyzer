@@ -115,11 +115,7 @@ func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints)
 func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) []*Conjunction {
 	res := make([]*Conjunction, len(ipBlocks))
 	for i, ipBlock := range ipBlocks {
-		if ipBlock.Block.Equal(netset.GetCidrAll()) {
-			res[i] = &Conjunction{tautology{}}
-		} else {
-			res[i] = &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: &ipBlock.IPBlock}}
-		}
+		res[i] = &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: &ipBlock.IPBlock}}
 	}
 	return res
 }

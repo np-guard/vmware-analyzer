@@ -118,7 +118,7 @@ func (c *Conjunction) hasIPBlockTerm() bool {
 		if term.IsTautology() {
 			return true
 		}
-		if term.getBlock() != nil {
+		if term.GetBlock() != nil {
 			return true
 		}
 	}
