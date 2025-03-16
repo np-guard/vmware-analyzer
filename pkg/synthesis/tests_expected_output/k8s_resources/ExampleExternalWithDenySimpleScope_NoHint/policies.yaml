@@ -33,10 +33,20 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 1.2.0.4/30
+            - ipBlock:
+                cidr: 1.2.0.8/29
+            - ipBlock:
+                cidr: 1.2.0.16/28
+            - ipBlock:
+                cidr: 1.2.0.32/27
+            - ipBlock:
+                cidr: 1.2.0.64/26
+            - ipBlock:
+                cidr: 1.2.0.128/25
+            - ipBlock:
+                cidr: 1.2.1.0/24
           ports:
             - protocol: TCP
     podSelector:
@@ -58,10 +68,10 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - ipBlock:
+                cidr: 1.2.3.0/24
+            - ipBlock:
+                cidr: 1.2.4.0/24
           ports:
             - protocol: UDP
     podSelector:
