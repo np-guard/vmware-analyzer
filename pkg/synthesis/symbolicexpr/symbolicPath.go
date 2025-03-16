@@ -175,7 +175,7 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	return &resSymbolicPaths
 }
 
-func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions *[]*Conjunction, scopeConjunctions *[]*Conjunction) {
+func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunctions *[]*Conjunction) {
 	if isAllGroups {
 		*srcOrDstConjunctions = *scopeConjunctions
 	} else {
