@@ -332,100 +332,88 @@ var ExampleExternalWithDenySimple = registerExample(&Example{
 	},
 })
 
-func getExampleExternalSimpleWithInterlDenyAllow(useScope bool) *Example {
-	dst, scope := AnyStr, AnyStr
-	if useScope {
-		scope = frontEnd
-	} else {
-		dst = frontEnd
-	}
-	return &Example{
-		Name: "ExampleExternalSimpleWithInterlDenyAllow",
-		VMs:  []string{"A"},
-		GroupsByVMs: map[string][]string{
-			frontEnd: {"A"},
-		},
-		Policies: []Category{
-			{
-				Name:         "app-x",
-				CategoryType: "Environment",
-				Rules: []Rule{
-					{
-						Name:      "deny_tcp_0_1",
-						ID:        1004,
-						Source:    "1.2.0.0/30",
-						Dest:      dst,
-						Scope:     scope,
-						Conn:      netset.AllTCPTransport(),
-						Action:    Drop,
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "allow_tcp_0_1",
-						ID:        1005,
-						Source:    "1.2.0.0/24",
-						Dest:      dst,
-						Scope:     scope,
-						Conn:      netset.AllTCPTransport(),
-						Action:    Allow,
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "deny_all_conn_0_1",
-						ID:        1006,
-						Source:    "1.2.0.0/24",
-						Dest:      dst,
-						Scope:     scope,
-						Conn:      netset.AllTransports(),
-						Action:    Drop,
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "allow_all_conn_0_1",
-						ID:        1007,
-						Source:    "1.2.0.0/16",
-						Dest:      dst,
-						Scope:     scope,
-						Conn:      netset.AllTransports(),
-						Action:    Allow,
-						Direction: string(nsx.RuleDirectionIN),
-					},
+var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
+	Name: "ExampleExternalSimpleWithInterlDenyAllow",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		frontEnd: {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Environment",
+			Rules: []Rule{
+				{
+					Name:      "deny_tcp_0_1",
+					ID:        1004,
+					Source:    "1.2.0.0/30",
+					Dest:      AnyStr,
+					Scope:     frontEnd,
+					Conn:      netset.AllTCPTransport(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
 				},
-			},
-			{
-				Name:         "app-x",
-				CategoryType: "Application",
-				Rules: []Rule{
-					{
-						Name:      "deny_tcp_0_2",
-						ID:        1008,
-						Source:    "1.240.0.0/28",
-						Dest:      dst,
-						Scope:     scope,
-						Conn:      netset.AllTCPTransport(),
-						Action:    Drop,
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					{
-						Name:      "allow_all_conn_0_2",
-						ID:        1009,
-						Source:    "1.240.0.0/28",
-						Dest:      dst,
-						Scope:     scope,
-						Conn:      netset.AllTransports(),
-						Action:    Allow,
-						Direction: string(nsx.RuleDirectionIN),
-					},
-					DefaultDenyRule(denyRuleIDApp),
+				{
+					Name:      "allow_tcp_0_1",
+					ID:        1005,
+					Source:    "1.2.0.0/24",
+					Dest:      frontEnd,
+					Scope:     AnyStr,
+					Conn:      netset.AllTCPTransport(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "deny_all_conn_0_1",
+					ID:        1006,
+					Source:    "1.2.0.0/24",
+					Dest:      AnyStr,
+					Scope:     frontEnd,
+					Conn:      netset.AllTransports(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_all_conn_0_1",
+					ID:        1007,
+					Source:    "1.2.0.0/16",
+					Dest:      frontEnd,
+					Scope:     AnyStr,
+					Conn:      netset.AllTransports(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
 				},
 			},
 		},
-	}
-}
-
-var ExampleExternalSimpleWithInterlDenyAllow = registerExample(getExampleExternalSimpleWithInterlDenyAllow(false))
-
-var ExampleExternalSimpleWithInterlDenyAllowScope = registerExample(getExampleExternalSimpleWithInterlDenyAllow(true))
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:      "deny_tcp_0_2",
+					ID:        1008,
+					Source:    "1.240.0.0/28",
+					Dest:      AnyStr,
+					Scope:     frontEnd,
+					Conn:      netset.AllTCPTransport(),
+					Action:    Drop,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow_all_conn_0_2",
+					ID:        1009,
+					Source:    "1.240.0.0/28",
+					Dest:      frontEnd,
+					Scope:     AnyStr,
+					Conn:      netset.AllTransports(),
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+})
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
