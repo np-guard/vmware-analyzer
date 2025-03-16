@@ -1078,7 +1078,8 @@ var ExampleHogwarts = registerExample(&Example{
 					Name:   "allow-Hufflepuff-to-Hufflepuff",
 					ID:     10219,
 					Source: huf,
-					Dest:   huf,
+					Dest:   anyStr,
+					Scope:  huf,
 					Action: JumpToApp,
 					//nolint:mnd // these are the port numbers for the test
 					Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
