@@ -1156,84 +1156,80 @@ var simpleHogwartsGroups = map[string][]string{
 	web: {slyWeb, gryWeb},
 	app: {slyApp, gryApp}}
 
-func getExampleHogwartsSimpler(useScope bool) *Example {
-	return &Example{
-		Name: "ExampleHogwartsSimpler",
-		VMs: []string{slyWeb, slyApp, slyDB,
-			gryWeb, gryApp, gryDB},
-		GroupsByVMs: simpleHogwartsGroups,
-		Policies: []Category{
-			{
-				Name:         "Gryffindor-to-Gryffindor-allow",
-				CategoryType: environment,
-				Rules: []Rule{
-					{
-						Name:   "allow-Gryffindor-to-Gryffindor",
-						ID:     10218,
-						Source: gry,
-						Dest:   gry,
-						Action: JumpToApp,
-						Conn:   netset.AllTCPTransport(),
-					},
-				},
-			},
-			{
-				Name:         "Slytherin-to-Slytherin-allow",
-				CategoryType: environment,
-				Rules: []Rule{
-					{
-						Name:   "allow-Slytherin-to-Slytherin",
-						ID:     10220,
-						Source: sly,
-						Dest:   sly,
-						Action: JumpToApp,
-						Conn:   netset.AllUDPTransport().Union(netset.AllTCPTransport()),
-					},
-					{
-						Name:     "default-deny-env",
-						ID:       10221,
-						Source:   AnyStr,
-						Dest:     AnyStr,
-						Services: []string{AnyStr},
-						Action:   Drop,
-					},
-				},
-			},
-			{
-				Name:         "Intra-App-Policy",
-				CategoryType: application,
-				Rules: []Rule{
-					{
-						Name:   "Client-Access",
-						ID:     9195,
-						Source: AnyStr,
-						Dest:   web,
-						Action: Allow,
-						Conn:   netset.AllTCPTransport(),
-					},
-					{
-						Name:   "Web-To-App-Access",
-						ID:     9196,
-						Source: web,
-						Dest:   app,
-						Action: Allow,
-						Conn:   netset.AllUDPTransport(),
-					},
-				},
-			},
-			{
-				Name:         defaultL3,
-				CategoryType: application,
-				Rules: []Rule{
-					DefaultDenyRule(denyRuleIDEnv),
+var ExampleHogwartsSimpler = registerExample(&Example{
+	Name: "ExampleHogwartsSimpler",
+	VMs: []string{slyWeb, slyApp, slyDB,
+		gryWeb, gryApp, gryDB},
+	GroupsByVMs: simpleHogwartsGroups,
+	Policies: []Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Gryffindor-to-Gryffindor",
+					ID:     10218,
+					Source: gry,
+					Dest:   gry,
+					Action: JumpToApp,
+					Conn:   netset.AllTCPTransport(),
 				},
 			},
 		},
-		DisjointGroupsTags: disjointHousesAndFunctionality,
-	}
-}
-
-var ExampleHogwartsSimpler = registerExample(getExampleHogwartsSimpler(false))
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Slytherin-to-Slytherin",
+					ID:     10220,
+					Source: sly,
+					Dest:   sly,
+					Action: JumpToApp,
+					Conn:   netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10221,
+					Source:   AnyStr,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+			},
+		},
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:   "Client-Access",
+					ID:     9195,
+					Source: AnyStr,
+					Dest:   web,
+					Action: Allow,
+					Conn:   netset.AllTCPTransport(),
+				},
+				{
+					Name:   "Web-To-App-Access",
+					ID:     9196,
+					Source: web,
+					Dest:   app,
+					Action: Allow,
+					Conn:   netset.AllUDPTransport(),
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
