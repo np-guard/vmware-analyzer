@@ -440,6 +440,8 @@ func getExampleExternalSimpleWithInterlDenyAllow(useScope bool) *Example {
 
 var ExampleExternalSimpleWithInterlDenyAllow = registerExample(getExampleExternalSimpleWithInterlDenyAllow(false))
 
+var ExampleExternalSimpleWithInterlDenyAllowScope = registerExample(getExampleExternalSimpleWithInterlDenyAllow(true))
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleExclude = registerExample(&Example{
