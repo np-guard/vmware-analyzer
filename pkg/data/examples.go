@@ -347,82 +347,98 @@ var ExampleExternalWithDenySimple = registerExample(getExampleExternalWithDenySi
 
 var ExampleExternalWithDenySimpleScope = registerExample(getExampleExternalWithDenySimple(true))
 
-var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
-	Name: "ExampleExternalSimpleWithInterlDenyAllow",
-	VMs:  []string{"A"},
-	GroupsByVMs: map[string][]string{
-		frontEnd: {"A"},
-	},
-	Policies: []Category{
-		{
-			Name:         "app-x",
-			CategoryType: "Environment",
-			Rules: []Rule{
-				{
-					Name:      "deny_tcp_0_1",
-					ID:        1004,
-					Source:    "1.2.0.0/30",
-					Dest:      frontEnd,
-					Conn:      netset.AllTCPTransport(),
-					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
+func getExampleExternalSimpleWithInterlDenyAllow(useScope bool) *Example {
+	dst, scope := anyStr, anyStr
+	if useScope {
+		scope = frontEnd
+	} else {
+		dst = frontEnd
+	}
+	return &Example{
+		Name: "ExampleExternalSimpleWithInterlDenyAllow",
+		VMs:  []string{"A"},
+		GroupsByVMs: map[string][]string{
+			frontEnd: {"A"},
+		},
+		Policies: []Category{
+			{
+				Name:         "app-x",
+				CategoryType: "Environment",
+				Rules: []Rule{
+					{
+						Name:      "deny_tcp_0_1",
+						ID:        1004,
+						Source:    "1.2.0.0/30",
+						Dest:      dst,
+						Scope:     scope,
+						Conn:      netset.AllTCPTransport(),
+						Action:    Drop,
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "allow_tcp_0_1",
+						ID:        1005,
+						Source:    "1.2.0.0/24",
+						Dest:      dst,
+						Scope:     scope,
+						Conn:      netset.AllTCPTransport(),
+						Action:    Allow,
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "deny_all_conn_0_1",
+						ID:        1006,
+						Source:    "1.2.0.0/24",
+						Dest:      dst,
+						Scope:     scope,
+						Conn:      netset.AllTransports(),
+						Action:    Drop,
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "allow_all_conn_0_1",
+						ID:        1007,
+						Source:    "1.2.0.0/16",
+						Dest:      dst,
+						Scope:     scope,
+						Conn:      netset.AllTransports(),
+						Action:    Allow,
+						Direction: string(nsx.RuleDirectionIN),
+					},
 				},
-				{
-					Name:      "allow_tcp_0_1",
-					ID:        1005,
-					Source:    "1.2.0.0/24",
-					Dest:      frontEnd,
-					Conn:      netset.AllTCPTransport(),
-					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
-				},
-				{
-					Name:      "deny_all_conn_0_1",
-					ID:        1006,
-					Source:    "1.2.0.0/24",
-					Dest:      frontEnd,
-					Conn:      netset.AllTransports(),
-					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
-				},
-				{
-					Name:      "allow_all_conn_0_1",
-					ID:        1007,
-					Source:    "1.2.0.0/16",
-					Dest:      frontEnd,
-					Conn:      netset.AllTransports(),
-					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
+			},
+			{
+				Name:         "app-x",
+				CategoryType: "Application",
+				Rules: []Rule{
+					{
+						Name:      "deny_tcp_0_2",
+						ID:        1008,
+						Source:    "1.240.0.0/28",
+						Dest:      dst,
+						Scope:     scope,
+						Conn:      netset.AllTCPTransport(),
+						Action:    Drop,
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					{
+						Name:      "allow_all_conn_0_2",
+						ID:        1009,
+						Source:    "1.240.0.0/28",
+						Dest:      dst,
+						Scope:     scope,
+						Conn:      netset.AllTransports(),
+						Action:    Allow,
+						Direction: string(nsx.RuleDirectionIN),
+					},
+					DefaultDenyRule(denyRuleIDApp),
 				},
 			},
 		},
-		{
-			Name:         "app-x",
-			CategoryType: "Application",
-			Rules: []Rule{
-				{
-					Name:      "deny_tcp_0_2",
-					ID:        1008,
-					Source:    "1.240.0.0/28",
-					Dest:      frontEnd,
-					Conn:      netset.AllTCPTransport(),
-					Action:    Drop,
-					Direction: string(nsx.RuleDirectionIN),
-				},
-				{
-					Name:      "allow_all_conn_0_2",
-					ID:        1009,
-					Source:    "1.240.0.0/28",
-					Dest:      frontEnd,
-					Conn:      netset.AllTransports(),
-					Action:    Allow,
-					Direction: string(nsx.RuleDirectionIN),
-				},
-				DefaultDenyRule(denyRuleIDApp),
-			},
-		},
-	},
-})
+	}
+}
+
+var ExampleExternalSimpleWithInterlDenyAllow = registerExample(getExampleExternalSimpleWithInterlDenyAllow(false))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1164,80 +1180,84 @@ var simpleHogwartsGroups = map[string][]string{
 	web: {slyWeb, gryWeb},
 	app: {slyApp, gryApp}}
 
-var ExampleHogwartsSimpler = registerExample(&Example{
-	Name: "ExampleHogwartsSimpler",
-	VMs: []string{slyWeb, slyApp, slyDB,
-		gryWeb, gryApp, gryDB},
-	GroupsByVMs: simpleHogwartsGroups,
-	Policies: []Category{
-		{
-			Name:         "Gryffindor-to-Gryffindor-allow",
-			CategoryType: environment,
-			Rules: []Rule{
-				{
-					Name:   "allow-Gryffindor-to-Gryffindor",
-					ID:     10218,
-					Source: gry,
-					Dest:   gry,
-					Action: JumpToApp,
-					Conn:   netset.AllTCPTransport(),
+func getExampleHogwartsSimpler(useScope bool) *Example {
+	return &Example{
+		Name: "ExampleHogwartsSimpler",
+		VMs: []string{slyWeb, slyApp, slyDB,
+			gryWeb, gryApp, gryDB},
+		GroupsByVMs: simpleHogwartsGroups,
+		Policies: []Category{
+			{
+				Name:         "Gryffindor-to-Gryffindor-allow",
+				CategoryType: environment,
+				Rules: []Rule{
+					{
+						Name:   "allow-Gryffindor-to-Gryffindor",
+						ID:     10218,
+						Source: gry,
+						Dest:   gry,
+						Action: JumpToApp,
+						Conn:   netset.AllTCPTransport(),
+					},
+				},
+			},
+			{
+				Name:         "Slytherin-to-Slytherin-allow",
+				CategoryType: environment,
+				Rules: []Rule{
+					{
+						Name:   "allow-Slytherin-to-Slytherin",
+						ID:     10220,
+						Source: sly,
+						Dest:   sly,
+						Action: JumpToApp,
+						Conn:   netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					},
+					{
+						Name:     "default-deny-env",
+						ID:       10221,
+						Source:   anyStr,
+						Dest:     anyStr,
+						Services: []string{anyStr},
+						Action:   Drop,
+					},
+				},
+			},
+			{
+				Name:         "Intra-App-Policy",
+				CategoryType: application,
+				Rules: []Rule{
+					{
+						Name:   "Client-Access",
+						ID:     9195,
+						Source: anyStr,
+						Dest:   web,
+						Action: Allow,
+						Conn:   netset.AllTCPTransport(),
+					},
+					{
+						Name:   "Web-To-App-Access",
+						ID:     9196,
+						Source: web,
+						Dest:   app,
+						Action: Allow,
+						Conn:   netset.AllUDPTransport(),
+					},
+				},
+			},
+			{
+				Name:         defaultL3,
+				CategoryType: application,
+				Rules: []Rule{
+					DefaultDenyRule(denyRuleIDEnv),
 				},
 			},
 		},
-		{
-			Name:         "Slytherin-to-Slytherin-allow",
-			CategoryType: environment,
-			Rules: []Rule{
-				{
-					Name:   "allow-Slytherin-to-Slytherin",
-					ID:     10220,
-					Source: sly,
-					Dest:   sly,
-					Action: JumpToApp,
-					Conn:   netset.AllUDPTransport().Union(netset.AllTCPTransport()),
-				},
-				{
-					Name:     "default-deny-env",
-					ID:       10221,
-					Source:   anyStr,
-					Dest:     anyStr,
-					Services: []string{anyStr},
-					Action:   Drop,
-				},
-			},
-		},
-		{
-			Name:         "Intra-App-Policy",
-			CategoryType: application,
-			Rules: []Rule{
-				{
-					Name:   "Client-Access",
-					ID:     9195,
-					Source: anyStr,
-					Dest:   web,
-					Action: Allow,
-					Conn:   netset.AllTCPTransport(),
-				},
-				{
-					Name:   "Web-To-App-Access",
-					ID:     9196,
-					Source: web,
-					Dest:   app,
-					Action: Allow,
-					Conn:   netset.AllUDPTransport(),
-				},
-			},
-		},
-		{
-			Name:         defaultL3,
-			CategoryType: application,
-			Rules: []Rule{
-				DefaultDenyRule(denyRuleIDEnv),
-			},
-		},
-	},
-	DisjointGroupsTags: disjointHousesAndFunctionality,
-})
+		DisjointGroupsTags: disjointHousesAndFunctionality,
+	}
+}
+
+var ExampleHogwartsSimpler = registerExample(getExampleHogwartsSimpler(false))
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
