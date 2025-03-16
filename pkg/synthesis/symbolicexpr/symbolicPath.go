@@ -158,20 +158,12 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	resSymbolicPaths := SymbolicPaths{}
 	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
 	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
-	if !rule.Scope.IsAllGroups {
+	if !rule.Scope.IsAllGroups { // do not add *any* to Conjunction
 		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.Scope.Groups, nil)
 		if isInbound {
-			if rule.Dst.IsAllGroups {
-				dstConjunctions = scopeConjunctions
-			} else {
-				dstConjunctions = append(dstConjunctions, scopeConjunctions...)
-			}
+			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
 		} else { // outbound
-			if rule.Src.IsAllGroups {
-				srcConjunctions = scopeConjunctions
-			} else {
-				srcConjunctions = append(srcConjunctions, scopeConjunctions...)
-			}
+			updateSrcOrDstConj(rule.Src.IsAllGroups, &srcConjunctions, &scopeConjunctions)
 		}
 	}
 	for _, srcConjunction := range srcConjunctions {
@@ -181,6 +173,14 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 		}
 	}
 	return &resSymbolicPaths
+}
+
+func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions *[]*Conjunction, scopeConjunctions *[]*Conjunction) {
+	if isAllGroups {
+		*srcOrDstConjunctions = *scopeConjunctions
+	} else {
+		*srcOrDstConjunctions = append(*srcOrDstConjunctions, *scopeConjunctions...)
+	}
 }
 
 func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
