@@ -173,9 +173,6 @@ func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
 		// add policy rules
 		for i := range policy.Rules {
 			rule := policy.Rules[i]
-			//if rule.Scope == "" {
-			//	rule.Scope
-			//}
 			newPolicy.Rules[i] = rule.toCollectorRule()
 			newPolicy.SecurityPolicy.Rules[i] = newPolicy.Rules[i].Rule
 		}
