@@ -231,6 +231,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
+		case a.IsAllGroups():
 		case a.GetBlock() != nil:
 			res.cidrs = a.GetBlock().ToCidrList()
 		default:

@@ -4,6 +4,8 @@ import (
 	"slices"
 )
 
+const toImplement = "to implement"
+
 // general atomic functionality
 
 // are two given by name atomicTerms in disjoint list
@@ -69,4 +71,13 @@ func eqSign(atom atomic) string {
 		equalSign = nonEqualSignConst
 	}
 	return equalSign
+}
+
+func isTagOrAtomicTerm(atom atomic) bool {
+	switch atom.(type) {
+	case groupAtomicTerm, tagAtomicTerm, allGroup, tautology:
+		return true
+	default:
+		return false
+	}
 }

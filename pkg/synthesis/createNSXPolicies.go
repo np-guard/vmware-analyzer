@@ -8,6 +8,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
@@ -140,8 +141,14 @@ func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
 func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
-		if atom.IsTautology() {
+		if atom.IsAllGroups() {
 			continue
+		}
+		if ip := atom.GetBlock(); ip != nil {
+			if len(con) != 1 {
+				logging.InternalErrorf("got a multi atom Conjunction with external IP %s", ip.String())
+			}
+			return ip.String()
 		}
 		label, not := atom.AsSelector()
 		atomVMs := a.labelsVMs[label]

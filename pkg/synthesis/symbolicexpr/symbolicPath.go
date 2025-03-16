@@ -130,15 +130,16 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 // algorithm described in README of symbolicexpr
 func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
 	resAllowPaths := &SymbolicPaths{}
+	// In the below, note that Tautology (0.0.0.0/0) also returns true for IsAllGroups
 	for _, srcAtom := range denyPath.Src {
-		if !srcAtom.IsTautology() {
+		if !srcAtom.IsAllGroups() {
 			srcAtomNegate := srcAtom.negate()
 			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: *allowPath.Src.copy().add(srcAtomNegate),
 				Dst: allowPath.Dst, Conn: allowPath.Conn}, hints)
 		}
 	}
 	for _, dstAtom := range denyPath.Dst {
-		if !dstAtom.IsTautology() {
+		if !dstAtom.IsAllGroups() {
 			dstAtomNegate := dstAtom.negate()
 			resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: *allowPath.Dst.copy().add(dstAtomNegate),
 				Conn: allowPath.Conn}, hints)
@@ -148,7 +149,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 		resAllowPaths = resAllowPaths.add(&SymbolicPath{Src: allowPath.Src, Dst: allowPath.Dst,
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)}, hints)
 	}
-	// removes empty SymblicPaths; of non-empty paths removed redundant terms
+	// removes empty SymbolicPaths; of non-empty paths removed redundant terms
 	return resAllowPaths.removeRedundant(hints)
 }
 
@@ -184,7 +185,7 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 
 func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) []*Conjunction {
-	tarmAny := Conjunction{tautology{}}
+	tarmAny := Conjunction{allGroup{}}
 	res := []*Conjunction{&tarmAny}
 	if !isAllGroups {
 		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)

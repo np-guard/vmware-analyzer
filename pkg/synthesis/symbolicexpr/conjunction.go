@@ -1,5 +1,7 @@
 package symbolicexpr
 
+// conjunction presents a conjunctions of terms
+
 import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
@@ -54,34 +56,45 @@ func (c *Conjunction) copy() *Conjunction {
 	return &newC
 }
 
-// tautology: ipBlock 0.0.0.0/0 or tautology struct; at most 2 items
+// tautology: ipBlock 0.0.0.0/0, allGroups: all internal resources
 func (c *Conjunction) isTautology() bool {
-	if len(*c) > 2 || len(*c) == 0 || !(*c)[0].IsTautology() {
-		return false
-	}
-	if len(*c) == 1 || (len(*c) == 2 && (*c)[1].IsTautology()) {
+	if len(*c) == 1 && (*c)[0].IsTautology() {
 		return true
 	}
 	return false
 }
 
-// remove redundant terms: tautology or redundant as per hints; the latter is when e.g., a and b are disjoint
+// allGroups: all internal resources
+func (c *Conjunction) isAllGroup() bool {
+	if len(*c) == 1 && (*c)[0].IsAllGroups() {
+		return true
+	}
+	return false
+}
+
+// tautology: ipBlock 0.0.0.0/0, allGroups: all internal resources
+func (c *Conjunction) isTautologyOrAllGroups() bool {
+	return c.isTautology() || c.isAllGroup()
+}
+
+// remove redundant terms: allGroups or redundant as per hints; the latter is when e.g., a and b are disjoint
 // then "a and not b" - b is redundant
+// relevant only to Conjunctions referring to internal resources
 func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
-	if len(*c) <= 1 {
+	if len(*c) <= 1 || c.hasIPBlockTerm() {
 		return *c
 	}
 	newC := Conjunction{}
 	redundantRemoved := false
 	for _, atom := range *c {
-		if !atom.IsTautology() && !atomRedundantInConj(atom, c, hints) {
+		if !atom.IsAllGroups() && !atomRedundantInConj(atom, c, hints) {
 			newC = append(newC, atom)
 		} else {
 			redundantRemoved = true
 		}
 	}
 	if len(newC) == 0 && redundantRemoved {
-		return Conjunction{tautology{}}
+		return Conjunction{allGroup{}}
 	}
 	return newC
 }
@@ -100,12 +113,37 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	return false
 }
 
+func (c *Conjunction) hasIPBlockTerm() bool {
+	for _, term := range *c {
+		if term.IsTautology() {
+			return true
+		}
+		if term.GetBlock() != nil {
+			return true
+		}
+	}
+	return false
+}
+
+func (c *Conjunction) hasTagOrGroupTerm() bool {
+	for _, term := range *c {
+		if isTagOrAtomicTerm(term) {
+			return true
+		}
+	}
+	return false
+}
+
 // isEmpty: checks whether the conjunction is false:
-// either contains an empty ipBlockTerm
+// either contains an ipBlockTerm and a tagTerm/groupTerm (ipBlockTerm presents only external ips)
+// or contains an empty ipBlockTerm
 // or contains groupAtomicTerm and its negation
 // or contains two atoms that are disjoint to each other by hints
 func (c *Conjunction) isEmpty(hints *Hints) bool {
 	if len(*c) == 0 {
+		return false
+	}
+	if c.hasTagOrGroupTerm() && c.hasIPBlockTerm() {
 		return false
 	}
 	for i, outAtomicTerm := range *c {
@@ -130,10 +168,20 @@ func (c *Conjunction) isEmpty(hints *Hints) bool {
 // this is the case if there's a term in c and its contradiction in other
 // or if there are two terms that are disjoint to each other by hints
 func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
-	if len(*c) == 0 || len(*other) == 0 {
+	// empty sets are disjoint to anything
+	if c.isEmpty(hints) || other.isEmpty(hints) {
+		return true
+	}
+	// empty Conjunction equiv to tautology; tautology not disjoint to any non-empty set
+	if len(*c) == 0 || len(*other) == 0 || c.isTautology() || other.isTautology() {
 		return false
 	}
-	if other.isTautology() || c.isTautology() {
+	// external ips disjoint to internal resources
+	if c.areConjunctionNotSameType(other) {
+		return true
+	}
+	// both conjunctions refer to external ips or both refer to internal resources, and neither is tautology
+	if c.isAllGroup() || other.isAllGroup() {
 		return false
 	}
 	for _, atomicTerm := range *other {
@@ -144,13 +192,17 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 	return false
 }
 
+func (c *Conjunction) areConjunctionNotSameType(other *Conjunction) bool {
+	return c.hasTagOrGroupTerm() && other.hasIPBlockTerm() || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm())
+}
+
 // a Conjunction c contains an atom atomic if:
 // semantically: the condition in atom is already implied by c
 // syntactically:
 // if atom is a tagTerm or a groupTerm, then if the Conjunction c contains the atom literally
 // if atom is an IPBlock, if there is already an IPBlock in c that atom is a superset of it.
 func (c *Conjunction) contains(atom atomic) bool {
-	if atom.IsTautology() {
+	if atom.IsTautology() || (c.hasTagOrGroupTerm() && atom.IsAllGroups()) {
 		return true
 	}
 	for _, atomicItem := range *c {
@@ -179,12 +231,22 @@ func (c *Conjunction) contradicts(atom atomic, hints *Hints) bool {
 // Conjunction c is superset of other if either:
 // any resource satisfying other also satisfies c,
 // this is the case if any term in c either exists in other or is a subset of it, or
-// c is tautology
+// both Conjunctions refer to external IPs/internal resources and c is tautology or allGroups
+// (recall that a non-empty Conjunction can either refer to internal resources or to external IPs)
 func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
-	if c.isTautology() || len(*c) == 0 { // tautology superset of everything;  nil Conjunction is equiv to tautology
+	if c.isTautology() || len(*c) == 0 { // tautology superset of anything;  nil Conjunction is equiv to tautology
 		return true
 	}
-	if other.isTautology() { // tautology is a subset only of tautology
+	if c.areConjunctionNotSameType(other) {
+		return false
+	}
+	// got here: both conjunctions refer to external ips or both refer to internal resources, c not tautology
+
+	// tautology/allGroups superset of everything
+	if c.isAllGroup() {
+		return true
+	}
+	if other.isTautologyOrAllGroups() { // tautology/allGroups is a subset only of tautology/allGroups
 		return false
 	}
 	for _, atom := range *c {

@@ -49,11 +49,8 @@ spec:
                 protocol: TCP
                 start: 1
           to:
-            - pods:
-                namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
-                podSelector: {}
+            - networks:
+                - 0.0.0.0/0
     priority: 2
     subject:
         pods:
@@ -84,11 +81,8 @@ spec:
                 protocol: UDP
                 start: 300
           to:
-            - pods:
-                namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
-                podSelector: {}
+            - networks:
+                - 0.0.0.0/0
     priority: 3
     subject:
         pods:
@@ -115,11 +109,8 @@ spec:
         - action: Pass
           ports: null
           to:
-            - pods:
-                namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
-                podSelector: {}
+            - networks:
+                - 0.0.0.0/0
     priority: 4
     subject:
         pods:
@@ -137,80 +128,18 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: '(jump_to_application: (src: (IP addr in 0.0.0.0/0) dst: (group = Dumbledore) conn: All Connections)'
-        nsx-id: "10221"
-    creationTimestamp: null
-    name: admin-policy-4
-spec:
-    ingress:
-        - action: Pass
-          from:
-            - pods:
-                namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
-                podSelector: {}
-          ports: null
-    priority: 5
-    subject:
-        pods:
-            namespaceSelector:
-                matchLabels:
-                    kubernetes.io/metadata.name: default
-            podSelector:
-                matchExpressions:
-                    - key: group__Dumbledore
-                      operator: Exists
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
         description: '(deny: (src: (*) dst: (IP addr in 0.0.0.0/0) conn: All Connections)'
         nsx-id: "10300"
     creationTimestamp: null
-    name: admin-policy-5
+    name: admin-policy-4
 spec:
     egress:
         - action: Deny
           ports: null
           to:
-            - pods:
-                namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
-                podSelector: {}
-    priority: 6
-    subject:
-        pods:
-            namespaceSelector:
-                matchLabels:
-                    kubernetes.io/metadata.name: default
-            podSelector: {}
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
-        description: '(deny: (src: (*) dst: (IP addr in 0.0.0.0/0) conn: All Connections)'
-        nsx-id: "10300"
-    creationTimestamp: null
-    name: admin-policy-6
-spec:
-    ingress:
-        - action: Deny
-          from:
-            - pods:
-                namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
-                podSelector: {}
-          ports: null
-    priority: 7
+            - networks:
+                - 0.0.0.0/0
+    priority: 5
     subject:
         pods:
             namespaceSelector:
