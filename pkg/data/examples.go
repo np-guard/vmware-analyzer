@@ -1566,7 +1566,7 @@ const (
 )
 
 func getAndOrOrExpr(op ExampleOp) map[string]ExampleExpr {
-	slyCondDB, hufCondDB, gryCondDB := getOrOrAnsGroupNames(op)
+	slyCondDB, hufCondDB, gryCondDB := getOrOrAndGroupNames(op)
 	slyAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
 		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	hufAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
@@ -1583,7 +1583,7 @@ func getAndOrOrExpr(op ExampleOp) map[string]ExampleExpr {
 	}
 }
 
-func getOrOrAnsGroupNames(op ExampleOp) (slyDB, hufDB, gryDB string) {
+func getOrOrAndGroupNames(op ExampleOp) (slyDB, hufDB, gryDB string) {
 	slyDB = slyAndNoDB
 	hufDB = hufAndNoDB
 	gryDB = gryAndNoDB
@@ -1596,7 +1596,7 @@ func getOrOrAnsGroupNames(op ExampleOp) (slyDB, hufDB, gryDB string) {
 }
 
 func getAndOrOrPolicies(op ExampleOp) []Category {
-	slyCondDB, hufCondDB, gryCondDB := getOrOrAnsGroupNames(op)
+	slyCondDB, hufCondDB, gryCondDB := getOrOrAndGroupNames(op)
 	return []Category{
 		{
 			Name:         "Protect-DBs",
@@ -1606,7 +1606,8 @@ func getAndOrOrPolicies(op ExampleOp) []Category {
 					Name:      "to-Slytherin-in",
 					ID:        newRuleID,
 					Source:    anyStr,
-					Dest:      slyCondDB,
+					Dest:      anyStr,
+					Scope:     slyCondDB,
 					Services:  []string{anyStr},
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionIN),
@@ -1614,8 +1615,9 @@ func getAndOrOrPolicies(op ExampleOp) []Category {
 				{
 					Name:      "to-Slytherin-out",
 					ID:        newRuleID + 1,
-					Source:    gry,
+					Source:    anyStr,
 					Dest:      slyCondDB,
+					Scope:     gry,
 					Services:  []string{anyStr},
 					Action:    Allow,
 					Direction: string(nsx.RuleDirectionOUT),
