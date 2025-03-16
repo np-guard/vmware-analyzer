@@ -106,12 +106,6 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
-		name:            "ExampleExternalWithDenySimpleScope",
-		exData:          data.ExampleExternalWithDenySimpleScope,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
 		name:            "ExampleExternalSimpleWithInterlDenyAllow",
 		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
 		synthesizeAdmin: false,
