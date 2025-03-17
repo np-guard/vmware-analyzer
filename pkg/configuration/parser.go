@@ -304,10 +304,11 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		}
 	} else {
 		for _, ip := range ips {
-			ruleBlock := p.topology.allRuleIPBlocks[ip]
-			res.VMs = append(res.VMs, ruleBlock.VMs...)
-			res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
-			res.Blocks = append(res.Blocks, ruleBlock)
+			if ruleBlock := p.topology.allRuleIPBlocks[ip]; ruleBlock != nil {
+				res.VMs = append(res.VMs, ruleBlock.VMs...)
+				res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
+				res.Blocks = append(res.Blocks, ruleBlock)
+			}
 		}
 	}
 	res.Groups = make([]*collector.Group, len(groupsPaths))

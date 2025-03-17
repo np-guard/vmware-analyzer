@@ -1,0 +1,63 @@
+package configuration
+
+import (
+	"slices"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
+)
+
+func filterResources(rc *collector.ResourcesContainerModel, VMs []string) {
+	if len(VMs) == 0{
+		return
+	}
+	// removing vms from vm list:
+	vmFilter := func(vm collector.VirtualMachine) bool {
+		return vm.DisplayName == nil || vm.ExternalId == nil || !slices.Contains(VMs, *vm.DisplayName)
+	}
+	rc.VirtualMachineList = slices.DeleteFunc(rc.VirtualMachineList, vmFilter)
+	vmIds := common.CustomStrSliceToStrings(rc.VirtualMachineList, func(vm collector.VirtualMachine) string { return *vm.ExternalId })
+	// remove vnis from list:
+	vniFilter := func(vni collector.VirtualNetworkInterface) bool {
+		return !slices.Contains(vmIds, *vni.OwnerVmId)
+	}
+	rc.VirtualNetworkInterfaceList = slices.DeleteFunc(rc.VirtualNetworkInterfaceList, vniFilter)
+	vnisAttIds := common.CustomStrSliceToStrings(rc.VirtualNetworkInterfaceList, func(vni collector.VirtualNetworkInterface) string { return *vni.LportAttachmentId })
+
+	// remove segment ports:
+	portFilter := func(port collector.SegmentPort) bool {
+		return !slices.Contains(vnisAttIds, *port.Attachment.Id)
+	}
+	for i := range rc.SegmentList {
+		segment := &rc.SegmentList[i]
+		segment.SegmentPorts = slices.DeleteFunc(segment.SegmentPorts, portFilter)
+	}
+	//remove empty segments:
+	segmentFilter := func(segment collector.Segment) bool {
+		return len(segment.SegmentPorts) == 0
+	}
+	rc.SegmentList = slices.DeleteFunc(rc.SegmentList, segmentFilter)
+
+	// remove filtered vms from groups:
+	groupVmFilter := func(vm collector.RealizedVirtualMachine) bool {
+		return vm.UniqueId == nil || !slices.Contains(vmIds, *vm.Id)
+	}
+	allGroupPaths := []string{}
+	allRemainGroupPaths := []string{}
+	for i := range rc.DomainList {
+		domainRsc := &rc.DomainList[i].Resources
+		for j := range domainRsc.GroupList {
+			allGroupPaths = append(allGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
+			domainRsc.GroupList[j].VMMembers = slices.DeleteFunc(domainRsc.GroupList[j].VMMembers, groupVmFilter)
+			domainRsc.GroupList[j].VIFMembers = slices.DeleteFunc(domainRsc.GroupList[j].VIFMembers, vniFilter)
+			// todo - remove also addresses
+		}
+		// remove empty groups:
+		groupFilter := func(group collector.Group) bool {
+			return len(group.VMMembers) == 0
+		}
+		domainRsc.GroupList = slices.DeleteFunc(domainRsc.GroupList, groupFilter)
+		allRemainGroupPaths = append(allRemainGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
+	}
+
+}

@@ -36,6 +36,7 @@ type synthesisTest struct {
 	exData          *data.Example
 	synthesizeAdmin bool
 	noHint          bool // run also with no hint
+	filter          []string
 }
 
 func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
@@ -77,6 +78,7 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
+		VMs: synTest.filter,
 	}
 }
 
@@ -241,6 +243,7 @@ var resourceFileTest = synthesisTest{
 	exData:          nil,
 	synthesizeAdmin: false,
 	noHint:          true,
+	filter:          []string{"New-VM-2", "New-VM-1"},
 }
 
 var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
@@ -363,7 +366,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, common.OutputParameters{VMs: synTest.filter})
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -526,7 +529,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// get the config from generated_rc:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, common.OutputParameters{VMs: synTest.filter})
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)

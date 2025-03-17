@@ -1,6 +1,7 @@
 package synthesis
 
 import (
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -12,6 +13,7 @@ type SynthesisOptions struct {
 	SynthesizeAdmin bool
 	Color           bool
 	CreateDNSPolicy bool
+	VMs             []string
 }
 
 func NSXToK8sSynthesis(
@@ -31,7 +33,7 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {
 		var err error
-		config, err = configuration.ConfigFromResourcesContainer(resources, options.Color)
+		config, err = configuration.ConfigFromResourcesContainer(resources, common.OutputParameters{Color: options.Color, VMs: options.VMs})
 		if err != nil {
 			return nil, err
 		}
