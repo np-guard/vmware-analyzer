@@ -66,6 +66,16 @@ func CustomStrSliceToStrings[S any](slice []S, f func(s S) string) []string {
 	return resStrSlice
 }
 
+func CustomStrsSliceToStrings[S any](slice []S, f func(s S) []string) []string {
+	resStrSlice := []string{}
+	for _, e := range slice {
+		resStrSlice = append(resStrSlice, f(e)...)
+	}
+	// remove empty strings from the result
+	resStrSlice = slices.DeleteFunc(resStrSlice, func(s string) bool { return s == "" })
+	return SliceCompact(resStrSlice)
+}
+
 func stringifiedSliceToStrings[S HasString](slice []S) []string {
 	return CustomStrSliceToStrings(slice, func(s S) string { return s.String() })
 }
