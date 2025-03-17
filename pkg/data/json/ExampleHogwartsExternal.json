@@ -28580,13 +28580,13 @@
                                 "display_name": "allow-Slytherin-to-External",
                                 "rule_id": 10220,
                                 "scope": [
-                                    "ANY"
+                                    "Slytherin"
                                 ],
                                 "services": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Slytherin"
+                                    "ANY"
                                 ]
                             }
                         ]
@@ -28602,13 +28602,13 @@
                                 "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Dumbledore"
+                                    "ANY"
                                 ],
                                 "direction": "IN",
                                 "display_name": "allow-all-to-dumb-Dumbledore",
                                 "rule_id": 10221,
                                 "scope": [
-                                    "ANY"
+                                    "Dumbledore"
                                 ],
                                 "services": [
                                     "ANY"
@@ -28655,13 +28655,13 @@
                                 "display_name": "Client-Access",
                                 "rule_id": 10400,
                                 "scope": [
-                                    "ANY"
+                                    "Web"
                                 ],
                                 "services": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Web"
+                                    "ANY"
                                 ]
                             },
                             {
@@ -28674,13 +28674,13 @@
                                 "display_name": "App-to-external",
                                 "rule_id": 10401,
                                 "scope": [
-                                    "ANY"
+                                    "App"
                                 ],
                                 "services": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "App"
+                                    "ANY"
                                 ]
                             },
                             {
@@ -28755,24 +28755,6 @@
                 "gateway_policies": null,
                 "redirection_policies": null,
                 "groups": [
-                    {
-                        "display_name": "DB",
-                        "path": "DB",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-DB",
-                                "id": "Slytherin-DB"
-                            },
-                            {
-                                "display_name": "Gryffindor-DB",
-                                "id": "Gryffindor-DB"
-                            },
-                            {
-                                "display_name": "Hufflepuff-DB",
-                                "id": "Hufflepuff-DB"
-                            }
-                        ]
-                    },
                     {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
@@ -28874,6 +28856,24 @@
                             {
                                 "display_name": "Hufflepuff-App",
                                 "id": "Hufflepuff-App"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "DB",
+                        "path": "DB",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
+                            },
+                            {
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
+                            },
+                            {
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
                             }
                         ]
                     }
