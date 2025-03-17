@@ -40,14 +40,14 @@ func filterResources(rc *collector.ResourcesContainerModel, VMs []string) {
 
 	// remove filtered vms from groups:
 	groupVmFilter := func(vm collector.RealizedVirtualMachine) bool {
-		return vm.UniqueId == nil || !slices.Contains(vmIds, *vm.Id)
+		return vm.Id == nil || !slices.Contains(vmIds, *vm.Id)
 	}
 	allGroupPaths := []string{}
 	allRemainGroupPaths := []string{}
 	for i := range rc.DomainList {
 		domainRsc := &rc.DomainList[i].Resources
+		allGroupPaths = append(allGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
 		for j := range domainRsc.GroupList {
-			allGroupPaths = append(allGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
 			domainRsc.GroupList[j].VMMembers = slices.DeleteFunc(domainRsc.GroupList[j].VMMembers, groupVmFilter)
 			domainRsc.GroupList[j].VIFMembers = slices.DeleteFunc(domainRsc.GroupList[j].VIFMembers, vniFilter)
 			// todo - remove also addresses
@@ -59,5 +59,35 @@ func filterResources(rc *collector.ResourcesContainerModel, VMs []string) {
 		domainRsc.GroupList = slices.DeleteFunc(domainRsc.GroupList, groupFilter)
 		allRemainGroupPaths = append(allRemainGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
 	}
+	
 
+	groupPathFilter := func(path string) bool {
+		return slices.Contains(allGroupPaths, path) && !slices.Contains(allRemainGroupPaths, path)
+	}
+	ruleFilter := func(rule collector.Rule) bool{
+		return len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0
+	}
+	for i := range rc.DomainList {
+		domainRsc := rc.DomainList[i].Resources
+		for j := range domainRsc.SecurityPolicyList {
+			secPolicy := &domainRsc.SecurityPolicyList[j]
+
+			for i := range secPolicy.Rules {
+				rule := &secPolicy.Rules[i]
+				rule.SourceGroups = slices.DeleteFunc(rule.SourceGroups, groupPathFilter)
+				rule.DestinationGroups = slices.DeleteFunc(rule.DestinationGroups, groupPathFilter)
+				rule.Scope = slices.DeleteFunc(rule.Scope, groupPathFilter)
+				// todo - is the following good enough:
+				if len(rule.SourceGroups) == 0 && rule.SourcesExcluded{
+					rule.SourceGroups = []string{common.AnyStr}
+					rule.SourcesExcluded = false
+				}
+				if len(rule.DestinationGroups) == 0 && rule.DestinationsExcluded{
+					rule.DestinationGroups = []string{common.AnyStr}
+					rule.DestinationsExcluded = false
+				}
+			}
+			secPolicy.Rules = slices.DeleteFunc(secPolicy.Rules,ruleFilter)
+		}
+	}
 }
