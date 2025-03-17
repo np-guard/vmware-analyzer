@@ -13,8 +13,8 @@ import (
 
 func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 	params common.OutputParameters) (*Config, error) {
-		filterResources(resources, params.VMs)
-		parser := newNSXConfigParserFromResourcesContainer(resources)
+	filterResources(resources, params.VMs)
+	parser := newNSXConfigParserFromResourcesContainer(resources)
 	err := parser.runParser()
 	if err != nil {
 		return nil, err

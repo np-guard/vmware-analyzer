@@ -78,7 +78,7 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
-		VMs: synTest.filter,
+		VMs:             synTest.filter,
 	}
 }
 
