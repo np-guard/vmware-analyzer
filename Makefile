@@ -62,6 +62,6 @@ nsx-analyzer-image:
 	docker build -t $(IMAGE_REGISTRY)/$(NSX_ANALYZER_IMAGE):$(NSX_ANALYZER_TAG) .
 
 build-operator:
-	cd operator; go build -o bin/manager cmd/main.go
+	cd operator; go mod tidy; go build -o bin/manager cmd/main.go
 
 .DEFAULT_GOAL := build
