@@ -46,7 +46,6 @@ type nsxConfigParser struct {
 	configRes              *Config
 	allGroups              []*collector.Group
 	allGroupsPaths         []string
-	allGroupsVMs           []topology.Endpoint
 	groupToVMsListCache    map[*collector.Group][]topology.Endpoint
 	servicePathToConnCache map[string]*netset.TransportSet
 	// store references to groups/services objects from paths used in Fw rules
@@ -78,7 +77,6 @@ func (p *nsxConfigParser) runParser() error {
 	}
 	p.storeParsedSegments() // get NSX segments config
 
-	p.removeVMsWithoutGroups()
 	p.storeParsedDFW() // get distributed firewall config
 
 	// additional mappings for more details on log and config fields
@@ -115,21 +113,6 @@ func (p *nsxConfigParser) storeParsedSegments() {
 		segment := &p.rc.SegmentList[i]
 		vms := p.configRes.GetVMs(p.rc.GetVMsOfSegment(segment))
 		p.configRes.segments = append(p.configRes.segments, topology.NewSegmentDetails(segment, vms))
-	}
-}
-
-func (p *nsxConfigParser) removeVMsWithoutGroups() {
-	toRemove := []topology.Endpoint{}
-	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 && len(p.ruleBlockPerEP[vm]) == 0 {
-			logging.Debugf("ignoring VM without groups: %s", vm.Name())
-			toRemove = append(toRemove, vm)
-		}
-	}
-	for _, vm := range toRemove {
-		delete(p.configRes.GroupsPerVM, vm)
-		p.configRes.VMs = slices.DeleteFunc(p.configRes.VMs, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
-		delete(p.configRes.VMsMap, vm.ID())
 	}
 }
 
@@ -282,23 +265,15 @@ type parsedRule struct {
 }
 
 func (p *nsxConfigParser) getAllGroups() {
-	// p.allGroupsVMs and p.allGroups and allGroupsPaths are written together
-	vms := []topology.Endpoint{}
-	groups := []*collector.Group{}
-	groupsPaths := []string{}
+	// p.allGroups and allGroupsPaths are written together
 	for i := range p.rc.DomainList {
 		domainRsc := &p.rc.DomainList[i].Resources
 		for j := range domainRsc.GroupList {
 			group := &domainRsc.GroupList[j]
-			vms = append(vms, p.groupToVMsList(group)...)
-			groups = append(groups, group)
-			groupsPaths = append(groupsPaths, *group.Path)
+			p.allGroups = append(p.allGroups, group)
+			p.allGroupsPaths = append(p.allGroupsPaths, *group.Path)
 		}
 	}
-	vms = common.SliceCompact(vms)
-	p.allGroupsVMs = vms
-	p.allGroups = groups
-	p.allGroupsPaths = groupsPaths
 }
 
 // todo: delete this method, use getEndpointsFromGroupsPaths() directly
@@ -317,7 +292,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		if exclude {
 			return res // no group
 		}
-		return &dfw.RuleEndpoints{VMs: p.allGroupsVMs, Groups: p.allGroups, IsAllGroups: true} // all groups
+		return &dfw.RuleEndpoints{VMs: p.configRes.VMs, Groups: p.allGroups, IsAllGroups: true} // all groups
 	}
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
