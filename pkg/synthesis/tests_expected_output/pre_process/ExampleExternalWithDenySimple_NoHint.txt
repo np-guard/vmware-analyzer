@@ -10,10 +10,6 @@ Priority |Rule Id |Action |Src                            |Dst                |C
 
 
 symbolic outbound rules:
-Priority |Rule Id |Action |Src                            |Dst                |Connection
-0        |1004    |deny   |(IP addr in 1.2.0.0/30)        |(group = frontend) |TCP
-1        |1005    |allow  |(IP addr in 1.2.0.0-1.2.1.255) |(group = frontend) |TCP
-2        |1006    |allow  |(IP addr in 1.2.3.0-1.2.4.255) |(group = frontend) |UDP
-3        |1007    |allow  |(IP addr in 1.2.1.0-1.2.3.255) |(group = frontend) |ICMP
-4        |1003    |deny   |(*)                            |(*)                |All Connections
+Priority |Rule Id |Action |Src |Dst |Connection
+0        |1003    |deny   |(*) |(*) |All Connections
 

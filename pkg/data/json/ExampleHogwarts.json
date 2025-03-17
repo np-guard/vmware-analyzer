@@ -28540,13 +28540,13 @@
                                 "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Hufflepuff"
+                                    "ANY"
                                 ],
                                 "direction": "IN",
                                 "display_name": "allow-Hufflepuff-to-Hufflepuff",
                                 "rule_id": 10219,
                                 "scope": [
-                                    "ANY"
+                                    "Hufflepuff"
                                 ],
                                 "source_groups": [
                                     "Hufflepuff"
@@ -28737,42 +28737,6 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            },
-                            {
-                                "display_name": "Slytherin-DB",
-                                "id": "Slytherin-DB"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Hufflepuff",
-                        "path": "Hufflepuff",
-                        "vm_members": [
-                            {
-                                "display_name": "Hufflepuff-Web",
-                                "id": "Hufflepuff-Web"
-                            },
-                            {
-                                "display_name": "Hufflepuff-App",
-                                "id": "Hufflepuff-App"
-                            },
-                            {
-                                "display_name": "Hufflepuff-DB",
-                                "id": "Hufflepuff-DB"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "Gryffindor",
                         "path": "Gryffindor",
                         "vm_members": [
@@ -28851,6 +28815,42 @@
                             {
                                 "display_name": "Gryffindor-DB",
                                 "id": "Gryffindor-DB"
+                            },
+                            {
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Slytherin",
+                        "path": "Slytherin",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            },
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Hufflepuff",
+                        "path": "Hufflepuff",
+                        "vm_members": [
+                            {
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
+                            },
+                            {
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
                             },
                             {
                                 "display_name": "Hufflepuff-DB",

@@ -190,6 +190,8 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 	if !isAllGroups {
 		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)
 	}
+	// todo: this should not be here!! handle after https://github.com/np-guard/vmware-analyzer/pull/333 is merged
+	//       should work for now since in "our" examples Any Group implies no IPBlocks
 	res = append(res, getConjunctionForIPBlock(ruleBlocks)...)
 	return res
 }

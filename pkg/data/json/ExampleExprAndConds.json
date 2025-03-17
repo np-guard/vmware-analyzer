@@ -28588,13 +28588,13 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "Slytherin-And-no-DB"
+                                    "ANY"
                                 ],
                                 "direction": "IN",
                                 "display_name": "to-Slytherin-in",
                                 "rule_id": 9198,
                                 "scope": [
-                                    "ANY"
+                                    "Slytherin-And-no-DB"
                                 ],
                                 "services": [
                                     "ANY"
@@ -28613,13 +28613,13 @@
                                 "display_name": "to-Slytherin-out",
                                 "rule_id": 9199,
                                 "scope": [
-                                    "ANY"
+                                    "Gryffindor"
                                 ],
                                 "services": [
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Gryffindor"
+                                    "ANY"
                                 ]
                             },
                             {
@@ -28685,33 +28685,6 @@
                 "gateway_policies": null,
                 "redirection_policies": null,
                 "groups": [
-                    {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-DB",
-                                "id": "Slytherin-DB"
-                            },
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            }
-                        ],
-                        "expression": [
-                            {
-                                "key": "Tag",
-                                "member_type": "VirtualMachine",
-                                "operator": "EQUALS",
-                                "resource_type": "Condition",
-                                "value": "Slytherin"
-                            }
-                        ]
-                    },
                     {
                         "display_name": "Gryffindor",
                         "path": "Gryffindor",
@@ -28865,6 +28838,33 @@
                                 "operator": "NOTEQUALS",
                                 "resource_type": "Condition",
                                 "value": "DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Slytherin",
+                        "path": "Slytherin",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
+                            },
+                            {
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Slytherin"
                             }
                         ]
                     }
