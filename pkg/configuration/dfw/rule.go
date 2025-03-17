@@ -56,9 +56,10 @@ type RuleEndpoints struct {
 
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	Src   RuleEndpoints
-	Dst   RuleEndpoints
-	Scope RuleEndpoints
+	Src       RuleEndpoints
+	Dst       RuleEndpoints
+	Scope     RuleEndpoints
+	OrigScope RuleEndpoints
 
 	// Scope implies additional condition on any Src and any Dst
 	Conn               *netset.TransportSet
@@ -241,7 +242,8 @@ func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []
 	res := f.clone()
 	res.Src.VMs = src
 	res.Dst.VMs = dest
-	res.Scope = f.Scope
+	res.Scope = RuleEndpoints{}
+	res.OrigScope = f.Scope
 	res.direction = string(direction)
 
 	return res
