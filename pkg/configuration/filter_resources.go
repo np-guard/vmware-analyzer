@@ -8,7 +8,7 @@ import (
 )
 
 func filterResources(rc *collector.ResourcesContainerModel, VMs []string) {
-	if len(VMs) == 0{
+	if len(VMs) == 0 {
 		return
 	}
 	// removing vms from vm list:
@@ -59,35 +59,36 @@ func filterResources(rc *collector.ResourcesContainerModel, VMs []string) {
 		domainRsc.GroupList = slices.DeleteFunc(domainRsc.GroupList, groupFilter)
 		allRemainGroupPaths = append(allRemainGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
 	}
-	
 
 	groupPathFilter := func(path string) bool {
 		return slices.Contains(allGroupPaths, path) && !slices.Contains(allRemainGroupPaths, path)
 	}
-	ruleFilter := func(rule collector.Rule) bool{
+	ruleFilter := func(rule collector.Rule) bool {
 		return len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0
 	}
 	for i := range rc.DomainList {
 		domainRsc := rc.DomainList[i].Resources
 		for j := range domainRsc.SecurityPolicyList {
 			secPolicy := &domainRsc.SecurityPolicyList[j]
-
+			secPolicy.Scope = slices.DeleteFunc(secPolicy.Scope, groupPathFilter)
 			for i := range secPolicy.Rules {
 				rule := &secPolicy.Rules[i]
+				// remove paths from rules:
 				rule.SourceGroups = slices.DeleteFunc(rule.SourceGroups, groupPathFilter)
 				rule.DestinationGroups = slices.DeleteFunc(rule.DestinationGroups, groupPathFilter)
 				rule.Scope = slices.DeleteFunc(rule.Scope, groupPathFilter)
 				// todo - is the following good enough:
-				if len(rule.SourceGroups) == 0 && rule.SourcesExcluded{
+				if len(rule.SourceGroups) == 0 && rule.SourcesExcluded {
 					rule.SourceGroups = []string{common.AnyStr}
 					rule.SourcesExcluded = false
 				}
-				if len(rule.DestinationGroups) == 0 && rule.DestinationsExcluded{
+				if len(rule.DestinationGroups) == 0 && rule.DestinationsExcluded {
 					rule.DestinationGroups = []string{common.AnyStr}
 					rule.DestinationsExcluded = false
 				}
 			}
-			secPolicy.Rules = slices.DeleteFunc(secPolicy.Rules,ruleFilter)
+			// remove empty rules:
+			secPolicy.Rules = slices.DeleteFunc(secPolicy.Rules, ruleFilter)
 		}
 	}
 }
