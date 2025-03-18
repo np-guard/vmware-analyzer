@@ -25,16 +25,14 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = frontend) dst: (IP addr in 1.2.0.4/30, 1.2.0.8/29, 1.2.0.16/28, 1.2.0.32/27, 1.2.0.64/26, 1.2.0.128/25) conn: TCP'
+        description: 'src: (IP addr in 1.2.0.4/30, 1.2.0.8/29, 1.2.0.16/28, 1.2.0.32/27, 1.2.0.64/26, 1.2.0.128/25) dst: (group = frontend) conn: TCP'
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
-    egress:
-        - ports:
-            - protocol: TCP
-          to:
+    ingress:
+        - from:
             - ipBlock:
                 cidr: 1.2.0.4/30
             - ipBlock:
@@ -47,25 +45,27 @@ spec:
                 cidr: 1.2.0.64/26
             - ipBlock:
                 cidr: 1.2.0.128/25
+          ports:
+            - protocol: TCP
     podSelector:
         matchExpressions:
             - key: group__frontend
               operator: Exists
     policyTypes:
-        - Egress
+        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = frontend) dst: (IP addr in 1.2.1.0/24, 1.2.2.0/23, 1.2.4.0/22, 1.2.8.0/21, 1.2.16.0/20, 1.2.32.0/19, 1.2.64.0/18, 1.2.128.0/17) conn: All Connections'
+        description: 'src: (IP addr in 1.2.1.0/24, 1.2.2.0/23, 1.2.4.0/22, 1.2.8.0/21, 1.2.16.0/20, 1.2.32.0/19, 1.2.64.0/18, 1.2.128.0/17) dst: (group = frontend) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
-    egress:
-        - to:
+    ingress:
+        - from:
             - ipBlock:
                 cidr: 1.2.1.0/24
             - ipBlock:
@@ -87,30 +87,30 @@ spec:
             - key: group__frontend
               operator: Exists
     policyTypes:
-        - Egress
+        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = frontend) dst: (IP addr in 1.240.0.0/28) conn: ICMP,UDP'
+        description: 'src: (IP addr in 1.240.0.0/28) dst: (group = frontend) conn: ICMP,UDP'
         nsx-id: "1009"
     creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
-    egress:
-        - ports:
-            - protocol: UDP
-          to:
+    ingress:
+        - from:
             - ipBlock:
                 cidr: 1.240.0.0/28
+          ports:
+            - protocol: UDP
     podSelector:
         matchExpressions:
             - key: group__frontend
               operator: Exists
     policyTypes:
-        - Egress
+        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

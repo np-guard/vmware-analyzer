@@ -28486,13 +28486,13 @@
                                 "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Gryffindor"
+                                    "ANY"
                                 ],
                                 "direction": "IN",
                                 "display_name": "allow-Gryffindor-to-Gryffindor-in",
                                 "rule_id": 10218,
                                 "scope": [
-                                    "ANY"
+                                    "Gryffindor"
                                 ],
                                 "services": [
                                     "ANY"
@@ -28511,10 +28511,10 @@
                                 "display_name": "allow-Gryffindor-to-Gryffindor-out",
                                 "rule_id": 10219,
                                 "scope": [
-                                    "ANY"
+                                    "Gryffindor"
                                 ],
                                 "source_groups": [
-                                    "Gryffindor"
+                                    "ANY"
                                 ],
                                 "service_entries": [
                                     {
@@ -28539,13 +28539,13 @@
                                 "action": "JUMP_TO_APPLICATION",
                                 "description": "",
                                 "destination_groups": [
-                                    "Slytherin"
+                                    "ANY"
                                 ],
                                 "direction": "IN",
                                 "display_name": "allow-Slytherin-to-Slytherin-in",
                                 "rule_id": 10220,
                                 "scope": [
-                                    "ANY"
+                                    "Slytherin"
                                 ],
                                 "source_groups": [
                                     "Slytherin"
@@ -28577,10 +28577,10 @@
                                 "display_name": "allow-Slytherin-to-Slytherin-out",
                                 "rule_id": 10221,
                                 "scope": [
-                                    "ANY"
+                                    "Slytherin"
                                 ],
                                 "source_groups": [
-                                    "Slytherin"
+                                    "ANY"
                                 ],
                                 "service_entries": [
                                     {
@@ -28763,20 +28763,6 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "Gryffindor",
                         "path": "Gryffindor",
                         "vm_members": [
@@ -28815,6 +28801,20 @@
                             {
                                 "display_name": "Gryffindor-App",
                                 "id": "Gryffindor-App"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Slytherin",
+                        "path": "Slytherin",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
                             }
                         ]
                     }
