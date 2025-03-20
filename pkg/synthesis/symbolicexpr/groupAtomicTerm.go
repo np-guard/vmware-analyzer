@@ -5,7 +5,6 @@ package symbolicexpr
 import (
 	"fmt"
 
-	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
@@ -18,41 +17,18 @@ func (groupTerm groupAtomicTerm) String() string {
 	return grp + eqSign(groupTerm) + groupTerm.name()
 }
 
-// following 4 functions are false since an groupAtomicTerm is a non-empty cond on a group which may or may not hold
-
-func (groupAtomicTerm) IsTautology() bool {
-	return false
-}
-
-func (groupAtomicTerm) IsContradiction() bool {
-	return false
-}
-
-func (groupAtomicTerm) IsAllGroups() bool {
-	return false
-}
-
-func (groupAtomicTerm) IsNoGroup() bool {
-	return false
-}
-
-//
-
 func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", grp, groupTerm.name()), groupTerm.neg
 }
 
 func NewGroupAtomicTerm(group *collector.Group, neg bool) *groupAtomicTerm {
-	return &groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: neg}}
+	return &groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: group}, atomicTerm: atomicTerm{neg: neg}}
 }
 
 // negate an groupAtomicTerm expression
 func (groupTerm groupAtomicTerm) negate() atomic {
-	return groupAtomicTerm{group: groupTerm.group, atomicTerm: atomicTerm{neg: !groupTerm.neg}}
-}
-
-func (groupTerm groupAtomicTerm) name() string {
-	return groupTerm.group.Name()
+	return groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: groupTerm.abstractGroupTerm.group},
+		atomicTerm: atomicTerm{neg: !groupTerm.neg}}
 }
 
 // Evaluates group and translates it into []*Conjunction
@@ -68,7 +44,8 @@ func getConjunctionForGroups(groups []*collector.Group, groupToConjunctions map[
 		}
 		// not in cache
 		// default: Conjunction defined via group only
-		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: false}}}}
+		groupConj := []*Conjunction{{groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: group},
+			atomicTerm: atomicTerm{neg: false}}}}
 		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
@@ -105,8 +82,4 @@ func (groupTerm groupAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 // returns true iff groupTerm is superset of otherAtom as given by hints
 func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(groupTerm, otherAtom, hints)
-}
-
-func (groupAtomicTerm) GetBlock() *netset.IPBlock {
-	return nil
 }
