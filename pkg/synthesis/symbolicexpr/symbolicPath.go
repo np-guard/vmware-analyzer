@@ -184,14 +184,16 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 }
 
 func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
-	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) []*Conjunction {
-	tarmAny := Conjunction{allGroup{}}
-	res := []*Conjunction{&tarmAny}
-	if !isAllGroups {
-		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)
+	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
+	ipBlockConjunctions, isTautology := getConjunctionForIPBlock(ruleBlocks)
+	res = append(res, ipBlockConjunctions...)
+	switch {
+	case isTautology:
+		return res // if 0.0.0.0/0 then this is the only relevant input
+	case isAllGroups:
+		res = append(res, &Conjunction{allGroup{}})
+	default:
+		res = append(res, getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)...)
 	}
-	// todo: this should not be here!! handle after https://github.com/np-guard/vmware-analyzer/pull/333 is merged
-	//       should work for now since in "our" examples Any Group implies no IPBlocks
-	res = append(res, getConjunctionForIPBlock(ruleBlocks)...)
-	return res
+	return
 }
