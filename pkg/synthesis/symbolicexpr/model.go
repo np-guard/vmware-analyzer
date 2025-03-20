@@ -25,8 +25,8 @@ type groupAtomicTerm struct {
 	abstractGroupTerm
 }
 
-// internalIPGroupTerm represents an NSX originate group or over VMs originating from an NSX internal cidr
-type internalIPGroupTerm struct {
+// internalIPTerm represents an NSX originate group or over VMs originating from an NSX internal cidr
+type internalIPTerm struct {
 	abstractGroupTerm
 }
 
