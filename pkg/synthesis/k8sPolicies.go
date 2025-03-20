@@ -234,7 +234,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 			res.cidrs = a.GetBlock().ToCidrList()
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
-			// todo: should be fixed when supporting namespaces 
+			// todo: should be fixed when supporting namespaces
 		case a.GetBlock() != nil:
 			res.cidrs = a.GetBlock().ToCidrList()
 		default:
