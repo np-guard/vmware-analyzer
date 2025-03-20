@@ -21,13 +21,13 @@ func (groupTerm groupAtomicTerm) AsSelector() (string, bool) {
 }
 
 func NewGroupAtomicTerm(group *collector.Group, neg bool) *groupAtomicTerm {
-	return &groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: group}, atomicTerm: atomicTerm{neg: neg}}
+	return &groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: group, atomicTerm: atomicTerm{neg: neg}}}
 }
 
 // negate an groupAtomicTerm expression
 func (groupTerm groupAtomicTerm) negate() atomic {
-	return groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: groupTerm.abstractGroupTerm.group},
-		atomicTerm: atomicTerm{neg: !groupTerm.neg}}
+	return groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: groupTerm.abstractGroupTerm.group,
+		atomicTerm: atomicTerm{neg: !groupTerm.neg}}}
 }
 
 // returns true iff otherAtom is negation of groupTerm

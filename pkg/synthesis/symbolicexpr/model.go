@@ -15,13 +15,13 @@ type atomicTerm struct {
 
 // abstraction of an NSX originate group or over VMs originating from an NSX internal cidr
 type abstractGroupTerm struct {
+	atomicTerm
 	group *collector.Group
 }
 
 // groupAtomicTerm represent an equal/not-equal condition over an NSX originating group
 // todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
 type groupAtomicTerm struct {
-	atomicTerm
 	abstractGroupTerm
 }
 
