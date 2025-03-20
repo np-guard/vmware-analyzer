@@ -31,7 +31,6 @@ func (groupTerm groupAtomicTerm) negate() atomic {
 }
 
 // returns true iff otherAtom is negation of groupTerm
-// once we cache the atomic terms, we can just compare pointers
 func (groupTerm groupAtomicTerm) isNegateOf(otherAtom atomic) bool {
 	return isNegateOf(groupTerm, otherAtom)
 }
