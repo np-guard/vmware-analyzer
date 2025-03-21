@@ -13,7 +13,7 @@ type atomicTerm struct {
 	neg bool // equal to group/tag/... (false) or not-equal to it (true)
 }
 
-// abstraction of an NSX originate group or over VMs originating from an NSX internal cidr
+// abstraction of an NSX group or over VMs originating from an NSX internal cidr
 type abstractGroupTerm struct {
 	atomicTerm
 	group *collector.Group
