@@ -8,7 +8,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-// abstraction of an NSX originate group or over VMs originating from an NSX internal cidr
+// abstraction of an NSX group or over VMs originating from an NSX internal cidr
 
 // following 4 functions are false since an abstractGroupTerm is an abstraction of non-trivial groups
 
