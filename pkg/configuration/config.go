@@ -69,12 +69,13 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
-	// Addresses
+	// External EndPoints
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString(fmt.Sprintf("External Range:\n %s):\n", c.topology.allExternalIPBlock.String()))
+	sb.WriteString(fmt.Sprintf("Internal Range:\n%s\n\n", common.NetsetShortString(c.topology.allInternalIPBlock)))
+	sb.WriteString(fmt.Sprintf("External Range:\n%s\n\n", common.NetsetShortString(c.topology.allExternalIPBlock)))
 	sb.WriteString("External EndPoints:\n")
 	sb.WriteString(c.getExternalEPInfoStr(color))
-	// rule blocks
+	// Rule Blocks
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Rule Blocks:\n")
 	sb.WriteString(c.getRuleBlocksStr(color))
