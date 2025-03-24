@@ -11,43 +11,87 @@ Run the `nsxanalyzer` CLI tool.
 
 ```
 $ ./bin/nsxanalyzer -h
+
 nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
 and generation of k8s network policies. It uses REST API calls from NSX manager.
 
 Usage:
   nsxanalyzer [flags]
+  nsxanalyzer [command]
+
+Available Commands:
+  analyze     Analyze NSX connectivity from NSX DFW configuration
+  collect     Collect NSX configuration from given NSX URL
+  completion  Generate the autocompletion script for the specified shell
+  generate    Generate OCP-Virt micro-segmentation resources from input NSX config
+  help        Help about any command
+  lint        Lint input NSX config - show potential DFW redundant rules
 
 Flags:
-      --anonymize                    flag to anonymize collected NSX resources (default false)
       --color                        flag to enable color output (default false)
-      --disjoint-hint stringArray    comma separated list of NSX groups/tags that are always disjoint in their VM members, needed for an effective and sound synthesis process, can specify more than one hint (example: "--disjoint-hint frontend,backend --disjoint-hint app,web,db")
-  -e, --explain                      flag to explain connectivity output with rules explanations per allowed/denied connections (default false)
-  -f, --filename string              file path to store analysis results
   -h, --help                         help for nsxanalyzer
       --host string                  NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
-      --insecure-skip-verify         flag to enable NSX connection with insecureSkipVerify (default false)
+      --insecure-skip-verify         flag to enable NSX connection with insecureSkipVerify (default false).Alternatively, set the NSX_SKIP_VERIFY environment variable to true
       --log-file string              file path to write nsxanalyzer log
-  -o, --output string                output format; must be one of txt,dot,svg,json (default "txt")
-      --output-filter strings        filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")
       --password string              NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable
   -q, --quiet                        flag to run quietly, report only severe errors and result (default false)
       --resource-dump-file string    file path to store collected resources in JSON format
   -r, --resource-input-file string   file path input JSON of NSX resources (instead of collecting from NSX host)
-      --skip-analysis                flag to skip analysis, run only collector and/or synthesis (default false)
-      --synth-create-dns-policy     flag to create a policy allowing access to target env dns pod (default true)
-      --synthesis-dump-dir string    apply synthesis; specify directory path to store k8s synthesis results
-      --synthesize-admin-policies    include admin network policies in policy synthesis (default false)
-      --topology-dump-file string    file path to store topology
       --username string              NSX username. Alternatively, set the username via the NSX_USER environment variable
   -v, --verbose                      flag to run with more informative messages printed to log (default false)
-      --version                      version for nsxanalyzer
+      --version                      version for nsxanalyzer      
+
+Use "nsxanalyzer [command] --help" for more information about a command.
+```
+
+## `collect` command
+```
+$ ./bin/nsxanalyzer collect -h
+
+Collect NSX configuration from given NSX URL
+
+Usage:
+  nsxanalyzer collect [flags]
+
+Aliases:
+  collect, export
+
+Examples:
+  # Collect NSX configuration and store as JSON file
+        nsxanalyzer collect -f config.json
+
+Flags:
+      --anonymize   flag to anonymize collected NSX resources (default false)
+```
+
+## `analyze` command
+
+```
+$ ./bin/nsxanalyzer analyze -h
+Analyze NSX connectivity from NSX DFW configuration
+
+Usage:
+  nsxanalyzer analyze [flags]
+
+Examples:
+  # Analyze NSX configuration
+        nsxanalyzer analyze -r config.json
+
+Flags:
+  -e, --explain                     flag to explain connectivity output with rules explanations per allowed/denied connections (default false)
+  -f, --filename string             file path to store analysis results
+  -h, --help                        help for analyze
+  -o, --output string               output format; must be one of txt,dot,svg,json (default "txt")
+      --output-filter strings       filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")
+      --topology-dump-file string   file path to store topology
+
 ```
 
 ## Example connectivity analysis output
 
 ### Textual permitted connectivity
 ```
-$ nsxanalyzer --resource-input-file pkg/data/json/Example2.json 
+$ nsxanalyzer analyze -r pkg/data/json/Example2.json 
 
 Analyzed connectivity:
 Source         |Destination    |Permitted connections
@@ -67,12 +111,38 @@ Gryffindor-App |Slytherin-Web  |TCP dst-ports: 80,443
 ```
 
 ### Visualized permitted connectivity
-```
-$ nsxanalyzer --resource-input-file pkg/data/json/Example2.json --output-filter Gryffindor-App,Gryffindor-DB,Gryffindor-Web,Dumbledore1 -o svg -f ex2Filter1.svg
 
+To provide visualized permitted connectivity diagram, `graphviz` should be installed.
+
+```
+$ nsxanalyzer analyze -r pkg/data/json/Example2.json --output-filter Gryffindor-App,Gryffindor-DB,Gryffindor-Web,Dumbledore1 -o svg -f ex2Filter1.svg
 ```
 ![graph](pkg/analyzer/tests_expected_output/ex2Filter1.svg)
 
+
+## `generate` command
+
+```
+$ ./bin/nsxanalyzer generate -h
+Generate OCP-Virt micro-segmentation resources from input NSX config
+
+Usage:
+  nsxanalyzer generate [flags]
+
+Aliases:
+  generate, synthesize
+
+Examples:
+  # Generate OCP-Virt netpol resources
+        nsxanalyzer generate -r config.json
+
+Flags:
+      --disjoint-hint stringArray   comma separated list of NSX groups/tags that are always disjoint in their VM members, needed for an effective and sound synthesis process, can specify more than one hint (example: "--disjoint-hint frontend,backend --disjoint-hint app,web,db")
+  -h, --help                        help for generate
+      --synth-create-dns-policy     flag to create a policy allowing access to target env dns pod (default true)
+      --synthesis-dump-dir string   run synthesis; specify directory path to store k8s synthesis results
+      --synthesize-admin-policies   include admin network policies in policy synthesis (default false)
+```
 
 
 ## Example k8s network policy synthesis
@@ -87,7 +157,7 @@ ruleID |ruleName           |src      |dst     |conn |action |direction |scope |s
 Run policy synthesis:
 
 ```
-$ nsxanalyzer -r pkg/data/json/Example1.json --skip-analysis --synthesis-dump-dir ex1-synth/
+$ nsxanalyzer generate  -r pkg/data/json/Example1.json --synthesis-dump-dir ex1-synth/
 ```
 
 Example policy generated (1 out of 3): (see `ex1-synth/k8s_resources/policies.yaml` )
@@ -119,8 +189,47 @@ spec:
         - Egress
 ```
 
-More details [here](README_Synthesis.md).
+More details [here](docs/synthesis.md).
 
+
+## `lint` command
+
+```
+$ ./bin/nsxanalyzer lint -h
+Lint input NSX config - show potential DFW redundant rules
+
+Usage:
+  nsxanalyzer lint [flags]
+
+Examples:
+  # Lint NSX DFW
+        nsxanalyzer lint -r config.json
+
+Flags:
+  -h, --help   help for lint
+```
+
+### Example DFW redundant rules analysis
+
+For the following sample DFW configuration:
+```
+DFW:
+original rules:
+ruleID |ruleName  |src      |dst     |services |action |direction |scope |sec-policy  |Category
+1      |allowRule |frontend |backend |SMB      |allow  |IN_OUT    |ANY   |Application |Application
+2      |allowRule |frontend |backend |HTTP     |allow  |IN_OUT    |ANY   |Application |Application
+3      |allowRule |frontend |backend |HTTP,SMB |allow  |IN_OUT    |ANY   |Application |Application
+4      |denyRule  |ANY      |ANY     |ANY      |deny   |IN_OUT    |ANY   |Application |Application
+```
+
+The lint report identifies rule `3` as redundant:
+
+```
+$ nsxanalyzer lint -r pkg/data/json/one_redundant_covered_by_2_rules.json
+
+potential redundant rule ID |dfw_category |direction |possible shoadowing rules IDs
+3                           |Application  |IN_OUT    |[1 2]
+```
 
 ## NSX Supported API versions and resources
 See documentation [here](docs/nsx_support.md).

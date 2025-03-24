@@ -31,6 +31,9 @@ type DetailedConnection struct {
 type Explanation struct {
 	IngressExplanations []*RuleAndConn
 	EgressExplanations  []*RuleAndConn
+
+	NotDeterminedIngress *netset.TransportSet
+	NotDeterminedEgress  *netset.TransportSet
 }
 
 // RuleAndConn contains a set of connections and a rule ID which is directly related to these connections
@@ -56,8 +59,8 @@ func (d *DetailedConnection) DetailedExplanationString(connSet *netset.Transport
 }
 
 func (es *Explanation) String(connSet *netset.TransportSet) string {
-	ingressExplanationsFiltered := filterExplanation(es.IngressExplanations, connSet)
-	egressExplanationsFiltered := filterExplanation(es.EgressExplanations, connSet)
+	ingressExplanationsFiltered := FilterExplanation(es.IngressExplanations, connSet)
+	egressExplanationsFiltered := FilterExplanation(es.EgressExplanations, connSet)
 
 	ingress := common.JoinStringifiedSlice(ingressExplanationsFiltered, common.CommaSeparator)
 	egress := common.JoinStringifiedSlice(egressExplanationsFiltered, common.CommaSeparator)
@@ -70,7 +73,7 @@ func (es *Explanation) RuleIDs() (ingress, egress []int) {
 	for i := range es.IngressExplanations {
 		ingress[i] = es.IngressExplanations[i].RuleID
 	}
-	egress = make([]int, len(es.IngressExplanations))
+	egress = make([]int, len(es.EgressExplanations))
 	for i := range es.EgressExplanations {
 		egress[i] = es.EgressExplanations[i].RuleID
 	}
@@ -81,7 +84,7 @@ func (rac *RuleAndConn) String() string {
 	return fmt.Sprintf("{conn: %s, ruleID: %d}", rac.Conn.String(), rac.RuleID)
 }
 
-func filterExplanation(allExplanations []*RuleAndConn, connSet *netset.TransportSet) []*RuleAndConn {
+func FilterExplanation(allExplanations []*RuleAndConn, connSet *netset.TransportSet) []*RuleAndConn {
 	res := []*RuleAndConn{}
 	for _, r := range allExplanations {
 		if r == nil {
