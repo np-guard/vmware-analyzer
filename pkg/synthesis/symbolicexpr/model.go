@@ -13,21 +13,16 @@ type atomicTerm struct {
 	neg bool // equal to group/tag/... (false) or not-equal to it (true)
 }
 
-// abstraction of an NSX group or over VMs originating from an NSX internal cidr
-type abstractGroupTerm struct {
+// groupAtomicTerm represent an equal/not-equal condition over a group
+// todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
+type groupAtomicTerm struct {
 	atomicTerm
 	group *collector.Group
 }
 
-// groupAtomicTerm represent an equal/not-equal condition over an NSX originating group
-// todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
-type groupAtomicTerm struct {
-	abstractGroupTerm
-}
-
 // internalIPTerm represents an NSX originate group or over VMs originating from an NSX internal cidr
 type internalIPTerm struct {
-	abstractGroupTerm
+	// todo
 }
 
 type tagAtomicTerm struct {
