@@ -64,7 +64,7 @@ const (
 var staticTests = []*cliTest{
 	{
 		name:        "unsupported_format_check",
-		args:        "-r ../pkg/data/json/Example1.json -v -o svg -o ex1.svg ",
+		args:        "analyze -r ../pkg/data/json/Example1.json -v -o svg -o ex1.svg ",
 		expectedErr: []string{"invalid argument"},
 	},
 	{
@@ -83,70 +83,63 @@ var staticTests = []*cliTest{
 	{
 		// invalid nsx connections
 		name: "invalid_nsx_conn_1",
-		args: "--host https://1.1.1.1 --username username --password password",
+		args: "collect --host https://1.1.1.1 --username username --password password",
 		expectedErr: []string{"remote error: tls: handshake failure",
 			"invalid character" /*indicates that the server did not return a valid JSON response*/},
 	},
 	{
 		// invalid nsx connections
 		name:        "invalid_nsx_conn_2",
-		args:        "--host 123 --username username --password password",
+		args:        "collect --host 123 --username username --password password",
 		expectedErr: []string{"unsupported protocol scheme"},
 	},
 	{
 		// analysis from nsx resources input file
 		name: "analyze-only",
-		args: "--verbose --resource-input-file ../pkg/data/json/Example1.json" +
+		args: "analyze --verbose --resource-input-file ../pkg/data/json/Example1.json" +
 			" --filename examples/output/analysis-only.txt --log-file examples/output/analysis-only.log",
 		expectedOutFile: []string{"examples/output/analysis-only.txt", "examples/output/analysis-only.log"},
 	},
 	{
 		name:            "analyze-only-resources-shorthand-flag",
-		args:            "-r ../pkg/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
+		args:            "analyze -r ../pkg/data/json/Example1.json --filename examples/output/analysis-only-new.txt",
 		expectedOutFile: []string{"examples/output/analysis-only-new.txt"},
 	},
 	{
 		name: "analyze-topology-dot",
-		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
+		args: "analyze --resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.dot --filename examples/output/analysis.dot -o dot",
 		expectedOutFile: []string{"examples/output/topology.dot", "examples/output/analysis.dot"},
 	},
 	{
 		name: "analyze-topology-json",
-		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
+		args: "analyze --resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.json --filename examples/output/analysis.json -o json",
 		expectedOutFile: []string{"examples/output/topology.json", "examples/output/analysis.json"},
 	},
 	{
 		name: "analyze-topology-text",
-		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
+		args: "analyze --resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.txt --filename examples/output/analysis.txt -o txt",
 		expectedOutFile: []string{"examples/output/topology.txt", "examples/output/analysis.txt"},
 	},
 	{
 		name: "synthesize-only",
-		args: "--resource-input-file ../pkg/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis" +
+		args: "generate --resource-input-file ../pkg/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis" +
 			" --disjoint-hint backend,frontend --disjoint-hint frontend,backend --synth-create-dns-policy=false",
 		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
 	},
 	{
 		name: "anonymize-only",
-		args: "--resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
-			" --skip-analysis --anonymize",
+		args: "collect --resource-input-file examples/input/resources.json --resource-dump-file examples/output/resources_anon_only.json" +
+			" --anonymize",
 		possibleErr:     resourceFileNotFoundErr,
 		expectedOutFile: []string{"examples/output/resources_anon_only.json"},
 	},
 	// tests with possible errors if are not run on env with dot executable
 	{
-		name: "anonymize-analyze",
-		args: "--resource-input-file examples/input/resources.json  --resource-dump-file examples/output/resources_anon.json" +
-			" --anonymize --filename examples/output/analysis.txt -o txt",
-		possibleErr:     resourceFileNotFoundErr,
-		expectedOutFile: []string{"examples/output/resources_anon.json", "examples/output/analysis.svg"},
-	},
-	{
 		name: "analyze-topology-svg",
-		args: "--resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
+		args: "analyze --resource-input-file ../pkg/data/json/Example1.json --topology-dump-file" +
 			" examples/output/topology.svg --filename examples/output/analysis.svg -o svg" +
 			` --output-filter="New-VM-2",New-VM-1`,
 		possibleErr:     noDotExecErr,
@@ -199,29 +192,35 @@ func (st *cliTest) runTest(t *testing.T) {
 var nsxEnvTests = []*cliTest{
 	{
 		name:                    "verbose_analysis_with_no_cli_args",
-		args:                    "-v",
+		args:                    "analyze -v",
 		possibleErr:             common.ErrMissingRquiredArg,       // no env vars provided for NSX connection
 		expectedOutputSubstring: common.AnalyzedConnectivityHeader, // expecting successful connectivity analysis
 	},
 	{
 		name:            "collect-only",
-		args:            "--resource-dump-file examples/output/resources.json --skip-analysis",
+		args:            "collect --resource-dump-file examples/output/resources.json",
 		possibleErr:     common.ErrMissingRquiredArg,
 		expectedOutFile: []string{"examples/output/resources.json"},
 	},
 	{
 		name:            "collect-anonymize",
-		args:            "--resource-dump-file examples/output/resources_anon.json --skip-analysis --anonymize",
+		args:            "collect --resource-dump-file examples/output/resources_anon.json --anonymize",
 		possibleErr:     common.ErrMissingRquiredArg,
 		expectedOutFile: []string{"examples/output/resources_anon.json"},
 	},
 	{
-		name: "collect-and-analyze-and-synthesis",
-		args: "--resource-dump-file examples/output/collected-resources.json --filename examples/output/collected-analysis.txt" +
+		name: "collect-and-analyze",
+		args: "analyze --resource-dump-file examples/output/collected-resources.json " +
+			"--filename examples/output/collected-analysis.txt",
+		possibleErr:     common.ErrMissingRquiredArg,
+		expectedOutFile: []string{"examples/output/collected-resources.json", "examples/output/collected-analysis.txt"},
+	},
+	{
+		name: "collect-and-synthesis",
+		args: "generate --resource-dump-file examples/output/collected-resources.json" +
 			" --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
-		possibleErr: common.ErrMissingRquiredArg,
-		expectedOutFile: []string{"examples/output/collected-resources.json", "examples/output/collected-analysis.txt",
-			"examples/output/collected-synthesis/k8s_resources/policies.yaml"},
+		possibleErr:     common.ErrMissingRquiredArg,
+		expectedOutFile: []string{"examples/output/collected-resources.json", "examples/output/collected-synthesis/k8s_resources/policies.yaml"},
 	},
 
 	// TODO: add error checks for cases such as partial nsx details in args, partial in env vars..

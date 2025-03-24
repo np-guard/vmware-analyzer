@@ -30,6 +30,9 @@ func GetNSXServerDate(host, user, password string, insecureSkipVerify bool) (Ser
 	if err := getNSXArg(&password, "NSX_PASSWORD"); err != nil {
 		return ServerData{}, err
 	}
+	if os.Getenv("NSX_SKIP_VERIFY") == "true" {
+		insecureSkipVerify = true
+	}
 	logging.Infof("collecting NSX resources from given host %s", host)
 	return NewServerData(host, user, password, insecureSkipVerify), nil
 }

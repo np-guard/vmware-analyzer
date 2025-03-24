@@ -324,7 +324,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	if exclude {
 		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
 		if len(ips) > 0 {
-			logging.Warnf("Rule with IPs and SourcesExcluded is not supported. ignoring the following IPs\n%s",
+			logging.Debugf("Rule with IPs and SourcesExcluded is not supported. ignoring the following IPs\n%s",
 				strings.Join(ips, common.CommaSeparator))
 		}
 	} else {
