@@ -8,11 +8,11 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
-func filterResources(rc *collector.ResourcesContainerModel, VMs []string) {
-	if len(VMs) == 0 {
+func filterResources(rc *collector.ResourcesContainerModel, vms []string) {
+	if len(vms) == 0 {
 		return
 	}
-	rf := resourceFilter{rc: rc, VMs: VMs}
+	rf := resourceFilter{rc: rc, VMs: vms}
 	rf.filterTopology()
 	rf.filterGroups()
 	rf.filterRules()
@@ -68,7 +68,7 @@ func (f *resourceFilter) filterTopology() {
 		segment := &f.rc.SegmentList[i]
 		segment.SegmentPorts = slices.DeleteFunc(segment.SegmentPorts, f.portFilter)
 	}
-	//remove empty segments:
+	// remove empty segments:
 	f.rc.SegmentList = slices.DeleteFunc(f.rc.SegmentList, f.segmentFilter)
 }
 
