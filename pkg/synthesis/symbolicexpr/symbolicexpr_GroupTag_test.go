@@ -16,7 +16,7 @@ import (
 func NewDummyGroupTerm(name string, neg bool) *groupAtomicTerm {
 	nsxGroup := nsx.Group{DisplayName: &name}
 	group := collector.Group{Group: nsxGroup}
-	dummyGroupTerm := groupAtomicTerm{group: &group, atomicTerm: atomicTerm{neg: neg}}
+	dummyGroupTerm := groupAtomicTerm{abstractGroupTerm: abstractGroupTerm{group: &group, atomicTerm: atomicTerm{neg: neg}}}
 	return &dummyGroupTerm
 }
 
@@ -50,6 +50,33 @@ func TestTagTerms(t *testing.T) {
 		"Slytherin not supersetOf dontCare")
 	require.Equal(t, atomicNegSly.supersetOf(atomicGry, &hints), true,
 		"Slytherin neg supersetOf Gryffindor")
+}
+
+func TestInternalIPTerms(t *testing.T) {
+	internalIP1, internalIP2 := "172.16.0.0/12", "192.168.0.0/16"
+	internalIPTerm1 := NewTagTerm(internalIP1, false)
+	internalIP1Neg := NewTagTerm(internalIP1, true)
+	internalIPTerm2 := NewTagTerm(internalIP2, false)
+	internalIPTerm2Neg := NewTagTerm(internalIP2, true)
+	fmt.Println("atomic1 is", internalIPTerm1.String())
+	fmt.Println("atomic1Neg is", internalIP1Neg.String())
+	fmt.Println("internalIP2 is", internalIPTerm2.String())
+	disjoint := [][]string{{internalIP1, internalIP2}}
+	hints := Hints{GroupsDisjoint: disjoint}
+	// test disjoint between atomics
+	require.Equal(t, internalIPTerm2.disjoint(internalIPTerm1, &hints), true,
+		"172.16.0.0/12 and 192.168.0.0/16 should be disjoint")
+	require.Equal(t, internalIP1Neg.disjoint(internalIPTerm2Neg, &hints), false,
+		"Neg 172.16.0.0/12 and Neg 192.168.0.0/16 should not be disjoint")
+	require.Equal(t, internalIPTerm2.disjoint(internalIP1Neg, &hints), false,
+		"172.16.0.0/12 and Neg 192.168.0.0/16 should not be disjoint")
+	// test supersetOf between atomics
+	require.Equal(t, internalIPTerm2.supersetOf(internalIPTerm1, &hints), false,
+		"192.168.0.0/16 not supersetOf 172.16.0.0/12")
+	require.Equal(t, internalIP1Neg.supersetOf(internalIPTerm2Neg, &hints), false,
+		"Neg 192.168.0.0/16 not supersetOf Neg 172.16.0.0/12  should be disjoint")
+	require.Equal(t, internalIP1Neg.supersetOf(internalIPTerm2, &hints), true,
+		"172.16.0.0/12 neg supersetOf 192.168.0.0/16")
 }
 
 func TestSymbolicPaths(t *testing.T) {
