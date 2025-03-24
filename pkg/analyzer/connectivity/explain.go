@@ -2,6 +2,8 @@ package connectivity
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
@@ -48,4 +50,25 @@ func (c connMapEntry) fullExplanationString() string {
 	deniedConns := fmt.Sprintf("denied connections: %s, rules details:\n%s",
 		deniedConn.String(), c.DetailedConn.DetailedExplanationString(deniedConn))
 	return strings.Join([]string{header, allowedConns, deniedConns}, "\n")
+}
+
+func (c ConnMap) RulesNotEvaluated(allRules []int) []int {
+	usedRules := map[int]bool{}
+	for _, rID := range allRules {
+		usedRules[rID] = false
+	}
+	asSlice := c.toSlice()
+	for _, entry := range asSlice {
+		ingressRules, egressRules := entry.DetailedConn.ExplanationObj.RuleIDs()
+		usedIDs := slices.Concat(ingressRules, egressRules)
+		for _, id := range usedIDs {
+			usedRules[id] = true
+		}
+	}
+
+	maps.DeleteFunc(usedRules, func(k int, v bool) bool {
+		return v // delete used rules
+	})
+
+	return slices.Sorted(maps.Keys(usedRules))
 }

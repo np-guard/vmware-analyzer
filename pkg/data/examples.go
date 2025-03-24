@@ -119,6 +119,178 @@ var Example1a = registerExample(&Example{
 	},
 })
 
+var Example1aRedundantRuleInOut = registerExample(&Example{
+	Name: "Example1aRedundantRuleInOut",
+	VMs:  []string{"A", "B"},
+	GroupsByVMs: map[string][]string{
+		frontEnd: {"A"},
+		backEnd:  {"B"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1004,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1006,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_all_frontend_to_backend",
+					ID:       1005,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+})
+
+var Example1aRedundantRuleIn = registerExample(&Example{
+	Name: "Example1aRedundantRuleIn",
+	VMs:  []string{"A", "B"},
+	GroupsByVMs: map[string][]string{
+		frontEnd: {"A"},
+		backEnd:  {"B"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1004,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:      "allow_smb_incoming",
+					ID:        1006,
+					Source:    frontEnd,
+					Dest:      backEnd,
+					Services:  []string{"/infra/services/SMB"},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:     "allow_all_frontend_to_backend",
+					ID:       1005,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+})
+
+var Example1aRedundantRuleOut = registerExample(&Example{
+	Name: "Example1aRedundantRuleOut",
+	VMs:  []string{"A", "B"},
+	GroupsByVMs: map[string][]string{
+		frontEnd: {"A"},
+		backEnd:  {"B"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:      "allow_smb_incoming",
+					ID:        1004,
+					Source:    frontEnd,
+					Dest:      backEnd,
+					Services:  []string{"/infra/services/SMB"},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:     "allow_smb_incoming",
+					ID:       1006,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow_all_frontend_to_backend",
+					ID:       1005,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+})
+
+var Example1aRedundantRuleOutInSeparated = registerExample(&Example{
+	Name: "Example1aRedundantRuleOutInSeparated",
+	VMs:  []string{"A", "B"},
+	GroupsByVMs: map[string][]string{
+		frontEnd: {"A"},
+		backEnd:  {"B"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:      "allow_smb_incoming",
+					ID:        1004,
+					Source:    frontEnd,
+					Dest:      backEnd,
+					Services:  []string{"/infra/services/SMB"},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:      "allow_smb_incoming",
+					ID:        1006,
+					Source:    frontEnd,
+					Dest:      backEnd,
+					Services:  []string{"/infra/services/SMB"},
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:     "allow_all_frontend_to_backend",
+					ID:       1005,
+					Source:   frontEnd,
+					Dest:     backEnd,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+})
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var Example1c = registerExample(&Example{

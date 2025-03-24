@@ -15,22 +15,23 @@ import (
 //
 //nolint:gocritic // temporarily keep commented-out code
 func dfwAllowedConnections(d *dfw.DFW, src, dst topology.Endpoint) *connectivity.DetailedConnection {
-	ingressAllowed, ingressDenied, ingressDelegated /* ingressDenied*/ := dfwAllowedConnectionsIngressOrEgress(d, src, dst, true)
+	ingressAllowed, ingressDenied, ingressDelegated, ingressNotDeterminedConns := dfwAllowedConnectionsIngressOrEgress(d, src, dst, true)
 	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
 	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
 	// logging.Debugf("ingressDenied: %s", ingressDenied.String())
 	// logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
-	egressAllowed, egressDenied, egressDelegated /*egressDenied*/ := dfwAllowedConnectionsIngressOrEgress(d, src, dst, false)
+	egressAllowed, egressDenied, egressDelegated, egressNotDeterminedConns := dfwAllowedConnectionsIngressOrEgress(d, src, dst, false)
 	// logging.Debugf("egressAllowed: %s", egressAllowed.String())
 	// logging.Debugf("egressDenied: %s", egressDenied.String())
 	// logging.Debugf("egressDelegated: %s", egressDelegated.String())
 
 	return buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied,
-		egressDenied, ingressDelegated, egressDelegated)
+		egressDenied, ingressDelegated, egressDelegated, ingressNotDeterminedConns, egressNotDeterminedConns)
 }
 
 func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egressDenied,
-	ingressDelegated, egressDelegated *connectionsAndRules) *connectivity.DetailedConnection {
+	ingressDelegated, egressDelegated,
+	ingressNotDeterminedConns, egressNotDeterminedConns *connectionsAndRules) *connectivity.DetailedConnection {
 	conn := ingressAllowed.accumulatedConns.Intersect(egressAllowed.accumulatedConns)
 	explanation := &connectivity.Explanation{}
 
@@ -41,6 +42,9 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 	explanation.EgressExplanations = append(explanation.EgressExplanations, egressDenied.partitionsByRules...)
 	explanation.EgressExplanations = append(explanation.EgressExplanations, egressDelegated.partitionsByRules...)
 
+	explanation.NotDeterminedIngress = ingressNotDeterminedConns.accumulatedConns
+	explanation.NotDeterminedEgress = egressNotDeterminedConns.accumulatedConns
+
 	return connectivity.NewDetailedConnection(conn, explanation)
 }
 
@@ -48,7 +52,7 @@ func buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied, egres
 //
 //nolint:gocritic // temporarily keep commented-out code
 func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint, isIngress bool) (
-	allAllowedConns, allDeniedConns, delegatedConns *connectionsAndRules) {
+	allAllowedConns, allDeniedConns, delegatedConns, notDeterminedConns *connectionsAndRules) {
 	// accumulate the following sets, from all categories - by order
 	allAllowedConns = emptyConnectionsAndRules()
 	allDeniedConns = emptyConnectionsAndRules()
@@ -61,7 +65,7 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 	if src.IsExternal() && !isIngress || dst.IsExternal() && isIngress {
 		// if src/dst is external, all connection is allowed.
 		allAllowedConns.accumulatedConns = netset.AllTransports()
-		return allAllowedConns, allDeniedConns, delegatedConns
+		return allAllowedConns, allDeniedConns, delegatedConns, emptyConnectionsAndRules()
 	}
 	for _, dfwCategory := range d.CategoriesSpecs {
 		if dfwCategory.Category == collector.EthernetCategory {
@@ -152,5 +156,5 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 		}
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.
-	return allAllowedConns, allDeniedConns, delegatedConns
+	return allAllowedConns, allDeniedConns, delegatedConns, allNotDeterminedConns
 }
