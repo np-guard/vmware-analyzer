@@ -55,10 +55,10 @@ func TestTagTerms(t *testing.T) {
 func TestInternalIPTerms(t *testing.T) {
 	ipInternal1, _ := netset.IPBlockFromCidr("172.16.0.0/12")
 	ipInternal2, _ := netset.IPBlockFromCidr("192.168.0.0/16")
-	ruleIpInternal1 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal1, OriginalIP: "172.16.0.0/12"}}
-	ruleIpInternal2 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal2, OriginalIP: "192.168.0.0/16"}}
-	ipInternalTerm1 := NewGroupInternalIPTerm(ruleIpInternal1)
-	ipInternalTerm2 := NewGroupInternalIPTerm(ruleIpInternal2)
+	ruleIPInternal1 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal1, OriginalIP: "172.16.0.0/12"}}
+	ruleIPInternal2 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal2, OriginalIP: "192.168.0.0/16"}}
+	ipInternalTerm1 := NewGroupInternalIPTerm(ruleIPInternal1)
+	ipInternalTerm2 := NewGroupInternalIPTerm(ruleIPInternal2)
 	internalIPTerm1Neg := ipInternalTerm1.negate()
 	internalIPTerm2Neg := ipInternalTerm2.negate()
 	fmt.Println("ipInternalTerm1 is", ipInternalTerm1.String())
