@@ -28,30 +28,45 @@ type resourceFilter struct {
 	allRemainGroupPaths []string // the filtered paths
 }
 
+//nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) vmFilter(vm collector.VirtualMachine) bool {
 	return vm.DisplayName == nil || vm.ExternalId == nil || !slices.Contains(f.VMs, *vm.DisplayName)
 }
+
+//nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) vniFilter(vni collector.VirtualNetworkInterface) bool {
 	return !slices.Contains(f.vmIds, *vni.OwnerVmId)
 }
+
+//nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) portFilter(port collector.SegmentPort) bool {
 	return !slices.Contains(f.vnisAttIds, *port.Attachment.Id)
 }
+
+//nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) groupFilter(group collector.Group) bool {
 	return len(group.VMMembers) == 0 && len(group.AddressMembers) == 0
 }
+
 func (f *resourceFilter) groupPathFilter(path string) bool {
 	return slices.Contains(f.allGroupPaths, path) && !slices.Contains(f.allRemainGroupPaths, path)
 }
+
+//nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) ruleFilter(rule collector.Rule) bool {
 	return len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0
 }
+
+//nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) segmentFilter(segment collector.Segment) bool {
 	return len(segment.SegmentPorts) == 0
 }
-func (f *resourceFilter) groupVmFilter(vm collector.RealizedVirtualMachine) bool {
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) groupVMFilter(vm collector.RealizedVirtualMachine) bool {
 	return vm.Id == nil || !slices.Contains(f.vmIds, *vm.Id)
 }
+
 func (f *resourceFilter) addressFilter(ip nsx.IPElement) bool {
 	return !slices.Contains(f.vmsAddresses, string(ip))
 }
@@ -62,7 +77,8 @@ func (f *resourceFilter) filterTopology() {
 	f.vmIds = common.CustomStrSliceToStrings(f.rc.VirtualMachineList, func(vm collector.VirtualMachine) string { return *vm.ExternalId })
 	// remove vnis from list:
 	f.rc.VirtualNetworkInterfaceList = slices.DeleteFunc(f.rc.VirtualNetworkInterfaceList, f.vniFilter)
-	f.vnisAttIds = common.CustomStrSliceToStrings(f.rc.VirtualNetworkInterfaceList, func(vni collector.VirtualNetworkInterface) string { return *vni.LportAttachmentId })
+	f.vnisAttIds = common.CustomStrSliceToStrings(f.rc.VirtualNetworkInterfaceList,
+		func(vni collector.VirtualNetworkInterface) string { return *vni.LportAttachmentId })
 	// remove segment ports:
 	for i := range f.rc.SegmentList {
 		segment := &f.rc.SegmentList[i]
@@ -82,15 +98,17 @@ func (f *resourceFilter) filterGroups() {
 	// remove filtered vms, vnis and addresses from groups:
 	for i := range f.rc.DomainList {
 		domainRsc := &f.rc.DomainList[i].Resources
-		f.allGroupPaths = append(f.allGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
+		f.allGroupPaths = append(f.allGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList,
+			func(group collector.Group) string { return *group.Path })...)
 		for j := range domainRsc.GroupList {
-			domainRsc.GroupList[j].VMMembers = slices.DeleteFunc(domainRsc.GroupList[j].VMMembers, f.groupVmFilter)
+			domainRsc.GroupList[j].VMMembers = slices.DeleteFunc(domainRsc.GroupList[j].VMMembers, f.groupVMFilter)
 			domainRsc.GroupList[j].VIFMembers = slices.DeleteFunc(domainRsc.GroupList[j].VIFMembers, f.vniFilter)
 			domainRsc.GroupList[j].AddressMembers = slices.DeleteFunc(domainRsc.GroupList[j].AddressMembers, f.addressFilter)
 		}
 		// remove empty groups:
 		domainRsc.GroupList = slices.DeleteFunc(domainRsc.GroupList, f.groupFilter)
-		f.allRemainGroupPaths = append(f.allRemainGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList, func(group collector.Group) string { return *group.Path })...)
+		f.allRemainGroupPaths = append(f.allRemainGroupPaths, common.CustomStrSliceToStrings(domainRsc.GroupList,
+			func(group collector.Group) string { return *group.Path })...)
 	}
 }
 func (f *resourceFilter) filterRules() {
