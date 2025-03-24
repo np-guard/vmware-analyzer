@@ -3,27 +3,25 @@ package cli
 var args = newInArgs()
 
 type inArgs struct {
-	resourceInputFile string
-	host              string
-	user              string
-	password          string
-	resourceDumpFile  string
-	topologyDumpFile  string
-	synthesisDumpDir  string
-	synthesizeAdmin   bool
-	// skipAnalysis       bool
-	anonymize       bool
-	logFile         string
-	outputFile      string
-	outputFormat    outFormat
-	quiet           bool
-	verbose         bool
-	explain         bool
-	outputFilter    []string
-	color           bool
-	createDNSPolicy bool
-	disjointHints   []string
-	// synth              bool
+	resourceInputFile  string
+	host               string
+	user               string
+	password           string
+	resourceDumpFile   string
+	topologyDumpFile   string
+	synthesisDumpDir   string
+	synthesizeAdmin    bool
+	anonymize          bool
+	logFile            string
+	outputFile         string
+	outputFormat       outFormat
+	quiet              bool
+	verbose            bool
+	explain            bool
+	outputFilter       []string
+	color              bool
+	createDNSPolicy    bool
+	disjointHints      []string
 	insecureSkipVerify bool
 }
 
@@ -38,7 +36,6 @@ const (
 	passwordFlag                = "password"
 	resourceDumpFileFlag        = "resource-dump-file"
 	topologyDumpFileFlag        = "topology-dump-file"
-	skipAnalysisFlag            = "skip-analysis"
 	anonymizeFlag               = "anonymize"
 	synthesisDumpDirFlag        = "synthesis-dump-dir"
 	synthesizeAdminPoliciesFlag = "synthesize-admin-policies"
@@ -54,7 +51,6 @@ const (
 	colorFlag                   = "color"
 	createDNSPolicyFlag         = "synth-create-dns-policy"
 	disjointHintsFlag           = "disjoint-hint"
-	synthFlag                   = "synth"
 	insecureSkipVerifyFlag      = "insecure-skip-verify"
 
 	resourceInputFileHelp       = "file path input JSON of NSX resources (instead of collecting from NSX host)"
