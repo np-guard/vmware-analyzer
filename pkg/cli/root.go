@@ -45,6 +45,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute(cmdlineArgs []string) error {
+	args = newInArgs()
 	rootCmd := newCommandRoot()
 	rootCmd.SetArgs(cmdlineArgs)
 	return rootCmd.Execute()
