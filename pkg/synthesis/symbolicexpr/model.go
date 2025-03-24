@@ -21,8 +21,14 @@ type groupAtomicTerm struct {
 }
 
 // internalIPTerm represents an NSX originate group or over VMs originating from an NSX internal cidr
+// we keep the original IP block, but we do not merge/subtract e.g. different internalIPTerm like we do for
+// ipBlockAtomicTerm. This is since, unlike for external IP blocks, it is not guaranteed the relations at snapshot
+// will hold "forever"
+// Like in the case of groupAtomicTerm, disjointness will be passed via Hints
 type internalIPTerm struct {
-	// todo
+	atomicTerm
+	ipBlock *topology.IPBlock
+	vms     []topology.Endpoint
 }
 
 type tagAtomicTerm struct {
