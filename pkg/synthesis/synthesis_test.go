@@ -61,6 +61,9 @@ func (synTest *synthesisTest) id() string {
 	if synTest.synthesizeAdmin {
 		id += "_AdminPoliciesEnabled"
 	}
+	if synTest.filter != nil{
+		id += "_Filtered"
+	}
 	return id
 }
 
@@ -186,6 +189,13 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          false,
 	},
 	{
+		name:            "ExampleHogwartsFiltered",
+		exData:          data.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
+		filter: []string{data.SlyWeb, data.GryWeb, data.HufWeb, data.Dum1, data.Dum2},
+	},
+	{
 		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
 		exData:          data.ExampleHogwartsSimplerNonSymInOut,
 		synthesizeAdmin: true,
@@ -243,7 +253,6 @@ var resourceFileTest = synthesisTest{
 	exData:          nil,
 	synthesizeAdmin: false,
 	noHint:          true,
-	filter:          []string{"New-VM-2", "New-VM-1"},
 }
 
 var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
