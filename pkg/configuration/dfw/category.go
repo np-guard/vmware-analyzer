@@ -139,9 +139,9 @@ func (c *CategorySpec) potentialRedundantRules(rulesPerDirection []*FwRule, allV
 		}
 
 		// hc of ruleI
-		ruleIHC := common.NewDiscreteEndpointsTrafficSet(vmsToIntervalSet(srcObj.VMs), vmsToIntervalSet(dstObj.VMs), conn)
+		ruleIHC := netset.NewDiscreteEndpointsTrafficSet(vmsToIntervalSet(srcObj.VMs), vmsToIntervalSet(dstObj.VMs), conn)
 
-		priorRulesHC := common.EmptyDiscreteEndpointsTrafficSet()
+		priorRulesHC := netset.EmptyDiscreteEndpointsTrafficSet()
 
 		// todo: consider opposite direction for iteration, and consider stop as soon as full coverage is detected
 		/*for j := i - 1; j >= 0; j-- {
@@ -158,7 +158,7 @@ func (c *CategorySpec) potentialRedundantRules(rulesPerDirection []*FwRule, allV
 		for j := range i { // iterate higher-prio rules
 			// look for tuples of (src, dst, conn) already covering rule[i] - action does not matter [match is based on this tupple]
 			ruleJ := rulesPerDirection[j]
-			ruleJHC := common.NewDiscreteEndpointsTrafficSet(vmsToIntervalSet(ruleJ.Src.VMs), vmsToIntervalSet(ruleJ.Dst.VMs), ruleJ.Conn)
+			ruleJHC := netset.NewDiscreteEndpointsTrafficSet(vmsToIntervalSet(ruleJ.Src.VMs), vmsToIntervalSet(ruleJ.Dst.VMs), ruleJ.Conn)
 			if !ruleIHC.Intersect(ruleJHC).IsEmpty() {
 				coveringRules = append(coveringRules, ruleJ.RuleID)
 			}

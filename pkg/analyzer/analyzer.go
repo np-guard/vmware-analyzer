@@ -46,7 +46,7 @@ func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContain
 	res, err := connMap.GenConnectivityOutput(params)
 
 	rulesNotEvaluated := connMap.RulesNotEvaluated(config.FW.AllRulesIDs)
-	logging.Debugf("\n\nrules not evaluated:%v\n", rulesNotEvaluated)
+	logging.Debugf("rules not evaluated:%v\n", rulesNotEvaluated)
 
 	//nolint:gocritic // temporarily keep commented-out code
 	/*allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")
