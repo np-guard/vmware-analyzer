@@ -164,7 +164,7 @@ func (r *Runner) runLint() error {
 		return nil
 	}
 
-	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color : r.color})
+	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color: r.color})
 	if err != nil {
 		return err
 	}
