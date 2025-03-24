@@ -16,9 +16,9 @@ import (
 type nsxTopology struct {
 	segments           []*topology.Segment
 	vmSegments         map[topology.Endpoint][]*topology.Segment
-	allRuleIPBlocks    map[string]*topology.RuleIPBlock // a map from the ip string,to the block
-	ruleBlockPerEP map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
-	allIPBlock         *netset.IPBlock                  // the union of segments and rule path IPs
+	allRuleIPBlocks    map[string]*topology.RuleIPBlock              // a map from the ip string,to the block
+	ruleBlockPerEP     map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
+	allIPBlock         *netset.IPBlock                               // the union of segments and rule path IPs
 	allInternalIPBlock *netset.IPBlock
 	allExternalIPBlock *netset.IPBlock
 }
@@ -27,7 +27,7 @@ func newTopology() *nsxTopology {
 	return &nsxTopology{
 		vmSegments:         map[topology.Endpoint][]*topology.Segment{},
 		allRuleIPBlocks:    map[string]*topology.RuleIPBlock{},
-		ruleBlockPerEP: map[topology.Endpoint][]*topology.RuleIPBlock{},
+		ruleBlockPerEP:     map[topology.Endpoint][]*topology.RuleIPBlock{},
 		allIPBlock:         netset.NewIPBlock(),
 		allInternalIPBlock: netset.NewIPBlock(),
 	}

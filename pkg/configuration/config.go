@@ -106,6 +106,7 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 
 const (
 	vmNameTitle      = "VM Name"
+	vmsTitle         = "VMs"
 	segmentNameTitle = "Segment Name"
 )
 
@@ -121,7 +122,7 @@ func (c *Config) getSegmentsPortsInfoStr(color bool) string {
 }
 
 func (c *Config) getSegmentsInfoStr(color bool) string {
-	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", "VMs"}
+	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", vmsTitle}
 	lines := [][]string{}
 	for _, s := range c.segments {
 		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
@@ -160,13 +161,14 @@ func (c *Config) getExternalEPInfoStr(color bool) string {
 }
 
 func (c *Config) getRuleBlocksStr(color bool) string {
-	header := []string{"Rule Block", "External Endpoints", "VMs"}
+	header := []string{"Rule Block", "External Endpoints", vmsTitle}
 	lines := [][]string{}
 	for _, block := range c.topology.allRuleIPBlocks {
-		lines = append(lines, []string{block.OriginalIP,
-			strings.Join(common.CustomStrSliceToStrings(block.ExternalIPs, func(ep topology.Endpoint) string { return ep.Name() }), common.CommaSpaceSeparator),
-			strings.Join(common.CustomStrSliceToStrings(block.VMs, func(vm topology.Endpoint) string { return vm.Name() }), common.CommaSpaceSeparator),
-			})
+		eps := strings.Join(common.CustomStrSliceToStrings(block.ExternalIPs,
+			func(ep topology.Endpoint) string { return ep.Name() }), common.CommaSpaceSeparator)
+		vms := strings.Join(common.CustomStrSliceToStrings(block.VMs,
+			func(vm topology.Endpoint) string { return vm.Name() }), common.CommaSpaceSeparator)
+		lines = append(lines, []string{block.OriginalIP, eps, vms})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

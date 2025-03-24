@@ -50,8 +50,8 @@ type nsxConfigParser struct {
 	groupToVMsListCache    map[*collector.Group][]topology.Endpoint
 	servicePathToConnCache map[string]*netset.TransportSet
 	// store references to groups/services objects from paths used in Fw rules
-	groupPathsToObjects     map[string]*collector.Group
-	servicePathsToObjects   map[string]*collector.Service
+	groupPathsToObjects   map[string]*collector.Group
+	servicePathsToObjects map[string]*collector.Service
 }
 
 func (p *nsxConfigParser) init() {
