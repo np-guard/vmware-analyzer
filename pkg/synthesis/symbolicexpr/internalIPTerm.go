@@ -7,6 +7,10 @@ import (
 
 // internalIPTerm represents VMs of a given internal address which is not a segment
 
+func NewGroupInternalIPTerm(ruleBlock *topology.RuleIPBlock) *internalIPTerm {
+	return &internalIPTerm{ruleBlock: ruleBlock}
+}
+
 // following 4 functions are false since an groupAtomicTerm is a non-empty cond on a group which may or may not hold
 
 func (internalIPTerm) IsTautology() bool {
@@ -26,15 +30,15 @@ func (internalIPTerm) IsNoGroup() bool {
 }
 
 func (internalIP internalIPTerm) String() string {
-	prefix := "VMs "
+	neg := ""
 	if internalIP.isNegation() {
-		prefix = "not "
+		neg = "not "
 	}
-	return prefix + "within IPs " + internalIP.ipBlock.OriginalIP
+	return "VMs " + neg + "within IPs " + internalIP.name()
 }
 
 func (internalIP internalIPTerm) name() string {
-	return internalIP.String()
+	return internalIP.ruleBlock.IPBlock.OriginalIP
 }
 
 // GetBlock returns nil since the initial block does not guarantee anything regarding the future content of the group
@@ -46,12 +50,8 @@ func (internalIPTerm) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
-func NewGroupInternalIPTerm(origIP *topology.IPBlock, vms []topology.Endpoint) *internalIPTerm {
-	return &internalIPTerm{ipBlock: origIP, vms: vms}
-}
-
 func (internalIP internalIPTerm) negate() atomic {
-	return internalIPTerm{ipBlock: internalIP.ipBlock, vms: internalIP.vms, atomicTerm: atomicTerm{neg: !internalIP.neg}}
+	return internalIPTerm{ruleBlock: internalIP.ruleBlock, atomicTerm: atomicTerm{neg: !internalIP.neg}}
 }
 
 // returns true iff otherAtom is negation of internalIP

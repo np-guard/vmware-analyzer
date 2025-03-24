@@ -52,33 +52,38 @@ func TestTagTerms(t *testing.T) {
 		"Slytherin neg supersetOf Gryffindor")
 }
 
-/*
 func TestInternalIPTerms(t *testing.T) {
-	internalIP1, internalIP2 := "172.16.0.0/12", "192.168.0.0/16"
-	internalIPTerm1 := NewTagTerm(internalIP1, false)
-	internalIP1Neg := NewTagTerm(internalIP1, true)
-	internalIPTerm2 := NewTagTerm(internalIP2, false)
-	internalIPTerm2Neg := NewTagTerm(internalIP2, true)
-	fmt.Println("atomic1 is", internalIPTerm1.String())
-	fmt.Println("atomic1Neg is", internalIP1Neg.String())
-	fmt.Println("internalIP2 is", internalIPTerm2.String())
-	disjoint := [][]string{{internalIP1, internalIP2}}
+	ipInternal1, _ := netset.IPBlockFromCidr("172.16.0.0/12")
+	ipInternal2, _ := netset.IPBlockFromCidr("192.168.0.0/16")
+	ruleIpInternal1 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal1, OriginalIP: "172.16.0.0/12"}}
+	ruleIpInternal2 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal2, OriginalIP: "192.168.0.0/16"}}
+	ipInternalTerm1 := NewGroupInternalIPTerm(ruleIpInternal1)
+	ipInternalTerm2 := NewGroupInternalIPTerm(ruleIpInternal2)
+	internalIPTerm1Neg := ipInternalTerm1.negate()
+	internalIPTerm2Neg := ipInternalTerm2.negate()
+	fmt.Println("ipInternalTerm1 is", ipInternalTerm1.String())
+	fmt.Println("ipInternalTerm2 is", ipInternalTerm2.String())
+	fmt.Println("internalIPTerm1Neg is", internalIPTerm1Neg.String())
+	fmt.Println("internalIPTerm2Neg is", internalIPTerm2Neg.String())
+	disjoint := [][]string{{ipInternalTerm1.name(), ipInternalTerm2.name()}}
 	hints := Hints{GroupsDisjoint: disjoint}
 	// test disjoint between atomics
-	require.Equal(t, internalIPTerm2.disjoint(internalIPTerm1, &hints), true,
+	require.Equal(t, ipInternalTerm2.disjoint(ipInternalTerm1, &hints), true,
 		"172.16.0.0/12 and 192.168.0.0/16 should be disjoint")
-	require.Equal(t, internalIP1Neg.disjoint(internalIPTerm2Neg, &hints), false,
+	require.Equal(t, internalIPTerm1Neg.disjoint(internalIPTerm2Neg, &hints), false,
 		"Neg 172.16.0.0/12 and Neg 192.168.0.0/16 should not be disjoint")
-	require.Equal(t, internalIPTerm2.disjoint(internalIP1Neg, &hints), false,
+	require.Equal(t, ipInternalTerm2.disjoint(internalIPTerm1Neg, &hints), false,
 		"172.16.0.0/12 and Neg 192.168.0.0/16 should not be disjoint")
 	// test supersetOf between atomics
-	require.Equal(t, internalIPTerm2.supersetOf(internalIPTerm1, &hints), false,
+	require.Equal(t, ipInternalTerm2.supersetOf(ipInternalTerm1, &hints), false,
 		"192.168.0.0/16 not supersetOf 172.16.0.0/12")
-	require.Equal(t, internalIP1Neg.supersetOf(internalIPTerm2Neg, &hints), false,
+	require.Equal(t, internalIPTerm1Neg.supersetOf(internalIPTerm2Neg, &hints), false,
 		"Neg 192.168.0.0/16 not supersetOf Neg 172.16.0.0/12  should be disjoint")
-	require.Equal(t, internalIP1Neg.supersetOf(internalIPTerm2, &hints), true,
+	require.Equal(t, internalIPTerm1Neg.supersetOf(ipInternalTerm2, &hints), true,
 		"172.16.0.0/12 neg supersetOf 192.168.0.0/16")
-} */
+	require.Equal(t, internalIPTerm2Neg.supersetOf(ipInternalTerm1, &hints), true,
+		"192.168.0.0/16 neg supersetOf 172.16.0.0/12")
+}
 
 func TestSymbolicPaths(t *testing.T) {
 	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}

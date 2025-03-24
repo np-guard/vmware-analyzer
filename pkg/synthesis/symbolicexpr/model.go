@@ -27,8 +27,7 @@ type groupAtomicTerm struct {
 // Like in the case of groupAtomicTerm, disjointness will be passed via Hints
 type internalIPTerm struct {
 	atomicTerm
-	ipBlock *topology.IPBlock
-	vms     []topology.Endpoint
+	ruleBlock *topology.RuleIPBlock //
 }
 
 type tagAtomicTerm struct {
