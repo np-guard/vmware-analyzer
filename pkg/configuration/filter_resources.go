@@ -28,49 +28,6 @@ type resourceFilter struct {
 	allRemainGroupPaths []string // the filtered paths
 }
 
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) vmFilter(vm collector.VirtualMachine) bool {
-	return vm.DisplayName == nil || vm.ExternalId == nil || !slices.Contains(f.VMs, *vm.DisplayName)
-}
-
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) vniFilter(vni collector.VirtualNetworkInterface) bool {
-	return !slices.Contains(f.vmIds, *vni.OwnerVmId)
-}
-
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) portFilter(port collector.SegmentPort) bool {
-	return !slices.Contains(f.vnisAttIds, *port.Attachment.Id)
-}
-
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) groupFilter(group collector.Group) bool {
-	return len(group.VMMembers) == 0 && len(group.AddressMembers) == 0
-}
-
-func (f *resourceFilter) groupPathFilter(path string) bool {
-	return slices.Contains(f.allGroupPaths, path) && !slices.Contains(f.allRemainGroupPaths, path)
-}
-
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) ruleFilter(rule collector.Rule) bool {
-	return len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0
-}
-
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) segmentFilter(segment collector.Segment) bool {
-	return len(segment.SegmentPorts) == 0
-}
-
-//nolint:gocritic // filter can not be on pointer
-func (f *resourceFilter) groupVMFilter(vm collector.RealizedVirtualMachine) bool {
-	return vm.Id == nil || !slices.Contains(f.vmIds, *vm.Id)
-}
-
-func (f *resourceFilter) addressFilter(ip nsx.IPElement) bool {
-	return !slices.Contains(f.vmsAddresses, string(ip))
-}
-
 func (f *resourceFilter) filterTopology() {
 	// removing vms from vm list:
 	f.rc.VirtualMachineList = slices.DeleteFunc(f.rc.VirtualMachineList, f.vmFilter)
@@ -138,4 +95,47 @@ func (f *resourceFilter) filterRules() {
 			secPolicy.Rules = slices.DeleteFunc(secPolicy.Rules, f.ruleFilter)
 		}
 	}
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) vmFilter(vm collector.VirtualMachine) bool {
+	return vm.DisplayName == nil || vm.ExternalId == nil || !slices.Contains(f.VMs, *vm.DisplayName)
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) vniFilter(vni collector.VirtualNetworkInterface) bool {
+	return !slices.Contains(f.vmIds, *vni.OwnerVmId)
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) portFilter(port collector.SegmentPort) bool {
+	return !slices.Contains(f.vnisAttIds, *port.Attachment.Id)
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) groupFilter(group collector.Group) bool {
+	return len(group.VMMembers) == 0 && len(group.AddressMembers) == 0
+}
+
+func (f *resourceFilter) groupPathFilter(path string) bool {
+	return slices.Contains(f.allGroupPaths, path) && !slices.Contains(f.allRemainGroupPaths, path)
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) ruleFilter(rule collector.Rule) bool {
+	return len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) segmentFilter(segment collector.Segment) bool {
+	return len(segment.SegmentPorts) == 0
+}
+
+//nolint:gocritic // filter can not be on pointer
+func (f *resourceFilter) groupVMFilter(vm collector.RealizedVirtualMachine) bool {
+	return vm.Id == nil || !slices.Contains(f.vmIds, *vm.Id)
+}
+
+func (f *resourceFilter) addressFilter(ip nsx.IPElement) bool {
+	return !slices.Contains(f.vmsAddresses, string(ip))
 }
