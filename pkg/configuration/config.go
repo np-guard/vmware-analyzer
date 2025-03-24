@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -39,6 +40,7 @@ type Config struct {
 	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
 	configSummary    *configInfo
 	origNSXResources *collector.ResourcesContainerModel
+	topology         *nsxTopology
 }
 
 func (c *Config) Endpoints() []topology.Endpoint {
@@ -66,6 +68,11 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
+
+	// Addresses
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString(fmt.Sprintf("External EndPoints (Range: %s):\n", c.topology.allExternalIPBlock.String()))
+	sb.WriteString(c.getExternalEPInfoStr(color))
 
 	// segments
 	sb.WriteString(common.OutputSectionSep)
@@ -133,6 +140,15 @@ func (c *Config) getVMsInfoStr(color bool) string {
 	lines := [][]string{}
 	for _, vm := range c.VMs {
 		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.(*topology.VM).IPAddresses(), common.CommaSeparator)})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+func (c *Config) getExternalEPInfoStr(color bool) string {
+	header := []string{"External EP", "Rule Blocks"}
+	lines := [][]string{}
+	for _, ip := range c.externalIPs {
+		lines = append(lines, []string{ip.IPAddressesStr(), strings.Join(common.CustomStrSliceToStrings(c.topology.ruleBlockPerEP[ip],
+			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }), common.CommaSpaceSeparator)})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
