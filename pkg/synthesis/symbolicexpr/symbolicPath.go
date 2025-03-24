@@ -158,12 +158,12 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	resSymbolicPaths := SymbolicPaths{}
 	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
 	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
-	if !rule.Scope.IsAllGroups {
-		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.Scope.Groups, nil)
+	if !rule.OrigScope.IsAllGroups { // do not add *any* to Conjunction
+		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.OrigScope.Groups, nil)
 		if isInbound {
-			dstConjunctions = append(dstConjunctions, scopeConjunctions...)
+			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
 		} else { // outbound
-			srcConjunctions = append(srcConjunctions, scopeConjunctions...)
+			updateSrcOrDstConj(rule.Src.IsAllGroups, &srcConjunctions, &scopeConjunctions)
 		}
 	}
 	for _, srcConjunction := range srcConjunctions {
@@ -175,13 +175,25 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	return &resSymbolicPaths
 }
 
-func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
-	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) []*Conjunction {
-	tarmAny := Conjunction{allGroup{}}
-	res := []*Conjunction{&tarmAny}
-	if !isAllGroups {
-		res = getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)
+func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunctions *[]*Conjunction) {
+	if isAllGroups {
+		*srcOrDstConjunctions = *scopeConjunctions
+	} else {
+		*srcOrDstConjunctions = append(*srcOrDstConjunctions, *scopeConjunctions...)
 	}
-	res = append(res, getConjunctionForIPBlock(ruleBlocks)...)
-	return res
+}
+
+func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
+	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
+	ipBlockConjunctions, isTautology := getConjunctionForIPBlock(ruleBlocks)
+	res = append(res, ipBlockConjunctions...)
+	switch {
+	case isTautology:
+		return res // if 0.0.0.0/0 then this is the only relevant input
+	case isAllGroups:
+		res = append(res, &Conjunction{allGroup{}})
+	default:
+		res = append(res, getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)...)
+	}
+	return
 }

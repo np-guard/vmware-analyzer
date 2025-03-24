@@ -110,12 +110,23 @@ func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints)
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
 }
 
-// Evaluates group and translates it into []*Conjunction
-// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
-func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) []*Conjunction {
-	res := make([]*Conjunction, len(ipBlocks))
-	for i, ipBlock := range ipBlocks {
-		res[i] = &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: &ipBlock.IPBlock}}
+// Translates RuleIPBlock  it into []*Conjunction
+// 3 relevant types:
+// 1. tautology: 0.0.0.0/0; if one of the blocks of a RuleIPBlock is a tautology then it overrides all other blocks
+// 2. External IP addr - these will be further translated into IPBlockTerm
+// 3. Internal IP addr - todo
+func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) (ipBlocksConjunctions []*Conjunction, isTautology bool) {
+	ipBlocksConjunctions = []*Conjunction{}
+	for _, ipBlock := range ipBlocks {
+		if ipBlock.IsAll() {
+			return []*Conjunction{{&tautology{}}}, true
+		}
+		if ipBlock.HasExternal() {
+			externalIPBlock := &topology.IPBlock{Block: ipBlock.ExternalRange, OriginalIP: ipBlock.OriginalIP}
+			ipBlocksConjunctions = append(ipBlocksConjunctions, &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{},
+				IPBlock: externalIPBlock}})
+		}
+		// if ipBlock.HasInternal() todo: handle internal IPBlocks
 	}
-	return res
+	return ipBlocksConjunctions, isTautology
 }

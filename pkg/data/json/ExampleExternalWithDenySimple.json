@@ -28466,13 +28466,13 @@
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "ANY"
                                 ],
-                                "direction": "IN_OUT",
+                                "direction": "IN",
                                 "display_name": "deny_tcp_0_1",
                                 "rule_id": 1004,
                                 "scope": [
-                                    "ANY"
+                                    "frontend"
                                 ],
                                 "source_groups": [
                                     "1.2.0.0/30"
@@ -28491,13 +28491,13 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "frontend"
+                                    "ANY"
                                 ],
-                                "direction": "IN_OUT",
+                                "direction": "IN",
                                 "display_name": "allow_tcp_0_1",
                                 "rule_id": 1005,
                                 "scope": [
-                                    "ANY"
+                                    "frontend"
                                 ],
                                 "source_groups": [
                                     "1.2.0.0-1.2.1.255"
@@ -28518,7 +28518,7 @@
                                 "destination_groups": [
                                     "frontend"
                                 ],
-                                "direction": "IN_OUT",
+                                "direction": "IN",
                                 "display_name": "allow_udp_3_4",
                                 "rule_id": 1006,
                                 "scope": [
@@ -28543,7 +28543,7 @@
                                 "destination_groups": [
                                     "frontend"
                                 ],
-                                "direction": "IN_OUT",
+                                "direction": "IN",
                                 "display_name": "allow_icmp_1_3",
                                 "rule_id": 1007,
                                 "scope": [
