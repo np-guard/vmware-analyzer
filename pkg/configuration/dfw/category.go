@@ -3,9 +3,11 @@ package dfw
 import (
 	"fmt"
 
+	"github.com/np-guard/models/pkg/interval"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -18,6 +20,7 @@ type CategorySpec struct {
 	EvaluatedRules *EvalRules // ordered list of all evaluated inbound and outbound rules
 	EffectiveRules *EvalRules // ordered list of only effective inbound and outbound rules
 	dfwRef         *DFW
+	rulesMap       map[int]*FwRule // map from ruleID to (orig) FwRule object (direction is in/out/in_out)
 }
 
 func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
@@ -26,6 +29,7 @@ func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 		dfwRef:         d,
 		EvaluatedRules: &EvalRules{},
 		EffectiveRules: &EvalRules{},
+		rulesMap:       map[int]*FwRule{},
 	}
 }
 
@@ -39,6 +43,7 @@ func (c *CategorySpec) addRule(src, dst, scope *RuleEndpoints, conn *netset.Tran
 
 	// add FWRule object to list of original rules
 	c.Rules = append(c.Rules, newRule)
+	c.rulesMap[newRule.RuleID] = newRule
 
 	if c.Category == collector.EthernetCategory {
 		logging.Debugf(
@@ -103,4 +108,69 @@ func (c *CategorySpec) originalRulesComponentsStr() [][]string {
 func (c *CategorySpec) String() string {
 	rulesStr := common.JoinStringifiedSlice(c.Rules, common.NewLine)
 	return fmt.Sprintf("category: %s\nrules:\n%s\n", c.Category.String(), rulesStr)
+}
+
+// return a map from potential redundant rule ID, to the list of rule IDs that are "covering" this rule
+//
+//nolint:gocritic //keep comments for now
+func (c *CategorySpec) potentialRedundantRules(rulesPerDirection []*FwRule, allVMs []topology.Endpoint) map[int][]int {
+	res := map[int][]int{}
+	// logging.Debugf("called potentialRedundantRules for catrgory %s", c.Category.String())
+	vmNameToIndex := map[string]int{}
+	// index `i` to VM is just allVMs[i]
+	for i, vm := range allVMs {
+		vmNameToIndex[vm.String()] = i
+	}
+
+	// iterate inbound and outbound effective rules separately
+	for i, ruleI := range rulesPerDirection {
+		srcObj := ruleI.Src
+		dstObj := ruleI.Dst
+		conn := ruleI.Conn
+		coveringRules := []int{}
+
+		vmsToIntervalSet := func(vms []topology.Endpoint) *interval.CanonicalSet {
+			res := interval.NewCanonicalSet()
+			for _, vm := range vms {
+				index := int64(vmNameToIndex[vm.Name()])
+				res.AddInterval(interval.New(index, index))
+			}
+			return res
+		}
+
+		// hc of ruleI
+		ruleIHC := netset.NewDiscreteEndpointsTrafficSet(vmsToIntervalSet(srcObj.VMs), vmsToIntervalSet(dstObj.VMs), conn)
+
+		priorRulesHC := netset.EmptyDiscreteEndpointsTrafficSet()
+
+		// todo: consider opposite direction for iteration, and consider stop as soon as full coverage is detected
+		/*for j := i - 1; j >= 0; j-- {
+			ruleJ := rulesPerDirection[j]
+			ruleJHC := netset.NewSimpleEndpointsTrafficSet(vmsToIntervalSet(ruleJ.Src.VMs), vmsToIntervalSet(ruleJ.Dst.VMs), ruleJ.Conn)
+			if ruleJHC.IsSubset(priorRulesHC) {
+				continue
+			}
+		}*/
+
+		// vm-based redundancy computation
+		// todo: consider expression-based computation
+
+		for j := range i { // iterate higher-prio rules
+			// look for tuples of (src, dst, conn) already covering rule[i] - action does not matter [match is based on this tupple]
+			ruleJ := rulesPerDirection[j]
+			ruleJHC := netset.NewDiscreteEndpointsTrafficSet(vmsToIntervalSet(ruleJ.Src.VMs), vmsToIntervalSet(ruleJ.Dst.VMs), ruleJ.Conn)
+			if !ruleIHC.Intersect(ruleJHC).IsEmpty() {
+				coveringRules = append(coveringRules, ruleJ.RuleID)
+			}
+
+			priorRulesHC = priorRulesHC.Union(ruleJHC)
+		}
+		// after iterating all prior rules - check if they already cover all ruleI tuples
+		delta := ruleIHC.Subtract(priorRulesHC)
+		if delta.IsEmpty() {
+			// logging.Debugf("rule %d (inbound )is potentially redundant, covered by rules: %v", ruleI.RuleID, coveringRules)
+			res[ruleI.RuleID] = coveringRules
+		}
+	}
+	return res
 }

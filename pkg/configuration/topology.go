@@ -96,7 +96,7 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 			block, err = netset.IPBlockFromIPRangeStr(ip)
 		}
 		if err != nil {
-			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
+			logging.Debugf("Fail to parse IP %s, ignoring ip", ip)
 			continue
 		}
 		p.topology.allIPBlock = p.topology.allIPBlock.Union(block)
@@ -141,7 +141,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 		for _, address := range vm.(*topology.VM).IPAddresses() {
 			address, err := iIPBlockFromIPAddress(address)
 			if err != nil {
-				logging.Warnf("Could not resolve address %s of vm %s", address, vm.Name())
+				logging.Debugf("Could not resolve address %s of vm %s", address, vm.Name())
 				continue
 			}
 			for _, block := range p.topology.allRuleIPBlocks {

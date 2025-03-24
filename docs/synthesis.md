@@ -1,16 +1,5 @@
-# Synthesize k8s network policy resources from NSX DFW config
+# Generate k8s network policy resources from NSX DFW config
 
-
-```
-Flags:
-  -- synthesis-dump-dir         flag to run synthesis; specify directory path to store k8s synthesis results
-  -- synth                      flag to run synthesis, even if synthesis-dump-dir is not specified
-  -- synth-create-dns-policy    flag to create a policy allowing access to target env dns pod
-  -- synthesize-admin-policies  flag to synthesize category environment into admin network policies (which included deny, pass and priority) (default false)
-  -- disjoint-hint              comma separated list of NSX groups/tags that are always disjoint in their VM members, 
-  needed for an effective and sound synthesis process, can specify more than one hint 
-  (example: --disjoint-hint frontend,backend --disjoint-hint app,web,db) 
-```
 
 ## Overview
 The tool can synthesize a given `NSX DFW` policy into `k8s network policy`.

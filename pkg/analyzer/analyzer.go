@@ -20,6 +20,13 @@ func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivi
 				continue
 			}
 			conn := dfwAllowedConnections(c.FW, src, dst)
+
+			if (src.IsExternal() && conn.ExplanationObj.NotDeterminedIngress.IsAll()) ||
+				(dst.IsExternal() && conn.ExplanationObj.NotDeterminedEgress.IsAll()) {
+				delete(srcMap, dst)
+				continue // skip such pairs for which no connectivity was determined
+			}
+
 			res.Add(src, dst, conn)
 		}
 	}
@@ -37,6 +44,9 @@ func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContain
 	}
 	connMap := computeConnectivity(config, params.VMs)
 	res, err := connMap.GenConnectivityOutput(params)
+
+	rulesNotEvaluated := connMap.RulesNotEvaluated(config.FW.AllRulesIDs)
+	logging.Debugf("rules not evaluated:%v\n", rulesNotEvaluated)
 
 	//nolint:gocritic // temporarily keep commented-out code
 	/*allowed, denied := config.analyzedConnectivity.GetDisjointExplanationsPerEndpoints("A", "B")

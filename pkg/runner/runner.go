@@ -52,6 +52,9 @@ type Runner struct {
 	synthesizeAdmin     bool
 	suppressDNSPolicies bool
 
+	// lint args
+	lint bool
+
 	// runner state
 	nsxResources               *collector.ResourcesContainerModel
 	generatedK8sPolicies       []*v1.NetworkPolicy
@@ -82,6 +85,9 @@ func (r *Runner) Run() (*Observations, error) {
 		return nil, err
 	}
 	if err := r.runAnalyzer(); err != nil {
+		return nil, err
+	}
+	if err := r.runLint(); err != nil {
 		return nil, err
 	}
 	if err := r.runSynthesis(); err != nil {
@@ -150,6 +156,20 @@ func (r *Runner) runAnalyzer() error {
 	// TODO: remove print?
 	fmt.Println(connResStr)
 
+	return nil
+}
+
+func (r *Runner) runLint() error {
+	if !r.lint {
+		return nil
+	}
+
+	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, r.color)
+	if err != nil {
+		return err
+	}
+	lintReport := config.LintReport(r.color) // currently only redundant rules analysis
+	fmt.Println(lintReport)
 	return nil
 }
 
@@ -380,5 +400,11 @@ func WithNSXResources(rc *collector.ResourcesContainerModel) RunnerOption {
 func WithInsecureSkipVerify(insecureSkipVerify bool) RunnerOption {
 	return func(r *Runner) {
 		r.nsxInsecureSkipVerify = insecureSkipVerify
+	}
+}
+
+func WithLint(lint bool) RunnerOption {
+	return func(r *Runner) {
+		r.lint = lint
 	}
 }

@@ -22,7 +22,6 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 	nonDet *connectionsAndRules, // notDeterminedConns are the set of connections between src to dst, for which this category
 // has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
 ) {
-	// logging.Debugf("category: %s", c.Category.String())
 	allowedConns, jumpToAppConns, deniedConns = emptyConnectionsAndRules(), emptyConnectionsAndRules(), emptyConnectionsAndRules()
 	rules := c.EffectiveRules.Inbound // inbound effective rules
 	if !isIngress {

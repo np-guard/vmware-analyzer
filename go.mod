@@ -2,10 +2,8 @@ module github.com/np-guard/vmware-analyzer
 
 go 1.23.0
 
-toolchain go1.24.1
-
 require (
-	github.com/np-guard/models v0.5.6
+	github.com/np-guard/models v0.5.7
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	gopkg.in/yaml.v3 v3.0.1
