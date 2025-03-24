@@ -123,7 +123,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 	rc, err := data.ExamplesGeneration(example)
 	require.Nil(t, err)
 
-	config, err := ConfigFromResourcesContainer(rc, false)
+	config, err := ConfigFromResourcesContainer(rc, common.OutputParameters{})
 	require.Nil(t, err)
 
 	// compare redundant rules analysis
