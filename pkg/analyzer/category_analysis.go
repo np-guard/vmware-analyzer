@@ -37,11 +37,7 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
-				} /*else {
-					// can be considered redundant..
-					allExp := slices.Concat(allowedConns.partitionsByRules, deniedConns.partitionsByRules, jumpToAppConns.partitionsByRules)
-					potentialRedundantRules[rule.RuleID] = connectivity.FilterExplanation(allExp, rule.Conn)
-				}*/
+				}
 
 			case dfw.ActionDeny:
 				addedDeniedConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
