@@ -71,8 +71,13 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 
 	// Addresses
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString(fmt.Sprintf("External EndPoints (Range: %s):\n", c.topology.allExternalIPBlock.String()))
+	sb.WriteString(fmt.Sprintf("External Range:\n %s):\n", c.topology.allExternalIPBlock.String()))
+	sb.WriteString("External EndPoints:\n")
 	sb.WriteString(c.getExternalEPInfoStr(color))
+	// rule blocks
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Rule Blocks:\n")
+	sb.WriteString(c.getRuleBlocksStr(color))
 
 	// segments
 	sb.WriteString(common.OutputSectionSep)
@@ -149,6 +154,18 @@ func (c *Config) getExternalEPInfoStr(color bool) string {
 	for _, ip := range c.externalIPs {
 		lines = append(lines, []string{ip.IPAddressesStr(), strings.Join(common.CustomStrSliceToStrings(c.topology.ruleBlockPerEP[ip],
 			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }), common.CommaSpaceSeparator)})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) getRuleBlocksStr(color bool) string {
+	header := []string{"Rule Block", "External Endpoints", "VMs"}
+	lines := [][]string{}
+	for _, block := range c.topology.allRuleIPBlocks {
+		lines = append(lines, []string{block.OriginalIP,
+			strings.Join(common.CustomStrSliceToStrings(block.ExternalIPs, func(ep topology.Endpoint) string { return ep.Name() }), common.CommaSpaceSeparator),
+			strings.Join(common.CustomStrSliceToStrings(block.VMs, func(vm topology.Endpoint) string { return vm.Name() }), common.CommaSpaceSeparator),
+			})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
