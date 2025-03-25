@@ -81,7 +81,7 @@ func (c *Conjunction) isTautologyOrAllGroups() bool {
 // then "a and not b" - b is redundant
 // relevant only to Conjunctions referring to internal resources
 func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
-	if len(*c) <= 1 || c.hasIPBlockTerm() {
+	if len(*c) <= 1 || c.hasExternalIPBlockTerm() {
 		return *c
 	}
 	newC := Conjunction{}
@@ -113,7 +113,7 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 	return false
 }
 
-func (c *Conjunction) hasIPBlockTerm() bool {
+func (c *Conjunction) hasExternalIPBlockTerm() bool {
 	for _, term := range *c {
 		if term.IsTautology() {
 			return true
@@ -125,9 +125,9 @@ func (c *Conjunction) hasIPBlockTerm() bool {
 	return false
 }
 
-func (c *Conjunction) hasTagOrGroupTerm() bool {
+func (c *Conjunction) hasTagOrGroupOrInternalIPTerm() bool {
 	for _, term := range *c {
-		if isTagOrAtomicTerm(term) {
+		if isTagOrGroupOrInternalIPTerm(term) {
 			return true
 		}
 	}
@@ -143,7 +143,7 @@ func (c *Conjunction) isEmpty(hints *Hints) bool {
 	if len(*c) == 0 {
 		return false
 	}
-	if c.hasTagOrGroupTerm() && c.hasIPBlockTerm() {
+	if c.hasTagOrGroupOrInternalIPTerm() && c.hasExternalIPBlockTerm() {
 		return false
 	}
 	for i, outAtomicTerm := range *c {
@@ -193,7 +193,8 @@ func (c *Conjunction) disjoint(other *Conjunction, hints *Hints) bool {
 }
 
 func (c *Conjunction) areConjunctionNotSameType(other *Conjunction) bool {
-	return c.hasTagOrGroupTerm() && other.hasIPBlockTerm() || (other.hasTagOrGroupTerm() && c.hasIPBlockTerm())
+	return c.hasTagOrGroupOrInternalIPTerm() && other.hasExternalIPBlockTerm() ||
+		(other.hasTagOrGroupOrInternalIPTerm() && c.hasExternalIPBlockTerm())
 }
 
 // a Conjunction c contains an atom atomic if:
@@ -202,7 +203,7 @@ func (c *Conjunction) areConjunctionNotSameType(other *Conjunction) bool {
 // if atom is a tagTerm or a groupTerm, then if the Conjunction c contains the atom literally
 // if atom is an IPBlock, if there is already an IPBlock in c that atom is a superset of it.
 func (c *Conjunction) contains(atom atomic) bool {
-	if atom.IsTautology() || (c.hasTagOrGroupTerm() && atom.IsAllGroups()) {
+	if atom.IsTautology() || (c.hasTagOrGroupOrInternalIPTerm() && atom.IsAllGroups()) {
 		return true
 	}
 	for _, atomicItem := range *c {

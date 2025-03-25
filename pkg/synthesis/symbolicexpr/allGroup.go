@@ -57,7 +57,7 @@ func (allGroup) disjoint(atom atomic, hints *Hints) bool {
 
 // allGroup is superSet of any groupTerm and of any tagTerm
 func (allGroup) supersetOf(atom atomic, hints *Hints) bool {
-	return isTagOrAtomicTerm(atom)
+	return isTagOrGroupOrInternalIPTerm(atom)
 }
 
 func (allGroup) GetExternalBlock() *netset.IPBlock {

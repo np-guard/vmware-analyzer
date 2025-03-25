@@ -52,7 +52,7 @@ func (noGroup) AsSelector() (string, bool) {
 
 // noGroup disjoint to tagTerm and to groupTerm
 func (noGroup) disjoint(atom atomic, hints *Hints) bool {
-	return isTagOrAtomicTerm(atom)
+	return isTagOrGroupOrInternalIPTerm(atom)
 }
 
 // noGroup is not a superset of anything
