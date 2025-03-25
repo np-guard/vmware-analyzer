@@ -23,12 +23,12 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	var ipBlockAddedToExisting bool
 	// if c is an IPBlock, adds it to other IPBlock in the Conjunction, if any. Otherwise, just appends it
 	// in the former case we lose the OriginalIP
-	block := atom.GetBlock()
+	block := atom.GetExternalBlock()
 	var res Conjunction
 	if block != nil { // atom is an IPBlockTerm
 		// looks for an  IPBlock in c
 		for _, itemAtom := range *c {
-			itemBlock := itemAtom.GetBlock()
+			itemBlock := itemAtom.GetExternalBlock()
 			if itemBlock == nil { // itemAtom not an IPBlock
 				res = append(res, itemAtom)
 			} else {
@@ -118,7 +118,7 @@ func (c *Conjunction) hasIPBlockTerm() bool {
 		if term.IsTautology() {
 			return true
 		}
-		if term.GetBlock() != nil {
+		if term.GetExternalBlock() != nil {
 			return true
 		}
 	}
@@ -150,7 +150,7 @@ func (c *Conjunction) isEmpty(hints *Hints) bool {
 		if outAtomicTerm.IsContradiction() {
 			return true
 		}
-		if outAtomicTerm.GetBlock() != nil {
+		if outAtomicTerm.GetExternalBlock() != nil {
 			continue
 		}
 		reminder := *c

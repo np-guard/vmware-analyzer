@@ -41,8 +41,8 @@ func (internalIP internalIPTerm) name() string {
 	return internalIP.ruleBlock.IPBlock.OriginalIP
 }
 
-// GetBlock returns nil since the initial block does not guarantee anything regarding the future content of the group
-func (internalIPTerm) GetBlock() *netset.IPBlock {
+// GetExternalBlock returns nil since this term is only about internal IPs
+func (internalIPTerm) GetExternalBlock() *netset.IPBlock {
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (internalIP internalIPTerm) isNegateOf(otherAtom atomic) bool {
 
 // returns true iff otherAtom is disjoint to internalIP as given by hints
 func (internalIP internalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.GetBlock() != nil {
+	if otherAtom.GetExternalBlock() != nil {
 		return true // otherAtom is an IPBlock; external IP block is disjoint to group terms referring to VMs
 	}
 	return disjoint(internalIP, otherAtom, hints)

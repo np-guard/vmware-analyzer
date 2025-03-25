@@ -231,12 +231,12 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
-			res.cidrs = a.GetBlock().ToCidrList()
+			res.cidrs = a.GetExternalBlock().ToCidrList()
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces
-		case a.GetBlock() != nil:
-			res.cidrs = a.GetBlock().ToCidrList()
+		case a.GetExternalBlock() != nil:
+			res.cidrs = a.GetExternalBlock().ToCidrList()
 		default:
 			label, notIn := a.AsSelector()
 			label = toLegalK8SString(label)

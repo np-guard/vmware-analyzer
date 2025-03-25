@@ -54,6 +54,6 @@ func (c contradiction) supersetOf(atom atomic, hints *Hints) bool {
 	return false
 }
 
-func (contradiction) GetBlock() *netset.IPBlock {
+func (contradiction) GetExternalBlock() *netset.IPBlock {
 	return nil
 }

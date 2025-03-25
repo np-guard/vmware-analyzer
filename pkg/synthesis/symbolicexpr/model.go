@@ -58,19 +58,19 @@ type noGroup struct {
 // atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
 // tautology and contradiction
 type atomic interface {
-	name() string                   // name of group/tag/...
-	String() string                 // full expression e.g. "group = slytherin"
-	negate() atomic                 // negation of the atomic term todo: once tag scope is supported will return []atomic
-	isNegation() bool               // is term negation
-	IsTautology() bool              // is term tautology (0.0.0.0/0)?
-	IsContradiction() bool          // is term contradiction (negation of tautology)?
-	IsAllGroups() bool              // term is true for any internal resource (allGroup, tautology)?
-	IsNoGroup() bool                // term is false for any internal resource (noGroup, contradiction)?
-	isNegateOf(atomic) bool         // is the term negation of the other given term
-	AsSelector() (string, bool)     // for the usage of policy synthesis
-	disjoint(atomic, *Hints) bool   // based on hints
-	supersetOf(atomic, *Hints) bool // super set of resources satisfying atom, given Hints based on hints
-	GetBlock() *netset.IPBlock      // gets block for ipBlockTerm; nil otherwise
+	name() string                      // name of group/tag/...
+	String() string                    // full expression e.g. "group = slytherin"
+	negate() atomic                    // negation of the atomic term todo: once tag scope is supported will return []atomic
+	isNegation() bool                  // is term negation
+	IsTautology() bool                 // is term tautology (0.0.0.0/0)?
+	IsContradiction() bool             // is term contradiction (negation of tautology)?
+	IsAllGroups() bool                 // term is true for any internal resource (allGroup, tautology)?
+	IsNoGroup() bool                   // term is false for any internal resource (noGroup, contradiction)?
+	isNegateOf(atomic) bool            // is the term negation of the other given term
+	AsSelector() (string, bool)        // for the usage of policy synthesis
+	disjoint(atomic, *Hints) bool      // based on hints
+	supersetOf(atomic, *Hints) bool    // super set of resources satisfying atom, given Hints based on hints
+	GetExternalBlock() *netset.IPBlock // gets block for ipBlockTerm; nil otherwise
 }
 
 // Conjunction a DNF Conjunction of Atomics
