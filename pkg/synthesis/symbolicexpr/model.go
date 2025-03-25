@@ -25,7 +25,7 @@ type groupAtomicTerm struct {
 // We do derive disjointness/supersetness w.r.t. other internal blocks (in addition to hints)
 type internalIPTerm struct {
 	atomicTerm
-	ruleBlock *topology.RuleIPBlock //
+	ruleBlock *topology.RuleIPBlock
 }
 
 type tagAtomicTerm struct {
