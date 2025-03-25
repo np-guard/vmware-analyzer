@@ -1,0 +1,19 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group         |Expression |VM
+default-group |           |A, B
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                    |Dst                    |Connection
+0                            |1006    |(IP addr in 0.0.0.0/0) |(IP addr in 0.0.0.0/0) |ICMP
+
+outbound rules
+Original allow rule priority |Rule id |Src                    |Dst                    |Connection
+0                            |1006    |(IP addr in 0.0.0.0/0) |(IP addr in 0.0.0.0/0) |ICMP
+
