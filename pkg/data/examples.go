@@ -642,7 +642,15 @@ var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 					Conn:   netset.AllTransports(),
 				},
 				{
-					Name:   "allow-only-1",
+					Name:   "drop-real-group",
+					ID:     2000,
+					Source: "172.16.10.10/16",
+					Dest:   "real-group",
+					Action: Drop,
+					Conn:   netset.AllTransports(),
+				},
+				{
+					Name:   "allow-all-after-drop-real-group",
 					ID:     2000,
 					Source: "172.16.10.10/16",
 					Dest:   "0.0.0.0/0",
