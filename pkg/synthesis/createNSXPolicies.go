@@ -144,7 +144,7 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 		if atom.IsAllGroups() {
 			continue
 		}
-		if ip := atom.GetBlock(); ip != nil {
+		if ip := atom.GetExternalBlock(); ip != nil {
 			if len(con) != 1 {
 				logging.InternalErrorf("got a multi atom Conjunction with external IP %s", ip.String())
 			}

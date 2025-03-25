@@ -7,15 +7,15 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func NewIPBlockTerm(ipBlock *topology.IPBlock) *ipBlockAtomicTerm {
+func NewIPBlockTerm(ipBlock *topology.IPBlock) *externalIPTerm {
 	// todo: dump if ipBlock has internal address
-	return &ipBlockAtomicTerm{atomicTerm: atomicTerm{}, IPBlock: ipBlock}
+	return &externalIPTerm{atomicTerm: atomicTerm{}, IPBlock: ipBlock}
 }
 
 // OrigIP is non-empty for an ipTerm that is in its original rule form, or a negation of such ipTerm
 // once we have more than one ipTerm in a Conjunction we merge; and then the OrigIP component is lost
 
-func (ipBlockTerm *ipBlockAtomicTerm) String() string {
+func (ipBlockTerm *externalIPTerm) String() string {
 	var ipStr string
 	if ipBlockTerm.Block.IsEmpty() {
 		ipStr = "the empty block"
@@ -36,35 +36,35 @@ func (ipBlockTerm *ipBlockAtomicTerm) String() string {
 
 // following 2 functions are false and the last one true for ipBlock since ipBlock presents only external IPs
 
-func (ipBlockTerm *ipBlockAtomicTerm) IsTautology() bool {
+func (ipBlockTerm *externalIPTerm) IsTautology() bool {
 	return false
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) IsAllGroups() bool {
+func (ipBlockTerm *externalIPTerm) IsAllGroups() bool {
 	return false
 }
 
-// IsNoGroup ipBlockAtomicTerm neq 0.0.0.0/0 presents external addresses, thus IsNoGroup is true
-func (ipBlockTerm *ipBlockAtomicTerm) IsNoGroup() bool {
+// IsNoGroup externalIPTerm neq 0.0.0.0/0 presents external addresses, thus IsNoGroup is true
+func (ipBlockTerm *externalIPTerm) IsNoGroup() bool {
 	return true
 }
 
 // IsContradiction true iff the ipBlock is empty
-func (ipBlockTerm *ipBlockAtomicTerm) IsContradiction() bool {
-	return ipBlockTerm.GetBlock().IsEmpty()
+func (ipBlockTerm *externalIPTerm) IsContradiction() bool {
+	return ipBlockTerm.GetExternalBlock().IsEmpty()
 }
 
 //
 
-func (ipBlockTerm *ipBlockAtomicTerm) name() string {
+func (ipBlockTerm *externalIPTerm) name() string {
 	return ipBlockTerm.String()
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) AsSelector() (string, bool) {
+func (ipBlockTerm *externalIPTerm) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
-func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
+func (ipBlockTerm *externalIPTerm) GetExternalBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
 		block = block.Complementary()
@@ -72,30 +72,30 @@ func (ipBlockTerm *ipBlockAtomicTerm) GetBlock() *netset.IPBlock {
 	return block
 }
 
-// negate an ipBlockAtomicTerm; if it has the OrigIP component then uses neg; otherwise complement the IP block
-func (ipBlockTerm *ipBlockAtomicTerm) negate() atomic {
+// negate an externalIPTerm; if it has the OrigIP component then uses neg; otherwise complement the IP block
+func (ipBlockTerm *externalIPTerm) negate() atomic {
 	if ipBlockTerm.OriginalIP != "" { // orig block from rule
-		return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
+		return &externalIPTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
 	}
 	// block not kept in the form of original rule form
-	return &ipBlockAtomicTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block.Complementary(), OriginalIP: ""},
+	return &externalIPTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block.Complementary(), OriginalIP: ""},
 		atomicTerm: atomicTerm{}}
 }
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
-func (ipBlockTerm *ipBlockAtomicTerm) isNegateOf(otherAtom atomic) bool {
-	otherBlock := otherAtom.GetBlock()
+func (ipBlockTerm *externalIPTerm) isNegateOf(otherAtom atomic) bool {
+	otherBlock := otherAtom.GetExternalBlock()
 	if otherBlock == nil {
 		return false
 	}
-	return ipBlockTerm.GetBlock().Equal(otherBlock.Complementary())
+	return ipBlockTerm.GetExternalBlock().Equal(otherBlock.Complementary())
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
-func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
-	block := ipBlockTerm.GetBlock()
-	otherBlock := otherAtom.GetBlock()
+func (ipBlockTerm *externalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+	block := ipBlockTerm.GetExternalBlock()
+	otherBlock := otherAtom.GetExternalBlock()
 	if otherBlock == nil {
 		return true // otherAtom is not an IPBlock; external IP block is disjoint to tag/group terms referring to VMs
 	}
@@ -103,8 +103,8 @@ func (ipBlockTerm *ipBlockAtomicTerm) disjoint(otherAtom atomic, hints *Hints) b
 }
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
-func (ipBlockTerm *ipBlockAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.GetBlock() == nil {
+func (ipBlockTerm *externalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+	if otherAtom.GetExternalBlock() == nil {
 		return false
 	}
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
@@ -123,10 +123,14 @@ func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) (ipBlocksConjunc
 		}
 		if ipBlock.HasExternal() {
 			externalIPBlock := &topology.IPBlock{Block: ipBlock.ExternalRange, OriginalIP: ipBlock.OriginalIP}
-			ipBlocksConjunctions = append(ipBlocksConjunctions, &Conjunction{&ipBlockAtomicTerm{atomicTerm: atomicTerm{},
+			ipBlocksConjunctions = append(ipBlocksConjunctions, &Conjunction{&externalIPTerm{atomicTerm: atomicTerm{},
 				IPBlock: externalIPBlock}})
 		}
 		// if ipBlock.HasInternal() todo: handle internal IPBlocks
 	}
 	return ipBlocksConjunctions, isTautology
+}
+
+func (externalIPTerm) getInternalBlock() *netset.IPBlock {
+	return nil
 }
