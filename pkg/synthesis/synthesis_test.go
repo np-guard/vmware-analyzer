@@ -110,7 +110,7 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
-		filter: []string{"A","B"},
+		filter:          []string{"A", "B"},
 	},
 	{
 		name:            "ExampleExternalWithDenySimple",
