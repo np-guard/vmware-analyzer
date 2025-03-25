@@ -5,7 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-// internalIPTerm represents VMs of a given internal address which is not a segment
+// internalIPTerm represents VMs of a given internal IP address block which is not a segment
 
 func NewGroupInternalIPTerm(ruleBlock *topology.RuleIPBlock) *internalIPTerm {
 	return &internalIPTerm{ruleBlock: ruleBlock}
