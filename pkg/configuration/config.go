@@ -1,7 +1,6 @@
 package configuration
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -69,12 +68,16 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
+	// Summery of IP Ranges
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("IP Ranges:\n")
+	sb.WriteString(c.getIPRangeInfoStr(color))
+
 	// External EndPoints
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString(fmt.Sprintf("Internal Range:\n%s\n\n", common.NetsetShortString(c.topology.allInternalIPBlock)))
-	sb.WriteString(fmt.Sprintf("External Range:\n%s\n\n", common.NetsetShortString(c.topology.allExternalIPBlock)))
 	sb.WriteString("External EndPoints:\n")
 	sb.WriteString(c.getExternalEPInfoStr(color))
+
 	// Rule Blocks
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Rule Blocks:\n")
@@ -150,6 +153,19 @@ func (c *Config) getVMsInfoStr(color bool) string {
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
+
+
+func (c *Config) getIPRangeInfoStr(color bool) string {
+	header := []string{"Total", "Internal","External"}
+	lines := [][]string{{
+		common.NetsetShortString(c.topology.allIPBlock),
+		common.NetsetShortString(c.topology.allInternalIPBlock),
+		common.NetsetShortString(c.topology.allExternalIPBlock),
+	}}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+
 func (c *Config) getExternalEPInfoStr(color bool) string {
 	header := []string{"External EP", "Rule Blocks"}
 	lines := [][]string{}
