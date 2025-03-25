@@ -72,6 +72,7 @@ func (p *nsxConfigParser) runParser() error {
 	// the parsing of relevant NSX objects is done here
 	p.storeParsedVMs()    // get vms config
 	p.storeParsedGroups() // get groups config
+	p.removeVMsWithoutGroups()
 	if err := p.getTopology(); err != nil {
 		return err
 	}
@@ -113,6 +114,21 @@ func (p *nsxConfigParser) storeParsedSegments() {
 		segment := &p.rc.SegmentList[i]
 		vms := p.configRes.GetVMs(p.rc.GetVMsOfSegment(segment))
 		p.configRes.segments = append(p.configRes.segments, topology.NewSegmentDetails(segment, vms))
+	}
+}
+
+func (p *nsxConfigParser) removeVMsWithoutGroups() {
+	toRemove := []topology.Endpoint{}
+	for vm, groups := range p.configRes.GroupsPerVM {
+		if len(groups) == 0 && len(p.ruleBlockPerEP[vm]) == 0 {
+			logging.Warnf("ignoring VM without groups: %s", vm.Name())
+			toRemove = append(toRemove, vm)
+		}
+	}
+	for _, vm := range toRemove {
+		delete(p.configRes.GroupsPerVM, vm)
+		p.configRes.VMs = slices.DeleteFunc(p.configRes.VMs, func(v topology.Endpoint) bool { return v.ID() == vm.ID() })
+		delete(p.configRes.VMsMap, vm.ID())
 	}
 }
 
