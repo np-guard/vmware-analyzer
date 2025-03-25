@@ -33,7 +33,7 @@ type tagAtomicTerm struct {
 	tag *resources.Tag
 }
 
-type ipBlockAtomicTerm struct {
+type externalIPTerm struct {
 	atomicTerm
 	*topology.IPBlock
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
-func getIPBlocksTerms() (allIPBlockTerm *tautology, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm *ipBlockAtomicTerm) {
+func getIPBlocksTerms() (allIPBlockTerm *tautology, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm *externalIPTerm) {
 	ipBlock1, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlock2, _ := netset.IPBlockFromCidr("1.2.3.0/16")
 	ipBlock3, _ := netset.IPBlockFromCidr("192.0.2.0/24")
