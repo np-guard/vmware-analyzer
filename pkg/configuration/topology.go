@@ -39,8 +39,8 @@ func (p *nsxConfigParser) getTopology() (err error) {
 		return err
 	}
 	p.getAllRulesIPBlocks()
-	p.getExternalIPs()
 	p.getRuleBlocksVMs()
+	p.getExternalIPs()
 	return nil
 }
 
@@ -146,6 +146,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 				logging.Debugf("Could not resolve address %s of vm %s", address, vm.Name())
 				continue
 			}
+			p.configRes.topology.allInternalIPBlock = p.configRes.topology.allInternalIPBlock.Union(address)
 			for _, block := range p.configRes.topology.allRuleIPBlocks {
 				if address.IsSubset(block.Block) {
 					block.VMs = append(block.VMs, vm)
