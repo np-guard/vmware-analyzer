@@ -7,7 +7,7 @@ import (
 
 // internalIPTerm represents VMs of a given internal IP address block which is not a segment
 
-func NewGroupInternalIPTerm(ruleBlock *topology.RuleIPBlock) *internalIPTerm {
+func NewInternalIPTerm(ruleBlock *topology.RuleIPBlock) *internalIPTerm {
 	return &internalIPTerm{ruleBlock: ruleBlock}
 }
 
