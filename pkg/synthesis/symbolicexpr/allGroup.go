@@ -63,3 +63,7 @@ func (allGroup) supersetOf(atom atomic, hints *Hints) bool {
 func (allGroup) GetExternalBlock() *netset.IPBlock {
 	return nil
 }
+
+func (allGroup) getInternalBlock() *netset.IPBlock {
+	return netset.GetCidrAll()
+}

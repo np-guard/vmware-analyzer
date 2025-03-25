@@ -78,6 +78,10 @@ func (tagAtomicTerm) GetExternalBlock() *netset.IPBlock {
 	return nil
 }
 
+func (tagAtomicTerm) getInternalBlock() *netset.IPBlock {
+	return nil
+}
+
 // evaluates symbolic Conjunctions from a given Expression
 //////////////////////////////////////////////////////////
 

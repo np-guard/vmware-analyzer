@@ -64,10 +64,31 @@ func (internalIP internalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 	if otherAtom.GetExternalBlock() != nil {
 		return true // otherAtom is an IPBlock; external IP block is disjoint to group terms referring to VMs
 	}
+	// if otherAtom is also internal Block, then check explicit disjointness
+	otherInternalBlock := otherAtom.getInternalBlock()
+	if otherInternalBlock != nil {
+		if internalIP.getInternalBlock().Intersect(otherInternalBlock).IsEmpty() {
+			return true
+		}
+	}
 	return disjoint(internalIP, otherAtom, hints)
 }
 
 // returns true iff internalIP is superset of otherAtom as given by hints
 func (internalIP internalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+	// if otherAtom is also internal Block, then check explicit containment
+	otherInternalBlock := otherAtom.getInternalBlock()
+	if otherInternalBlock != nil {
+		if otherInternalBlock.Intersect(internalIP.getInternalBlock().Complementary()).IsEmpty() {
+			return true
+		}
+	}
 	return supersetOf(internalIP, otherAtom, hints)
+}
+
+func (internalIP internalIPTerm) getInternalBlock() *netset.IPBlock {
+	if internalIP.isNegation() {
+		return internalIP.ruleBlock.Block.Complementary()
+	}
+	return internalIP.ruleBlock.Block
 }

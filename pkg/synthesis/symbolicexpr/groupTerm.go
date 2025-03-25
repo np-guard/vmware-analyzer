@@ -110,3 +110,7 @@ func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool
 func (groupAtomicTerm) GetExternalBlock() *netset.IPBlock {
 	return nil
 }
+
+func (groupAtomicTerm) getInternalBlock() *netset.IPBlock {
+	return nil
+}

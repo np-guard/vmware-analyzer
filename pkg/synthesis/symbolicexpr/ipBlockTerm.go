@@ -130,3 +130,7 @@ func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) (ipBlocksConjunc
 	}
 	return ipBlocksConjunctions, isTautology
 }
+
+func (ipBlockAtomicTerm) getInternalBlock() *netset.IPBlock {
+	return nil
+}

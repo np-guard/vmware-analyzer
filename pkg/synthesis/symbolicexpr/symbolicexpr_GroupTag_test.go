@@ -67,21 +67,29 @@ func TestInternalIPTerms(t *testing.T) {
 	fmt.Println("internalIPTerm2Neg is", internalIPTerm2Neg.String())
 	disjoint := [][]string{{ipInternalTerm1.name(), ipInternalTerm2.name()}}
 	hints := Hints{GroupsDisjoint: disjoint}
-	// test disjoint between atomics
-	require.Equal(t, ipInternalTerm2.disjoint(ipInternalTerm1, &hints), true,
+	// test disjoint between atomics with and without hints
+	// with hints
+	require.Equal(t, true, ipInternalTerm2.disjoint(ipInternalTerm1, &hints),
 		"172.16.0.0/12 and 192.168.0.0/16 should be disjoint")
-	require.Equal(t, internalIPTerm1Neg.disjoint(internalIPTerm2Neg, &hints), false,
+	require.Equal(t, false, internalIPTerm1Neg.disjoint(internalIPTerm2Neg, &hints),
 		"Neg 172.16.0.0/12 and Neg 192.168.0.0/16 should not be disjoint")
-	require.Equal(t, ipInternalTerm2.disjoint(internalIPTerm1Neg, &hints), false,
+	require.Equal(t, false, ipInternalTerm2.disjoint(internalIPTerm1Neg, &hints),
 		"172.16.0.0/12 and Neg 192.168.0.0/16 should not be disjoint")
 	// test supersetOf between atomics
-	require.Equal(t, ipInternalTerm2.supersetOf(ipInternalTerm1, &hints), false,
+	require.Equal(t, false, ipInternalTerm2.supersetOf(ipInternalTerm1, &hints),
 		"192.168.0.0/16 not supersetOf 172.16.0.0/12")
-	require.Equal(t, internalIPTerm1Neg.supersetOf(internalIPTerm2Neg, &hints), false,
+	require.Equal(t, false, internalIPTerm1Neg.supersetOf(internalIPTerm2Neg, &hints),
 		"Neg 192.168.0.0/16 not supersetOf Neg 172.16.0.0/12  should be disjoint")
-	require.Equal(t, internalIPTerm1Neg.supersetOf(ipInternalTerm2, &hints), true,
+	require.Equal(t, true, internalIPTerm1Neg.supersetOf(ipInternalTerm2, &hints),
 		"172.16.0.0/12 neg supersetOf 192.168.0.0/16")
-	require.Equal(t, internalIPTerm2Neg.supersetOf(ipInternalTerm1, &hints), true,
+	require.Equal(t, true, internalIPTerm2Neg.supersetOf(ipInternalTerm1, &hints),
+		"192.168.0.0/16 neg supersetOf 172.16.0.0/12")
+	// without hints
+	require.Equal(t, true, ipInternalTerm2.disjoint(ipInternalTerm1, &Hints{GroupsDisjoint: [][]string{}}),
+		"172.16.0.0/12 and 192.168.0.0/16 should be disjoint")
+	require.Equal(t, true, internalIPTerm1Neg.supersetOf(ipInternalTerm2, &Hints{GroupsDisjoint: [][]string{}}),
+		"172.16.0.0/12 neg supersetOf 192.168.0.0/16")
+	require.Equal(t, true, internalIPTerm2Neg.supersetOf(ipInternalTerm1, &Hints{GroupsDisjoint: [][]string{}}),
 		"192.168.0.0/16 neg supersetOf 172.16.0.0/12")
 }
 

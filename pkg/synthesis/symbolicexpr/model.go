@@ -21,9 +21,8 @@ type groupAtomicTerm struct {
 }
 
 // internalIPTerm represents an VMs originating from an NSX internal cidr which is not composed of segments
-// we keep the original IP block, but we do not merge/subtract (as in the case of external IP blocks)
-// This is since, unlike for external IP blocks, it is not guaranteed the relations at snapshot will hold "forever"
-// Thus, as in the case of groupAtomicTerm, disjointness will be passed via Hints
+// We keep the original IP block, but we do not merge/subtract (as in the case of external IP blocks)
+// We do derive disjointness/supersetness w.r.t. other internal blocks (in addition to hints)
 type internalIPTerm struct {
 	atomicTerm
 	ruleBlock *topology.RuleIPBlock //
@@ -71,6 +70,7 @@ type atomic interface {
 	disjoint(atomic, *Hints) bool      // based on hints
 	supersetOf(atomic, *Hints) bool    // super set of resources satisfying atom, given Hints based on hints
 	GetExternalBlock() *netset.IPBlock // gets block for ipBlockTerm; nil otherwise
+	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }
 
 // Conjunction a DNF Conjunction of Atomics
