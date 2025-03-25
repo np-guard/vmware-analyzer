@@ -324,8 +324,6 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 				res.VMs = append(res.VMs, ruleBlock.VMs...)
 				res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
 				res.Blocks = append(res.Blocks, ruleBlock)
-			} else {
-				logging.InternalErrorf("didint find block of ip %s", ip)
 			}
 		}
 	}
