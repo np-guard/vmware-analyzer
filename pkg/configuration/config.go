@@ -154,9 +154,8 @@ func (c *Config) getVMsInfoStr(color bool) string {
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-
 func (c *Config) getIPRangeInfoStr(color bool) string {
-	header := []string{"Total", "Internal","External"}
+	header := []string{"Total", "Internal", "External"}
 	lines := [][]string{{
 		common.NetsetShortString(c.topology.allIPBlock),
 		common.NetsetShortString(c.topology.allInternalIPBlock),
@@ -165,13 +164,12 @@ func (c *Config) getIPRangeInfoStr(color bool) string {
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-
 func (c *Config) getExternalEPInfoStr(color bool) string {
 	header := []string{"External EP", "Rule Blocks"}
 	lines := [][]string{}
 	for _, ip := range c.externalIPs {
-		lines = append(lines, []string{ip.IPAddressesStr(), strings.Join(common.CustomStrSliceToStrings(c.topology.ruleBlockPerEP[ip],
-			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }), common.CommaSpaceSeparator)})
+		lines = append(lines, []string{ip.IPAddressesStr(), common.SortedJoinCustomStrFuncSlice(c.topology.ruleBlockPerEP[ip],
+			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }, common.CommaSpaceSeparator)})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
@@ -180,10 +178,10 @@ func (c *Config) getRuleBlocksStr(color bool) string {
 	header := []string{"Rule Block", "External Endpoints", vmsTitle}
 	lines := [][]string{}
 	for _, block := range c.topology.allRuleIPBlocks {
-		eps := strings.Join(common.CustomStrSliceToStrings(block.ExternalIPs,
-			func(ep topology.Endpoint) string { return ep.Name() }), common.CommaSpaceSeparator)
-		vms := strings.Join(common.CustomStrSliceToStrings(block.VMs,
-			func(vm topology.Endpoint) string { return vm.Name() }), common.CommaSpaceSeparator)
+		eps := common.SortedJoinCustomStrFuncSlice(block.ExternalIPs,
+			func(ep topology.Endpoint) string { return ep.Name() }, common.CommaSpaceSeparator)
+		vms := common.SortedJoinCustomStrFuncSlice(block.VMs,
+			func(vm topology.Endpoint) string { return vm.Name() }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{block.OriginalIP, eps, vms})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
