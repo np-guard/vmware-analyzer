@@ -186,6 +186,7 @@ func (r *Runner) runSynthesis() error {
 		SynthesizeAdmin: r.synthesizeAdmin,
 		Color:           r.color,
 		CreateDNSPolicy: !r.suppressDNSPolicies,
+		FilterVMs:       r.analysisVMsFilter,
 	}
 	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 // filterResources modifies the input ResourcesContainerModel, by filtering all elements based on input vms names to filter;
@@ -124,12 +125,20 @@ func (f *resourceFilter) groupPathFilter(path string) bool {
 
 //nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) ruleFilter(rule collector.Rule) bool {
-	return len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0
+	if len(rule.SourceGroups) == 0 || len(rule.DestinationGroups) == 0 || len(rule.Scope) == 0 {
+		logging.Debugf("removing rule %s", *rule.DisplayName)
+		return true
+	}
+	return false
 }
 
 //nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) segmentFilter(segment collector.Segment) bool {
-	return len(segment.SegmentPorts) == 0
+	if len(segment.SegmentPorts) == 0 {
+		logging.Debugf("removing segment %s", *segment.DisplayName)
+		return true
+	}
+	return false
 }
 
 //nolint:gocritic // filter can not be on pointer
