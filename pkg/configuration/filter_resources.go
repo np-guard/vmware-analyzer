@@ -8,11 +8,12 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
-func filterResources(rc *collector.ResourcesContainerModel, vms []string) {
-	if len(vms) == 0 {
+// filterResources modifies the input ResourcesContainerModel, by filtering all elements based on input vms names to filter;
+func filterResources(rc *collector.ResourcesContainerModel, filterVMs []string) {
+	if len(filterVMs) == 0 {
 		return
 	}
-	rf := resourceFilter{rc: rc, VMs: vms}
+	rf := resourceFilter{rc: rc, filterVMs: filterVMs}
 	rf.filterTopology()
 	rf.filterGroups()
 	rf.filterRules()
@@ -20,7 +21,7 @@ func filterResources(rc *collector.ResourcesContainerModel, vms []string) {
 
 type resourceFilter struct {
 	rc                  *collector.ResourcesContainerModel
-	VMs                 []string // the filter from the user
+	filterVMs           []string // the filter from the user
 	vmIds               []string // the ids of the filtered the vms
 	vnisAttIds          []string // the vni attach id fo the filtered vnis, use to filter the segment ports
 	vmsAddresses        []string // the vm addresses of the filtered the vms
@@ -99,7 +100,7 @@ func (f *resourceFilter) filterRules() {
 
 //nolint:gocritic // filter can not be on pointer
 func (f *resourceFilter) vmFilter(vm collector.VirtualMachine) bool {
-	return vm.DisplayName == nil || vm.ExternalId == nil || !slices.Contains(f.VMs, *vm.DisplayName)
+	return vm.DisplayName == nil || vm.ExternalId == nil || !slices.Contains(f.filterVMs, *vm.DisplayName)
 }
 
 //nolint:gocritic // filter can not be on pointer
