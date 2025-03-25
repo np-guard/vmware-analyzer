@@ -68,7 +68,7 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
-	// Summery of IP Ranges
+	// Summary of IP Ranges
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("IP Ranges:\n")
 	sb.WriteString(c.getIPRangeInfoStr(color))
