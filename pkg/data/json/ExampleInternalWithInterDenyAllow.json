@@ -28490,7 +28490,118 @@
             "external_id": "vm-no-address2"
         }
     ],
-    "virtual_network_interface": null,
+    "virtual_network_interface": [
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm1"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.100"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm2"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.101"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm3"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.1.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm4"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.1.1"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm5"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.250.1.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm6"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.250.1.1"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm7"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "172.16.10.10"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm8"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "192.168.0.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm9"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "192.168.255.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm10"
+        }
+    ],
     "segments": null,
     "tier0": null,
     "tier1": null,
@@ -28564,7 +28675,7 @@
                                 ]
                             },
                             {
-                                "action": "DROP",
+                                "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
                                     "0.0.0.0/0"
@@ -28583,13 +28694,32 @@
                                 ]
                             },
                             {
+                                "action": "DROP",
+                                "description": "",
+                                "destination_groups": [
+                                    "real-group"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "drop-real-group",
+                                "rule_id": 2000,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "172.16.10.10/16"
+                                ]
+                            },
+                            {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
                                     "0.0.0.0/0"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "allow-only-1",
+                                "display_name": "allow-all-after-drop-real-group",
                                 "rule_id": 2000,
                                 "scope": [
                                     "ANY"
