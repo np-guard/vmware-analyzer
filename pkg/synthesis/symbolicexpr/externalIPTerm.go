@@ -110,25 +110,29 @@ func (ipBlockTerm *externalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bo
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
 }
 
-// Translates RuleIPBlock  it into []*Conjunction
+// Translates RuleIPBlock it into []*Conjunction
 // 3 relevant types:
 // 1. tautology: 0.0.0.0/0; if one of the blocks of a RuleIPBlock is a tautology then it overrides all other blocks
-// 2. External IP addr - these will be further translated into IPBlockTerm
-// 3. Internal IP addr - todo
-func getConjunctionForIPBlock(ipBlocks []*topology.RuleIPBlock) (ipBlocksConjunctions []*Conjunction, isTautology bool) {
-	ipBlocksConjunctions = []*Conjunction{}
-	for _, ipBlock := range ipBlocks {
-		if ipBlock.IsAll() {
-			return []*Conjunction{{&tautology{}}}, true
+// 2. External IP addr - these are further translated into externalIPTerm
+// 3. Internal IP addr - these are further translated into internalIPTerm
+func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock) (externalIPBlocksConjunctions,
+	internalIPBlocksConjunctions []*Conjunction, isTautology bool) {
+	externalIPBlocksConjunctions = []*Conjunction{}
+	for _, ruleIPBlock := range ruleIPBlocks {
+		if ruleIPBlock.IsAll() {
+			return []*Conjunction{{&tautology{}}}, nil, true
 		}
-		if ipBlock.HasExternal() {
-			externalIPBlock := &topology.IPBlock{Block: ipBlock.ExternalRange, OriginalIP: ipBlock.OriginalIP}
-			ipBlocksConjunctions = append(ipBlocksConjunctions, &Conjunction{&externalIPTerm{atomicTerm: atomicTerm{},
+		if ruleIPBlock.HasExternal() {
+			externalIPBlock := &topology.IPBlock{Block: ruleIPBlock.ExternalRange, OriginalIP: ruleIPBlock.OriginalIP}
+			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions, &Conjunction{&externalIPTerm{atomicTerm: atomicTerm{},
 				IPBlock: externalIPBlock}})
 		}
-		// if ipBlock.HasInternal() todo: handle internal IPBlocks
+		if ruleIPBlock.HasInternal() {
+			newInternalIPTerm := NewInternalIPTerm(ruleIPBlock)
+			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Conjunction{newInternalIPTerm})
+		}
 	}
-	return ipBlocksConjunctions, isTautology
+	return externalIPBlocksConjunctions, internalIPBlocksConjunctions, isTautology
 }
 
 func (externalIPTerm) getInternalBlock() *netset.IPBlock {

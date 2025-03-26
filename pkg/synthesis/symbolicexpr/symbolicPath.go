@@ -185,14 +185,15 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 
 func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
-	ipBlockConjunctions, isTautology := getConjunctionForIPBlock(ruleBlocks)
-	res = append(res, ipBlockConjunctions...)
+	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology := getConjunctionForIPBlock(ruleBlocks)
+	res = append(res, ipExternalBlockConjunctions...)
 	switch {
 	case isTautology:
 		return res // if 0.0.0.0/0 then this is the only relevant input
 	case isAllGroups:
-		res = append(res, &Conjunction{allGroup{}})
+		res = append(res, &Conjunction{allGroup{}}) // if "Any" group then this is the only relevant internal resource
 	default:
+		res = append(res, ipInternalBlockConjunctions...)
 		res = append(res, getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)...)
 	}
 	return
