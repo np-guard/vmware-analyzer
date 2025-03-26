@@ -13,24 +13,35 @@ type atomicTerm struct {
 	neg bool // equal to group/tag/... (false) or not-equal to it (true)
 }
 
+// abstraction of all terms representing group based internal resources: groupAtomicTerm and tagAtomicTerm
+type groupBasedInternalResource struct {
+	anyInternalResource
+}
+
+// abstraction of all terms representing internal resources: groupBasedInternalResource and internalIPTerm
+type anyInternalResource struct {
+}
+
 // groupAtomicTerm represent an equal/not-equal condition over a group
-// todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
 type groupAtomicTerm struct {
+	groupBasedInternalResource
 	atomicTerm
 	group *collector.Group
+}
+
+type tagAtomicTerm struct {
+	groupBasedInternalResource
+	atomicTerm
+	tag *resources.Tag
 }
 
 // internalIPTerm represents an VMs originating from an NSX internal cidr which is not composed of segments
 // We keep the original IP block, but we do not merge/subtract (as in the case of external IP blocks)
 // We do derive disjointness/supersetness w.r.t. other internal blocks (in addition to hints)
 type internalIPTerm struct {
+	anyInternalResource
 	atomicTerm
 	ruleBlock *topology.RuleIPBlock
-}
-
-type tagAtomicTerm struct {
-	atomicTerm
-	tag *resources.Tag
 }
 
 type externalIPTerm struct {
