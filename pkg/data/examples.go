@@ -604,6 +604,22 @@ var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 		"vm9":  "192.168.0.0",
 		"vm10": "192.168.255.0",
 	},
+	SegmentsByVMs: map[string][]string{
+		"seg_1":    {"vm1"},
+		"seg_2-3":  {"vm2", "vm3"},
+		"seg_4-5":  {"vm4", "vm5"},
+		"seg-6-7":  {"vm6", "vm7"},
+		"seg-8":    {"vm8"},
+		"seg-9-10": {"vm9", "vm10"},
+	},
+	SegmentsBlock: map[string]string{
+		"seg_1":    "10.0.0.0/30",
+		"seg_2-3":  "10.0.0.0/24",
+		"seg_4-5":  "10.0.0.0/20",
+		"seg-6-7":  "10.0.0.0/16",
+		"seg-8":    "172.16.10.10/16",
+		"seg-9-10": "192.168.0.0/16",
+	},
 	Policies: []Category{
 		{
 			Name:         "app-x",
