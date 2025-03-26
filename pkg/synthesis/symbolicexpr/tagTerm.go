@@ -5,7 +5,6 @@ package symbolicexpr
 import (
 	"fmt"
 
-	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -26,26 +25,6 @@ func (tagTerm tagAtomicTerm) name() string {
 func (tagTerm tagAtomicTerm) String() string {
 	return tagConst + eqSign(tagTerm) + tagTerm.name()
 }
-
-// following 4 functions are false since an tagAtomicTerm is a non-empty cond on a tag which may or may not hold
-
-func (tagAtomicTerm) IsTautology() bool {
-	return false
-}
-
-func (tagAtomicTerm) IsContradiction() bool {
-	return false
-}
-
-func (tagAtomicTerm) IsAllGroups() bool {
-	return false
-}
-
-func (tagAtomicTerm) IsNoGroup() bool {
-	return false
-}
-
-//
 
 func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("%s__%s", tagConst, tagTerm.name()), tagTerm.neg
@@ -72,14 +51,6 @@ func (tagTerm tagAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 // returns true iff tagTerm is superset of otherAtom as given by hints
 func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
-}
-
-func (tagAtomicTerm) GetExternalBlock() *netset.IPBlock {
-	return nil
-}
-
-func (tagAtomicTerm) getInternalBlock() *netset.IPBlock {
-	return nil
 }
 
 // evaluates symbolic Conjunctions from a given Expression
