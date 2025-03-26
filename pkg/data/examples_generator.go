@@ -53,6 +53,7 @@ func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) 
 		}
 		res.VirtualMachineList = append(res.VirtualMachineList, newVMRes)
 	}
+	segmentedVMs := map[string]bool{}
 	for segmentName, ip := range e.SegmentsBlock {
 		segment := collector.Segment{
 			Segment: nsx.Segment{
@@ -63,6 +64,7 @@ func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) 
 			},
 		}
 		for _, vm := range e.SegmentsByVMs[segmentName] {
+			segmentedVMs[vm] = true
 			portName := "port_" + vm
 			port := collector.SegmentPort{
 				SegmentPort: nsx.SegmentPort{
@@ -88,6 +90,19 @@ func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) 
 			segment.SegmentPorts = append(segment.SegmentPorts, port)
 		}
 		res.SegmentList = append(res.SegmentList, segment)
+	}
+	// VMs might have addresses and no segment:
+	for _, vmName := range e.VMs {
+		if address, ok := e.VMsAddress[vmName]; ok && !segmentedVMs[vmName] {
+			vni := collector.VirtualNetworkInterface{
+				VirtualNetworkInterface: nsx.VirtualNetworkInterface{
+					LportAttachmentId: common.PointerTo("non-relevant-port-id"),
+					OwnerVmId:         &vmName,
+					IpAddressInfo:     []nsx.IpAddressInfo{{IpAddresses: []nsx.IPAddress{nsx.IPAddress(address)}}},
+				},
+			}
+			res.VirtualNetworkInterfaceList = append(res.VirtualNetworkInterfaceList, vni)
+		}
 	}
 	// set default domain
 	domainRsc := collector.Domain{}
