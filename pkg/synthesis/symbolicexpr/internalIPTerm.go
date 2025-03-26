@@ -11,24 +11,6 @@ func NewInternalIPTerm(ruleBlock *topology.RuleIPBlock) *internalIPTerm {
 	return &internalIPTerm{ruleBlock: ruleBlock}
 }
 
-// following 4 functions are false since an groupAtomicTerm is a non-empty cond on a group which may or may not hold
-
-func (internalIPTerm) IsTautology() bool {
-	return false
-}
-
-func (internalIPTerm) IsContradiction() bool {
-	return false
-}
-
-func (internalIPTerm) IsAllGroups() bool {
-	return false
-}
-
-func (internalIPTerm) IsNoGroup() bool {
-	return false
-}
-
 func (internalIP internalIPTerm) String() string {
 	neg := ""
 	if internalIP.isNegation() {
@@ -39,11 +21,6 @@ func (internalIP internalIPTerm) String() string {
 
 func (internalIP internalIPTerm) name() string {
 	return internalIP.ruleBlock.IPBlock.OriginalIP
-}
-
-// GetExternalBlock returns nil since this term is only about internal IPs
-func (internalIPTerm) GetExternalBlock() *netset.IPBlock {
-	return nil
 }
 
 func (internalIPTerm) AsSelector() (string, bool) {
