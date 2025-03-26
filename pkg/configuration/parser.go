@@ -118,7 +118,7 @@ func (p *nsxConfigParser) storeParsedSegments() {
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 && len(p.configRes.topology.ruleBlockPerEP[vm]) == 0 {
+		if len(groups) == 0 && len(p.configRes.Topology.RuleBlockPerEP[vm]) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}
@@ -163,7 +163,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	for _, block := range p.configRes.topology.allRuleIPBlocks {
+	for _, block := range p.configRes.Topology.AllRuleIPBlocks {
 		res[block.OriginalIP] = block.OriginalIP
 	}
 	p.configRes.FW.SetPathsToDisplayNames(res)
@@ -326,7 +326,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		}
 	} else {
 		for _, ip := range ips {
-			ruleBlock := p.configRes.topology.allRuleIPBlocks[ip]
+			ruleBlock := p.configRes.Topology.AllRuleIPBlocks[ip]
 			res.VMs = append(res.VMs, ruleBlock.VMs...)
 			res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
 			res.Blocks = append(res.Blocks, ruleBlock)

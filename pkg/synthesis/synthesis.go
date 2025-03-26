@@ -1,6 +1,9 @@
 package synthesis
 
 import (
+	"maps"
+	"slices"
+
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -47,6 +50,7 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 		options.SynthesizeAdmin, options.Hints)
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
 	abstractModel := &AbstractModelSyn{vms: config.VMs, allGroups: config.Groups, epToGroups: config.GroupsPerVM,
+		allRuleIPBlocks: slices.Collect(maps.Values(config.Topology.AllRuleIPBlocks)), ruleBlockPerEP: config.Topology.RuleBlockPerEP,
 		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
 	abstractModelStr := strAbstractModel(abstractModel, options)
