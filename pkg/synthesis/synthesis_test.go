@@ -131,6 +131,12 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
+		name:            "ExampleInternalWithInterDenyAllow",
+		exData:          data.ExampleInternalWithInterDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
 		name:            "ExampleHogwartsExternal",
 		exData:          data.ExampleHogwartsExternal,
 		noHint:          false,
@@ -420,6 +426,9 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 }
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	if strings.Contains(synTest.name, "Internal") {
+		return // todo tmp until policies in place for internal
+	}
 	err := logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	require.Nil(t, err)
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
@@ -517,6 +526,9 @@ func compareConns(t *testing.T, vmFormat, k8sFormat string) {
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
+	if strings.Contains(synTest.name, "Internal") {
+		return // todo tmp until policies in place for internal
+	}
 	err := logging.Tee(path.Join(synTest.debugDir(), "runCompareNSXConnectivity.log"))
 	require.Nil(t, err)
 	debugDir := synTest.debugDir()

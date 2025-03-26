@@ -52,14 +52,18 @@ func (allGroup) AsSelector() (string, bool) {
 
 // allGroup disjoint to ipBlockTerm which presents external address
 func (allGroup) disjoint(atom atomic, hints *Hints) bool {
-	return atom.GetBlock() != nil
+	return atom.GetExternalBlock() != nil
 }
 
 // allGroup is superSet of any groupTerm and of any tagTerm
 func (allGroup) supersetOf(atom atomic, hints *Hints) bool {
-	return isTagOrAtomicTerm(atom)
+	return isTagOrGroupOrInternalIPTerm(atom)
 }
 
-func (allGroup) GetBlock() *netset.IPBlock {
+func (allGroup) GetExternalBlock() *netset.IPBlock {
 	return nil
+}
+
+func (allGroup) getInternalBlock() *netset.IPBlock {
+	return netset.GetCidrAll()
 }

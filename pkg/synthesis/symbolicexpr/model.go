@@ -13,21 +13,19 @@ type atomicTerm struct {
 	neg bool // equal to group/tag/... (false) or not-equal to it (true)
 }
 
-// abstraction of an NSX group or over VMs originating from an NSX internal cidr
-type abstractGroupTerm struct {
+// groupAtomicTerm represent an equal/not-equal condition over a group
+// todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
+type groupAtomicTerm struct {
 	atomicTerm
 	group *collector.Group
 }
 
-// groupAtomicTerm represent an equal/not-equal condition over an NSX originating group
-// todo: similar structs for /tag/(segment/vm_name/computer_Name/OS_Name?)
-type groupAtomicTerm struct {
-	abstractGroupTerm
-}
-
-// internalIPTerm represents an NSX originate group or over VMs originating from an NSX internal cidr
+// internalIPTerm represents an VMs originating from an NSX internal cidr which is not composed of segments
+// We keep the original IP block, but we do not merge/subtract (as in the case of external IP blocks)
+// We do derive disjointness/supersetness w.r.t. other internal blocks (in addition to hints)
 type internalIPTerm struct {
-	abstractGroupTerm
+	atomicTerm
+	ruleBlock *topology.RuleIPBlock
 }
 
 type tagAtomicTerm struct {
@@ -35,7 +33,7 @@ type tagAtomicTerm struct {
 	tag *resources.Tag
 }
 
-type ipBlockAtomicTerm struct {
+type externalIPTerm struct {
 	atomicTerm
 	*topology.IPBlock
 }
@@ -59,19 +57,20 @@ type noGroup struct {
 // atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
 // tautology and contradiction
 type atomic interface {
-	name() string                   // name of group/tag/...
-	String() string                 // full expression e.g. "group = slytherin"
-	negate() atomic                 // negation of the atomic term todo: once tag scope is supported will return []atomic
-	isNegation() bool               // is term negation
-	IsTautology() bool              // is term tautology (0.0.0.0/0)?
-	IsContradiction() bool          // is term contradiction (negation of tautology)?
-	IsAllGroups() bool              // term is true for any internal resource (allGroup, tautology)?
-	IsNoGroup() bool                // term is false for any internal resource (noGroup, contradiction)?
-	isNegateOf(atomic) bool         // is the term negation of the other given term
-	AsSelector() (string, bool)     // for the usage of policy synthesis
-	disjoint(atomic, *Hints) bool   // based on hints
-	supersetOf(atomic, *Hints) bool // super set of resources satisfying atom, given Hints based on hints
-	GetBlock() *netset.IPBlock      // gets block for ipBlockTerm; nil otherwise
+	name() string                      // name of group/tag/...
+	String() string                    // full expression e.g. "group = slytherin"
+	negate() atomic                    // negation of the atomic term todo: once tag scope is supported will return []atomic
+	isNegation() bool                  // is term negation
+	IsTautology() bool                 // is term tautology (0.0.0.0/0)?
+	IsContradiction() bool             // is term contradiction (negation of tautology)?
+	IsAllGroups() bool                 // term is true for any internal resource (allGroup, tautology)?
+	IsNoGroup() bool                   // term is false for any internal resource (noGroup, contradiction)?
+	isNegateOf(atomic) bool            // is the term negation of the other given term
+	AsSelector() (string, bool)        // for the usage of policy synthesis
+	disjoint(atomic, *Hints) bool      // based on hints
+	supersetOf(atomic, *Hints) bool    // super set of resources satisfying atom, given Hints based on hints
+	GetExternalBlock() *netset.IPBlock // gets block for ipBlockTerm; nil otherwise
+	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }
 
 // Conjunction a DNF Conjunction of Atomics
