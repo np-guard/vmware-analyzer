@@ -1,13 +1,17 @@
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Rule Id |Action |Src                    |Dst                    |Connection
-2        |1006    |allow  |(IP addr in 0.0.0.0/0) |(IP addr in 0.0.0.0/0) |ICMP
-3        |1003    |deny   |(*)                    |(*)                    |All Connections
+Priority |Rule Id |Action |Src                           |Dst                           |Connection
+0        |1004    |allow  |(VMs within IPs 0.0.1.0/25)   |(VMs within IPs 0.0.1.128/25) |TCP dst-ports: 445
+1        |1005    |allow  |(VMs within IPs 0.0.1.128/25) |(IP addr in 0.0.2.0/24)       |TCP dst-ports: 443
+2        |1006    |allow  |(IP addr in 0.0.0.0/0)        |(IP addr in 0.0.0.0/0)        |ICMP
+3        |1003    |deny   |(*)                           |(*)                           |All Connections
 
 
 symbolic outbound rules:
-Priority |Rule Id |Action |Src                    |Dst                    |Connection
-2        |1006    |allow  |(IP addr in 0.0.0.0/0) |(IP addr in 0.0.0.0/0) |ICMP
-3        |1003    |deny   |(*)                    |(*)                    |All Connections
+Priority |Rule Id |Action |Src                           |Dst                           |Connection
+0        |1004    |allow  |(VMs within IPs 0.0.1.0/25)   |(VMs within IPs 0.0.1.128/25) |TCP dst-ports: 445
+1        |1005    |allow  |(VMs within IPs 0.0.1.128/25) |(IP addr in 0.0.2.0/24)       |TCP dst-ports: 443
+2        |1006    |allow  |(IP addr in 0.0.0.0/0)        |(IP addr in 0.0.0.0/0)        |ICMP
+3        |1003    |deny   |(*)                           |(*)                           |All Connections
 
