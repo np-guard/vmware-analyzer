@@ -2,19 +2,12 @@ category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Rule Id |Action |Src                              |Dst                    |Connection
-0        |1004    |deny   |(IP addr in 10.0.0.0/30)         |(IP addr in 0.0.0.0/0) |All Connections
 0        |1004    |deny   |(VMs within IPs 10.0.0.0/30)     |(IP addr in 0.0.0.0/0) |All Connections
-1        |1005    |allow  |(IP addr in 10.0.0.0/24)         |(IP addr in 0.0.0.0/0) |All Connections
 1        |1005    |allow  |(VMs within IPs 10.0.0.0/24)     |(IP addr in 0.0.0.0/0) |All Connections
-2        |1006    |deny   |(IP addr in 10.0.0.0/20)         |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(VMs within IPs 10.0.0.0/20)     |(IP addr in 0.0.0.0/0) |All Connections
-3        |1007    |allow  |(IP addr in 10.0.0.0/16)         |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(VMs within IPs 10.0.0.0/16)     |(IP addr in 0.0.0.0/0) |All Connections
-4        |2000    |deny   |(IP addr in 172.16.10.10/16)     |(group = real-group)   |All Connections
 4        |2000    |deny   |(VMs within IPs 172.16.10.10/16) |(group = real-group)   |All Connections
-5        |2000    |allow  |(IP addr in 172.16.10.10/16)     |(IP addr in 0.0.0.0/0) |All Connections
 5        |2000    |allow  |(VMs within IPs 172.16.10.10/16) |(IP addr in 0.0.0.0/0) |All Connections
-6        |3000    |allow  |(IP addr in 192.168.0.0/16)      |(IP addr in 0.0.0.0/0) |All Connections
 6        |3000    |allow  |(VMs within IPs 192.168.0.0/16)  |(IP addr in 0.0.0.0/0) |All Connections
 7        |4008    |allow  |(group = real-group)             |(group = real-group)   |All Connections
 8        |1003    |deny   |(*)                              |(*)                    |All Connections
@@ -22,19 +15,12 @@ Priority |Rule Id |Action |Src                              |Dst                
 
 symbolic outbound rules:
 Priority |Rule Id |Action |Src                              |Dst                    |Connection
-0        |1004    |deny   |(IP addr in 10.0.0.0/30)         |(IP addr in 0.0.0.0/0) |All Connections
 0        |1004    |deny   |(VMs within IPs 10.0.0.0/30)     |(IP addr in 0.0.0.0/0) |All Connections
-1        |1005    |allow  |(IP addr in 10.0.0.0/24)         |(IP addr in 0.0.0.0/0) |All Connections
 1        |1005    |allow  |(VMs within IPs 10.0.0.0/24)     |(IP addr in 0.0.0.0/0) |All Connections
-2        |1006    |deny   |(IP addr in 10.0.0.0/20)         |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(VMs within IPs 10.0.0.0/20)     |(IP addr in 0.0.0.0/0) |All Connections
-3        |1007    |allow  |(IP addr in 10.0.0.0/16)         |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(VMs within IPs 10.0.0.0/16)     |(IP addr in 0.0.0.0/0) |All Connections
-4        |2000    |deny   |(IP addr in 172.16.10.10/16)     |(group = real-group)   |All Connections
 4        |2000    |deny   |(VMs within IPs 172.16.10.10/16) |(group = real-group)   |All Connections
-5        |2000    |allow  |(IP addr in 172.16.10.10/16)     |(IP addr in 0.0.0.0/0) |All Connections
 5        |2000    |allow  |(VMs within IPs 172.16.10.10/16) |(IP addr in 0.0.0.0/0) |All Connections
-6        |3000    |allow  |(IP addr in 192.168.0.0/16)      |(IP addr in 0.0.0.0/0) |All Connections
 6        |3000    |allow  |(VMs within IPs 192.168.0.0/16)  |(IP addr in 0.0.0.0/0) |All Connections
 7        |4008    |allow  |(group = real-group)             |(group = real-group)   |All Connections
 8        |1003    |deny   |(*)                              |(*)                    |All Connections
