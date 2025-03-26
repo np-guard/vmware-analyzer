@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -77,6 +78,11 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("External EndPoints:\n")
 	sb.WriteString(c.getExternalEPInfoStr(color))
+
+	// Internal IP Ranges
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Internal IP:\n")
+	sb.WriteString(c.getInternalEPInfoStr(color))
 
 	// Rule Blocks
 	sb.WriteString(common.OutputSectionSep)
@@ -170,6 +176,26 @@ func (c *Config) getExternalEPInfoStr(color bool) string {
 	for _, ip := range c.externalIPs {
 		lines = append(lines, []string{ip.IPAddressesStr(), common.SortedJoinCustomStrFuncSlice(c.topology.ruleBlockPerEP[ip],
 			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }, common.CommaSpaceSeparator)})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+func (c *Config) getInternalEPInfoStr(color bool) string {
+	header := []string{"Internal IP", segmentNameTitle, vmsTitle}
+	lines := [][]string{}
+	vmWithAddressedSegments := []*topology.VM{}
+	for _, s := range c.segments {
+		if s.CIDRs() != "" {
+			vmWithAddressedSegments = append(vmWithAddressedSegments, s.VMs()...)
+			vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
+			lines = append(lines, []string{s.CIDRs(), s.Name(), vmsStr})
+		}
+	}
+	for _, vm := range c.VMs {
+		if slices.Index(vmWithAddressedSegments, vm.(*topology.VM)) < 0 {
+			for _, address := range vm.(*topology.VM).IPAddresses() {
+				lines = append(lines, []string{address, "", vm.Name()})
+			}
+		}
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
