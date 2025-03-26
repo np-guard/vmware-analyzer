@@ -56,7 +56,7 @@ func (internalIP internalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool
 	// if otherAtom is also internal Block, then check explicit containment
 	otherInternalBlock := otherAtom.getInternalBlock()
 	internalBlock := internalIP.getInternalBlock()
-	if otherInternalBlock != nil && !otherInternalBlock.Equal(internalBlock) {
+	if otherInternalBlock != nil {
 		if otherInternalBlock.Intersect(internalBlock.Complementary()).IsEmpty() {
 			return true
 		}
