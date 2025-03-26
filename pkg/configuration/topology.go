@@ -158,7 +158,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 	// iterate over segments, if segment is in the block, add all its vms
 	for _, block := range p.configRes.topology.allRuleIPBlocks {
 		for _, segment := range p.configRes.topology.segments {
-			if segment.Block.IsSubset(block.Block) {
+			if !segment.Block.IsEmpty() && segment.Block.IsSubset(block.Block) {
 				block.VMs = append(block.VMs, segment.VMs...)
 				block.SegmentsVMs = append(block.SegmentsVMs, segment.VMs...)
 				block.Segments = append(block.Segments, segment)
