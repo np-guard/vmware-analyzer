@@ -52,7 +52,7 @@ func (noGroup) AsSelector() (string, bool) {
 
 // noGroup disjoint to tagTerm and to groupTerm
 func (noGroup) disjoint(atom atomic, hints *Hints) bool {
-	return isTagOrAtomicTerm(atom)
+	return isTagOrGroupOrInternalIPTerm(atom)
 }
 
 // noGroup is not a superset of anything
@@ -60,6 +60,10 @@ func (noGroup) supersetOf(atom atomic, hints *Hints) bool {
 	return false
 }
 
-func (noGroup) GetBlock() *netset.IPBlock {
+func (noGroup) GetExternalBlock() *netset.IPBlock {
+	return nil
+}
+
+func (noGroup) getInternalBlock() *netset.IPBlock {
 	return nil
 }
