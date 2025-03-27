@@ -588,8 +588,8 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 })
 
 var vms = []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10", "vm-no-address1", "vm-no-address2"}
-var groupsInternalWithInterDenyAllow = map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10"},
-	"real-group": {"vm-no-address1", "vm-no-address2"}}
+var groupsInternalWithInterDenyAllow = map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5",
+	"vm6", "vm7", "vm8", "vm9", "vm10"}, "real-group": {"vm-no-address1", "vm-no-address2"}}
 var vmsAddresses = map[string]string{
 	"vm1":  "10.0.0.0",
 	"vm2":  "10.0.0.100",
