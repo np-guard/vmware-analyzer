@@ -587,6 +587,21 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 	},
 })
 
+var vms = []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10", "vm-no-address1", "vm-no-address2"}
+var groupsInternalWithInterDenyAllow = map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10"},
+	"real-group": {"vm-no-address1", "vm-no-address2"}}
+var vmsAddresses = map[string]string{
+	"vm1":  "10.0.0.0",
+	"vm2":  "10.0.0.100",
+	"vm3":  "10.0.0.101",
+	"vm4":  "10.0.1.0",
+	"vm5":  "10.0.1.1",
+	"vm6":  "10.250.1.0",
+	"vm7":  "10.250.1.1",
+	"vm8":  "172.16.10.10",
+	"vm9":  "192.168.0.0",
+	"vm10": "192.168.255.0",
+}
 var policiesInternalWithInterDenyAllow = []Category{
 	{
 		Name:         "app-x",
@@ -660,24 +675,18 @@ var policiesInternalWithInterDenyAllow = []Category{
 		},
 	},
 }
-var groupsInternalWithInterDenyAllow = map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10"},
-	"real-group": {"vm-no-address1", "vm-no-address2"}}
-var vmsAddresses = map[string]string{
-	"vm1":  "10.0.0.0",
-	"vm2":  "10.0.0.100",
-	"vm3":  "10.0.0.101",
-	"vm4":  "10.0.1.0",
-	"vm5":  "10.0.1.1",
-	"vm6":  "10.250.1.0",
-	"vm7":  "10.250.1.1",
-	"vm8":  "172.16.10.10",
-	"vm9":  "192.168.0.0",
-	"vm10": "192.168.255.0",
-}
+
+var ExampleInternalWithInterDenyAllow = registerExample(&Example{
+	Name:        "ExampleInternalWithInterDenyAllow",
+	VMs:         vms,
+	GroupsByVMs: groupsInternalWithInterDenyAllow,
+	VMsAddress:  vmsAddresses,
+	Policies:    policiesInternalWithInterDenyAllow,
+})
 
 var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 	Name:        "ExampleInternalWithInterDenyAllow",
-	VMs:         []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10", "vm-no-address1", "vm-no-address2"},
+	VMs:         vms,
 	GroupsByVMs: groupsInternalWithInterDenyAllow,
 	VMsAddress:  vmsAddresses,
 	SegmentsByVMs: map[string][]string{
