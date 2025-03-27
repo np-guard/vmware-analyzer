@@ -406,9 +406,9 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 }
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	if strings.Contains(synTest.name, "Internal") {
-		return // todo tmp until policies in place for internal
-	}
+	// if strings.Contains(synTest.name, "Internal") {
+	// 	return // todo tmp until policies in place for internal
+	// }
 	err := logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	require.Nil(t, err)
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
@@ -430,11 +430,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	}
 
 	if k8sConnectivityFileCreated {
-		if !strings.Contains(synTest.name, "External") ||
-			slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
-			// todo - remove "External" condition when examples supported
-			compareToNetpol(t, rc, k8sConnectivityFile)
-		}
+		compareToNetpol(t, rc, k8sConnectivityFile)
 	}
 }
 
@@ -506,9 +502,6 @@ func compareConns(t *testing.T, vmFormat, k8sFormat string) {
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	if strings.Contains(synTest.name, "Internal") {
-		return // todo tmp until policies in place for internal
-	}
 	err := logging.Tee(path.Join(synTest.debugDir(), "runCompareNSXConnectivity.log"))
 	require.Nil(t, err)
 	debugDir := synTest.debugDir()
@@ -553,16 +546,8 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	if !strings.Contains(synTest.name, "External") ||
-		slices.Contains([]string{
-			"Example1External",
-			"ExampleHogwartsExternal",
-			"ExampleExternalSimpleWithInterlDenyAllowDstAdmin",
-		}, synTest.name) {
-		// todo - remove "External" condition when examples supported
-		require.Equal(t, connectivity, analyzed,
-			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
-	}
+	require.Equal(t, connectivity, analyzed,
+		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
 
 // /////////////////////////////////////////////////////////////////////
