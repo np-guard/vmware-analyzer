@@ -121,7 +121,13 @@ var groupsByVmsTests = []synthesisTest{
 		name:            "ExampleInternalWithInterDenyAllow",
 		exData:          data.ExampleInternalWithInterDenyAllow,
 		synthesizeAdmin: false,
-		noHint:          true,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllowWithSegments",
+		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
 	},
 	{
 		name:            "ExampleHogwartsExternal",

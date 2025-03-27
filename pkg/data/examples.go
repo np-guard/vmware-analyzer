@@ -587,23 +587,108 @@ var ExampleExternalSimpleWithInterlDenyAllow = registerExample(&Example{
 	},
 })
 
-var ExampleInternalWithInterDenyAllow = registerExample(&Example{
-	Name: "ExampleInternalWithInterDenyAllow",
-	VMs:  []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10", "vm-no-address1", "vm-no-address2"},
-	GroupsByVMs: map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10"},
-		"real-group": {"vm-no-address1", "vm-no-address2"}},
-	VMsAddress: map[string]string{
-		"vm1":  "10.0.0.0",
-		"vm2":  "10.0.0.100",
-		"vm3":  "10.0.0.101",
-		"vm4":  "10.0.1.0",
-		"vm5":  "10.0.1.1",
-		"vm6":  "10.250.1.0",
-		"vm7":  "10.250.1.1",
-		"vm8":  "172.16.10.10",
-		"vm9":  "192.168.0.0",
-		"vm10": "192.168.255.0",
+var vms = []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10", "vm-no-address1", "vm-no-address2"}
+var groupsInternalWithInterDenyAllow = map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5",
+	"vm6", "vm7", "vm8", "vm9", "vm10"}, "real-group": {"vm-no-address1", "vm-no-address2"}}
+var vmsAddresses = map[string]string{
+	"vm1":  "10.0.0.0",
+	"vm2":  "10.0.0.100",
+	"vm3":  "10.0.0.101",
+	"vm4":  "10.0.1.0",
+	"vm5":  "10.0.1.1",
+	"vm6":  "10.250.1.0",
+	"vm7":  "10.250.1.1",
+	"vm8":  "172.16.10.10",
+	"vm9":  "192.168.0.0",
+	"vm10": "192.168.255.0",
+}
+var policiesInternalWithInterDenyAllow = []Category{
+	{
+		Name:         "app-x",
+		CategoryType: "Application",
+		Rules: []Rule{
+			{
+				Name:   "deny1",
+				ID:     1004,
+				Source: "10.0.0.0/30",
+				Dest:   "0.0.0.0/0",
+				Action: Drop,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "allow1",
+				ID:     1005,
+				Source: "10.0.0.0/24",
+				Dest:   "0.0.0.0/0",
+				Action: Allow,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "deny2",
+				ID:     1006,
+				Source: "10.0.0.0/20",
+				Dest:   "0.0.0.0/0",
+				Action: Drop,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "allow2",
+				ID:     1007,
+				Source: "10.0.0.0/16",
+				Dest:   "0.0.0.0/0",
+				Action: Allow,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "drop-real-group",
+				ID:     2000,
+				Source: "172.16.10.10/16",
+				Dest:   "real-group",
+				Action: Drop,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "allow-all-after-drop-real-group",
+				ID:     2000,
+				Source: "172.16.10.10/16",
+				Dest:   "0.0.0.0/0",
+				Action: Allow,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "allow-only-2",
+				ID:     3000,
+				Source: "192.168.0.0/16",
+				Dest:   "0.0.0.0/0",
+				Action: Allow,
+				Conn:   netset.AllTransports(),
+			},
+			{
+				Name:   "allow-group",
+				ID:     4008,
+				Source: "real-group",
+				Dest:   "real-group",
+				Action: Allow,
+				Conn:   netset.AllTransports(),
+			},
+			DefaultDenyRule(denyRuleIDApp),
+		},
 	},
+}
+
+var ExampleInternalWithInterDenyAllow = registerExample(&Example{
+	Name:        "ExampleInternalWithInterDenyAllow",
+	VMs:         vms,
+	GroupsByVMs: groupsInternalWithInterDenyAllow,
+	VMsAddress:  vmsAddresses,
+	Policies:    policiesInternalWithInterDenyAllow,
+})
+
+var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
+	Name:        "ExampleInternalWithInterDenyAllowWithSegments",
+	VMs:         vms,
+	GroupsByVMs: groupsInternalWithInterDenyAllow,
+	VMsAddress:  vmsAddresses,
 	SegmentsByVMs: map[string][]string{
 		"seg_1":    {"vm1"},
 		"seg_2-3":  {"vm2", "vm3"},
@@ -620,79 +705,7 @@ var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 		"seg-8":    "172.16.10.10/16",
 		"seg-9-10": "192.168.0.0/16",
 	},
-	Policies: []Category{
-		{
-			Name:         "app-x",
-			CategoryType: "Application",
-			Rules: []Rule{
-				{
-					Name:   "deny1",
-					ID:     1004,
-					Source: "10.0.0.0/30",
-					Dest:   "0.0.0.0/0",
-					Action: Drop,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "allow1",
-					ID:     1005,
-					Source: "10.0.0.0/24",
-					Dest:   "0.0.0.0/0",
-					Action: Allow,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "deny2",
-					ID:     1006,
-					Source: "10.0.0.0/20",
-					Dest:   "0.0.0.0/0",
-					Action: Drop,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "allow2",
-					ID:     1007,
-					Source: "10.0.0.0/16",
-					Dest:   "0.0.0.0/0",
-					Action: Allow,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "drop-real-group",
-					ID:     2000,
-					Source: "172.16.10.10/16",
-					Dest:   "real-group",
-					Action: Drop,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "allow-all-after-drop-real-group",
-					ID:     2000,
-					Source: "172.16.10.10/16",
-					Dest:   "0.0.0.0/0",
-					Action: Allow,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "allow-only-2",
-					ID:     3000,
-					Source: "192.168.0.0/16",
-					Dest:   "0.0.0.0/0",
-					Action: Allow,
-					Conn:   netset.AllTransports(),
-				},
-				{
-					Name:   "allow-group",
-					ID:     4008,
-					Source: "real-group",
-					Dest:   "real-group",
-					Action: Allow,
-					Conn:   netset.AllTransports(),
-				},
-				DefaultDenyRule(denyRuleIDApp),
-			},
-		},
-	},
+	Policies: policiesInternalWithInterDenyAllow,
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
