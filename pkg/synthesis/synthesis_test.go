@@ -518,10 +518,15 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	require.Nil(t, err)
+	connMergedMap := connMap.MergeExternalEP()
+	connMergedMapStr, err := connMergedMap.GenConnectivityOutput(defaultParams)
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_merged_connectivity.txt"), connMergedMapStr)
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
@@ -545,14 +550,18 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, analyzedMap, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
-
+	analyzedMergedMap := analyzedMap.MergeExternalEP()
+	analyzedMergedMapStr, err := analyzedMergedMap.GenConnectivityOutput(defaultParams)
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_merged_connectivity.txt"), analyzedMergedMapStr)
+	require.Nil(t, err)
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	require.Equal(t, connectivity, analyzed,
+	require.Equal(t, connMergedMapStr, analyzedMergedMapStr,
 		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
 

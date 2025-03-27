@@ -79,3 +79,37 @@ func (c ConnMap) getEntryPerEndpoints(srcVM, dstVM string) *connMapEntry {
 	logging.Debugf("could not find entry for srcVN,dstVM : %s, %s", srcVM, dstVM)
 	return nil
 }
+
+func (c ConnMap) MergeExternalEP() ConnMap {
+	unionExternalEP := func(e1, e2 topology.Endpoint) topology.Endpoint {
+		return topology.NewExternalIP(
+			e1.(*topology.ExternalIP).Block.Union(
+				e2.(*topology.ExternalIP).Block))
+	}
+	entries := map[string]*connMapEntry{}
+	for _, entry := range c.toSlice() {
+		src, dst := entry.Src, entry.Dst
+		var key string
+		conn := entry.DetailedConn.Conn
+		switch {
+		case !entry.Src.IsExternal() && !entry.Dst.IsExternal():
+			key = entry.Src.ID() + entry.Dst.ID()
+		case entry.Src.IsExternal():
+			key = "EX_" + entry.Dst.ID() + entry.DetailedConn.Conn.String()
+			if oldEntry, ok := entries[key]; ok {
+				src = unionExternalEP(src, oldEntry.Src)
+			}
+		case entry.Dst.IsExternal():
+			key = entry.Src.ID() + "_EX" + entry.DetailedConn.Conn.String()
+			if oldEntry, ok := entries[key]; ok {
+				dst = unionExternalEP(dst, oldEntry.Dst)
+			}
+		}
+		entries[key] = &connMapEntry{src, dst, &DetailedConnection{Conn: conn}}
+	}
+	res := ConnMap{}
+	for _, entry := range entries {
+		res.Add(entry.Src, entry.Dst, entry.DetailedConn)
+	}
+	return res
+}
