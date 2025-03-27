@@ -106,6 +106,9 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 		return false
 	}
 	for _, otherAtom := range *c {
+		if atom.String() == otherAtom.String() {
+			continue
+		}
 		if atom.supersetOf(otherAtom, hints) {
 			return true
 		}
