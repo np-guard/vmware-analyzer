@@ -118,6 +118,12 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
+		name:            "ExampleInternalWithInterDenyAllow",
+		exData:          data.ExampleInternalWithInterDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
 		name:            "ExampleInternalWithInterDenyAllowWithSegments",
 		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
 		synthesizeAdmin: false,
