@@ -1,0 +1,28 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group      |Expression |VM
+Dumbledore |           |Dumbledore1, Dumbledore2
+Gryffindor |           |Gryffindor-Web
+Hufflepuff |           |Hufflepuff-Web
+Slytherin  |           |Slytherin-Web
+Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                  |Dst                                  |Connection
+0                            |10400   |(group = Dumbledore) |(group = Web and group = Gryffindor) |All Connections
+0                            |10400   |(group = Gryffindor) |(group = Web and group = Gryffindor) |TCP
+0                            |10400   |(group = Hufflepuff) |(group = Web and group = Hufflepuff) |UDP dst-ports: 300-320
+0                            |10400   |(group = Slytherin)  |(group = Web and group = Slytherin)  |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                  |Dst                                  |Connection
+0                            |10400   |(group = Dumbledore) |(group = Web and group = Gryffindor) |All Connections
+0                            |10400   |(group = Gryffindor) |(group = Web and group = Gryffindor) |TCP
+0                            |10400   |(group = Slytherin)  |(group = Web and group = Slytherin)  |All Connections
+

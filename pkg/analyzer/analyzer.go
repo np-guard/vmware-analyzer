@@ -38,7 +38,7 @@ func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContain
 	connectivity.ConnMap,
 	string,
 	error) {
-	config, err := configuration.ConfigFromResourcesContainer(resources, params.Color)
+	config, err := configuration.ConfigFromResourcesContainer(resources, params)
 	if err != nil {
 		return nil, nil, "", err
 	}

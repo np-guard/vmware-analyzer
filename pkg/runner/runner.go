@@ -164,7 +164,7 @@ func (r *Runner) runLint() error {
 		return nil
 	}
 
-	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, r.color)
+	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color: r.color})
 	if err != nil {
 		return err
 	}
@@ -186,6 +186,7 @@ func (r *Runner) runSynthesis() error {
 		SynthesizeAdmin: r.synthesizeAdmin,
 		Color:           r.color,
 		CreateDNSPolicy: !r.suppressDNSPolicies,
+		FilterVMs:       r.analysisVMsFilter,
 	}
 	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {

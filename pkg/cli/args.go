@@ -67,7 +67,7 @@ const (
 	synthesisDumpDirHelp        = "run synthesis; specify directory path to store k8s synthesis results"
 	synthesizeAdminPoliciesHelp = "include admin network policies in policy synthesis (default false)"
 	outputFormatHelp            = "output format; must be one of "
-	outputFilterFlagHelp        = "filter the analysis results by vm names, can specify more than one (example: \"vm1,vm2\")"
+	outputFilterFlagHelp        = "filter the analysis/synthesis results by vm names, can specify more than one (example: \"vm1,vm2\")"
 	quietHelp                   = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                 = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                   = "flag to enable color output (default false)"

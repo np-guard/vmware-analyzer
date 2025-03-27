@@ -29,13 +29,12 @@ const (
 	actualOutput   = "tests_actual_output"
 )
 
-var defaultParams = common.OutputParameters{Format: "txt"}
-
 type synthesisTest struct {
 	name            string
 	exData          *data.Example
 	synthesizeAdmin bool
 	noHint          bool // run also with no hint
+	filter          []string
 }
 
 func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
@@ -60,6 +59,9 @@ func (synTest *synthesisTest) id() string {
 	if synTest.synthesizeAdmin {
 		id += "_AdminPoliciesEnabled"
 	}
+	if synTest.filter != nil {
+		id += "_Filtered"
+	}
 	return id
 }
 
@@ -77,7 +79,11 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
+		FilterVMs:       synTest.filter,
 	}
+}
+func (synTest *synthesisTest) outputParams() common.OutputParameters {
+	return common.OutputParameters{Format: "txt", VMs: synTest.filter}
 }
 
 var groupsByVmsTests = []synthesisTest{
@@ -98,6 +104,13 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
+	},
+	{
+		name:            "Example1dExternalWithSegmentsFiltered",
+		exData:          data.Example1dExternalWithSegments,
+		synthesizeAdmin: false,
+		noHint:          true,
+		filter:          []string{"A", "B"},
 	},
 	{
 		name:            "ExampleExternalWithDenySimple",
@@ -194,6 +207,13 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: true,
 		noHint:          false,
+	},
+	{
+		name:            "ExampleHogwartsFiltered",
+		exData:          data.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
+		filter:          []string{data.SlyWeb, data.GryWeb, data.HufWeb, data.Dum1, data.Dum2},
 	},
 	{
 		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
@@ -375,7 +395,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -439,13 +459,13 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		if !strings.Contains(synTest.name, "External") ||
 			slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
 			// todo - remove "External" condition when examples supported
-			compareToNetpol(t, rc, k8sConnectivityFile)
+			compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 		}
 	}
 }
 
 // the following method is work in progress - the netpol analyzer and the nsx analyser have different granularity of external IPs
-func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
+func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
 	// we get a file with lines in the foramt:
 	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
 	netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
@@ -477,7 +497,7 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 		netpolConnMap[src+"=>"+dst] = conn
 	}
 	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// iterate over the connMap, check each connection:
 	for src, dsts := range connMap {
@@ -525,7 +545,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
@@ -544,7 +564,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// get the config from generated_rc:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -552,7 +572,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
