@@ -82,7 +82,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
-		logging.Debugf("Ignoring %s. admin network policy peer with IPs for Ingress are not supported", p.String())
+		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
 		return
 	}
 	if isAdmin {
