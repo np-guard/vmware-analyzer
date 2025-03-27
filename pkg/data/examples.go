@@ -675,7 +675,7 @@ var vmsAddresses = map[string]string{
 	"vm10": "192.168.255.0",
 }
 
-var ExampleInternalWithInterDenyAllow = registerExample(&Example{
+var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 	Name:        "ExampleInternalWithInterDenyAllow",
 	VMs:         []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9", "vm10", "vm-no-address1", "vm-no-address2"},
 	GroupsByVMs: groupsInternalWithInterDenyAllow,
