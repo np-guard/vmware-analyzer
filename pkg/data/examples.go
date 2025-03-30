@@ -684,13 +684,6 @@ var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 	Policies:    policiesInternalWithInterDenyAllow,
 })
 
-var segmentsByVMs = map[string][]string{
-	"seg_1":   {"vm1"},
-	"seg_2-3": {"vm2", "vm3"},
-	"seg_4-5": {"vm4", "vm5"},
-	"seg-6-7": {"vm6", "vm7"},
-}
-
 var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 	Name:        "ExampleInternalWithInterDenyAllowWithSegments",
 	VMs:         vms,
