@@ -716,11 +716,15 @@ var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 })
 
 var ExampleInternalWithInterDenyAllowMixedSegments = registerExample(&Example{
-	Name:          "ExampleInternalWithInterDenyAllowMixedSegments",
-	VMs:           vms,
-	GroupsByVMs:   groupsInternalWithInterDenyAllow,
-	VMsAddress:    vmsAddresses,
-	SegmentsByVMs: segmentsByVMs,
+	Name:        "ExampleInternalWithInterDenyAllowMixedSegments",
+	VMs:         vms,
+	GroupsByVMs: groupsInternalWithInterDenyAllow,
+	VMsAddress:  vmsAddresses,
+	SegmentsByVMs: map[string][]string{
+		"seg_2-3": {"vm2", "vm3"},
+		"seg_4-5": {"vm4", "vm5"},
+		"seg-6-7": {"vm6", "vm7"},
+	},
 	SegmentsBlock: map[string]string{
 		"seg_1":   "10.0.0.0/32",
 		"seg_2-3": "10.0.0.0/25",
