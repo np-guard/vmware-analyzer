@@ -9,6 +9,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
@@ -34,6 +35,7 @@ const noNSXRuleID = "none"
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
+	policiesSkipped      bool
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -73,16 +75,23 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	dstSelector := createSelector(p.Dst)
 	// a tmp check, this case should be filtered the abstract phase:
 	if !inbound && len(srcSelector.cidrs) > 0 {
-		logging.Debugf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
-		return
+		if len(srcSelector.cidrs) == 1 && srcSelector.cidrs[0] == netset.CidrAll {
+			srcSelector.cidrs = nil
+		} else {
+			logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+		}
 	}
 	// a tmp check, this case should be filtered the abstract phase:
 	if inbound && len(dstSelector.cidrs) > 0 {
-		logging.Debugf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
-		return
+		if len(dstSelector.cidrs) == 1 && dstSelector.cidrs[0] == netset.CidrAll {
+			dstSelector.cidrs = nil
+		} else {
+		logging.Warnf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+		}
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
+		policies.policiesSkipped = true
 		return
 	}
 	if isAdmin {
@@ -232,7 +241,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 		switch {
 		case a.IsTautology():
 			if len(con) == 1 {
-				res.cidrs = a.GetExternalBlock().ToCidrList()
+				res.cidrs = []string{netset.CidrAll}
 			}
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
@@ -245,6 +254,9 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			res.pods.MatchExpressions = append(res.pods.MatchExpressions, req)
 		}
+	}
+	if len(res.cidrs) > 0 && len(res.pods.MatchExpressions) > 0 {
+		logging.InternalErrorf("symbolicexpr.Conjunction can not have both ")
 	}
 	return res
 }
