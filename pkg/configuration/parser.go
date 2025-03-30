@@ -119,7 +119,7 @@ func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
 		if len(groups) == 0 {
-			logging.Debugf("ignoring VM without groups: %s", vm.Name())
+			logging.Warnf("ignoring VM without groups: %s. address %s", vm.Name(), vm.IPAddressesStr())
 			toRemove = append(toRemove, vm)
 		}
 	}
