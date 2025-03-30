@@ -55,10 +55,7 @@ func (internalIP internalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool
 }
 
 func (internalIP internalIPTerm) getInternalBlock() *netset.IPBlock {
-	if internalIP.isNegation() {
-		return internalIP.ruleBlock.Block.Complementary()
-	}
-	return internalIP.ruleBlock.Block
+	return getInternalBlock(internalIP.ruleBlock.Block, internalIP.isNegation())
 }
 
 // if otherAtom is also internal Block, then check explicit disjointness
@@ -86,4 +83,12 @@ func isIPSuperset(thisInternalBlock *netset.IPBlock, otherAtom atomic) bool {
 		}
 	}
 	return false
+}
+
+// gets internal block - considers negation
+func getInternalBlock(internalIP *netset.IPBlock, isNegation bool) *netset.IPBlock {
+	if isNegation {
+		return internalIP.Complementary()
+	}
+	return internalIP
 }
