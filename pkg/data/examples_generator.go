@@ -113,10 +113,16 @@ func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) 
 	// add groups
 	// defined by VMs
 	groupList := []collector.Group{}
-	for group, members := range e.GroupsByVMs {
+
+	addGroup := func(group string, members []string) {
 		newGroup := newGroupByExample(group)
 		newGroup.VMMembers = addVMsToGroup(members)
 		groupList = append(groupList, newGroup)
+	}
+	groupedVMs := []string{}
+	for group, members := range e.GroupsByVMs {
+		addGroup(group, members)
+		groupedVMs = append(groupedVMs, members...)
 	}
 	// groups defined by expr and VMs
 	for group, expr := range e.GroupsByExpr {
@@ -125,7 +131,13 @@ func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) 
 		newGroup.Expression = *groupExpr
 		realizedVmsList := vmsOfExpr(&res.VirtualMachineList, &newGroup.Expression)
 		newGroup.VMMembers = realizedVmsList
+		vmNames := common.CustomStrSliceToStrings(newGroup.VMMembers, func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName })
+		groupedVMs = append(groupedVMs, vmNames...)
 		groupList = append(groupList, newGroup)
+	}
+	nonGroupedVMs := slices.DeleteFunc(slices.Clone(e.VMs), func(vm string) bool { return slices.Contains(groupedVMs, vm) })
+	if len(nonGroupedVMs) > 0 {
+		addGroup("no-group-vms-group", nonGroupedVMs)
 	}
 	res.DomainList[0].Resources.GroupList = groupList
 
