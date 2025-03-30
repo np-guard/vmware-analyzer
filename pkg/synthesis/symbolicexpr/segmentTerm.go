@@ -12,7 +12,7 @@ func NewSegmentTerm(segment *topology.Segment) *segmentTerm {
 }
 
 func (segment segmentTerm) name() string {
-	return segment.name()
+	return segment.segment.Name
 }
 
 func (segment segmentTerm) String() string {
