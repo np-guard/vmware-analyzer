@@ -70,12 +70,12 @@ func (p *nsxConfigParser) runParser() error {
 	// the parsing of relevant NSX objects is done here
 	p.storeParsedVMs()    // get vms config
 	p.storeParsedGroups() // get groups config
+	p.removeVMsWithoutGroups()
 	if err := p.getTopology(); err != nil {
 		return err
 	}
 	p.storeParsedSegments() // get NSX segments config
 
-	p.removeVMsWithoutGroups()
 	p.storeParsedDFW() // get distributed firewall config
 
 	// additional mappings for more details on log and config fields
@@ -118,7 +118,7 @@ func (p *nsxConfigParser) storeParsedSegments() {
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 && len(p.configRes.topology.ruleBlockPerEP[vm]) == 0 {
+		if len(groups) == 0 {
 			logging.Debugf("ignoring VM without groups: %s", vm.Name())
 			toRemove = append(toRemove, vm)
 		}
