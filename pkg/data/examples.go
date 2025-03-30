@@ -591,7 +591,7 @@ var vms = []string{"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7", "vm8", "vm9"
 var groupsInternalWithInterDenyAllow = map[string][]string{"default-group": {"vm1", "vm2", "vm3", "vm4", "vm5",
 	"vm6", "vm7", "vm8", "vm9", "vm10"}, "real-group": {"vm-no-address1", "vm-no-address2"}}
 var vmsAddresses = map[string]string{
-	"vm1":  "10.0.0.0",
+	"vm1":  "10.0.0.2",
 	"vm2":  "10.0.0.100",
 	"vm3":  "10.0.0.101",
 	"vm4":  "10.0.1.0",
@@ -684,6 +684,13 @@ var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 	Policies:    policiesInternalWithInterDenyAllow,
 })
 
+var segmentsByVMs = map[string][]string{
+	"seg_1":   {"vm1"},
+	"seg_2-3": {"vm2", "vm3"},
+	"seg_4-5": {"vm4", "vm5"},
+	"seg-6-7": {"vm6", "vm7"},
+}
+
 var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 	Name:        "ExampleInternalWithInterDenyAllowWithSegments",
 	VMs:         vms,
@@ -704,6 +711,21 @@ var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 		"seg-6-7":  "10.0.0.0/16",
 		"seg-8":    "172.16.10.10/16",
 		"seg-9-10": "192.168.0.0/16",
+	},
+	Policies: policiesInternalWithInterDenyAllow,
+})
+
+var ExampleInternalWithInterDenyAllowMixedSegments = registerExample(&Example{
+	Name:          "ExampleInternalWithInterDenyAllowMixedSegments",
+	VMs:           vms,
+	GroupsByVMs:   groupsInternalWithInterDenyAllow,
+	VMsAddress:    vmsAddresses,
+	SegmentsByVMs: segmentsByVMs,
+	SegmentsBlock: map[string]string{
+		"seg_1":   "10.0.0.0/32",
+		"seg_2-3": "10.0.0.0/25",
+		"seg_4-5": "10.0.0.0/20",
+		"seg-6-7": "10.0.0.0/15",
 	},
 	Policies: policiesInternalWithInterDenyAllow,
 })

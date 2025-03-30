@@ -193,6 +193,12 @@ var vmsByIpsTests = []synthesisTest{
 		noHint:          false,
 	},
 	{
+		name:            "ExampleInternalWithInterDenyAllowMixedSegments",
+		exData:          data.ExampleInternalWithInterDenyAllowMixedSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
 		name:            "ExampleHogwartsExternal",
 		exData:          data.ExampleHogwartsExternal,
 		noHint:          false,
