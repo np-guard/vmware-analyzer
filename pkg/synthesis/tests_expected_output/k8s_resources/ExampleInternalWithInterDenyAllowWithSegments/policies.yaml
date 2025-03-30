@@ -79,8 +79,10 @@ metadata:
 spec:
     egress:
         - to:
-            - ipBlock:
-                cidr: 0.0.0.0/0
+            - podSelector:
+                matchExpressions:
+                    - key: group__real-group
+                      operator: DoesNotExist
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__172.16.10.10-16
@@ -92,10 +94,33 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
+        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        nsx-id: "2000"
+    creationTimestamp: null
+    name: policy-4
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: VMs_within_IPs__172.16.10.10-16
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__real-group
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-4
+    name: policy-5
     namespace: default
 spec:
     egress:
@@ -116,7 +141,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-5
+    name: policy-6
     namespace: default
 spec:
     egress:
@@ -143,7 +168,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-6
+    name: policy-7
     namespace: default
 spec:
     ingress:

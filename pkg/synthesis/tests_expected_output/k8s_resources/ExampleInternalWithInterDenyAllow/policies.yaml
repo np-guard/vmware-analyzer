@@ -79,8 +79,10 @@ metadata:
 spec:
     egress:
         - to:
-            - ipBlock:
-                cidr: 0.0.0.0/0
+            - podSelector:
+                matchExpressions:
+                    - key: group__real-group
+                      operator: DoesNotExist
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__172.16.10.10-16
@@ -92,10 +94,84 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
+        description: 'src: (IP addr in 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        nsx-id: "2000"
+    creationTimestamp: null
+    name: policy-4
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - ipBlock:
+                cidr: 172.16.0.0/21
+            - ipBlock:
+                cidr: 172.16.8.0/23
+            - ipBlock:
+                cidr: 172.16.10.0/29
+            - ipBlock:
+                cidr: 172.16.10.8/31
+            - ipBlock:
+                cidr: 172.16.10.11/32
+            - ipBlock:
+                cidr: 172.16.10.12/30
+            - ipBlock:
+                cidr: 172.16.10.16/28
+            - ipBlock:
+                cidr: 172.16.10.32/27
+            - ipBlock:
+                cidr: 172.16.10.64/26
+            - ipBlock:
+                cidr: 172.16.10.128/25
+            - ipBlock:
+                cidr: 172.16.11.0/24
+            - ipBlock:
+                cidr: 172.16.12.0/22
+            - ipBlock:
+                cidr: 172.16.16.0/20
+            - ipBlock:
+                cidr: 172.16.32.0/19
+            - ipBlock:
+                cidr: 172.16.64.0/18
+            - ipBlock:
+                cidr: 172.16.128.0/17
+    podSelector:
+        matchExpressions:
+            - key: group__real-group
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        nsx-id: "2000"
+    creationTimestamp: null
+    name: policy-5
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: VMs_within_IPs__172.16.10.10-16
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__real-group
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-4
+    name: policy-6
     namespace: default
 spec:
     egress:
@@ -116,7 +192,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-5
+    name: policy-7
     namespace: default
 spec:
     egress:
@@ -143,7 +219,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-6
+    name: policy-8
     namespace: default
 spec:
     ingress:
