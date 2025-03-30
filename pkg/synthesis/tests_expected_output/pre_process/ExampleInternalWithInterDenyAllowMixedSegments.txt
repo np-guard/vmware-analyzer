@@ -2,12 +2,16 @@ category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
 Priority |Rule Id |Action |Src                              |Dst                    |Connection
+0        |1004    |deny   |(VMs within IPs 10.0.0.0/30)     |(IP addr in 0.0.0.0/0) |All Connections
 0        |1004    |deny   |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
+1        |1005    |allow  |(VMs within IPs 10.0.0.0/24)     |(IP addr in 0.0.0.0/0) |All Connections
 1        |1005    |allow  |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
 1        |1005    |allow  |(segment seg_2-3)                |(IP addr in 0.0.0.0/0) |All Connections
+2        |1006    |deny   |(VMs within IPs 10.0.0.0/20)     |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(segment seg_2-3)                |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(segment seg_4-5)                |(IP addr in 0.0.0.0/0) |All Connections
+3        |1007    |allow  |(VMs within IPs 10.0.0.0/16)     |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(segment seg_2-3)                |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(segment seg_4-5)                |(IP addr in 0.0.0.0/0) |All Connections
@@ -23,12 +27,16 @@ Priority |Rule Id |Action |Src                              |Dst                
 
 symbolic outbound rules:
 Priority |Rule Id |Action |Src                              |Dst                    |Connection
+0        |1004    |deny   |(VMs within IPs 10.0.0.0/30)     |(IP addr in 0.0.0.0/0) |All Connections
 0        |1004    |deny   |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
+1        |1005    |allow  |(VMs within IPs 10.0.0.0/24)     |(IP addr in 0.0.0.0/0) |All Connections
 1        |1005    |allow  |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
 1        |1005    |allow  |(segment seg_2-3)                |(IP addr in 0.0.0.0/0) |All Connections
+2        |1006    |deny   |(VMs within IPs 10.0.0.0/20)     |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(segment seg_2-3)                |(IP addr in 0.0.0.0/0) |All Connections
 2        |1006    |deny   |(segment seg_4-5)                |(IP addr in 0.0.0.0/0) |All Connections
+3        |1007    |allow  |(VMs within IPs 10.0.0.0/16)     |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(segment seg_1)                  |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(segment seg_2-3)                |(IP addr in 0.0.0.0/0) |All Connections
 3        |1007    |allow  |(segment seg_4-5)                |(IP addr in 0.0.0.0/0) |All Connections
