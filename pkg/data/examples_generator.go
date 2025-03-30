@@ -36,6 +36,8 @@ type Example struct {
 
 // ExamplesGeneration - main function to generate ResourcesContainerModel from specified Example object.
 // It also stores the generated example in the path pkg/data/json .
+//
+//nolint:funlen // just a long function
 func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
