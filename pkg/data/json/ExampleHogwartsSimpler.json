@@ -28661,6 +28661,20 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "Gryffindor",
+                        "path": "Gryffindor",
+                        "vm_members": [
+                            {
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
+                            },
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            }
+                        ]
+                    },
+                    {
                         "display_name": "Web",
                         "path": "Web",
                         "vm_members": [
@@ -28703,16 +28717,16 @@
                         ]
                     },
                     {
-                        "display_name": "Gryffindor",
-                        "path": "Gryffindor",
+                        "display_name": "no-group-vms-group",
+                        "path": "no-group-vms-group",
                         "vm_members": [
                             {
-                                "display_name": "Gryffindor-Web",
-                                "id": "Gryffindor-Web"
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
                             },
                             {
-                                "display_name": "Gryffindor-App",
-                                "id": "Gryffindor-App"
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
                             }
                         ]
                     }
