@@ -685,7 +685,7 @@ var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 })
 
 var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
-	Name:        "ExampleInternalWithInterDenyAllow",
+	Name:        "ExampleInternalWithInterDenyAllowWithSegments",
 	VMs:         vms,
 	GroupsByVMs: groupsInternalWithInterDenyAllow,
 	VMsAddress:  vmsAddresses,
