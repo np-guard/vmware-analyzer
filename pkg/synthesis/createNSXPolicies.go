@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
@@ -65,6 +66,12 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
 			addVMLabel(vm, label)
+		}
+		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
+			if !ruleIPBlock.IsAll() {
+				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
+				addVMLabel(vm, label)
+			}
 		}
 	}
 }
@@ -141,6 +148,9 @@ func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
 func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
+		if atom.IsTautology() {
+			return netset.CidrAll
+		}
 		if atom.IsAllGroups() {
 			continue
 		}

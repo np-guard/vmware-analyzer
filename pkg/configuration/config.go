@@ -40,7 +40,7 @@ type Config struct {
 	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
 	configSummary    *configInfo
 	origNSXResources *collector.ResourcesContainerModel
-	topology         *nsxTopology
+	Topology         *nsxTopology
 }
 
 func (c *Config) Endpoints() []topology.Endpoint {
@@ -163,9 +163,9 @@ func (c *Config) getVMsInfoStr(color bool) string {
 func (c *Config) getIPRangeInfoStr(color bool) string {
 	header := []string{"Total", "Internal", "External"}
 	lines := [][]string{{
-		common.IPBlockShortString(c.topology.allIPBlock),
-		common.IPBlockShortString(c.topology.allInternalIPBlock),
-		common.IPBlockShortString(c.topology.allExternalIPBlock),
+		common.IPBlockShortString(c.Topology.allIPBlock),
+		common.IPBlockShortString(c.Topology.allInternalIPBlock),
+		common.IPBlockShortString(c.Topology.allExternalIPBlock),
 	}}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
@@ -174,7 +174,7 @@ func (c *Config) getExternalEPInfoStr(color bool) string {
 	header := []string{"External EP", "Rule Blocks"}
 	lines := [][]string{}
 	for _, ip := range c.externalIPs {
-		lines = append(lines, []string{ip.IPAddressesStr(), common.SortedJoinCustomStrFuncSlice(c.topology.ruleBlockPerEP[ip],
+		lines = append(lines, []string{ip.IPAddressesStr(), common.SortedJoinCustomStrFuncSlice(c.Topology.RuleBlockPerEP[ip],
 			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }, common.CommaSpaceSeparator)})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
@@ -203,7 +203,7 @@ func (c *Config) getInternalEPInfoStr(color bool) string {
 func (c *Config) getRuleBlocksStr(color bool) string {
 	header := []string{"Rule Block", "External Endpoints", vmsTitle}
 	lines := [][]string{}
-	for _, block := range c.topology.allRuleIPBlocks {
+	for _, block := range c.Topology.AllRuleIPBlocks {
 		eps := common.SortedJoinCustomStrFuncSlice(block.ExternalIPs,
 			func(ep topology.Endpoint) string { return ep.Name() }, common.CommaSpaceSeparator)
 		vms := common.SortedJoinCustomStrFuncSlice(block.VMs,

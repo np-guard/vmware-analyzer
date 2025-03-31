@@ -9,6 +9,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
@@ -34,6 +35,7 @@ const noNSXRuleID = "none"
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
+	policiesSkipped      bool
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -71,18 +73,26 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
 	srcSelector := createSelector(p.Src)
 	dstSelector := createSelector(p.Dst)
-	// a tmp check, this case should be filtered the abstract phase:
-	if !inbound && len(srcSelector.cidrs) > 0 {
-		logging.Debugf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+	if inbound && dstSelector.isTautology() {
+		dstSelector.convertAllCidrToAllPodsSelector()
+	}
+	if !inbound && srcSelector.isTautology() {
+		srcSelector.convertAllCidrToAllPodsSelector()
+	}
+	// is the following two cases should be filtered the abstract phase?:
+	if inbound && dstSelector.isCidr() {
+		logging.Warnf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+		policies.policiesSkipped = true
 		return
 	}
-	// a tmp check, this case should be filtered the abstract phase:
-	if inbound && len(dstSelector.cidrs) > 0 {
-		logging.Debugf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+	if !inbound && srcSelector.isCidr() {
+		logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+		policies.policiesSkipped = true
 		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
-		logging.Debugf("Ignoring %s. admin network policy peer with IPs for Ingress are not supported", p.String())
+		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
+		policies.policiesSkipped = true
 		return
 	}
 	if isAdmin {
@@ -223,6 +233,16 @@ type policySelector struct {
 	namespace meta.LabelSelector
 }
 
+func (selector policySelector) isTautology() bool {
+	return len(selector.cidrs) == 1 && selector.cidrs[0] == netset.CidrAll
+}
+func (selector policySelector) isCidr() bool {
+	return len(selector.cidrs) > 0
+}
+func (selector policySelector) convertAllCidrToAllPodsSelector() {
+	selector.cidrs = []string{}
+}
+
 func createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
@@ -231,7 +251,9 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
-			res.cidrs = a.GetExternalBlock().ToCidrList()
+			if len(con) == 1 {
+				res.cidrs = []string{netset.CidrAll}
+			}
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces
@@ -243,6 +265,9 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			res.pods.MatchExpressions = append(res.pods.MatchExpressions, req)
 		}
+	}
+	if len(res.cidrs) > 0 && len(res.pods.MatchExpressions) > 0 {
+		logging.InternalErrorf("symbolicexpr.Conjunction can not have both ")
 	}
 	return res
 }
