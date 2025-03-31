@@ -73,21 +73,22 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
 	srcSelector := createSelector(p.Src)
 	dstSelector := createSelector(p.Dst)
-	// a tmp check, this case should be filtered the abstract phase:
-	if !inbound && len(srcSelector.cidrs) > 0 {
-		if len(srcSelector.cidrs) == 1 && srcSelector.cidrs[0] == netset.CidrAll {
-			srcSelector.cidrs = nil
-		} else {
-			logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
-		}
+	if inbound && dstSelector.isTautology() {
+		dstSelector.convertAllCidrToAllPodsSelector()
 	}
-	// a tmp check, this case should be filtered the abstract phase:
-	if inbound && len(dstSelector.cidrs) > 0 {
-		if len(dstSelector.cidrs) == 1 && dstSelector.cidrs[0] == netset.CidrAll {
-			dstSelector.cidrs = nil
-		} else {
+	if !inbound && srcSelector.isTautology() {
+		srcSelector.convertAllCidrToAllPodsSelector()
+	}
+	// is the following two cases should be filtered the abstract phase?:
+	if inbound && dstSelector.isCidr() {
 		logging.Warnf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
-		}
+		policies.policiesSkipped = true
+		return
+	}
+	if !inbound && srcSelector.isCidr() {
+		logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+		policies.policiesSkipped = true
+		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
@@ -230,6 +231,16 @@ type policySelector struct {
 	pods      *meta.LabelSelector
 	cidrs     []string
 	namespace meta.LabelSelector
+}
+
+func (selector policySelector) isTautology() bool {
+	return len(selector.cidrs) == 1 && selector.cidrs[0] == netset.CidrAll
+}
+func (selector policySelector) isCidr() bool {
+	return len(selector.cidrs) > 0
+}
+func (selector policySelector) convertAllCidrToAllPodsSelector() {
+	selector.cidrs = []string{}
 }
 
 func createSelector(con symbolicexpr.Conjunction) policySelector {
