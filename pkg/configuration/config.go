@@ -76,7 +76,7 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 
 	// External EndPoints
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("External EndPoints:\n")
+	sb.WriteString("External Endpoints:\n")
 	sb.WriteString(c.getExternalEPInfoStr(color))
 
 	// Internal IP Ranges
