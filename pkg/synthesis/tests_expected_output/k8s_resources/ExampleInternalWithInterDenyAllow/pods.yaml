@@ -12,10 +12,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.0.0.0
-    podIPs:
-        - ip: 10.0.0.0
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -30,10 +27,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.0.0.100
-    podIPs:
-        - ip: 10.0.0.100
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -48,10 +42,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.0.0.101
-    podIPs:
-        - ip: 10.0.0.101
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -65,10 +56,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.0.1.0
-    podIPs:
-        - ip: 10.0.1.0
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -82,10 +70,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.0.1.1
-    podIPs:
-        - ip: 10.0.1.1
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -97,10 +82,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.250.1.0
-    podIPs:
-        - ip: 10.250.1.0
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -112,10 +94,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 10.250.1.1
-    podIPs:
-        - ip: 10.250.1.1
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -128,10 +107,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 172.16.10.10
-    podIPs:
-        - ip: 172.16.10.10
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -144,10 +120,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 192.168.0.0
-    podIPs:
-        - ip: 192.168.0.0
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -160,10 +133,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 192.168.255.0
-    podIPs:
-        - ip: 192.168.255.0
+status: {}
 ---
 apiVersion: v1
 kind: Pod

@@ -9,10 +9,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 0.0.1.0
-    podIPs:
-        - ip: 0.0.1.0
+status: {}
 ---
 apiVersion: v1
 kind: Pod
@@ -25,10 +22,7 @@ metadata:
     namespace: default
 spec:
     containers: null
-status:
-    podIP: 0.0.1.192
-    podIPs:
-        - ip: 0.0.1.192
+status: {}
 ---
 apiVersion: v1
 kind: Pod
