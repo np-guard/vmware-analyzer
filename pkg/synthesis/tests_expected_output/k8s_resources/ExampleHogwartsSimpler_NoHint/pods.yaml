@@ -29,6 +29,18 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
+        group__no-group-vms-group: "true"
+    name: Slytherin-DB
+    namespace: default
+spec:
+    containers: null
+status: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+    creationTimestamp: null
+    labels:
         group__Gryffindor: "true"
         group__Web: "true"
     name: Gryffindor-Web
@@ -45,6 +57,18 @@ metadata:
         group__App: "true"
         group__Gryffindor: "true"
     name: Gryffindor-App
+    namespace: default
+spec:
+    containers: null
+status: {}
+---
+apiVersion: v1
+kind: Pod
+metadata:
+    creationTimestamp: null
+    labels:
+        group__no-group-vms-group: "true"
+    name: Gryffindor-DB
     namespace: default
 spec:
     containers: null
