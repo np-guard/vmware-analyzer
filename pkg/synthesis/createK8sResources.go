@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -72,6 +73,14 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		pod.TypeMeta.APIVersion = "v1"
 		pod.ObjectMeta.Name = toLegalK8SString(vm.Name())
 		pod.ObjectMeta.Namespace = core.NamespaceDefault
+		addresses := vm.(*topology.VM).IPAddresses()
+		if len(addresses) > 0 {
+			pod.Status.PodIP = addresses[0]
+			pod.Status.PodIPs = make([]core.PodIP, len(addresses))
+			for i, address := range addresses {
+				pod.Status.PodIPs[i] = core.PodIP{address}
+			}
+		}
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
