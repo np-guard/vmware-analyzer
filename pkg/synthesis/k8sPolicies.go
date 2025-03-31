@@ -100,6 +100,14 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	} else {
 		ports := connToPolicyPort(p.Conn)
 		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
+		if inbound && srcSelector.isTautology() {
+			srcSelector.convertAllCidrToAllPodsSelector()
+			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of " +  p.String(), nsxRuleID)
+		}
+		if !inbound && dstSelector.isTautology() {
+			dstSelector.convertAllCidrToAllPodsSelector()
+			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of " + p.String(), nsxRuleID)
+		}	
 	}
 }
 
@@ -231,13 +239,13 @@ type policySelector struct {
 	namespace meta.LabelSelector
 }
 
-func (selector policySelector) isTautology() bool {
+func (selector *policySelector) isTautology() bool {
 	return len(selector.cidrs) == 1 && selector.cidrs[0] == netset.CidrAll
 }
-func (selector policySelector) isCidr() bool {
+func (selector *policySelector) isCidr() bool {
 	return len(selector.cidrs) > 0
 }
-func (selector policySelector) convertAllCidrToAllPodsSelector() {
+func (selector *policySelector) convertAllCidrToAllPodsSelector() {
 	selector.cidrs = []string{}
 }
 
@@ -270,7 +278,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	return res
 }
 
-func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
+func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	if len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {
@@ -281,15 +289,15 @@ func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	return []networking.NetworkPolicyPeer{{PodSelector: selector.pods}}
 }
 
-func (selector policySelector) toPodSelector() meta.LabelSelector {
+func (selector *policySelector) toPodSelector() meta.LabelSelector {
 	return *selector.pods
 }
 
-func (selector policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
+func (selector *policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
 	return []admin.AdminNetworkPolicyIngressPeer{
 		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
-func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
+func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
 	if len(selector.cidrs) > 0 {
 		res := make([]admin.AdminNetworkPolicyEgressPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {
@@ -300,7 +308,7 @@ func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPo
 	return []admin.AdminNetworkPolicyEgressPeer{
 		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
-func (selector policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
+func (selector *policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
 	return admin.AdminNetworkPolicySubject{
 		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
 }

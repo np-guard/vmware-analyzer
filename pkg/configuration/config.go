@@ -165,7 +165,7 @@ func (c *Config) getIPRangeInfoStr(color bool) string {
 	lines := [][]string{{
 		common.IPBlockShortString(c.Topology.allIPBlock),
 		common.IPBlockShortString(c.Topology.allInternalIPBlock),
-		common.IPBlockShortString(c.Topology.allExternalIPBlock),
+		common.IPBlockShortString(c.Topology.AllExternalIPBlock),
 	}}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

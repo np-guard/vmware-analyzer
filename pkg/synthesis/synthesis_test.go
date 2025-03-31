@@ -492,7 +492,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		k8sConnMap.Add(srcEP, dstEP, strToConn(connStr))
 	}
 	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
 	require.Nil(t, err)
 	noIcmpMap := connectivity.ConnMap{}
 	for src, srcMap := range connMap {
@@ -506,7 +506,21 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 	debugDir := synTest.debugDir()
 	noIcmpMergedMap := noIcmpMap.MergeExternalEP()
-	noICMPMergedMapStr, err := noIcmpMergedMap.GenConnectivityOutput(defaultParams)
+	noIcmpMergedExternalToAllMap := connectivity.ConnMap{}
+	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
+	externalToAll := func(ep topology.Endpoint) topology.Endpoint {
+		if ep.IsExternal() && ep.(*topology.ExternalIP).Block.Equal(config.Topology.AllExternalIPBlock) {
+			return allCidrEP
+		}
+		return ep
+	}
+	for src, srcMap := range noIcmpMergedMap {
+		for dst, conn := range srcMap {
+			noIcmpMergedExternalToAllMap.Add(externalToAll(src), externalToAll(dst), conn)
+		}
+	}
+
+	noICMPMergedMapStr, err := noIcmpMergedExternalToAllMap.GenConnectivityOutput(defaultParams)
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_merged_connectivity.txt"), noICMPMergedMapStr)
 	require.Nil(t, err)

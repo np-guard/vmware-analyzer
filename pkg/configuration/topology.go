@@ -20,7 +20,7 @@ type nsxTopology struct {
 	RuleBlockPerEP     map[topology.Endpoint][]*topology.RuleIPBlock // map from ep to its blocks
 	allIPBlock         *netset.IPBlock                               // the union of segments and rule path IPs
 	allInternalIPBlock *netset.IPBlock
-	allExternalIPBlock *netset.IPBlock
+	AllExternalIPBlock *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
@@ -109,14 +109,14 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 // creating external endpoints
 func (p *nsxConfigParser) getExternalIPs() {
 	// calc external range:
-	p.configRes.Topology.allExternalIPBlock = p.configRes.Topology.allIPBlock.Subtract(p.configRes.Topology.allInternalIPBlock)
-	if p.configRes.Topology.allExternalIPBlock.IsEmpty() {
+	p.configRes.Topology.AllExternalIPBlock = p.configRes.Topology.allIPBlock.Subtract(p.configRes.Topology.allInternalIPBlock)
+	if p.configRes.Topology.AllExternalIPBlock.IsEmpty() {
 		return
 	}
 	// collect all the blocks:
 	exBlocks := make([]*netset.IPBlock, len(p.configRes.Topology.AllRuleIPBlocks))
 	for i, ruleBlock := range slices.Collect(maps.Values(p.configRes.Topology.AllRuleIPBlocks)) {
-		ruleBlock.ExternalRange = ruleBlock.Block.Intersect(p.configRes.Topology.allExternalIPBlock)
+		ruleBlock.ExternalRange = ruleBlock.Block.Intersect(p.configRes.Topology.AllExternalIPBlock)
 		exBlocks[i] = ruleBlock.ExternalRange
 	}
 	// creating disjoint blocks:
