@@ -708,6 +708,7 @@ var ExampleInternalWithInterDenyAllowWithSegments = registerExample(&Example{
 	Policies: policiesInternalWithInterDenyAllow,
 })
 
+// ExampleInternalWithInterDenyAllowMixedSegments todo see https://github.com/np-guard/vmware-analyzer/issues/379
 var ExampleInternalWithInterDenyAllowMixedSegments = registerExample(&Example{
 	Name:        "ExampleInternalWithInterDenyAllowMixedSegments",
 	VMs:         vms,
