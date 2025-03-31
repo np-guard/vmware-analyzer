@@ -1,6 +1,7 @@
 package configuration
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -39,6 +40,7 @@ type Config struct {
 	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
 	configSummary    *configInfo
 	origNSXResources *collector.ResourcesContainerModel
+	topology         *nsxTopology
 }
 
 func (c *Config) Endpoints() []topology.Endpoint {
@@ -67,6 +69,26 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("VMs:\n")
 	sb.WriteString(c.getVMsInfoStr(color))
 
+	// Summary of IP Ranges
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("IP Ranges:\n")
+	sb.WriteString(c.getIPRangeInfoStr(color))
+
+	// External Endpoints
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("External Endpoints:\n")
+	sb.WriteString(c.getExternalEPInfoStr(color))
+
+	// Internal IP Ranges
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Internal IP:\n")
+	sb.WriteString(c.getInternalEPInfoStr(color))
+
+	// Rule Blocks
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Rule Blocks:\n")
+	sb.WriteString(c.getRuleBlocksStr(color))
+
 	// segments
 	sb.WriteString(common.OutputSectionSep)
 	sb.WriteString("Segments:\n")
@@ -93,6 +115,7 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 
 const (
 	vmNameTitle      = "VM Name"
+	vmsTitle         = "VMs"
 	segmentNameTitle = "Segment Name"
 )
 
@@ -108,7 +131,7 @@ func (c *Config) getSegmentsPortsInfoStr(color bool) string {
 }
 
 func (c *Config) getSegmentsInfoStr(color bool) string {
-	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", "VMs"}
+	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", vmsTitle}
 	lines := [][]string{}
 	for _, s := range c.segments {
 		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
@@ -133,6 +156,59 @@ func (c *Config) getVMsInfoStr(color bool) string {
 	lines := [][]string{}
 	for _, vm := range c.VMs {
 		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.(*topology.VM).IPAddresses(), common.CommaSeparator)})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) getIPRangeInfoStr(color bool) string {
+	header := []string{"Total", "Internal", "External"}
+	lines := [][]string{{
+		common.IPBlockShortString(c.topology.allIPBlock),
+		common.IPBlockShortString(c.topology.allInternalIPBlock),
+		common.IPBlockShortString(c.topology.allExternalIPBlock),
+	}}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) getExternalEPInfoStr(color bool) string {
+	header := []string{"External EP", "Rule Blocks"}
+	lines := [][]string{}
+	for _, ip := range c.externalIPs {
+		lines = append(lines, []string{ip.IPAddressesStr(), common.SortedJoinCustomStrFuncSlice(c.topology.ruleBlockPerEP[ip],
+			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }, common.CommaSpaceSeparator)})
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+func (c *Config) getInternalEPInfoStr(color bool) string {
+	header := []string{"Internal IP", segmentNameTitle, vmsTitle}
+	lines := [][]string{}
+	vmWithAddressedSegments := []*topology.VM{}
+	for _, s := range c.segments {
+		if s.CIDRs() != "" {
+			vmWithAddressedSegments = append(vmWithAddressedSegments, s.VMs()...)
+			vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
+			lines = append(lines, []string{s.CIDRs(), s.Name(), vmsStr})
+		}
+	}
+	for _, vm := range c.VMs {
+		if slices.Index(vmWithAddressedSegments, vm.(*topology.VM)) < 0 {
+			for _, address := range vm.(*topology.VM).IPAddresses() {
+				lines = append(lines, []string{address, "", vm.Name()})
+			}
+		}
+	}
+	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) getRuleBlocksStr(color bool) string {
+	header := []string{"Rule Block", "External Endpoints", vmsTitle}
+	lines := [][]string{}
+	for _, block := range c.topology.allRuleIPBlocks {
+		eps := common.SortedJoinCustomStrFuncSlice(block.ExternalIPs,
+			func(ep topology.Endpoint) string { return ep.Name() }, common.CommaSpaceSeparator)
+		vms := common.SortedJoinCustomStrFuncSlice(block.VMs,
+			func(vm topology.Endpoint) string { return vm.Name() }, common.CommaSpaceSeparator)
+		lines = append(lines, []string{block.OriginalIP, eps, vms})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
