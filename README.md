@@ -218,17 +218,25 @@ original rules:
 ruleID |ruleName  |src      |dst     |services |action |direction |scope |sec-policy  |Category
 1      |allowRule |frontend |backend |SMB      |allow  |IN_OUT    |ANY   |Application |Application
 2      |allowRule |frontend |backend |HTTP     |allow  |IN_OUT    |ANY   |Application |Application
-3      |allowRule |frontend |backend |HTTP,SMB |allow  |IN_OUT    |ANY   |Application |Application
-4      |denyRule  |ANY      |ANY     |ANY      |deny   |IN_OUT    |ANY   |Application |Application
+3      |allowRule |backend  |system  |HTTPS    |allow  |IN_OUT    |ANY   |Application |Application
+4      |allowRule |frontend |backend |HTTP,SMB |allow  |IN_OUT    |ANY   |Application |Application
+5      |denyRule  |ANY      |ANY     |ANY      |deny   |IN_OUT    |ANY   |Application |Application
 ```
 
-The lint report identifies rule `3` as redundant:
+The lint report identifies rules `3` and `4` as redundant:
 
 ```
 $ nsxanalyzer lint -r pkg/data/json/one_redundant_covered_by_2_rules.json
+INFO        Lint NSX config - produce redundant DFW rules report:
 
-potential redundant rule ID |dfw_category |direction |possible shoadowing rules IDs
-3                           |Application  |IN_OUT    |[1 2]
+Potential shadowed DFW rule ID |DFW Category |Direction |Shadowing rules IDs
+4                              |Application  |IN_OUT    |[1 2]
+
+
+Ineffective DFW rule ID |Description
+3                       |empty dest
+
+
 ```
 
 ## NSX Supported API versions and resources

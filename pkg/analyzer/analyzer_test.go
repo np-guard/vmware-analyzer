@@ -63,7 +63,7 @@ func (a *analyzerTest) run(t *testing.T) {
 	var override bool
 	//nolint:gocritic // comment here should stay
 	// override = true // uncommnet to override expected output
-	rc, err := data.ExamplesGeneration(a.exData)
+	rc, err := data.ExamplesGeneration(a.exData, false)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

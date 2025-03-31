@@ -70,5 +70,6 @@ func (d DfwCategory) String() string {
 }
 
 var CategoriesList = []DfwCategory{
-	EthernetCategory, EmergencyCategory, InfrastructureCategory, EnvCategory, AppCategory, EmptyCategory,
+	// currently ignoring EmptyCategory
+	EthernetCategory, EmergencyCategory, InfrastructureCategory, EnvCategory, AppCategory, /* EmptyCategory,*/
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/anonymizer"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/lint"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -168,7 +169,7 @@ func (r *Runner) runLint() error {
 	if err != nil {
 		return err
 	}
-	lintReport := config.LintReport(r.color) // currently only redundant rules analysis
+	lintReport := lint.LintReport(config, r.color) // currently only redundant rules analysis
 	fmt.Println(lintReport)
 	return nil
 }
