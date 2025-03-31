@@ -140,7 +140,11 @@ func (p *nsxConfigParser) getExternalIPs() {
 func (p *nsxConfigParser) getRuleBlocksVMs() {
 	// iterate over VMs, look if the vm address is in the block:
 	for _, vm := range p.configRes.VMs {
-		for _, address := range vm.(*topology.VM).IPAddresses() {
+		addresses := vm.(*topology.VM).IPAddresses()
+		if len(addresses) == 0 && p.configRes.Topology.AllRuleIPBlocks[netset.CidrAll] != nil{
+			p.configRes.Topology.AllRuleIPBlocks[netset.CidrAll].VMs = append(p.configRes.Topology.AllRuleIPBlocks[netset.CidrAll].VMs, vm)
+		}
+		for _, address := range addresses {
 			address, err := iIPBlockFromIPAddress(address)
 			if err != nil {
 				logging.Debugf("Could not resolve address %s of vm %s", address, vm.Name())
