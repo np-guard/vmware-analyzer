@@ -147,6 +147,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 				continue
 			}
 			p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(address)
+			p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(address)
 			for _, block := range p.configRes.Topology.AllRuleIPBlocks {
 				if address.IsSubset(block.Block) {
 					block.VMs = append(block.VMs, vm)
