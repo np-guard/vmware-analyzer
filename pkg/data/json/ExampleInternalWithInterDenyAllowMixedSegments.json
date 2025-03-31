@@ -28495,17 +28495,6 @@
             "ip_address_info": [
                 {
                     "ip_addresses": [
-                        "10.0.0.2"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm1",
-            "owner_vm_id": "vm1"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
                         "10.0.0.100"
                     ]
                 }
@@ -28572,11 +28561,22 @@
             "ip_address_info": [
                 {
                     "ip_addresses": [
+                        "10.0.0.2"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm1"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
                         "172.16.10.10"
                     ]
                 }
             ],
-            "lport_attachment_id": "port_vm8",
+            "lport_attachment_id": "non-relevant-port-id",
             "owner_vm_id": "vm8"
         },
         {
@@ -28587,7 +28587,7 @@
                     ]
                 }
             ],
-            "lport_attachment_id": "port_vm9",
+            "lport_attachment_id": "non-relevant-port-id",
             "owner_vm_id": "vm9"
         },
         {
@@ -28598,7 +28598,7 @@
                     ]
                 }
             ],
-            "lport_attachment_id": "port_vm10",
+            "lport_attachment_id": "non-relevant-port-id",
             "owner_vm_id": "vm10"
         }
     ],
@@ -28608,27 +28608,17 @@
             "path": "seg_1",
             "subnets": [
                 {
-                    "network": "10.0.0.0/30"
+                    "network": "10.0.0.0/32"
                 }
             ],
-            "unique_id": "seg_1",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm1"
-                    },
-                    "display_name": "port_vm1",
-                    "parent_path": "seg_1",
-                    "unique_id": "port_vm1"
-                }
-            ]
+            "unique_id": "seg_1"
         },
         {
             "display_name": "seg_2-3",
             "path": "seg_2-3",
             "subnets": [
                 {
-                    "network": "10.0.0.0/24"
+                    "network": "10.0.0.0/25"
                 }
             ],
             "unique_id": "seg_2-3",
@@ -28684,7 +28674,7 @@
             "path": "seg-6-7",
             "subnets": [
                 {
-                    "network": "10.0.0.0/16"
+                    "network": "10.0.0.0/15"
                 }
             ],
             "unique_id": "seg-6-7",
@@ -28704,54 +28694,6 @@
                     "display_name": "port_vm7",
                     "parent_path": "seg-6-7",
                     "unique_id": "port_vm7"
-                }
-            ]
-        },
-        {
-            "display_name": "seg-8",
-            "path": "seg-8",
-            "subnets": [
-                {
-                    "network": "172.16.10.10/16"
-                }
-            ],
-            "unique_id": "seg-8",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm8"
-                    },
-                    "display_name": "port_vm8",
-                    "parent_path": "seg-8",
-                    "unique_id": "port_vm8"
-                }
-            ]
-        },
-        {
-            "display_name": "seg-9-10",
-            "path": "seg-9-10",
-            "subnets": [
-                {
-                    "network": "192.168.0.0/16"
-                }
-            ],
-            "unique_id": "seg-9-10",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm9"
-                    },
-                    "display_name": "port_vm9",
-                    "parent_path": "seg-9-10",
-                    "unique_id": "port_vm9"
-                },
-                {
-                    "attachment": {
-                        "id": "port_vm10"
-                    },
-                    "display_name": "port_vm10",
-                    "parent_path": "seg-9-10",
-                    "unique_id": "port_vm10"
                 }
             ]
         }

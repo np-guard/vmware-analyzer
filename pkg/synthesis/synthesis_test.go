@@ -88,60 +88,6 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
-		name:            "Example1External",
-		exData:          data.Example1External,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "Example1dExternalWithSegments",
-		exData:          data.Example1dExternalWithSegments,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleExternalWithDenySimple",
-		exData:          data.ExampleExternalWithDenySimple,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleExternalSimpleWithInterlDenyAllow",
-		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
-		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
-		synthesizeAdmin: true,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleInternalWithInterDenyAllow",
-		exData:          data.ExampleInternalWithInterDenyAllow,
-		synthesizeAdmin: false,
-		noHint:          false,
-	},
-	{
-		name:            "ExampleInternalWithInterDenyAllowWithSegments",
-		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
-		synthesizeAdmin: false,
-		noHint:          false,
-	},
-	{
-		name:            "ExampleHogwartsExternal",
-		exData:          data.ExampleHogwartsExternal,
-		noHint:          false,
-		synthesizeAdmin: false,
-	},
-	{
-		name:            "ExampleHogwartsExternalAdmin",
-		exData:          data.ExampleHogwartsExternal,
-		noHint:          false,
-		synthesizeAdmin: true,
-	},
-	{
 		name:            "ExampleDumbeldore",
 		exData:          data.ExampleDumbeldore,
 		synthesizeAdmin: false,
@@ -203,6 +149,69 @@ var groupsByVmsTests = []synthesisTest{
 	},
 }
 
+var vmsByIpsTests = []synthesisTest{
+	{
+		name:            "Example1External",
+		exData:          data.Example1External,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "Example1dExternalWithSegments",
+		exData:          data.Example1dExternalWithSegments,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalWithDenySimple",
+		exData:          data.ExampleExternalWithDenySimple,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalSimpleWithInterlDenyAllow",
+		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
+		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
+		synthesizeAdmin: true,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllow",
+		exData:          data.ExampleInternalWithInterDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllowWithSegments",
+		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllowMixedSegments",
+		exData:          data.ExampleInternalWithInterDenyAllowMixedSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleHogwartsExternal",
+		exData:          data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: false,
+	},
+	{
+		name:            "ExampleHogwartsExternalAdmin",
+		exData:          data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
+}
+
 var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
@@ -255,7 +264,7 @@ var resourceFileTest = synthesisTest{
 	noHint:          true,
 }
 
-var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
+var allSyntheticTests = append(groupsByVmsTests, append(groupsByExprTests, vmsByIpsTests...)...)
 var allTests = append(allSyntheticTests, []synthesisTest{liveNsxTest, resourceFileTest}...)
 
 // //////////////////////////////////////////////////////////////////////
