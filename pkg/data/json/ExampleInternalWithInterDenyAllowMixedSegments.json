@@ -28442,32 +28442,262 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin-Web",
-            "external_id": "Slytherin-Web"
+            "display_name": "vm1",
+            "external_id": "vm1"
         },
         {
-            "display_name": "Slytherin-App",
-            "external_id": "Slytherin-App"
+            "display_name": "vm2",
+            "external_id": "vm2"
         },
         {
-            "display_name": "Slytherin-DB",
-            "external_id": "Slytherin-DB"
+            "display_name": "vm3",
+            "external_id": "vm3"
         },
         {
-            "display_name": "Gryffindor-Web",
-            "external_id": "Gryffindor-Web"
+            "display_name": "vm4",
+            "external_id": "vm4"
         },
         {
-            "display_name": "Gryffindor-App",
-            "external_id": "Gryffindor-App"
+            "display_name": "vm5",
+            "external_id": "vm5"
         },
         {
-            "display_name": "Gryffindor-DB",
-            "external_id": "Gryffindor-DB"
+            "display_name": "vm6",
+            "external_id": "vm6"
+        },
+        {
+            "display_name": "vm7",
+            "external_id": "vm7"
+        },
+        {
+            "display_name": "vm8",
+            "external_id": "vm8"
+        },
+        {
+            "display_name": "vm9",
+            "external_id": "vm9"
+        },
+        {
+            "display_name": "vm10",
+            "external_id": "vm10"
+        },
+        {
+            "display_name": "vm-no-address1",
+            "external_id": "vm-no-address1"
+        },
+        {
+            "display_name": "vm-no-address2",
+            "external_id": "vm-no-address2"
         }
     ],
-    "virtual_network_interface": null,
-    "segments": null,
+    "virtual_network_interface": [
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.100"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm2",
+            "owner_vm_id": "vm2"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.101"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm3",
+            "owner_vm_id": "vm3"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.1.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm4",
+            "owner_vm_id": "vm4"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.1.1"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm5",
+            "owner_vm_id": "vm5"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.250.1.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm6",
+            "owner_vm_id": "vm6"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.250.1.1"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm7",
+            "owner_vm_id": "vm7"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.2"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm1"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "172.16.10.10"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm8"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "192.168.0.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm9"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "192.168.255.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "non-relevant-port-id",
+            "owner_vm_id": "vm10"
+        }
+    ],
+    "segments": [
+        {
+            "display_name": "seg_1",
+            "path": "seg_1",
+            "subnets": [
+                {
+                    "network": "10.0.0.0/32"
+                }
+            ],
+            "unique_id": "seg_1"
+        },
+        {
+            "display_name": "seg_2-3",
+            "path": "seg_2-3",
+            "subnets": [
+                {
+                    "network": "10.0.0.0/25"
+                }
+            ],
+            "unique_id": "seg_2-3",
+            "segment_ports": [
+                {
+                    "attachment": {
+                        "id": "port_vm2"
+                    },
+                    "display_name": "port_vm2",
+                    "parent_path": "seg_2-3",
+                    "unique_id": "port_vm2"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm3"
+                    },
+                    "display_name": "port_vm3",
+                    "parent_path": "seg_2-3",
+                    "unique_id": "port_vm3"
+                }
+            ]
+        },
+        {
+            "display_name": "seg_4-5",
+            "path": "seg_4-5",
+            "subnets": [
+                {
+                    "network": "10.0.0.0/20"
+                }
+            ],
+            "unique_id": "seg_4-5",
+            "segment_ports": [
+                {
+                    "attachment": {
+                        "id": "port_vm4"
+                    },
+                    "display_name": "port_vm4",
+                    "parent_path": "seg_4-5",
+                    "unique_id": "port_vm4"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm5"
+                    },
+                    "display_name": "port_vm5",
+                    "parent_path": "seg_4-5",
+                    "unique_id": "port_vm5"
+                }
+            ]
+        },
+        {
+            "display_name": "seg-6-7",
+            "path": "seg-6-7",
+            "subnets": [
+                {
+                    "network": "10.0.0.0/15"
+                }
+            ],
+            "unique_id": "seg-6-7",
+            "segment_ports": [
+                {
+                    "attachment": {
+                        "id": "port_vm6"
+                    },
+                    "display_name": "port_vm6",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm6"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm7"
+                    },
+                    "display_name": "port_vm7",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm7"
+                }
+            ]
+        }
+    ],
     "tier0": null,
     "tier1": null,
     "domains": [
@@ -28476,87 +28706,21 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Environment",
-                        "display_name": "Gryffindor-to-Gryffindor-allow",
+                        "category": "Application",
+                        "display_name": "app-x",
                         "scope": [
                             "ANY"
                         ],
                         "rules": [
-                            {
-                                "action": "JUMP_TO_APPLICATION",
-                                "description": "",
-                                "destination_groups": [
-                                    "Gryffindor"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-Gryffindor-to-Gryffindor",
-                                "rule_id": 10218,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Gryffindor"
-                                ],
-                                "service_entries": [
-                                    {
-                                        "destination_ports": [
-                                            "1-65535"
-                                        ],
-                                        "l4_protocol": "TCP",
-                                        "resource_type": "L4PortSetServiceEntry"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Environment",
-                        "display_name": "Slytherin-to-Slytherin-allow",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
-                            {
-                                "action": "JUMP_TO_APPLICATION",
-                                "description": "",
-                                "destination_groups": [
-                                    "Slytherin"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-Slytherin-to-Slytherin",
-                                "rule_id": 10220,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Slytherin"
-                                ],
-                                "service_entries": [
-                                    {
-                                        "destination_ports": [
-                                            "1-65535"
-                                        ],
-                                        "l4_protocol": "TCP",
-                                        "resource_type": "L4PortSetServiceEntry"
-                                    },
-                                    {
-                                        "destination_ports": [
-                                            "1-65535"
-                                        ],
-                                        "l4_protocol": "UDP",
-                                        "resource_type": "L4PortSetServiceEntry"
-                                    }
-                                ]
-                            },
                             {
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "ANY"
+                                    "0.0.0.0/0"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "default-deny-env",
-                                "rule_id": 10221,
+                                "display_name": "deny1",
+                                "rule_id": 1004,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28564,77 +28728,142 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "ANY"
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Intra-App-Policy",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "Web"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "Client-Access",
-                                "rule_id": 9195,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "ANY"
-                                ],
-                                "service_entries": [
-                                    {
-                                        "destination_ports": [
-                                            "1-65535"
-                                        ],
-                                        "l4_protocol": "TCP",
-                                        "resource_type": "L4PortSetServiceEntry"
-                                    }
+                                    "10.0.0.0/30"
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "App"
+                                    "0.0.0.0/0"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "Web-To-App-Access",
-                                "rule_id": 9196,
+                                "display_name": "allow1",
+                                "rule_id": 1005,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "source_groups": [
-                                    "Web"
+                                "services": [
+                                    "ANY"
                                 ],
-                                "service_entries": [
-                                    {
-                                        "destination_ports": [
-                                            "1-65535"
-                                        ],
-                                        "l4_protocol": "UDP",
-                                        "resource_type": "L4PortSetServiceEntry"
-                                    }
+                                "source_groups": [
+                                    "10.0.0.0/24"
                                 ]
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Default-L3-Section",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
+                            },
+                            {
+                                "action": "DROP",
+                                "description": "",
+                                "destination_groups": [
+                                    "0.0.0.0/0"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "deny2",
+                                "rule_id": 1006,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "10.0.0.0/20"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "0.0.0.0/0"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow2",
+                                "rule_id": 1007,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "10.0.0.0/16"
+                                ]
+                            },
+                            {
+                                "action": "DROP",
+                                "description": "",
+                                "destination_groups": [
+                                    "real-group"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "drop-real-group",
+                                "rule_id": 2000,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "172.16.10.10/16"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "0.0.0.0/0"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-all-after-drop-real-group",
+                                "rule_id": 2000,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "172.16.10.10/16"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "0.0.0.0/0"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-only-2",
+                                "rule_id": 3000,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "192.168.0.0/16"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "real-group"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-group",
+                                "rule_id": 4008,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "real-group"
+                                ]
+                            },
                             {
                                 "action": "DROP",
                                 "description": "",
@@ -28643,7 +28872,7 @@
                                 ],
                                 "direction": "IN_OUT",
                                 "display_name": "default-deny-rule",
-                                "rule_id": 10230,
+                                "rule_id": 1003,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28661,72 +28890,62 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Gryffindor",
-                        "path": "Gryffindor",
+                        "display_name": "default-group",
+                        "path": "default-group",
                         "vm_members": [
                             {
-                                "display_name": "Gryffindor-Web",
-                                "id": "Gryffindor-Web"
+                                "display_name": "vm1",
+                                "id": "vm1"
                             },
                             {
-                                "display_name": "Gryffindor-App",
-                                "id": "Gryffindor-App"
+                                "display_name": "vm2",
+                                "id": "vm2"
+                            },
+                            {
+                                "display_name": "vm3",
+                                "id": "vm3"
+                            },
+                            {
+                                "display_name": "vm4",
+                                "id": "vm4"
+                            },
+                            {
+                                "display_name": "vm5",
+                                "id": "vm5"
+                            },
+                            {
+                                "display_name": "vm6",
+                                "id": "vm6"
+                            },
+                            {
+                                "display_name": "vm7",
+                                "id": "vm7"
+                            },
+                            {
+                                "display_name": "vm8",
+                                "id": "vm8"
+                            },
+                            {
+                                "display_name": "vm9",
+                                "id": "vm9"
+                            },
+                            {
+                                "display_name": "vm10",
+                                "id": "vm10"
                             }
                         ]
                     },
                     {
-                        "display_name": "Web",
-                        "path": "Web",
+                        "display_name": "real-group",
+                        "path": "real-group",
                         "vm_members": [
                             {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
+                                "display_name": "vm-no-address1",
+                                "id": "vm-no-address1"
                             },
                             {
-                                "display_name": "Gryffindor-Web",
-                                "id": "Gryffindor-Web"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "App",
-                        "path": "App",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            },
-                            {
-                                "display_name": "Gryffindor-App",
-                                "id": "Gryffindor-App"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-Web",
-                                "id": "Slytherin-Web"
-                            },
-                            {
-                                "display_name": "Slytherin-App",
-                                "id": "Slytherin-App"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "no-group-vms-group",
-                        "path": "no-group-vms-group",
-                        "vm_members": [
-                            {
-                                "display_name": "Slytherin-DB",
-                                "id": "Slytherin-DB"
-                            },
-                            {
-                                "display_name": "Gryffindor-DB",
-                                "id": "Gryffindor-DB"
+                                "display_name": "vm-no-address2",
+                                "id": "vm-no-address2"
                             }
                         ]
                     }

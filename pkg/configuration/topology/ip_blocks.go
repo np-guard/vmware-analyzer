@@ -44,10 +44,10 @@ func (block *RuleIPBlock) HasVMsNotInSubnet() bool {
 
 type Segment struct {
 	IPBlock
-	name string
+	Name string
 	VMs  []Endpoint
 }
 
 func NewSegment(name string, block *netset.IPBlock, subnetsNetworks []string) *Segment {
-	return &Segment{name: name, IPBlock: IPBlock{Block: block, OriginalIP: strings.Join(subnetsNetworks, common.CommaSeparator)}}
+	return &Segment{Name: name, IPBlock: IPBlock{Block: block, OriginalIP: strings.Join(subnetsNetworks, common.CommaSeparator)}}
 }
