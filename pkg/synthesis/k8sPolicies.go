@@ -80,14 +80,12 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 		srcSelector.convertAllCidrToAllPodsSelector()
 	}
 	// is the following two cases should be filtered the abstract phase?:
-	if inbound && dstSelector.isCidr() {
-		logging.Warnf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
-		policies.policiesSkipped = true
+	if inbound && dstSelector.isCidr() && !dstSelector.isTautology() {
+		logging.InternalErrorf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
 		return
 	}
-	if !inbound && srcSelector.isCidr() {
-		logging.Warnf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
-		policies.policiesSkipped = true
+	if !inbound && srcSelector.isCidr() && !srcSelector.isTautology() {
+		logging.InternalErrorf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
 		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
