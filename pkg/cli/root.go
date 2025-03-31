@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
 
 	"github.com/np-guard/vmware-analyzer/pkg/version"
@@ -15,7 +17,10 @@ and generation of k8s network policies`,
 		Long: `nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connectivity between VMs,
 and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			if args.quiet && args.verbose {
+				return errors.New("-q and -v cannot be specified together")
+			}
 			return nil
 		},
 	}
