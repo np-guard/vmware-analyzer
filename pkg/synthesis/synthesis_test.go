@@ -508,15 +508,18 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	noIcmpMergedMap := noIcmpMap.MergeExternalEP()
 	noIcmpMergedExternalToAllMap := connectivity.ConnMap{}
 	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
-	externalToAll := func(ep topology.Endpoint) topology.Endpoint {
-		if ep.IsExternal() && ep.(*topology.ExternalIP).Block.Equal(config.Topology.AllExternalIPBlock) {
+	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
+		if !ep.IsExternal() {
+			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
+		}
+		if ep.(*topology.ExternalIP).Block.Equal(config.Topology.AllExternalIPBlock) {
 			return allCidrEP
 		}
 		return ep
 	}
 	for src, srcMap := range noIcmpMergedMap {
 		for dst, conn := range srcMap {
-			noIcmpMergedExternalToAllMap.Add(externalToAll(src), externalToAll(dst), conn)
+			noIcmpMergedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
 		}
 	}
 
