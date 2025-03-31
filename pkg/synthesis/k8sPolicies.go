@@ -35,7 +35,7 @@ const noNSXRuleID = "none"
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
-	policiesSkipped      bool
+	policiesChanged      bool
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -79,18 +79,18 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	if !inbound && srcSelector.isTautology() {
 		srcSelector.convertAllCidrToAllPodsSelector()
 	}
-	// is the following two cases should be filtered the abstract phase?:
+	// the following two cases should be filtered the abstract phase:
 	if inbound && dstSelector.isCidr() && !dstSelector.isTautology() {
-		logging.InternalErrorf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+		logging.Warnf("can not synthesize policy %s, ingress policy can not have destination IPs", p.String())
 		return
 	}
 	if !inbound && srcSelector.isCidr() && !srcSelector.isTautology() {
-		logging.InternalErrorf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
+		logging.Warnf("can not synthesize policy %s, egress policy can not have source IPs", p.String())
 		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
-		policies.policiesSkipped = true
+		policies.policiesChanged = true
 		return
 	}
 	if isAdmin {
