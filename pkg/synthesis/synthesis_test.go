@@ -434,7 +434,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 
-	if k8sConnectivityFileCreated  && !resources.k8sPolicies.policiesChanged{
+	if k8sConnectivityFileCreated && !resources.k8sPolicies.policiesChanged {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 	}
 }
@@ -472,15 +472,15 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 			res := connectivity.NewEmptyDetailedConnection()
 			for _, e := range strings.Split(str, ",") {
 				if e == "All Connections" {
-					return connectivity.NewDetailedConnection(netset.AllOrNothingTransport(true,false), nil)
+					return connectivity.NewDetailedConnection(netset.AllOrNothingTransport(true, false), nil)
 				}
 				var protocol netp.ProtocolString
 				var minPort, maxPort int64
-				e = strings.ReplaceAll(e,"-"," ")
-				n,err := fmt.Sscanf(e, "%s %d %d", &protocol, &minPort, &maxPort)
-				if n == 2{
+				e = strings.ReplaceAll(e, "-", " ")
+				n, err := fmt.Sscanf(e, "%s %d %d", &protocol, &minPort, &maxPort)
+				if n == 2 {
 					maxPort = minPort
-				}else{
+				} else {
 					require.Equal(t, err, nil)
 				}
 				res.Conn = res.Conn.Union(netset.NewTCPorUDPTransport(protocol, netp.AllPorts().Start(), netp.AllPorts().End(), minPort, maxPort))
