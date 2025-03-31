@@ -434,12 +434,11 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 
-	if k8sConnectivityFileCreated {
+	if k8sConnectivityFileCreated  && !resources.k8sPolicies.policiesChanged{
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 	}
 }
 
-// the following method is work in progress - the netpol analyzer and the nsx analyser have different granularity of external IPs
 func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
 	// we get a file with lines in the foramt:
 	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
