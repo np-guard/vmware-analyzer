@@ -123,7 +123,7 @@ func (p *nsxConfigParser) removeVMsWithoutGroups() {
 			if vm.IPAddressesStr() != "" {
 				addressInfo = ", address: " + vm.IPAddressesStr()
 			}
-			logging.Debugf("ignoring VM without groups: %s%s.", vm.Name(), addressInfo)
+			logging.Debugf("ignoring VM without groups: %s%s", vm.Name(), addressInfo)
 			toRemove = append(toRemove, vm)
 		}
 	}

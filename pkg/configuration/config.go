@@ -74,9 +74,9 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("IP Ranges:\n")
 	sb.WriteString(c.getIPRangeInfoStr(color))
 
-	// External EndPoints
+	// External Endpoints
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("External EndPoints:\n")
+	sb.WriteString("External Endpoints:\n")
 	sb.WriteString(c.getExternalEPInfoStr(color))
 
 	// Internal IP Ranges
@@ -163,9 +163,9 @@ func (c *Config) getVMsInfoStr(color bool) string {
 func (c *Config) getIPRangeInfoStr(color bool) string {
 	header := []string{"Total", "Internal", "External"}
 	lines := [][]string{{
-		common.NetsetShortString(c.Topology.allIPBlock),
-		common.NetsetShortString(c.Topology.allInternalIPBlock),
-		common.NetsetShortString(c.Topology.allExternalIPBlock),
+		common.IPBlockShortString(c.Topology.allIPBlock),
+		common.IPBlockShortString(c.Topology.allInternalIPBlock),
+		common.IPBlockShortString(c.Topology.allExternalIPBlock),
 	}}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }

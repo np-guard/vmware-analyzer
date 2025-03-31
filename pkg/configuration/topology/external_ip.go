@@ -10,7 +10,7 @@ type ExternalIP struct {
 }
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
-	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: common.NetsetShortString(block)}}
+	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: common.IPBlockShortString(block)}}
 	return e
 }
 
