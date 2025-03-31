@@ -163,9 +163,9 @@ func (c *Config) getVMsInfoStr(color bool) string {
 func (c *Config) getIPRangeInfoStr(color bool) string {
 	header := []string{"Total", "Internal", "External"}
 	lines := [][]string{{
-		common.NetsetShortString(c.topology.allIPBlock),
-		common.NetsetShortString(c.topology.allInternalIPBlock),
-		common.NetsetShortString(c.topology.allExternalIPBlock),
+		common.IPBlockShortString(c.topology.allIPBlock),
+		common.IPBlockShortString(c.topology.allInternalIPBlock),
+		common.IPBlockShortString(c.topology.allExternalIPBlock),
 	}}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
