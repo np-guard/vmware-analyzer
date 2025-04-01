@@ -2,6 +2,7 @@ package topology
 
 import (
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 type ExternalIP struct {
@@ -9,13 +10,7 @@ type ExternalIP struct {
 }
 
 func NewExternalIP(block *netset.IPBlock) *ExternalIP {
-	// look for the shortest name:
-	asCidrs, asRanges := block.String(), block.ToIPRanges()
-	origIP := asCidrs
-	if len(asRanges) < len(asCidrs) {
-		origIP = asRanges
-	}
-	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: origIP}}
+	e := &ExternalIP{IPBlock: IPBlock{Block: block, OriginalIP: common.IPBlockShortString(block)}}
 	return e
 }
 

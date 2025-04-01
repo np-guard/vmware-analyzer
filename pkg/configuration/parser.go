@@ -51,8 +51,6 @@ type nsxConfigParser struct {
 	// store references to groups/services objects from paths used in Fw rules
 	groupPathsToObjects   map[string]*collector.Group
 	servicePathsToObjects map[string]*collector.Service
-	topology              *nsxTopology
-	ruleBlockPerEP        map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
 }
 
 func (p *nsxConfigParser) init() {
@@ -61,7 +59,6 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
-	p.ruleBlockPerEP = map[topology.Endpoint][]*topology.RuleIPBlock{}
 }
 
 func (p *nsxConfigParser) runParser() error {
@@ -120,8 +117,12 @@ func (p *nsxConfigParser) storeParsedSegments() {
 func (p *nsxConfigParser) removeVMsWithoutGroups() {
 	toRemove := []topology.Endpoint{}
 	for vm, groups := range p.configRes.GroupsPerVM {
-		if len(groups) == 0 && len(p.ruleBlockPerEP[vm]) == 0 {
-			logging.Warnf("ignoring VM without groups: %s", vm.Name())
+		if len(groups) == 0 {
+			addressInfo := ""
+			if vm.IPAddressesStr() != "" {
+				addressInfo = ", address: " + vm.IPAddressesStr()
+			}
+			logging.Debugf("ignoring VM without groups: %s%s", vm.Name(), addressInfo)
 			toRemove = append(toRemove, vm)
 		}
 	}
@@ -165,7 +166,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	for _, block := range p.topology.allRuleIPBlocks {
+	for _, block := range p.configRes.topology.allRuleIPBlocks {
 		res[block.OriginalIP] = block.OriginalIP
 	}
 	p.configRes.FW.SetPathsToDisplayNames(res)
@@ -320,7 +321,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		}
 	} else {
 		for _, ip := range ips {
-			if ruleBlock := p.topology.allRuleIPBlocks[ip]; ruleBlock != nil {
+			if ruleBlock := p.configRes.topology.allRuleIPBlocks[ip]; ruleBlock != nil {
 				res.VMs = append(res.VMs, ruleBlock.VMs...)
 				res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
 				res.Blocks = append(res.Blocks, ruleBlock)

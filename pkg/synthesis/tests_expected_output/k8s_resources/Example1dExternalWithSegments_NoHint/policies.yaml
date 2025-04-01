@@ -77,7 +77,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (VMs within IPs 0.0.1.128/25) dst: (VMs within IPs 0.0.2.0/24) conn: TCP dst-ports: 443'
+        description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-3
@@ -103,7 +103,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (VMs within IPs 0.0.1.128/25) dst: (VMs within IPs 0.0.2.0/24) conn: TCP dst-ports: 443'
+        description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-4
