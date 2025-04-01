@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -78,6 +79,7 @@ func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 	d.pathsToDisplayNames = m
 }
 
+// look for rules shadowed by higher-prio rules (single rule or combination of some rules)
 func (d *DFW) redundantRulesAnalysisPerCategory(allVMs []topology.Endpoint, categoryIndex int) (reportLines [][]string) {
 	category := d.CategoriesSpecs[categoryIndex]
 	inboundRedundant := category.potentialRedundantRules(category.EffectiveRules.Inbound, allVMs)
@@ -124,7 +126,9 @@ func (d *DFW) redundantRulesAnalysisPerCategory(allVMs []topology.Endpoint, cate
 // as potentially redundant.
 // also returns report lines (for testing purposes)
 func (d *DFW) RedundantRulesAnalysis(allVMs []topology.Endpoint, color bool) (report string, reportLines [][]string) {
-	var reportHeader = []string{"potential redundant rule ID", "dfw_category", "direction", "possible shoadowing rules IDs"}
+	// this report includes shadowed rules
+
+	var reportHeader = []string{"Potential shadowed DFW rule ID", "DFW Category", "Direction", "Shadowing rules IDs"}
 	reportLines = [][]string{}
 	for i := range len(d.CategoriesSpecs) {
 		categoryRedundantRules := d.redundantRulesAnalysisPerCategory(allVMs, i)
@@ -132,7 +136,25 @@ func (d *DFW) RedundantRulesAnalysis(allVMs []topology.Endpoint, color bool) (re
 	}
 
 	if len(reportLines) == 0 {
-		return "no redundant rules found", reportLines
+		return "", reportLines
 	}
 	return common.GenerateTableString(reportHeader, reportLines, &common.TableOptions{SortLines: true, Colors: color}), reportLines
+}
+
+func (d *DFW) IneffectiveRulesReport(color bool) string {
+	// this report includes ineffective rules due to empty src/dst/scope...
+	var reportHeader = []string{"Ineffective DFW rule ID", "Description"}
+	var reportLines = [][]string{}
+	for i := range len(d.CategoriesSpecs) {
+		category := d.CategoriesSpecs[i]
+		for rID, description := range category.IneffectiveRules {
+			slices.Sort(description)
+			line := []string{fmt.Sprintf("%d", rID), strings.Join(slices.Compact(description), common.CommaSpaceSeparator)}
+			reportLines = append(reportLines, line)
+		}
+	}
+	if len(reportLines) == 0 {
+		return ""
+	}
+	return common.GenerateTableString(reportHeader, reportLines, &common.TableOptions{SortLines: true, Colors: color})
 }

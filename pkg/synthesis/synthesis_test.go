@@ -367,7 +367,7 @@ func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
 func subTestsRunByTestName(t *testing.T, f testMethod) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		rc, err := data.ExamplesGeneration(test.exData)
+		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
