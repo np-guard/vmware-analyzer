@@ -35,7 +35,7 @@ const noNSXRuleID = "none"
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
-	policiesChanged      bool
+	NotFullySupported    bool
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -71,8 +71,10 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 }
 
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
+	policies.NotFullySupported = policies.NotFullySupported || k8sNotFullySupported(p.Src) || k8sNotFullySupported(p.Dst)
 	srcSelector := createSelector(p.Src)
 	dstSelector := createSelector(p.Dst)
+	// the following two if should move to to the a separate pre process phase:
 	if inbound && dstSelector.isTautology() {
 		dstSelector.convertAllCidrToAllPodsSelector()
 	}
@@ -81,16 +83,16 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	}
 	// the following two cases should be filtered the abstract phase:
 	if inbound && dstSelector.isCidr() && !dstSelector.isTautology() {
-		logging.Warnf("can not synthesize policy %s, ingress policy can not have destination IPs", p.String())
+		logging.InternalErrorf("can not synthesize policy %s, ingress policy can not have destination IPs", p.String())
 		return
 	}
 	if !inbound && srcSelector.isCidr() && !srcSelector.isTautology() {
-		logging.Warnf("can not synthesize policy %s, egress policy can not have source IPs", p.String())
+		logging.InternalErrorf("can not synthesize policy %s, egress policy can not have source IPs", p.String())
 		return
 	}
 	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
-		policies.policiesChanged = true
+		policies.NotFullySupported = true
 		return
 	}
 	if isAdmin {
@@ -100,14 +102,15 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	} else {
 		ports := connToPolicyPort(p.Conn)
 		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
+		// the following two if should move to to the a separate pre process phase:
 		if inbound && srcSelector.isTautology() {
 			srcSelector.convertAllCidrToAllPodsSelector()
-			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of " +  p.String(), nsxRuleID)
+			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of "+p.String(), nsxRuleID)
 		}
 		if !inbound && dstSelector.isTautology() {
 			dstSelector.convertAllCidrToAllPodsSelector()
-			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of " + p.String(), nsxRuleID)
-		}	
+			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of "+p.String(), nsxRuleID)
+		}
 	}
 }
 
@@ -255,6 +258,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	res := policySelector{pods: &meta.LabelSelector{},
 		namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
 	for _, a := range con {
+		_, isSegment := a.(*symbolicexpr.SegmentTerm)
 		switch {
 		case a.IsTautology():
 			if len(con) == 1 {
@@ -265,15 +269,13 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 			// todo: should be fixed when supporting namespaces
 		case a.GetExternalBlock() != nil:
 			res.cidrs = a.GetExternalBlock().ToCidrList()
+		case isSegment:
 		default:
 			label, notIn := a.AsSelector()
 			label = toLegalK8SString(label)
 			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
 			res.pods.MatchExpressions = append(res.pods.MatchExpressions, req)
 		}
-	}
-	if len(res.cidrs) > 0 && len(res.pods.MatchExpressions) > 0 {
-		logging.InternalErrorf("symbolicexpr.Conjunction can not have both ")
 	}
 	return res
 }
@@ -323,4 +325,20 @@ var reg = regexp.MustCompile(`[^-A-Za-z0-9_.]`)
 
 func toLegalK8SString(s string) string {
 	return reg.ReplaceAllString(s, "-NLC")
+}
+
+func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
+	for _, a := range con {
+		_, isSegment := a.(*symbolicexpr.SegmentTerm)
+		switch {
+		case a.IsTautology():
+			return len(con) > 1
+		case a.GetExternalBlock() != nil && len(con) > 1:
+			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
+			return true
+		case isSegment:
+			return true
+		}
+	}
+	return false
 }

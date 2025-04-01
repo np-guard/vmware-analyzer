@@ -443,7 +443,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 
-	if k8sConnectivityFileCreated && !resources.k8sPolicies.policiesChanged {
+	if k8sConnectivityFileCreated && !resources.k8sPolicies.NotFullySupported {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 	}
 }

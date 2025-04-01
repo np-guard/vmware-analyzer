@@ -7,15 +7,15 @@ import (
 
 // segmentTerms represents a segment
 
-func NewSegmentTerm(segment *topology.Segment) *segmentTerm {
-	return &segmentTerm{segment: segment}
+func NewSegmentTerm(segment *topology.Segment) *SegmentTerm {
+	return &SegmentTerm{segment: segment}
 }
 
-func (segment segmentTerm) name() string {
+func (segment SegmentTerm) name() string {
 	return segment.segment.Name
 }
 
-func (segment segmentTerm) String() string {
+func (segment SegmentTerm) String() string {
 	neg := ""
 	if segment.isNegation() {
 		neg = "not in "
@@ -23,20 +23,20 @@ func (segment segmentTerm) String() string {
 	return neg + "segment " + segment.name()
 }
 
-func (segmentTerm) AsSelector() (string, bool) {
+func (SegmentTerm) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
-func (segment segmentTerm) negate() atomic {
-	return segmentTerm{segment: segment.segment, atomicTerm: atomicTerm{neg: !segment.neg}}
+func (segment SegmentTerm) negate() atomic {
+	return SegmentTerm{segment: segment.segment, atomicTerm: atomicTerm{neg: !segment.neg}}
 }
 
-func (segment segmentTerm) isNegateOf(otherAtom atomic) bool {
+func (segment SegmentTerm) isNegateOf(otherAtom atomic) bool {
 	return isNegateOf(segment, otherAtom)
 }
 
 // returns true iff otherAtom is disjoint to internalIP as given by hints
-func (segment segmentTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+func (segment SegmentTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 	// if otherAtom is also an IP Block, then check explicit disjointness
 	if isIPDisjoint(segment.getInternalBlock(), otherAtom) {
 		return true
@@ -45,7 +45,7 @@ func (segment segmentTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 }
 
 // returns true iff internalIP is superset of otherAtom as given by hints
-func (segment segmentTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (segment SegmentTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	// if otherAtom is also an IP Block, then check explicit containment
 	if isIPSuperset(segment.getInternalBlock(), otherAtom) {
 		return true
@@ -53,6 +53,6 @@ func (segment segmentTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(segment, otherAtom, hints)
 }
 
-func (segment segmentTerm) getInternalBlock() *netset.IPBlock {
+func (segment SegmentTerm) getInternalBlock() *netset.IPBlock {
 	return getInternalBlock(segment.segment.Block, segment.isNegation())
 }
