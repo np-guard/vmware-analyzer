@@ -53,6 +53,10 @@ var allTests = []analyzerTest{
 		name:   "Example1dExternalWithSegments",
 		exData: data.Example1dExternalWithSegments,
 	},
+	{
+		name:   "ExampleAppWithGroups",
+		exData: data.ExampleAppWithGroups,
+	},
 }
 
 func (a *analyzerTest) file() string {
