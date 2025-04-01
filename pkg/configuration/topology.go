@@ -142,7 +142,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 	allCidrBlock := p.configRes.Topology.AllRuleIPBlocks[netset.CidrAll]
 	for _, vm := range p.configRes.VMs {
 		addresses := vm.(*topology.VM).IPAddresses()
-		if len(addresses) == 0 && allCidrBlock != nil{
+		if len(addresses) == 0 && allCidrBlock != nil {
 			allCidrBlock.VMs = append(allCidrBlock.VMs, vm)
 		}
 		for _, address := range addresses {

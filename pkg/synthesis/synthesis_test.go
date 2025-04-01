@@ -472,14 +472,14 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	// get analyzed connectivity:
 	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
-	noIcmpGroupedExternalToAllMap := adjustConnToK8s(connMap,config.Topology.AllExternalIPBlock)
+	noIcmpGroupedExternalToAllMap := adjustConnToK8s(connMap, config.Topology.AllExternalIPBlock)
 	debugDir := synTest.debugDir()
 	noICMPGroupedMapStr, err := noIcmpGroupedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_grouped_connectivity.txt"), noICMPGroupedMapStr)
 	require.Nil(t, err)
 
-	k8sConnMap := readK8SConnFile(t,k8sConnectivityFile)
+	k8sConnMap := readK8SConnFile(t, k8sConnectivityFile)
 	k8sGroupedMap := k8sConnMap.GroupExternalEP()
 	k8sGroupedMapStr, err := k8sGroupedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
@@ -493,7 +493,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 // adjust connectivity map to be later compared to netpol analyzer map:
 // 1. remove ICMP
 // 2. replace all external with 0.0.0.0/0
-func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap{
+func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap {
 	noIcmpMap := connectivity.ConnMap{}
 	for src, srcMap := range connMap {
 		for dst, conn := range srcMap {

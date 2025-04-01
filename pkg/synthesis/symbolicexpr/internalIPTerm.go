@@ -27,7 +27,7 @@ func (internalIP internalIPTerm) name() string {
 }
 
 func (internalIP internalIPTerm) AsSelector() (string, bool) {
-	return fmt.Sprintf("VMs_within_IPs__%s", strings.ReplaceAll(internalIP.name(),"/","-")), internalIP.neg
+	return fmt.Sprintf("VMs_within_IPs__%s", strings.ReplaceAll(internalIP.name(), "/", "-")), internalIP.neg
 }
 
 func (internalIP internalIPTerm) negate() atomic {

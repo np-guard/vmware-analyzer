@@ -29,9 +29,9 @@ type absToNXS struct {
 	allVMs     []topology.Endpoint
 	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
 
-	categories    []data.Category
-	groups        []collector.Group
-	ruleIDCounter int
+	categories        []data.Category
+	groups            []collector.Group
+	ruleIDCounter     int
 	notFullySupported bool
 }
 
