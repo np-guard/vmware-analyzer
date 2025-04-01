@@ -220,7 +220,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2000"
+        nsx-id: "2200"
     creationTimestamp: null
     name: policy-9
     namespace: default
@@ -243,7 +243,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (IP addr in 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2000"
+        nsx-id: "2200"
     creationTimestamp: null
     name: policy-10
     namespace: default
@@ -294,7 +294,7 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2000"
+        nsx-id: "2200"
     creationTimestamp: null
     name: policy-11
     namespace: default
