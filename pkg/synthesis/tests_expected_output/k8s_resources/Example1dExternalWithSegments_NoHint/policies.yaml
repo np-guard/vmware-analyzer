@@ -90,7 +90,7 @@ spec:
           to:
             - podSelector:
                 matchExpressions:
-                    - key: VMs_within_IPs__0.0.2.0-24
+                    - key: to-NLCimplement
                       operator: Exists
     podSelector:
         matchExpressions:
@@ -120,7 +120,7 @@ spec:
               protocol: TCP
     podSelector:
         matchExpressions:
-            - key: VMs_within_IPs__0.0.2.0-24
+            - key: to-NLCimplement
               operator: Exists
     policyTypes:
         - Ingress
