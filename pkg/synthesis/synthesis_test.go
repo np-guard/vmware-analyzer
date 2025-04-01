@@ -31,13 +31,12 @@ const (
 	actualOutput   = "tests_actual_output"
 )
 
-var defaultParams = common.OutputParameters{Format: "txt"}
-
 type synthesisTest struct {
 	name            string
 	exData          *data.Example
 	synthesizeAdmin bool
 	noHint          bool // run also with no hint
+	filter          []string
 }
 
 func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
@@ -62,6 +61,9 @@ func (synTest *synthesisTest) id() string {
 	if synTest.synthesizeAdmin {
 		id += "_AdminPoliciesEnabled"
 	}
+	if synTest.filter != nil {
+		id += "_Filtered"
+	}
 	return id
 }
 
@@ -79,7 +81,11 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
+		FilterVMs:       synTest.filter,
 	}
+}
+func (synTest *synthesisTest) outputParams() common.OutputParameters {
+	return common.OutputParameters{Format: "txt", VMs: synTest.filter}
 }
 
 var groupsByVmsTests = []synthesisTest{
@@ -144,6 +150,13 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          false,
 	},
 	{
+		name:            "ExampleHogwartsFiltered",
+		exData:          data.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
+		filter:          []string{data.SlyWeb, data.GryWeb, data.HufWeb, data.Dum1, data.Dum2},
+	},
+	{
 		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
 		exData:          data.ExampleHogwartsSimplerNonSymInOut,
 		synthesizeAdmin: true,
@@ -163,6 +176,13 @@ var vmsByIpsTests = []synthesisTest{
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
+	},
+	{
+		name:            "Example1dExternalWithSegmentsFiltered",
+		exData:          data.Example1dExternalWithSegments,
+		synthesizeAdmin: false,
+		noHint:          true,
+		filter:          []string{"A", "B"},
 	},
 	{
 		name:            "ExampleExternalWithDenySimple",
@@ -386,7 +406,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -501,7 +521,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		k8sConnMap.Add(srcEP, dstEP, strToConn(connStr))
 	}
 	// get analyzed connectivity:
-	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	noIcmpMap := connectivity.ConnMap{}
 	for src, srcMap := range connMap {
@@ -532,13 +552,13 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		}
 	}
 
-	noICMPMergedMapStr, err := noIcmpMergedExternalToAllMap.GenConnectivityOutput(defaultParams)
+	noICMPMergedMapStr, err := noIcmpMergedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_merged_connectivity.txt"), noICMPMergedMapStr)
 	require.Nil(t, err)
 
 	k8sMergedMap := k8sConnMap.MergeExternalEP()
-	k8sMergedMapStr, err := k8sMergedMap.GenConnectivityOutput(defaultParams)
+	k8sMergedMapStr, err := k8sMergedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "k8s_merged_connectivity.txt"), k8sMergedMapStr)
 	require.Nil(t, err)
@@ -558,13 +578,13 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
 	require.Nil(t, err)
 	connMergedMap := connMap.MergeExternalEP()
-	connMergedMapStr, err := connMergedMap.GenConnectivityOutput(defaultParams)
+	connMergedMapStr, err := connMergedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "vmware_merged_connectivity.txt"), connMergedMapStr)
 	require.Nil(t, err)
@@ -582,7 +602,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// get the config from generated_rc:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -590,12 +610,12 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, analyzedMap, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, analyzedMap, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
 	analyzedMergedMap := analyzedMap.MergeExternalEP()
-	analyzedMergedMapStr, err := analyzedMergedMap.GenConnectivityOutput(defaultParams)
+	analyzedMergedMapStr, err := analyzedMergedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_merged_connectivity.txt"), analyzedMergedMapStr)
 	require.Nil(t, err)

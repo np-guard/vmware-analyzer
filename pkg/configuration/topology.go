@@ -98,7 +98,7 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 			block, err = netset.IPBlockFromIPRangeStr(ip)
 		}
 		if err != nil {
-			logging.Debugf("Fail to parse IP %s, ignoring ip", ip)
+			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 			continue
 		}
 		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(block)
