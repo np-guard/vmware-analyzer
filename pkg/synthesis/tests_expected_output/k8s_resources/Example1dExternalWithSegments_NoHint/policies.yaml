@@ -88,7 +88,10 @@ spec:
             - port: 443
               protocol: TCP
           to:
-            - podSelector: {}
+            - podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg_c
+                      operator: Exists
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__0.0.1.128-25
@@ -115,7 +118,10 @@ spec:
           ports:
             - port: 443
               protocol: TCP
-    podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg_c
+              operator: Exists
     policyTypes:
         - Ingress
 ---

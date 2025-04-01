@@ -37,8 +37,10 @@ spec:
                 cidr: 0.0.0.0/0
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: in_Segment__seg_2-3
               operator: Exists
+            - key: in_Segment__seg_1
+              operator: DoesNotExist
     policyTypes:
         - Egress
 ---
@@ -57,8 +59,10 @@ spec:
             - podSelector: {}
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: in_Segment__seg_2-3
               operator: Exists
+            - key: in_Segment__seg_1
+              operator: DoesNotExist
     policyTypes:
         - Egress
 ---
@@ -76,8 +80,10 @@ spec:
         - from:
             - podSelector:
                 matchExpressions:
-                    - key: to-NLCimplement
+                    - key: in_Segment__seg_2-3
                       operator: Exists
+                    - key: in_Segment__seg_1
+                      operator: DoesNotExist
     podSelector: {}
     policyTypes:
         - Ingress
@@ -98,8 +104,10 @@ spec:
                 cidr: 0.0.0.0/0
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: in_Segment__seg-6-7
               operator: Exists
+            - key: in_Segment__seg_4-5
+              operator: DoesNotExist
     policyTypes:
         - Egress
 ---
@@ -118,8 +126,10 @@ spec:
             - podSelector: {}
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: in_Segment__seg-6-7
               operator: Exists
+            - key: in_Segment__seg_4-5
+              operator: DoesNotExist
     policyTypes:
         - Egress
 ---
@@ -137,8 +147,10 @@ spec:
         - from:
             - podSelector:
                 matchExpressions:
-                    - key: to-NLCimplement
+                    - key: in_Segment__seg-6-7
                       operator: Exists
+                    - key: in_Segment__seg_4-5
+                      operator: DoesNotExist
     podSelector: {}
     policyTypes:
         - Ingress
@@ -159,7 +171,10 @@ spec:
                 matchExpressions:
                     - key: group__real-group
                       operator: DoesNotExist
-    podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg-8
+              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -175,7 +190,10 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector: {}
+            - podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg-8
+                      operator: Exists
     podSelector:
         matchExpressions:
             - key: group__real-group
@@ -197,7 +215,10 @@ spec:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg-9-10
+              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -214,7 +235,10 @@ spec:
     egress:
         - to:
             - podSelector: {}
-    podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg-9-10
+              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -230,7 +254,10 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector: {}
+            - podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg-9-10
+                      operator: Exists
     podSelector: {}
     policyTypes:
         - Ingress
@@ -255,10 +282,10 @@ spec:
         matchExpressions:
             - key: group__real-group
               operator: Exists
-            - key: to-NLCimplement
-              operator: Exists
-            - key: to-NLCimplement
-              operator: Exists
+            - key: in_Segment__seg_4-5
+              operator: DoesNotExist
+            - key: in_Segment__seg-8
+              operator: DoesNotExist
     policyTypes:
         - Egress
 ---
@@ -278,10 +305,10 @@ spec:
                 matchExpressions:
                     - key: group__real-group
                       operator: Exists
-                    - key: to-NLCimplement
-                      operator: Exists
-                    - key: to-NLCimplement
-                      operator: Exists
+                    - key: in_Segment__seg_4-5
+                      operator: DoesNotExist
+                    - key: in_Segment__seg-8
+                      operator: DoesNotExist
     podSelector:
         matchExpressions:
             - key: group__real-group

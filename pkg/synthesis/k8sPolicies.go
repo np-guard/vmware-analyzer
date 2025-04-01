@@ -258,7 +258,6 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	res := policySelector{pods: &meta.LabelSelector{},
 		namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
 	for _, a := range con {
-		_, isSegment := a.(*symbolicexpr.SegmentTerm)
 		switch {
 		case a.IsTautology():
 			if len(con) == 1 {
@@ -269,7 +268,6 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 			// todo: should be fixed when supporting namespaces
 		case a.GetExternalBlock() != nil:
 			res.cidrs = a.GetExternalBlock().ToCidrList()
-		case isSegment:
 		default:
 			label, notIn := a.AsSelector()
 			label = toLegalK8SString(label)
