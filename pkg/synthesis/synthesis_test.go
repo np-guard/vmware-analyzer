@@ -534,7 +534,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	}
 
 	debugDir := synTest.debugDir()
-	noIcmpMergedMap := noIcmpMap.MergeExternalEP()
+	noIcmpMergedMap := noIcmpMap.GroupExternalEP()
 	noIcmpMergedExternalToAllMap := connectivity.ConnMap{}
 	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
 	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
@@ -557,7 +557,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_merged_connectivity.txt"), noICMPMergedMapStr)
 	require.Nil(t, err)
 
-	k8sMergedMap := k8sConnMap.MergeExternalEP()
+	k8sMergedMap := k8sConnMap.GroupExternalEP()
 	k8sMergedMapStr, err := k8sMergedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "k8s_merged_connectivity.txt"), k8sMergedMapStr)
@@ -583,7 +583,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
 	require.Nil(t, err)
-	connMergedMap := connMap.MergeExternalEP()
+	connMergedMap := connMap.GroupExternalEP()
 	connMergedMapStr, err := connMergedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "vmware_merged_connectivity.txt"), connMergedMapStr)
@@ -614,7 +614,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
-	analyzedMergedMap := analyzedMap.MergeExternalEP()
+	analyzedMergedMap := analyzedMap.GroupExternalEP()
 	analyzedMergedMapStr, err := analyzedMergedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_merged_connectivity.txt"), analyzedMergedMapStr)
