@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -212,4 +213,47 @@ func TestInternalIPTerms(t *testing.T) {
 		"172.16.0.0/12 neg supersetOf 192.168.0.0/16")
 	require.Equal(t, true, internalIPTerm2Neg.supersetOf(ipInternalTerm1, &Hints{GroupsDisjoint: [][]string{}}),
 		"192.168.0.0/16 neg supersetOf 172.16.0.0/12")
+}
+
+func TestProcessTautology(t *testing.T) {
+	//_, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
+	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, _, _ := getIPBlocksTerms()
+	Conjunction1 := Conjunction{ipBlockTerm1, allIPBlockTautology}
+	Conj1AfterProcess := Conjunction1.processTautology()
+	fmt.Printf("Conjunction1 is %v\n", Conjunction1.String())
+	fmt.Printf("Conjunction1 after processTautology is\n%v\n\n", str(Conj1AfterProcess))
+	require.Equal(t, 2, len(Conj1AfterProcess))
+	require.Equal(t, true, Conj1AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, true, Conj1AfterProcess[1].isAllGroup())
+
+	Conjunction2 := Conjunction{allIPBlockTautology, ipBlockTerm1}
+	Conj2AfterProcess := Conjunction2.processTautology()
+	fmt.Printf("Conjunction2 is %v\n", Conjunction2.String())
+	fmt.Printf("Conjunction2 after processTautology is\n%v\n\n", str(Conj2AfterProcess))
+	require.Equal(t, 2, len(Conj2AfterProcess))
+	require.Equal(t, true, Conj2AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, true, Conj2AfterProcess[1].isAllGroup())
+
+	Conjunction3 := Conjunction{ipBlockTerm2, allIPBlockTautology, ipBlockTerm1}
+	Conj3AfterProcess := Conjunction3.processTautology()
+	fmt.Printf("Conjunction3 is %v\n", Conjunction3.String())
+	fmt.Printf("Conjunction3 after processTautology is\n%v\n\n", str(Conj3AfterProcess))
+	require.Equal(t, 2, len(Conj3AfterProcess))
+	require.Equal(t, true, Conj3AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, true, Conj3AfterProcess[1].isAllGroup())
+
+	Conjunction4 := Conjunction{ipBlockTerm2, ipBlockTerm1}
+	Conj4AfterProcess := Conjunction4.processTautology()
+	fmt.Printf("Conjunction4 is %v\n\n", Conjunction4.String())
+	fmt.Printf("Conjunction4 after processTautology is\n%v\n\n", str(Conj4AfterProcess))
+	require.Equal(t, 1, len(Conj4AfterProcess))
+	require.Equal(t, true, Conj4AfterProcess[0].hasExternalIPBlockTerm())
+}
+
+func str(cs []*Conjunction) string {
+	res := make([]string, len(cs))
+	for i, conj := range cs {
+		res[i] = conj.String()
+	}
+	return strings.Join(res, "\n")
 }

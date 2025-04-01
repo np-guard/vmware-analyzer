@@ -71,6 +71,10 @@ type allGroup struct {
 type noGroup struct {
 }
 
+// allExternal: representative of *all* external IPs
+type allExternal struct {
+}
+
 // atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
 // tautology and contradiction
 type atomic interface {

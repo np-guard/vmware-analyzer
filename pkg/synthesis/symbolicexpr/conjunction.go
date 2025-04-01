@@ -276,3 +276,36 @@ func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 	}
 	return true
 }
+
+// if the Conjunction has a tautology and also other terms, then it should be processed:
+// this is since the Conjunction (excluding the tautology) has externals *or* internals while tautology has both
+// and as a result the Conjunction is a mess
+// if the Conjunction has externals (excluding the tautology) then it should be replaced with two Conjunctions:
+// 1. All terms
+// 2.
+func (c *Conjunction) processTautology() []*Conjunction {
+	if len(*c) < 2 {
+		return []*Conjunction{c}
+	}
+	tautIndex := -1
+	for i, term := range *c {
+		if term.IsTautology() {
+			tautIndex = i
+			break
+		}
+	}
+	if tautIndex == -1 { // no tautology in Conjunction? nothing to do here
+		return []*Conjunction{c}
+	}
+	// we get here after removeRedundant; so, in addition to the tautology, we either have externals *xor* internals
+	if !c.hasExternalIPBlockTerm() { // todo: handle as well https://github.com/np-guard/vmware-analyzer/issues/391
+		return []*Conjunction{c}
+	}
+	// Conjunction of and externals. Divided to two Conjunctions: one of *allGroup* and the non-tautology externals
+	var atomicsWOTautology []atomic
+	atomicsWOTautology = append(atomicsWOTautology, (*c)[:tautIndex]...)
+	atomicsWOTautology = append(atomicsWOTautology, (*c)[tautIndex+1:]...)
+	var conjWOTautology Conjunction = atomicsWOTautology
+	var allGroupConj = Conjunction{allGroup{}}
+	return []*Conjunction{&conjWOTautology, &allGroupConj}
+}
