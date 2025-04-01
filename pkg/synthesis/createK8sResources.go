@@ -24,11 +24,11 @@ type k8sResources struct {
 }
 
 func (resources *k8sResources) K8sPolicies() []*v1.NetworkPolicy {
-	return resources.k8sPolicies.networkPolicies
+	return resources.networkPolicies
 }
 
 func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy {
-	return resources.k8sPolicies.adminNetworkPolicies
+	return resources.adminNetworkPolicies
 }
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
@@ -68,24 +68,24 @@ func (resources *k8sResources) CreateDir(outDir string) error {
 func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 	for _, vm := range model.vms {
 		pod := &core.Pod{}
-		pod.TypeMeta.Kind = "Pod"
-		pod.TypeMeta.APIVersion = "v1"
-		pod.ObjectMeta.Name = toLegalK8SString(vm.Name())
-		pod.ObjectMeta.Namespace = core.NamespaceDefault
+		pod.Kind = "Pod"
+		pod.APIVersion = "v1"
+		pod.Name = toLegalK8SString(vm.Name())
+		pod.Namespace = core.NamespaceDefault
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
-		pod.ObjectMeta.Labels = map[string]string{}
+		pod.Labels = map[string]string{}
 		const theTrue = "true"
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
 			label = toLegalK8SString(label)
-			pod.ObjectMeta.Labels[label] = theTrue
+			pod.Labels[label] = theTrue
 		}
 		for _, tag := range vm.Tags() {
 			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
 			label = toLegalK8SString(label)
-			pod.ObjectMeta.Labels[label] = theTrue
+			pod.Labels[label] = theTrue
 		}
 		resources.pods = append(resources.pods, pod)
 	}

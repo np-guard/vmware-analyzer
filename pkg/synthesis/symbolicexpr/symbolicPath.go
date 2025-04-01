@@ -66,7 +66,7 @@ func (paths SymbolicPaths) RemoveIsSubsetPath(hints *Hints) SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.isSuperset(outerPath, hints) && !(outerPath.isSuperset(innerPath, hints) && outerIndex < innerIndex) {
+			if innerPath.isSuperset(outerPath, hints) && (!outerPath.isSuperset(innerPath, hints) || outerIndex >= innerIndex) {
 				addPath = false
 				break
 			}
