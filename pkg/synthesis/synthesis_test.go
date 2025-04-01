@@ -463,7 +463,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 
-	if k8sConnectivityFileCreated && !resources.k8sPolicies.NotFullySupported {
+	if k8sConnectivityFileCreated && !resources.NotFullySupported {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 	}
 }
@@ -487,7 +487,6 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	require.Equal(t, noICMPGroupedMapStr, k8sGroupedMapStr,
 		fmt.Sprintf("k8s and vmware connectivities of test %v are not equal", t.Name()))
-
 }
 
 // adjust connectivity map to be later compared to netpol analyzer map:
