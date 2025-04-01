@@ -135,7 +135,7 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 // 2. for synthesis: inbound and outbound rules which may not have effect on the current topology
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func (f *FwRule) getEvaluatedRulesAndEffectiveRules() (inbound, outbound, inboundEffective, outboundEffective *FwRule) {
+func (f *FwRule) getEvaluatedRulesAndEffectiveRules(c *CategorySpec) (inbound, outbound, inboundEffective, outboundEffective *FwRule) {
 	// for synthesis, we do not ignore rules with no VMs in src, dst, since in the future the same src
 	// may have VMs in it. Empty connection, however, is empty regardless of the VMs snapshot
 	if f.Conn.IsEmpty() {
@@ -150,19 +150,16 @@ func (f *FwRule) getEvaluatedRulesAndEffectiveRules() (inbound, outbound, inboun
 	if len(f.Scope.VMs) == 0 {
 		// rules with no VMs in src, dst are not considered effective rules
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
+		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], "empty scope")
 		return inbound, outbound, nil, nil
 	}
 
-	if inboundNotEffectiveMsg := f.checkInboundEffectiveRuleValidity(); inboundNotEffectiveMsg != "" {
-		f.ruleWarning(inboundNotEffectiveMsg)
-	} else if inbound != nil {
+	isInboundEffective, isOutboundEffective := f.isRuleEffective(c)
+
+	if isInboundEffective && inbound != nil {
 		inboundEffective = inbound.clone()
 	}
-
-	if outboundNotEffectiveMsg := f.checkOutboundEffectiveRuleValidity(); outboundNotEffectiveMsg != "" {
-		f.ruleWarning(outboundNotEffectiveMsg)
-		outboundEffective = nil
-	} else if outbound != nil {
+	if isOutboundEffective && outbound != nil {
 		outboundEffective = outbound.clone()
 	}
 
@@ -199,35 +196,39 @@ func (f *FwRule) hasOutboundComponent() bool {
 	return f.direction != string(nsx.RuleDirectionIN)
 }
 
-// checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
-func (f *FwRule) checkInboundEffectiveRuleValidity() string {
+const (
+	emptySrc = "empty src"
+	emptyDst = "empty dest"
+)
+
+func (f *FwRule) isRuleEffective(c *CategorySpec) (inbound, outbound bool) {
 	if len(f.Dst.VMs) == 0 {
-		return "has no effective inbound component, since its dest-vms component is empty"
+		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], emptyDst)
+		f.ruleWarning("has no effective inbound/outbound component, since its dest-vms component is empty")
+		return false, false
 	}
 	if len(f.Src.VMs) == 0 {
-		return "has no effective inbound component, since its target src-vms component is empty"
+		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], emptySrc)
+		f.ruleWarning("has no effective inbound/outbound component, since its src-vms component is empty")
+		return false, false
 	}
+	inbound = true
+	outbound = true
+	// check inbound with scope
 	newDest := topology.Intersection(f.Dst.VMs, f.Scope.VMs)
 	if len(newDest) == 0 {
-		return "has no effective inbound component, since its intersection for dest & scope is empty"
+		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], "empty dest with scope")
+		f.ruleWarning("has no effective inbound component, since its intersection for dest & scope is empty")
+		inbound = false
 	}
-	return ""
-}
-
-// checks validity of inbound component of FwRule f; if valid returns the empty string, otherwise returns ruleWarning string
-func (f *FwRule) checkOutboundEffectiveRuleValidity() string {
-	if len(f.Src.VMs) == 0 {
-		return "has no effective outbound component, since its src vms component is empty"
-	}
-	if len(f.Dst.VMs) == 0 {
-		return "has no effective outbound component, since its target dst vms component is empty"
-	}
-	// outbound rule operates on intersection(src, scope)
+	// check outbound with scope
 	newSrc := topology.Intersection(f.Src.VMs, f.Scope.VMs)
 	if len(newSrc) == 0 {
-		return "has no effective outbound component, since its intersection for src & scope is empty"
+		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], "empty src with scope")
+		f.ruleWarning("has no effective outbound component, since its intersection for src & scope is empty")
+		outbound = false
 	}
-	return ""
+	return inbound, outbound
 }
 
 func (f *FwRule) clone() *FwRule {

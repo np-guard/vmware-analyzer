@@ -23,7 +23,7 @@ func (ipBlockTerm *externalIPTerm) String() string {
 		ipStr = ipBlockTerm.Block.String()
 	}
 	// prefer the OrigIP if exists
-	origIP := ipBlockTerm.IPBlock.OriginalIP
+	origIP := ipBlockTerm.OriginalIP
 	if origIP != "" {
 		ipStr = origIP
 	}

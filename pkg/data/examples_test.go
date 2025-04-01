@@ -31,7 +31,7 @@ func (e *Example) syncJSONWithExample() error {
 	var exampleConfig, jsonConfig *configuration.Config
 
 	// get from example its parsed config object (creates JSON file only if it does not exist)
-	rc, err := ExamplesGeneration(e)
+	rc, err := ExamplesGeneration(e, false)
 	if err != nil {
 		return err
 	}

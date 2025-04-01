@@ -495,7 +495,10 @@ func (r *rulesTest) runTest(t *testing.T) {
 		require.Nil(t, err)
 	}
 	// get ResourcesContainerModel from Example object
-	rc, err := data.ExamplesGeneration(example)
+	var override bool
+	//nolint: gocritic //keep this commented out code for test updates
+	// override = true // use when modifying tests above
+	rc, err := data.ExamplesGeneration(example, override)
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(

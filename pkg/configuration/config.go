@@ -226,9 +226,3 @@ func (c *Config) DefaultDenyRule() *dfw.FwRule {
 	}
 	return nil
 }
-
-func (c *Config) LintReport(color bool) string {
-	// redundant rules analysis
-	res, _ := c.FW.RedundantRulesAnalysis(c.VMs, color)
-	return res
-}
