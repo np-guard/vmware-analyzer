@@ -90,60 +90,6 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 	},
 	{
-		name:            "Example1External",
-		exData:          data.Example1External,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "Example1dExternalWithSegments",
-		exData:          data.Example1dExternalWithSegments,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleExternalWithDenySimple",
-		exData:          data.ExampleExternalWithDenySimple,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleExternalSimpleWithInterlDenyAllow",
-		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
-		synthesizeAdmin: false,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
-		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
-		synthesizeAdmin: true,
-		noHint:          true,
-	},
-	{
-		name:            "ExampleInternalWithInterDenyAllow",
-		exData:          data.ExampleInternalWithInterDenyAllow,
-		synthesizeAdmin: false,
-		noHint:          false,
-	},
-	{
-		name:            "ExampleInternalWithInterDenyAllowWithSegments",
-		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
-		synthesizeAdmin: false,
-		noHint:          false,
-	},
-	{
-		name:            "ExampleHogwartsExternal",
-		exData:          data.ExampleHogwartsExternal,
-		noHint:          false,
-		synthesizeAdmin: false,
-	},
-	{
-		name:            "ExampleHogwartsExternalAdmin",
-		exData:          data.ExampleHogwartsExternal,
-		noHint:          false,
-		synthesizeAdmin: true,
-	},
-	{
 		name:            "ExampleDumbeldore",
 		exData:          data.ExampleDumbeldore,
 		synthesizeAdmin: false,
@@ -205,6 +151,69 @@ var groupsByVmsTests = []synthesisTest{
 	},
 }
 
+var vmsByIpsTests = []synthesisTest{
+	{
+		name:            "Example1External",
+		exData:          data.Example1External,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "Example1dExternalWithSegments",
+		exData:          data.Example1dExternalWithSegments,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalWithDenySimple",
+		exData:          data.ExampleExternalWithDenySimple,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalSimpleWithInterlDenyAllow",
+		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
+		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
+		synthesizeAdmin: true,
+		noHint:          true,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllow",
+		exData:          data.ExampleInternalWithInterDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllowWithSegments",
+		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleInternalWithInterDenyAllowMixedSegments",
+		exData:          data.ExampleInternalWithInterDenyAllowMixedSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleHogwartsExternal",
+		exData:          data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: false,
+	},
+	{
+		name:            "ExampleHogwartsExternalAdmin",
+		exData:          data.ExampleHogwartsExternal,
+		noHint:          false,
+		synthesizeAdmin: true,
+	},
+}
+
 var groupsByExprTests = []synthesisTest{
 	{
 		name:   "ExampleExprSingleScope",
@@ -257,7 +266,7 @@ var resourceFileTest = synthesisTest{
 	noHint:          true,
 }
 
-var allSyntheticTests = append(groupsByVmsTests, groupsByExprTests...)
+var allSyntheticTests = append(groupsByVmsTests, append(groupsByExprTests, vmsByIpsTests...)...)
 var allTests = append(allSyntheticTests, []synthesisTest{liveNsxTest, resourceFileTest}...)
 
 // //////////////////////////////////////////////////////////////////////
@@ -360,7 +369,7 @@ func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
 func subTestsRunByTestName(t *testing.T, f testMethod) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		rc, err := data.ExamplesGeneration(test.exData)
+		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
@@ -624,7 +633,8 @@ const runTestMode = OutputComparison
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
-	if runTestMode == OutputComparison {
+	switch runTestMode {
+	case OutputComparison:
 		expectedFiles, err := os.ReadDir(expectedDir)
 		require.Nil(t, err)
 		require.Equal(t, len(actualFiles), len(expectedFiles),
@@ -637,7 +647,7 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 			require.Equal(t, common.CleanStr(string(actualOutput)), common.CleanStr(string(expectedOutput)),
 				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
 		}
-	} else if runTestMode == OutputGeneration {
+	case OutputGeneration:
 		err := os.RemoveAll(expectedDir)
 		require.Nil(t, err)
 		err = os.CopyFS(expectedDir, os.DirFS(actualDir))
@@ -646,13 +656,14 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 }
 
 func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutputFileName, testName string) {
-	if runTestMode == OutputComparison {
+	switch runTestMode {
+	case OutputComparison:
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
 		require.Equal(t, common.CleanStr(actualOutput), common.CleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
-	} else if runTestMode == OutputGeneration {
+	case OutputGeneration:
 		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}

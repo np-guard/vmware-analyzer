@@ -21,6 +21,7 @@ var basicExampleTopology = data.Example{
 	GroupsByVMs: map[string][]string{
 		"frontend": {"A"},
 		"backend":  {"B"},
+		"system":   {},
 	},
 }
 
@@ -84,11 +85,12 @@ var rulesTests = []*rulesTest{
 		appRulesList: []data.Rule{
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("SMB"), Action: data.Allow},
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("HTTP"), Action: data.Allow},
+			{Name: "allowRule", Source: "backend", Dest: "system", Services: services("HTTPS"), Action: data.Allow},
 			{Name: "allowRule", Source: "frontend", Dest: "backend", Services: services("SMB", "HTTP"), Action: data.Allow},
 			{Name: "denyRule", Source: common.AnyStr, Dest: common.AnyStr, Services: services(common.AnyStr), Action: data.Drop},
 		},
 		expectedRes: [][]string{
-			{"3", "Application", "IN_OUT", "[1 2]"}, // rule 3 is redundant, covered by rules 1,2
+			{"4", "Application", "IN_OUT", "[1 2]"}, // rule 3 is redundant, covered by rules 1,2
 		},
 	},
 	{
@@ -120,7 +122,10 @@ func (r *rulesTest) runTest(t *testing.T) {
 	}
 
 	// get ResourcesContainerModel from Example object
-	rc, err := data.ExamplesGeneration(example)
+	var override bool
+	//nolint: gocritic //keep this commented out code for test updates
+	// override = true // use when modifying the tests below..
+	rc, err := data.ExamplesGeneration(example, override)
 	require.Nil(t, err)
 
 	config, err := ConfigFromResourcesContainer(rc, false)

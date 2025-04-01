@@ -59,14 +59,14 @@ func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 // return the tag corresponding to a given condition
 func getTagTermsForCondition(cond *collector.Condition, group string) *tagAtomicTerm {
 	// assumption: cond is of a tag over VMs
-	if cond.Condition.MemberType == nil || *cond.Condition.MemberType != resources.ConditionMemberTypeVirtualMachine ||
-		cond.Condition.Key == nil || *cond.Condition.Key != resources.ConditionKeyTag ||
-		cond.Condition.Operator == nil {
+	if cond.MemberType == nil || *cond.MemberType != resources.ConditionMemberTypeVirtualMachine ||
+		cond.Key == nil || *cond.Key != resources.ConditionKeyTag ||
+		cond.Operator == nil {
 		debugMsg(group, fmt.Sprintf("contains an NSX condition %s which is not supported", cond.String()))
 		return nil
 	}
 	var neg bool
-	if *cond.Condition.Operator == resources.ConditionOperatorNOTEQUALS {
+	if *cond.Operator == resources.ConditionOperatorNOTEQUALS {
 		neg = true
 	}
 	return &tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}

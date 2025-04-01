@@ -44,6 +44,12 @@ type internalIPTerm struct {
 	ruleBlock *topology.RuleIPBlock
 }
 
+type segmentTerm struct {
+	anyInternalResource
+	atomicTerm
+	segment *topology.Segment
+}
+
 type externalIPTerm struct {
 	atomicTerm
 	*topology.IPBlock

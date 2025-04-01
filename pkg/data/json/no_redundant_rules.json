@@ -28518,6 +28518,10 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "system",
+                        "path": "system"
+                    },
+                    {
                         "display_name": "frontend",
                         "path": "frontend",
                         "vm_members": [

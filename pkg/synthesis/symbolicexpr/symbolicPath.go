@@ -66,7 +66,7 @@ func (paths SymbolicPaths) RemoveIsSubsetPath(hints *Hints) SymbolicPaths {
 			if innerIndex == outerIndex {
 				continue
 			}
-			if innerPath.isSuperset(outerPath, hints) && !(outerPath.isSuperset(innerPath, hints) && outerIndex < innerIndex) {
+			if innerPath.isSuperset(outerPath, hints) && (!outerPath.isSuperset(innerPath, hints) || outerIndex >= innerIndex) {
 				addPath = false
 				break
 			}
@@ -156,10 +156,15 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
-	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
-	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
+	externalRelevantSrc := isInbound
+	externalRelevantDst := !isInbound
+	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, externalRelevantSrc, rule.Src.IsAllGroups,
+		rule.Src.Groups, rule.Src.Blocks)
+	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, externalRelevantDst, rule.Dst.IsAllGroups,
+		rule.Dst.Groups, rule.Dst.Blocks)
 	if !rule.OrigScope.IsAllGroups { // do not add *any* to Conjunction
-		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, rule.OrigScope.Groups, nil)
+		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, false,
+			rule.OrigScope.Groups, nil)
 		if isInbound {
 			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
 		} else { // outbound
@@ -183,9 +188,10 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 	}
 }
 
-func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction,
+func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
-	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology := getConjunctionForIPBlock(ruleBlocks)
+	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
+		getConjunctionForIPBlock(ruleBlocks, isExternalRelevant)
 	res = append(res, ipExternalBlockConjunctions...)
 	switch {
 	case isTautology:

@@ -205,11 +205,11 @@ const annotationUID = "nsx-id"
 
 func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPolicy {
 	pol := &networking.NetworkPolicy{}
-	pol.TypeMeta.Kind = "NetworkPolicy"
-	pol.TypeMeta.APIVersion = "networking.k8s.io/v1"
-	pol.ObjectMeta.Name = toLegalK8SString(name)
-	pol.ObjectMeta.Namespace = meta.NamespaceDefault
-	pol.ObjectMeta.Annotations = map[string]string{
+	pol.Kind = "NetworkPolicy"
+	pol.APIVersion = "networking.k8s.io/v1"
+	pol.Name = toLegalK8SString(name)
+	pol.Namespace = meta.NamespaceDefault
+	pol.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
 	}
@@ -218,10 +218,10 @@ func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPo
 
 func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetworkPolicy {
 	pol := &admin.AdminNetworkPolicy{}
-	pol.TypeMeta.Kind = "AdminNetworkPolicy"
-	pol.TypeMeta.APIVersion = "policy.networking.k8s.io/v1alpha1"
-	pol.ObjectMeta.Name = toLegalK8SString(name)
-	pol.ObjectMeta.Annotations = map[string]string{
+	pol.Kind = "AdminNetworkPolicy"
+	pol.APIVersion = "policy.networking.k8s.io/v1alpha1"
+	pol.Name = toLegalK8SString(name)
+	pol.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
 	}
