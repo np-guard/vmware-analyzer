@@ -39,8 +39,6 @@ spec:
         matchExpressions:
             - key: to-NLCimplement
               operator: Exists
-            - key: to-NLCimplement
-              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -61,8 +59,6 @@ spec:
         matchExpressions:
             - key: to-NLCimplement
               operator: Exists
-            - key: to-NLCimplement
-              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -80,8 +76,6 @@ spec:
         - from:
             - podSelector:
                 matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
                     - key: to-NLCimplement
                       operator: Exists
     podSelector: {}
@@ -106,8 +100,6 @@ spec:
         matchExpressions:
             - key: to-NLCimplement
               operator: Exists
-            - key: to-NLCimplement
-              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -128,8 +120,6 @@ spec:
         matchExpressions:
             - key: to-NLCimplement
               operator: Exists
-            - key: to-NLCimplement
-              operator: Exists
     policyTypes:
         - Egress
 ---
@@ -147,8 +137,6 @@ spec:
         - from:
             - podSelector:
                 matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
                     - key: to-NLCimplement
                       operator: Exists
     podSelector: {}
@@ -171,10 +159,7 @@ spec:
                 matchExpressions:
                     - key: group__real-group
                       operator: DoesNotExist
-    podSelector:
-        matchExpressions:
-            - key: to-NLCimplement
-              operator: Exists
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -190,10 +175,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: group__real-group
@@ -215,10 +197,7 @@ spec:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: to-NLCimplement
-              operator: Exists
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -235,10 +214,7 @@ spec:
     egress:
         - to:
             - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: to-NLCimplement
-              operator: Exists
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -254,10 +230,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - podSelector: {}
     podSelector: {}
     policyTypes:
         - Ingress

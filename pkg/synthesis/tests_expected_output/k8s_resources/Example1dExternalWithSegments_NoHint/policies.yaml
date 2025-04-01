@@ -88,10 +88,7 @@ spec:
             - port: 443
               protocol: TCP
           to:
-            - podSelector:
-                matchExpressions:
-                    - key: to-NLCimplement
-                      operator: Exists
+            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__0.0.1.128-25
@@ -118,10 +115,7 @@ spec:
           ports:
             - port: 443
               protocol: TCP
-    podSelector:
-        matchExpressions:
-            - key: to-NLCimplement
-              operator: Exists
+    podSelector: {}
     policyTypes:
         - Ingress
 ---
