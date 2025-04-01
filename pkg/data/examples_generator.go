@@ -176,8 +176,8 @@ func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
 	res := make([]collector.RealizedVirtualMachine, len(members))
 	for i, member := range members {
 		vmMember := collector.RealizedVirtualMachine{}
-		vmMember.RealizedVirtualMachine.DisplayName = &member
-		vmMember.RealizedVirtualMachine.Id = &member
+		vmMember.DisplayName = &member
+		vmMember.Id = &member
 		res[i] = vmMember
 	}
 	return res
@@ -185,8 +185,8 @@ func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
 
 func newGroupByExample(name string) collector.Group {
 	newGroup := collector.Group{}
-	newGroup.Group.DisplayName = &name
-	newGroup.Group.Path = &name
+	newGroup.DisplayName = &name
+	newGroup.Path = &name
 	return newGroup
 }
 
@@ -321,7 +321,7 @@ func (cond *ExampleCond) exampleCondToCond() *collector.Condition {
 	}
 	res := collector.Condition{Condition: nsx.Condition{Key: &condKey, MemberType: &memberType, Operator: &operator,
 		Value: &cond.Tag.Tag, ResourceType: common.PointerTo(nsx.ConditionResourceTypeCondition)}}
-	res.Condition.Value = &cond.Tag.Tag
+	res.Value = &cond.Tag.Tag
 	return &res
 }
 
@@ -581,8 +581,8 @@ func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.R
 	res := make([]collector.RealizedVirtualMachine, len(origList))
 	for i := range origList {
 		realizedVM := collector.RealizedVirtualMachine{}
-		realizedVM.RealizedVirtualMachine.DisplayName = origList[i].DisplayName
-		realizedVM.RealizedVirtualMachine.Id = origList[i].ExternalId
+		realizedVM.DisplayName = origList[i].DisplayName
+		realizedVM.Id = origList[i].ExternalId
 		res[i] = realizedVM
 	}
 	return res
