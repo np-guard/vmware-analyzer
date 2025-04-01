@@ -163,8 +163,8 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	gID := firstGroupID + len(a.groups)
 	gName := fmt.Sprintf("groupName_%d", gID)
 	group := collector.Group{}
-	group.Group.DisplayName = &gName
-	group.Group.Path = &gName
+	group.DisplayName = &gName
+	group.Path = &gName
 	group.VMMembers = make([]collector.RealizedVirtualMachine, len(vms))
 	for i, vm := range vms {
 		group.VMMembers[i] = a.vmResource[vm]

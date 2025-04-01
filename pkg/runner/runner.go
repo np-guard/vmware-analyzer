@@ -14,6 +14,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/collector/anonymizer"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/lint"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -164,11 +165,11 @@ func (r *Runner) runLint() error {
 		return nil
 	}
 
-	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, r.color)
+	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color: r.color})
 	if err != nil {
 		return err
 	}
-	lintReport := config.LintReport(r.color) // currently only redundant rules analysis
+	lintReport := lint.LintReport(config, r.color) // currently only redundant rules analysis
 	fmt.Println(lintReport)
 	return nil
 }
@@ -186,6 +187,7 @@ func (r *Runner) runSynthesis() error {
 		SynthesizeAdmin: r.synthesizeAdmin,
 		Color:           r.color,
 		CreateDNSPolicy: !r.suppressDNSPolicies,
+		FilterVMs:       r.analysisVMsFilter,
 	}
 	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {

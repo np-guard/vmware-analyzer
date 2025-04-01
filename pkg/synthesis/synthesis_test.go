@@ -29,13 +29,12 @@ const (
 	actualOutput   = "tests_actual_output"
 )
 
-var defaultParams = common.OutputParameters{Format: "txt"}
-
 type synthesisTest struct {
 	name            string
 	exData          *data.Example
 	synthesizeAdmin bool
 	noHint          bool // run also with no hint
+	filter          []string
 }
 
 func (synTest *synthesisTest) hints() *symbolicexpr.Hints {
@@ -60,6 +59,9 @@ func (synTest *synthesisTest) id() string {
 	if synTest.synthesizeAdmin {
 		id += "_AdminPoliciesEnabled"
 	}
+	if synTest.filter != nil {
+		id += "_Filtered"
+	}
 	return id
 }
 
@@ -77,7 +79,11 @@ func (synTest *synthesisTest) options() *SynthesisOptions {
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
+		FilterVMs:       synTest.filter,
 	}
+}
+func (synTest *synthesisTest) outputParams() common.OutputParameters {
+	return common.OutputParameters{Format: "txt", VMs: synTest.filter}
 }
 
 var groupsByVmsTests = []synthesisTest{
@@ -142,6 +148,13 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          false,
 	},
 	{
+		name:            "ExampleHogwartsFiltered",
+		exData:          data.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
+		filter:          []string{data.SlyWeb, data.GryWeb, data.HufWeb, data.Dum1, data.Dum2},
+	},
+	{
 		name:            "ExampleHogwartsSimplerNonSymInOutAdmin",
 		exData:          data.ExampleHogwartsSimplerNonSymInOut,
 		synthesizeAdmin: true,
@@ -161,6 +174,13 @@ var vmsByIpsTests = []synthesisTest{
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
+	},
+	{
+		name:            "Example1dExternalWithSegmentsFiltered",
+		exData:          data.Example1dExternalWithSegments,
+		synthesizeAdmin: false,
+		noHint:          true,
+		filter:          []string{"A", "B"},
 	},
 	{
 		name:            "ExampleExternalWithDenySimple",
@@ -367,7 +387,7 @@ func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
 func subTestsRunByTestName(t *testing.T, f testMethod) {
 	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
 	for _, test := range allSyntheticTests {
-		rc, err := data.ExamplesGeneration(test.exData)
+		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
 		t.Run(test.name, func(t *testing.T) {
 			f(&test, t, rc)
@@ -384,7 +404,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
 	// get the config:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -448,13 +468,13 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		if !strings.Contains(synTest.name, "External") ||
 			slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
 			// todo - remove "External" condition when examples supported
-			compareToNetpol(t, rc, k8sConnectivityFile)
+			compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 		}
 	}
 }
 
 // the following method is work in progress - the netpol analyzer and the nsx analyser have different granularity of external IPs
-func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
+func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
 	// we get a file with lines in the foramt:
 	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
 	netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
@@ -486,7 +506,7 @@ func compareToNetpol(t *testing.T, rc *collector.ResourcesContainerModel, k8sCon
 		netpolConnMap[src+"=>"+dst] = conn
 	}
 	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// iterate over the connMap, check each connection:
 	for src, dsts := range connMap {
@@ -534,7 +554,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
@@ -553,7 +573,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// get the config from generated_rc:
-	config, err := configuration.ConfigFromResourcesContainer(rc, false)
+	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
 	configStr := config.GetConfigInfoStr(false)
@@ -561,7 +581,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, defaultParams)
+	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
@@ -608,7 +628,8 @@ const runTestMode = OutputComparison
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
-	if runTestMode == OutputComparison {
+	switch runTestMode {
+	case OutputComparison:
 		expectedFiles, err := os.ReadDir(expectedDir)
 		require.Nil(t, err)
 		require.Equal(t, len(actualFiles), len(expectedFiles),
@@ -621,7 +642,7 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 			require.Equal(t, common.CleanStr(string(actualOutput)), common.CleanStr(string(expectedOutput)),
 				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
 		}
-	} else if runTestMode == OutputGeneration {
+	case OutputGeneration:
 		err := os.RemoveAll(expectedDir)
 		require.Nil(t, err)
 		err = os.CopyFS(expectedDir, os.DirFS(actualDir))
@@ -630,13 +651,14 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 }
 
 func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutputFileName, testName string) {
-	if runTestMode == OutputComparison {
+	switch runTestMode {
+	case OutputComparison:
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
 		require.Equal(t, common.CleanStr(actualOutput), common.CleanStr(expectedOutputStr),
 			fmt.Sprintf("output of test %v not as expected", testName))
-	} else if runTestMode == OutputGeneration {
+	case OutputGeneration:
 		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
 	}

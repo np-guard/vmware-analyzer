@@ -548,20 +548,20 @@ func (group *Group) UnmarshalJSON(b []byte) error {
 }
 
 func (group *Group) Name() string {
-	if group.Group.DisplayName == nil {
+	if group.DisplayName == nil {
 		return ""
 	}
-	return *group.Group.DisplayName
+	return *group.DisplayName
 }
 
 func (group *Group) Description() string {
 	switch {
 	case len(group.Expression) != 0:
 		return group.Expression.String()
-	case group.Group.DisplayName != nil:
-		return *group.Group.DisplayName
+	case group.DisplayName != nil:
+		return *group.DisplayName
 	default:
-		return *group.Group.Id
+		return *group.Id
 	}
 }
 

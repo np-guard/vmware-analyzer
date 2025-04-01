@@ -38,7 +38,7 @@ type Example struct {
 // It also stores the generated example in the path pkg/data/json .
 //
 //nolint:funlen // just a long function
-func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) {
+func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContainerModel, error) {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
 	for _, vmName := range e.VMs {
@@ -148,7 +148,7 @@ func ExamplesGeneration(e *Example) (*collector.ResourcesContainerModel, error) 
 	res.ServiceList = getServices()
 
 	// store the example resources object generated as JSON file
-	if err := e.storeAsJSON(false, res); err != nil {
+	if err := e.storeAsJSON(override, res); err != nil {
 		return nil, err
 	}
 	return res, nil
@@ -176,8 +176,8 @@ func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
 	res := make([]collector.RealizedVirtualMachine, len(members))
 	for i, member := range members {
 		vmMember := collector.RealizedVirtualMachine{}
-		vmMember.RealizedVirtualMachine.DisplayName = &member
-		vmMember.RealizedVirtualMachine.Id = &member
+		vmMember.DisplayName = &member
+		vmMember.Id = &member
 		res[i] = vmMember
 	}
 	return res
@@ -185,8 +185,8 @@ func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
 
 func newGroupByExample(name string) collector.Group {
 	newGroup := collector.Group{}
-	newGroup.Group.DisplayName = &name
-	newGroup.Group.Path = &name
+	newGroup.DisplayName = &name
+	newGroup.Path = &name
 	return newGroup
 }
 
@@ -321,7 +321,7 @@ func (cond *ExampleCond) exampleCondToCond() *collector.Condition {
 	}
 	res := collector.Condition{Condition: nsx.Condition{Key: &condKey, MemberType: &memberType, Operator: &operator,
 		Value: &cond.Tag.Tag, ResourceType: common.PointerTo(nsx.ConditionResourceTypeCondition)}}
-	res.Condition.Value = &cond.Tag.Tag
+	res.Value = &cond.Tag.Tag
 	return &res
 }
 
@@ -581,8 +581,8 @@ func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.R
 	res := make([]collector.RealizedVirtualMachine, len(origList))
 	for i := range origList {
 		realizedVM := collector.RealizedVirtualMachine{}
-		realizedVM.RealizedVirtualMachine.DisplayName = origList[i].DisplayName
-		realizedVM.RealizedVirtualMachine.Id = origList[i].ExternalId
+		realizedVM.DisplayName = origList[i].DisplayName
+		realizedVM.Id = origList[i].ExternalId
 		res[i] = realizedVM
 	}
 	return res

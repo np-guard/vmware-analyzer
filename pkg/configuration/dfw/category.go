@@ -15,21 +15,23 @@ import (
 
 // CategorySpec captures dfw cateogry policies configuration, with all rules by order
 type CategorySpec struct {
-	Category       collector.DfwCategory
-	Rules          []*FwRule  // ordered list of original rules (direction is in/out/in_out)
-	EvaluatedRules *EvalRules // ordered list of all evaluated inbound and outbound rules
-	EffectiveRules *EvalRules // ordered list of only effective inbound and outbound rules
-	dfwRef         *DFW
-	rulesMap       map[int]*FwRule // map from ruleID to (orig) FwRule object (direction is in/out/in_out)
+	Category         collector.DfwCategory
+	Rules            []*FwRule  // ordered list of original rules (direction is in/out/in_out)
+	EvaluatedRules   *EvalRules // ordered list of all evaluated inbound and outbound rules
+	EffectiveRules   *EvalRules // ordered list of only effective inbound and outbound rules
+	dfwRef           *DFW
+	rulesMap         map[int]*FwRule  // map from ruleID to (orig) FwRule object (direction is in/out/in_out)
+	IneffectiveRules map[int][]string // map from ruleID to string explaining reason for ineffective rule detected
 }
 
 func newEmptyCategory(c collector.DfwCategory, d *DFW) *CategorySpec {
 	return &CategorySpec{
-		Category:       c,
-		dfwRef:         d,
-		EvaluatedRules: &EvalRules{},
-		EffectiveRules: &EvalRules{},
-		rulesMap:       map[int]*FwRule{},
+		Category:         c,
+		dfwRef:           d,
+		EvaluatedRules:   &EvalRules{},
+		EffectiveRules:   &EvalRules{},
+		rulesMap:         map[int]*FwRule{},
+		IneffectiveRules: map[int][]string{},
 	}
 }
 
@@ -52,7 +54,7 @@ func (c *CategorySpec) addRule(src, dst, scope *RuleEndpoints, conn *netset.Tran
 	}
 
 	// get evaluated inbound/outbound rules from the original newRule + effective rules
-	inbound, outbound, inboundEffective, outboundEffective := newRule.getEvaluatedRulesAndEffectiveRules()
+	inbound, outbound, inboundEffective, outboundEffective := newRule.getEvaluatedRulesAndEffectiveRules(c)
 
 	c.EvaluatedRules.addInboundRule(inbound, c.dfwRef, false)
 	c.EvaluatedRules.addOutboundRule(outbound, c.dfwRef, false)

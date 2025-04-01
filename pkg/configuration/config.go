@@ -13,7 +13,8 @@ import (
 )
 
 func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
-	color bool) (*Config, error) {
+	params common.OutputParameters) (*Config, error) {
+	filterResources(resources, params.VMs)
 	parser := newNSXConfigParserFromResourcesContainer(resources)
 	err := parser.runParser()
 	if err != nil {
@@ -22,7 +23,7 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 	config := parser.getConfig()
 
 	// in debug/verbose mode -- print the parsed config
-	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(color))
+	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
 	logging.Debugf("the dfw processed rules details:\n%s", config.FW.String())
 	logging.Debugf("the dfw effective rules details:\n%s", config.FW.AllEffectiveRules())
 
@@ -224,10 +225,4 @@ func (c *Config) DefaultDenyRule() *dfw.FwRule {
 		}
 	}
 	return nil
-}
-
-func (c *Config) LintReport(color bool) string {
-	// redundant rules analysis
-	res, _ := c.FW.RedundantRulesAnalysis(c.VMs, color)
-	return res
 }
