@@ -80,8 +80,8 @@ func (c ConnMap) getEntryPerEndpoints(srcVM, dstVM string) *connMapEntry {
 	return nil
 }
 
-// this method is for testing only. grouping the external, to compare connectivities
-// assuming there is no connection with both src and dst external
+// this method is for testing only. grouping the external EPs, to compare maps
+// assuming there is no connection with both external src and dst
 func (c ConnMap) GroupExternalEP() ConnMap {
 	unionExternalEP := func(e1, e2 topology.Endpoint) topology.Endpoint {
 		return topology.NewExternalIP(
