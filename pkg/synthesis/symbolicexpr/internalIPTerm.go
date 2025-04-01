@@ -20,7 +20,7 @@ func (internalIP internalIPTerm) String() string {
 }
 
 func (internalIP internalIPTerm) name() string {
-	return internalIP.ruleBlock.IPBlock.OriginalIP
+	return internalIP.ruleBlock.OriginalIP
 }
 
 func (internalIPTerm) AsSelector() (string, bool) {
