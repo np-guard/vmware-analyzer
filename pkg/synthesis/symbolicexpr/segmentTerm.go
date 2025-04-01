@@ -1,6 +1,8 @@
 package symbolicexpr
 
 import (
+	"fmt"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
@@ -23,8 +25,8 @@ func (segment SegmentTerm) String() string {
 	return neg + "segment " + segment.name()
 }
 
-func (SegmentTerm) AsSelector() (string, bool) {
-	return toImplement, false
+func (segment SegmentTerm) AsSelector() (string, bool) {
+	return fmt.Sprintf("in_Segment__%s", segment.name()), segment.neg
 }
 
 func (segment SegmentTerm) negate() atomic {

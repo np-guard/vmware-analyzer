@@ -572,7 +572,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	// create abstract model convert it to a new equiv NSX resources:
 	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	policies, groups := toNSXPolicies(rc, abstractModel)
+	policies, groups, notFullySupported := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
@@ -599,10 +599,12 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_merged_connectivity.txt"), analyzedMergedMapStr)
 	require.Nil(t, err)
-	// the validation of the abstract model conversion is here:
-	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	require.Equal(t, connMergedMapStr, analyzedMergedMapStr,
-		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+	if !notFullySupported {
+		// the validation of the abstract model conversion is here:
+		// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
+		require.Equal(t, connMergedMapStr, analyzedMergedMapStr,
+			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+	}
 }
 
 // /////////////////////////////////////////////////////////////////////

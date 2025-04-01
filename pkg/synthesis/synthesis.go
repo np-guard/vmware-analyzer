@@ -49,9 +49,15 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 		config.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
 		options.SynthesizeAdmin, options.Hints)
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
-	abstractModel := &AbstractModelSyn{vms: config.VMs, allGroups: config.Groups, epToGroups: config.GroupsPerVM,
-		allRuleIPBlocks: slices.Collect(maps.Values(config.Topology.AllRuleIPBlocks)), ruleBlockPerEP: config.Topology.RuleBlockPerEP,
-		synthesizeAdmin: options.SynthesizeAdmin, policy: []*symbolicPolicy{allowOnlyPolicyWithOptimization},
+	abstractModel := &AbstractModelSyn{
+		vms:             config.VMs,
+		allGroups:       config.Groups,
+		epToGroups:      config.GroupsPerVM,
+		allRuleIPBlocks: slices.Collect(maps.Values(config.Topology.AllRuleIPBlocks)),
+		ruleBlockPerEP:  config.Topology.RuleBlockPerEP,
+		vmSegments:      config.Topology.VmSegments,
+		synthesizeAdmin: options.SynthesizeAdmin,
+		policy:          []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
 	abstractModelStr := strAbstractModel(abstractModel, options)
 	logging.Debugf("abstract model\n==============\n%v", abstractModelStr)
