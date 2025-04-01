@@ -189,7 +189,7 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	return *group.Path
 }
 
-
+// a tmp function, mark all the cases we do not support correctly
 func nsxNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
 		switch {

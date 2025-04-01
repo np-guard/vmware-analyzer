@@ -534,8 +534,8 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	}
 
 	debugDir := synTest.debugDir()
-	noIcmpMergedMap := noIcmpMap.GroupExternalEP()
-	noIcmpMergedExternalToAllMap := connectivity.ConnMap{}
+	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
+	noIcmpGroupedExternalToAllMap := connectivity.ConnMap{}
 	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
 	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
 		if !ep.IsExternal() {
@@ -546,23 +546,23 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		}
 		return ep
 	}
-	for src, srcMap := range noIcmpMergedMap {
+	for src, srcMap := range noIcmpGroupedMap {
 		for dst, conn := range srcMap {
-			noIcmpMergedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
+			noIcmpGroupedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
 		}
 	}
 
-	noICMPMergedMapStr, err := noIcmpMergedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
+	noICMPGroupedMapStr, err := noIcmpGroupedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_merged_connectivity.txt"), noICMPMergedMapStr)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_grouped_connectivity.txt"), noICMPGroupedMapStr)
 	require.Nil(t, err)
 
-	k8sMergedMap := k8sConnMap.GroupExternalEP()
-	k8sMergedMapStr, err := k8sMergedMap.GenConnectivityOutput(synTest.outputParams())
+	k8sGroupedMap := k8sConnMap.GroupExternalEP()
+	k8sGroupedMapStr, err := k8sGroupedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "k8s_merged_connectivity.txt"), k8sMergedMapStr)
+	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
 	require.Nil(t, err)
-	require.Equal(t, noICMPMergedMapStr, k8sMergedMapStr,
+	require.Equal(t, noICMPGroupedMapStr, k8sGroupedMapStr,
 		fmt.Sprintf("k8s and vmware connectivities of test %v are not equal", t.Name()))
 
 }
@@ -583,10 +583,10 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
 	require.Nil(t, err)
-	connMergedMap := connMap.GroupExternalEP()
-	connMergedMapStr, err := connMergedMap.GenConnectivityOutput(synTest.outputParams())
+	connGroupedMap := connMap.GroupExternalEP()
+	connGroupedMapStr, err := connGroupedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "vmware_merged_connectivity.txt"), connMergedMapStr)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_grouped_connectivity.txt"), connGroupedMapStr)
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
@@ -614,15 +614,15 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
-	analyzedMergedMap := analyzedMap.GroupExternalEP()
-	analyzedMergedMapStr, err := analyzedMergedMap.GenConnectivityOutput(synTest.outputParams())
+	analyzedGroupedMap := analyzedMap.GroupExternalEP()
+	analyzedGroupedMapStr, err := analyzedGroupedMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_merged_connectivity.txt"), analyzedMergedMapStr)
+	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_grouped_connectivity.txt"), analyzedGroupedMapStr)
 	require.Nil(t, err)
 	if !notFullySupported {
 		// the validation of the abstract model conversion is here:
 		// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-		require.Equal(t, connMergedMapStr, analyzedMergedMapStr,
+		require.Equal(t, connGroupedMapStr, analyzedGroupedMapStr,
 			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 	}
 }

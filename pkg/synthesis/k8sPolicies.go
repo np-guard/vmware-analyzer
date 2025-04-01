@@ -262,7 +262,7 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 		case a.IsTautology():
 			if len(con) == 1 {
 				res.cidrs = []string{netset.CidrAll}
-			}
+			} // else we just ignore for now
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces
@@ -325,6 +325,7 @@ func toLegalK8SString(s string) string {
 	return reg.ReplaceAllString(s, "-NLC")
 }
 
+// a tmp function, mark all the cases we do not support correctly
 func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
 		_, isSegment := a.(*symbolicexpr.SegmentTerm)
