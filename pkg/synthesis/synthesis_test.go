@@ -469,6 +469,62 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 }
 
 func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
+	// get analyzed connectivity:
+	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	require.Nil(t, err)
+	noIcmpGroupedExternalToAllMap := adjustConnToK8s(connMap,config.Topology.AllExternalIPBlock)
+	debugDir := synTest.debugDir()
+	noICMPGroupedMapStr, err := noIcmpGroupedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_grouped_connectivity.txt"), noICMPGroupedMapStr)
+	require.Nil(t, err)
+
+	k8sConnMap := readK8SConnFile(t,k8sConnectivityFile)
+	k8sGroupedMap := k8sConnMap.GroupExternalEP()
+	k8sGroupedMapStr, err := k8sGroupedMap.GenConnectivityOutput(synTest.outputParams())
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
+	require.Nil(t, err)
+	require.Equal(t, noICMPGroupedMapStr, k8sGroupedMapStr,
+		fmt.Sprintf("k8s and vmware connectivities of test %v are not equal", t.Name()))
+
+}
+
+// adjust connectivity map to be later compared to netpol analyzer map:
+// 1. remove ICMP
+// 2. replace all external with 0.0.0.0/0
+func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap{
+	noIcmpMap := connectivity.ConnMap{}
+	for src, srcMap := range connMap {
+		for dst, conn := range srcMap {
+			noIcmpConn := netset.NewTCPUDPTransportFromTCPUDPSet(conn.Conn.TCPUDPSet())
+			if !noIcmpConn.IsEmpty() {
+				noIcmpMap.Add(src, dst, connectivity.NewDetailedConnection(noIcmpConn, nil))
+			}
+		}
+	}
+	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
+	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
+	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
+		if !ep.IsExternal() {
+			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
+		}
+		if ep.(*topology.ExternalIP).Block.Equal(allExternal) {
+			return allCidrEP
+		}
+		return ep
+	}
+
+	noIcmpGroupedExternalToAllMap := connectivity.ConnMap{}
+	for src, srcMap := range noIcmpGroupedMap {
+		for dst, conn := range srcMap {
+			noIcmpGroupedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
+		}
+	}
+	return noIcmpGroupedExternalToAllMap
+}
+
+func readK8SConnFile(t *testing.T, k8sConnectivityFile string) connectivity.ConnMap {
 	// we get a file with lines in the foramt:
 	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
 	netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
@@ -520,51 +576,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		dstEP := nameToEP(dst)
 		k8sConnMap.Add(srcEP, dstEP, strToConn(connStr))
 	}
-	// get analyzed connectivity:
-	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
-	require.Nil(t, err)
-	noIcmpMap := connectivity.ConnMap{}
-	for src, srcMap := range connMap {
-		for dst, conn := range srcMap {
-			noIcmpConn := netset.NewTCPUDPTransportFromTCPUDPSet(conn.Conn.TCPUDPSet())
-			if !noIcmpConn.IsEmpty() {
-				noIcmpMap.Add(src, dst, connectivity.NewDetailedConnection(noIcmpConn, nil))
-			}
-		}
-	}
-
-	debugDir := synTest.debugDir()
-	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
-	noIcmpGroupedExternalToAllMap := connectivity.ConnMap{}
-	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
-	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
-		if !ep.IsExternal() {
-			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
-		}
-		if ep.(*topology.ExternalIP).Block.Equal(config.Topology.AllExternalIPBlock) {
-			return allCidrEP
-		}
-		return ep
-	}
-	for src, srcMap := range noIcmpGroupedMap {
-		for dst, conn := range srcMap {
-			noIcmpGroupedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
-		}
-	}
-
-	noICMPGroupedMapStr, err := noIcmpGroupedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
-	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_grouped_connectivity.txt"), noICMPGroupedMapStr)
-	require.Nil(t, err)
-
-	k8sGroupedMap := k8sConnMap.GroupExternalEP()
-	k8sGroupedMapStr, err := k8sGroupedMap.GenConnectivityOutput(synTest.outputParams())
-	require.Nil(t, err)
-	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
-	require.Nil(t, err)
-	require.Equal(t, noICMPGroupedMapStr, k8sGroupedMapStr,
-		fmt.Sprintf("k8s and vmware connectivities of test %v are not equal", t.Name()))
-
+	return k8sConnMap
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
