@@ -52,6 +52,7 @@ type RuleEndpoints struct {
 	Groups      []*collector.Group
 	IsAllGroups bool
 	Blocks      []*topology.RuleIPBlock
+	IsExclude   bool // todo: to be used by synthesis in excluded groups as src/dst
 }
 
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
