@@ -93,15 +93,6 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	} else {
 		ports := connToPolicyPort(p.Conn)
 		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
-		// the following two if should move to to the a separate pre process phase:
-		if inbound && srcSelector.isTautology() {
-			srcSelector.convertAllCidrToAllPodsSelector()
-			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of "+p.String(), nsxRuleID)
-		}
-		if !inbound && dstSelector.isTautology() {
-			dstSelector.convertAllCidrToAllPodsSelector()
-			policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, "dup of "+p.String(), nsxRuleID)
-		}
 	}
 }
 
@@ -268,6 +259,12 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 }
 
 func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
+	if selector.isTautology() {
+		return []networking.NetworkPolicyPeer{
+			{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}},
+			{PodSelector: selector.pods}}
+
+	}
 	if len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {

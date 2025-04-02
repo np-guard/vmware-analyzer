@@ -465,6 +465,8 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 	if k8sConnectivityFileCreated && !resources.NotFullySupported {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
+	} else {
+		logging.Debugf("test %s: skip comparing netpol analyzer connectivity with vmware connectivity", synTest.name)
 	}
 }
 
@@ -635,6 +637,8 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 		// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
 		require.Equal(t, connGroupedMapStr, analyzedGroupedMapStr,
 			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+	} else {
+		logging.Debugf("test %s: skip comparing vmware connectivity with connectivity analyzed from generated nsx resources", synTest.name)
 	}
 }
 

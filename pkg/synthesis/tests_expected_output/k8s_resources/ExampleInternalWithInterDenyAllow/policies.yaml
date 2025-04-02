@@ -35,27 +35,6 @@ spec:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: VMs_within_IPs__10.0.0.0-24
-              operator: Exists
-            - key: VMs_within_IPs__10.0.0.0-30
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'dup of src: (VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-2
-    namespace: default
-spec:
-    egress:
-        - to:
             - podSelector: {}
     podSelector:
         matchExpressions:
@@ -73,7 +52,7 @@ metadata:
         description: 'src: (IP addr in 10.0.0.4/30, 10.0.0.8/29, 10.0.0.16/28, 10.0.0.32/27, 10.0.0.64/27, 10.0.0.96/30, 10.0.0.102/31, 10.0.0.104/29, 10.0.0.112/28, 10.0.0.128/25) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     ingress:
@@ -109,7 +88,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-4
+    name: policy-3
     namespace: default
 spec:
     ingress:
@@ -131,34 +110,13 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/16 and VMs not within IPs 10.0.0.0/20) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-5
+    name: policy-4
     namespace: default
 spec:
     egress:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: VMs_within_IPs__10.0.0.0-16
-              operator: Exists
-            - key: VMs_within_IPs__10.0.0.0-20
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'dup of src: (VMs within IPs 10.0.0.0/16 and VMs not within IPs 10.0.0.0/20) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-6
-    namespace: default
-spec:
-    egress:
-        - to:
             - podSelector: {}
     podSelector:
         matchExpressions:
@@ -176,7 +134,7 @@ metadata:
         description: 'src: (IP addr in 10.0.16.0/20, 10.0.32.0/19, 10.0.64.0/18, 10.0.128.0/17) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-7
+    name: policy-5
     namespace: default
 spec:
     ingress:
@@ -200,7 +158,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/16 and VMs not within IPs 10.0.0.0/20) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-8
+    name: policy-6
     namespace: default
 spec:
     ingress:
@@ -222,7 +180,7 @@ metadata:
         description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-9
+    name: policy-7
     namespace: default
 spec:
     egress:
@@ -245,7 +203,7 @@ metadata:
         description: 'src: (IP addr in 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-10
+    name: policy-8
     namespace: default
 spec:
     ingress:
@@ -296,7 +254,7 @@ metadata:
         description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-11
+    name: policy-9
     namespace: default
 spec:
     ingress:
@@ -319,32 +277,13 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-12
+    name: policy-10
     namespace: default
 spec:
     egress:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: VMs_within_IPs__192.168.0.0-16
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'dup of src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-13
-    namespace: default
-spec:
-    egress:
-        - to:
             - podSelector: {}
     podSelector:
         matchExpressions:
@@ -360,7 +299,7 @@ metadata:
         description: 'src: (IP addr in 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-14
+    name: policy-11
     namespace: default
 spec:
     ingress:
@@ -436,7 +375,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-15
+    name: policy-12
     namespace: default
 spec:
     ingress:
@@ -456,7 +395,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-16
+    name: policy-13
     namespace: default
 spec:
     egress:
@@ -483,7 +422,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-17
+    name: policy-14
     namespace: default
 spec:
     ingress:

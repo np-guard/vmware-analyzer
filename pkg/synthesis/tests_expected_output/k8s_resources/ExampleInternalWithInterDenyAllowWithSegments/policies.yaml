@@ -35,27 +35,6 @@ spec:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: in_Segment__seg_2-3
-              operator: Exists
-            - key: in_Segment__seg_1
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'dup of src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-2
-    namespace: default
-spec:
-    egress:
-        - to:
             - podSelector: {}
     podSelector:
         matchExpressions:
@@ -73,7 +52,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     ingress:
@@ -95,34 +74,13 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-4
+    name: policy-3
     namespace: default
 spec:
     egress:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: in_Segment__seg-6-7
-              operator: Exists
-            - key: in_Segment__seg_4-5
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'dup of src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-5
-    namespace: default
-spec:
-    egress:
-        - to:
             - podSelector: {}
     podSelector:
         matchExpressions:
@@ -140,7 +98,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-6
+    name: policy-4
     namespace: default
 spec:
     ingress:
@@ -162,7 +120,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-7
+    name: policy-5
     namespace: default
 spec:
     egress:
@@ -185,7 +143,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-8
+    name: policy-6
     namespace: default
 spec:
     ingress:
@@ -208,32 +166,13 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-9
+    name: policy-7
     namespace: default
 spec:
     egress:
         - to:
             - ipBlock:
                 cidr: 0.0.0.0/0
-    podSelector:
-        matchExpressions:
-            - key: in_Segment__seg-9-10
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'dup of src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-10
-    namespace: default
-spec:
-    egress:
-        - to:
             - podSelector: {}
     podSelector:
         matchExpressions:
@@ -249,7 +188,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-11
+    name: policy-8
     namespace: default
 spec:
     ingress:
@@ -269,7 +208,7 @@ metadata:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-12
+    name: policy-9
     namespace: default
 spec:
     egress:
@@ -296,7 +235,7 @@ metadata:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-13
+    name: policy-10
     namespace: default
 spec:
     ingress:
