@@ -2196,3 +2196,101 @@ var ExampleHogwartsExternal = registerExample(&Example{
 		{db, dum},
 	},
 })
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleAppWithGroups = registerExample(&Example{
+	Name: "ExampleAppWithGroups",
+	VMs:  []string{"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
+	GroupsByVMs: map[string][]string{
+		"research-app":         {"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
+		"research-seg-1":       {"New-VM-1", "New-VM-3", "New-VM-4"},
+		"foo-app":              {"New-VM-3", "New-VM-4"},
+		"foo-backend":          {"New-VM-4"},
+		"foo-frontend":         {"New-VM-3"},
+		"research-test-expr-2": {"New Virtual Machine"},
+	},
+	Policies: []Category{
+		{
+			Name:         "foo-app",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:            "allow-icmp-to-backend",
+					ID:              1027,
+					Source:          "foo-app, research-test-expr-2", // exclude(foo-app,research-test-expr-2)
+					SourcesExcluded: true,
+					Dest:            "foo-backend",
+					Services:        []string{"/infra/services/ICMPv4-ALL"},
+					Action:          Allow,
+				},
+			},
+		},
+		{
+			Name:         "New Policy",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:   "research-seg-1-allow-tcp-udp",
+					ID:     1023,
+					Source: "research-seg-1",
+					Dest:   "research-seg-1",
+					Conn:   netset.AllOrNothingTransport(true, false),
+					Action: Allow,
+				},
+
+				{
+					Name:     "research-seg-1-drop-icmp",
+					ID:       1022,
+					Source:   "research-seg-1",
+					Dest:     "research-seg-1",
+					Services: []string{"/infra/services/ICMPv4-ALL"},
+					Action:   Drop,
+				},
+
+				{
+					Name:     "allow-research-app-icmp",
+					ID:       1009,
+					Source:   "research-app",
+					Dest:     "research-app",
+					Services: []string{"/infra/services/ICMPv4-ALL"},
+					Action:   Allow,
+				},
+
+				{
+					Name:     "allow-research-app-http",
+					ID:       1024,
+					Source:   "research-app",
+					Dest:     "research-app",
+					Services: []string{"/infra/services/HTTP"},
+					Action:   Allow,
+				},
+
+				{
+					Name:     "allow-research-app-http-redundant",
+					ID:       1020,
+					Source:   "research-app",
+					Dest:     "research-app",
+					Services: []string{"/infra/services/HTTP"},
+					Action:   Allow,
+				},
+			},
+		},
+
+		{
+			Name:         "Default Layer3 Section",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "deny-research-app",
+					ID:       1021,
+					Source:   "research-app",
+					Dest:     "research-app",
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+				DefaultDenyRule(2),
+			},
+		},
+	},
+})
