@@ -263,7 +263,6 @@ func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 		return []networking.NetworkPolicyPeer{
 			{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}},
 			{PodSelector: selector.pods}}
-
 	}
 	if len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
