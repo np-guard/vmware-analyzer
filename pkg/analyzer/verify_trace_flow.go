@@ -17,7 +17,7 @@ func compareConfigToTraceflows(
 	resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
 	vmFilter vmFilter) (*collector.TraceFlows, error) {
-	config, connMap, _, err := NSXConnectivityFromResourcesContainer(resources, common.OutputParameters{})
+	config, connMap, _, err := NSXConnectivityFromResourcesContainer(resources, common.OutputParameters{Format: common.TextFormat})
 	if err != nil {
 		return nil, err
 	}

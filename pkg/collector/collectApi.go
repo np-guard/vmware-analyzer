@@ -54,7 +54,9 @@ func collectResult[A any](server ServerData, resourceQuery string, resource *A) 
 
 func collectResultList[A any](server ServerData, resourceQuery string, resourceList *[]A) error {
 	var totalRes []A
-	for cursor := ""; totalRes == nil || cursor != ""; {
+	totalCount := 1
+	cursor := ""
+	for len(totalRes) < totalCount {
 		currentQuery := resourceQuery
 		if cursor != "" {
 			currentQuery = fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor)
@@ -65,9 +67,13 @@ func collectResultList[A any](server ServerData, resourceQuery string, resourceL
 		}
 		b = fixLowerCaseEnums(b)
 		var currentRes []A
-		currentRes, cursor, err = unmarshalResultsToList[A](b)
+		var currentCount int
+		currentRes, currentCount, cursor, err = unmarshalResultsToList[A](b)
 		if err != nil {
 			return err
+		}
+		if cursor == "" {
+			totalCount = currentCount
 		}
 		totalRes = append(currentRes, totalRes...)
 	}
@@ -87,12 +93,12 @@ func collectResource[A json.Unmarshaler](server ServerData, resourceQuery string
 	return nil
 }
 
-func PutResource[A json.Unmarshaler](server ServerData, query string, resource A) error {
-	bs, err := curlPutRequest(server, query, resource)
+func PostResource[A, B json.Unmarshaler](server ServerData, query string, resource A, responce B) error {
+	bs, err := curlPostRequest(server, query, resource)
 	if err != nil {
 		return err
 	}
-	err = (resource).UnmarshalJSON(bs)
+	err = responce.UnmarshalJSON(bs)
 	if err != nil {
 		return err
 	}
@@ -114,13 +120,13 @@ func curlDeleteRequest(server ServerData, query string) ([]byte, error) {
 	return curlRequest(server, query, http.MethodDelete, "", http.NoBody)
 }
 
-func curlPutRequest(server ServerData, query string, data any) ([]byte, error) {
+func curlPostRequest(server ServerData, query string, data any) ([]byte, error) {
 	bs, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 	body := bytes.NewReader(bs)
-	return curlRequest(server, query, http.MethodPut, "application/json", body)
+	return curlRequest(server, query, http.MethodPost, "application/json", body)
 }
 
 func curlRequest(server ServerData, query, method, contentType string, body io.Reader) ([]byte, error) {
@@ -157,19 +163,20 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 	return b, nil
 }
 
-func unmarshalResultsToList[A any](b []byte) (res []A, cursor string, err error) {
+func unmarshalResultsToList[A any](b []byte) (res []A, totalCount int, cursor string, err error) {
 	data := struct {
-		Results *[]A
-		Cursor  string
+		Results     []A    `json:"results,omitempty"`
+		ResultCount *int    `json:"result_count"`
+		Cursor      string `json:"cursor,omitempty"`
 	}{}
 	err = json.Unmarshal(b, &data)
 	if err != nil {
-		return nil, "", err
+		return nil, 0, "", err
 	}
-	if data.Results == nil {
-		return nil, "", getUnmarshalError(b)
+	if data.Results == nil && data.ResultCount == nil {
+		return nil, 0, "", getUnmarshalError(b)
 	}
-	return *data.Results, data.Cursor, nil
+	return data.Results, *data.ResultCount, data.Cursor, nil
 }
 
 func unmarshalResults[A any](b []byte) (*A, error) {
