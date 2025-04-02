@@ -341,9 +341,9 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	}
 
 	if exclude {
-		vms := topology.Subtract(p.configRes.VMs, res.VMs)
+		vms := topology.Subtract(p.configRes.VMs, res.VMs) // vms contain the actual remaining vms after exclude operation
 		res.VMs = vms
-		res.Groups = nil // TODO: fix.. cannot necessarily represent as full groups in case of "exclude"
+		res.IsExclude = true // todo: to be used by synthesis (the combination of res.Groups & res.IsExclude)
 	}
 
 	res.VMs = common.SliceCompact(res.VMs)
