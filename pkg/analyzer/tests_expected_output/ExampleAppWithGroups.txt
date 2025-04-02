@@ -1,0 +1,23 @@
+Analyzed connectivity:
+Source              |Destination         |Permitted connections
+New Virtual Machine |New-VM-1            |ICMP;TCP dst-ports: 80
+New Virtual Machine |New-VM-2            |ICMP;TCP dst-ports: 80
+New Virtual Machine |New-VM-3            |ICMP;TCP dst-ports: 80
+New Virtual Machine |New-VM-4            |ICMP;TCP dst-ports: 80
+New-VM-1            |New Virtual Machine |ICMP;TCP dst-ports: 80
+New-VM-1            |New-VM-2            |ICMP;TCP dst-ports: 80
+New-VM-1            |New-VM-3            |TCP,UDP
+New-VM-1            |New-VM-4            |All Connections
+New-VM-2            |New Virtual Machine |ICMP;TCP dst-ports: 80
+New-VM-2            |New-VM-1            |ICMP;TCP dst-ports: 80
+New-VM-2            |New-VM-3            |ICMP;TCP dst-ports: 80
+New-VM-2            |New-VM-4            |ICMP;TCP dst-ports: 80
+New-VM-3            |New Virtual Machine |ICMP;TCP dst-ports: 80
+New-VM-3            |New-VM-1            |TCP,UDP
+New-VM-3            |New-VM-2            |ICMP;TCP dst-ports: 80
+New-VM-3            |New-VM-4            |TCP,UDP
+New-VM-4            |New Virtual Machine |ICMP;TCP dst-ports: 80
+New-VM-4            |New-VM-1            |TCP,UDP
+New-VM-4            |New-VM-2            |ICMP;TCP dst-ports: 80
+New-VM-4            |New-VM-3            |TCP,UDP
+
