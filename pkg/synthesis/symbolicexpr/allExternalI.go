@@ -6,57 +6,57 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 )
 
-func (*allExternal) String() string {
+func (allExternal) String() string {
 	return "IP addr is external"
 }
 
-func (*allExternal) IsTautology() bool {
+func (allExternal) IsTautology() bool {
 	return false
 }
 
-func (*allExternal) IsAllGroups() bool {
+func (allExternal) IsAllGroups() bool {
 	return false
 }
 
-func (*allExternal) IsNoGroup() bool {
+func (allExternal) IsNoGroup() bool {
 	return true
 }
 
 // IsContradiction true iff the ipBlock is empty
-func (*allExternal) IsContradiction() bool {
+func (allExternal) IsContradiction() bool {
 	return false
 }
 
-func (*allExternal) name() string {
+func (allExternal) name() string {
 	return "all External IPs"
 }
 
-func (allExt *allExternal) AsSelector() (string, bool) {
+func (allExt allExternal) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
 // GetExternalBlock allExternal kept only symbolically; GetExternalBlock() just used to symbolize it is external
-func (*allExternal) GetExternalBlock() *netset.IPBlock {
+func (allExternal) GetExternalBlock() *netset.IPBlock {
 	return netset.GetCidrAll()
 }
 
 // not used for allExternal
-func (*allExternal) negate() atomic {
+func (allExternal) negate() atomic {
 	return nil
 }
 
 // not used for allExternal
-func (*allExternal) isNegateOf(otherAtom atomic) bool {
+func (allExternal) isNegateOf(otherAtom atomic) bool {
 	return false
 }
 
 // not used for allExternal
-func (*allExternal) isNegation() bool {
+func (allExternal) isNegation() bool {
 	return false
 }
 
 // returns true iff otherAtom refers to external ips
-func (*allExternal) disjoint(otherAtom atomic, hints *Hints) bool {
+func (allExternal) disjoint(otherAtom atomic, hints *Hints) bool {
 	if otherAtom.GetExternalBlock() != nil {
 		return false
 	}
@@ -64,10 +64,10 @@ func (*allExternal) disjoint(otherAtom atomic, hints *Hints) bool {
 }
 
 // returns true iff otherAtom refers to external ips
-func (allExt *allExternal) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (allExt allExternal) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return !allExt.disjoint(otherAtom, hints)
 }
 
-func (*allExternal) getInternalBlock() *netset.IPBlock {
+func (allExternal) getInternalBlock() *netset.IPBlock {
 	return nil
 }
