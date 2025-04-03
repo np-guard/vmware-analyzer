@@ -57,6 +57,7 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
 	abstractModel := &AbstractModelSyn{
 		vms:             config.VMs,
+		segments:        config.Topology.Segments,
 		allGroups:       config.Groups,
 		epToGroups:      config.GroupsPerVM,
 		allRuleIPBlocks: slices.Collect(maps.Values(config.Topology.AllRuleIPBlocks)),
