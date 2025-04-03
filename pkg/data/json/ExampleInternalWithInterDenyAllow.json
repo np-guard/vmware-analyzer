@@ -28720,7 +28720,7 @@
                                 ],
                                 "direction": "IN_OUT",
                                 "display_name": "allow-all-after-drop-real-group",
-                                "rule_id": 2000,
+                                "rule_id": 2200,
                                 "scope": [
                                     "ANY"
                                 ],

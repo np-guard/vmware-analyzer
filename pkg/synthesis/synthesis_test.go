@@ -13,9 +13,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
@@ -441,9 +443,6 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 }
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	if strings.Contains(synTest.name, "Internal") {
-		return // todo tmp until policies in place for internal
-	}
 	err := logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	require.Nil(t, err)
 	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
@@ -464,86 +463,124 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 
-	if k8sConnectivityFileCreated {
-		if !strings.Contains(synTest.name, "External") ||
-			slices.Contains([]string{"ExampleHogwartsExternal", "ExampleExternalSimpleWithInterlDenyAllowDstAdmin"}, synTest.name) {
-			// todo - remove "External" condition when examples supported
-			compareToNetpol(synTest, t, rc, k8sConnectivityFile)
-		}
+	if k8sConnectivityFileCreated && !resources.NotFullySupported {
+		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
+	} else {
+		logging.Debugf("test %s: skip comparing netpol analyzer connectivity with vmware connectivity", synTest.name)
 	}
 }
 
-// the following method is work in progress - the netpol analyzer and the nsx analyser have different granularity of external IPs
 func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
+	// get analyzed connectivity:
+	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	require.Nil(t, err)
+	noIcmpGroupedExternalToAllMap := adjustConnToK8s(connMap, config.Topology.AllExternalIPBlock)
+	debugDir := synTest.debugDir()
+	noICMPGroupedMapStr, err := noIcmpGroupedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_no_icmp_grouped_connectivity.txt"), noICMPGroupedMapStr)
+	require.Nil(t, err)
+
+	k8sConnMap := readK8SConnFile(t, k8sConnectivityFile)
+	k8sGroupedMap := k8sConnMap.GroupExternalEP()
+	k8sGroupedMapStr, err := k8sGroupedMap.GenConnectivityOutput(synTest.outputParams())
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
+	require.Nil(t, err)
+	require.Equal(t, noICMPGroupedMapStr, k8sGroupedMapStr,
+		fmt.Sprintf("k8s and vmware connectivities of test %v are not equal", t.Name()))
+}
+
+// adjust connectivity map to be later compared to netpol analyzer map:
+// 1. remove ICMP
+// 2. replace all external with 0.0.0.0/0
+func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap {
+	noIcmpMap := connectivity.ConnMap{}
+	for src, srcMap := range connMap {
+		for dst, conn := range srcMap {
+			noIcmpConn := netset.NewTCPUDPTransportFromTCPUDPSet(conn.Conn.TCPUDPSet())
+			if !noIcmpConn.IsEmpty() {
+				noIcmpMap.Add(src, dst, connectivity.NewDetailedConnection(noIcmpConn, nil))
+			}
+		}
+	}
+	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
+	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
+	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
+		if !ep.IsExternal() {
+			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
+		}
+		if ep.(*topology.ExternalIP).Block.Equal(allExternal) {
+			return allCidrEP
+		}
+		return ep
+	}
+
+	noIcmpGroupedExternalToAllMap := connectivity.ConnMap{}
+	for src, srcMap := range noIcmpGroupedMap {
+		for dst, conn := range srcMap {
+			noIcmpGroupedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
+		}
+	}
+	return noIcmpGroupedExternalToAllMap
+}
+
+func readK8SConnFile(t *testing.T, k8sConnectivityFile string) connectivity.ConnMap {
 	// we get a file with lines in the foramt:
 	// 1.2.3.0-1.2.3.255 => default/Gryffindor-Web[Pod] : UDP 1-65535
 	netpolConnBytes, err := os.ReadFile(k8sConnectivityFile)
 	require.Nil(t, err)
 	netpolConnLines := strings.Split(string(netpolConnBytes), "\n")
 	netpolConnLines = slices.DeleteFunc(netpolConnLines, func(s string) bool { return s == "" })
-	netpolConnMap := map[string]string{}
+	k8sConnMap := connectivity.ConnMap{}
 	for _, line := range netpolConnLines {
-		var src, dst, conn string
+		var src, dst, connStr string
 		spitedLine := strings.Split(line, " : ")
-		conn = spitedLine[1]
+		connStr = spitedLine[1]
 		n, err := fmt.Sscanf(spitedLine[0], "%s => %s", &src, &dst)
 		require.Equal(t, err, nil)
 		require.Equal(t, n, 2)
-		fixK8SName := func(s string) string {
+		nameToEP := func(s string) topology.Endpoint {
 			if strings.Contains(s, "[Pod]") {
-				return strings.ReplaceAll(s, "[Pod]", "")
+				s = strings.ReplaceAll(s, "[Pod]", "")
+				nameAndSpace := strings.Split(s, "/")
+				return topology.NewVM(nameAndSpace[1], nameAndSpace[1])
 			} else {
 				block, err := netset.IPBlockFromCidrOrAddress(s)
 				if err != nil {
 					block, err = netset.IPBlockFromIPRangeStr(s)
 				}
 				require.Equal(t, err, nil)
-				return block.String()
+				return topology.NewExternalIP(block)
 			}
 		}
-		src = fixK8SName(src)
-		dst = fixK8SName(dst)
-		netpolConnMap[src+"=>"+dst] = conn
-	}
-	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
-	require.Nil(t, err)
-	// iterate over the connMap, check each connection:
-	for src, dsts := range connMap {
-		for dst, conn := range dsts {
-			// todo - set the real vm namespaces:
-			endpointName := func(ep topology.Endpoint) string {
-				if ep.IsExternal() {
-					return ep.(*topology.ExternalIP).Block.String()
-				} else {
-					return "default/" + toLegalK8SString(ep.Name())
+		strToConn := func(str string) *connectivity.DetailedConnection {
+			res := connectivity.NewEmptyDetailedConnection()
+			for _, e := range strings.Split(str, ",") {
+				if e == "All Connections" {
+					return connectivity.NewDetailedConnection(netset.AllOrNothingTransport(true, false), nil)
 				}
+				var protocol netp.ProtocolString
+				var minPort, maxPort int64
+				e = strings.ReplaceAll(e, "-", " ")
+				n, err := fmt.Sscanf(e, "%s %d %d", &protocol, &minPort, &maxPort)
+				if n == 2 {
+					maxPort = minPort
+				} else {
+					require.Equal(t, err, nil)
+				}
+				res.Conn = res.Conn.Union(netset.NewTCPorUDPTransport(protocol, netp.AllPorts().Start(), netp.AllPorts().End(), minPort, maxPort))
 			}
-			netpolFormat := fmt.Sprintf("%s=>%s", endpointName(src), endpointName(dst))
-			netpolConn, ok := netpolConnMap[netpolFormat]
-			require.Equal(t, ok, !conn.Conn.TCPUDPSet().IsEmpty())
-			if ok {
-				compareConns(t, conn.Conn.String(), netpolConn)
-			}
+			return res
 		}
+		srcEP := nameToEP(src)
+		dstEP := nameToEP(dst)
+		k8sConnMap.Add(srcEP, dstEP, strToConn(connStr))
 	}
-}
-
-func compareConns(t *testing.T, vmFormat, k8sFormat string) {
-	vmFormat = strings.ReplaceAll(vmFormat, "dst-ports: ", "")
-	vmFormat = strings.ReplaceAll(vmFormat, "ICMP;", "")
-	vmFormat = strings.ReplaceAll(vmFormat, "ICMP,", "")
-	if vmFormat == "TCP,UDP" {
-		vmFormat = "All Connections"
-	}
-	k8sFormat = strings.ReplaceAll(k8sFormat, " 1-65535", "")
-	require.Equal(t, vmFormat, k8sFormat)
+	return k8sConnMap
 }
 
 func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	if strings.Contains(synTest.name, "Internal") {
-		return // todo tmp until policies in place for internal
-	}
 	err := logging.Tee(path.Join(synTest.debugDir(), "runCompareNSXConnectivity.log"))
 	require.Nil(t, err)
 	debugDir := synTest.debugDir()
@@ -554,16 +591,21 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, _, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
 	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	require.Nil(t, err)
+	connGroupedMap := connMap.GroupExternalEP()
+	connGroupedMapStr, err := connGroupedMap.GenConnectivityOutput(synTest.outputParams())
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_grouped_connectivity.txt"), connGroupedMapStr)
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
 	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	policies, groups := toNSXPolicies(rc, abstractModel)
+	policies, groups, notFullySupported := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
@@ -581,22 +623,22 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// run the analyzer on the new NSX config (from abstract), and store in text file
-	_, _, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	_, analyzedMap, analyzed, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_connectivity.txt"), analyzed)
 	require.Nil(t, err)
-
-	// the validation of the abstract model conversion is here:
-	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-	if !strings.Contains(synTest.name, "External") ||
-		slices.Contains([]string{
-			"Example1External",
-			"ExampleHogwartsExternal",
-			"ExampleExternalSimpleWithInterlDenyAllowDstAdmin",
-		}, synTest.name) {
-		// todo - remove "External" condition when examples supported
-		require.Equal(t, connectivity, analyzed,
+	analyzedGroupedMap := analyzedMap.GroupExternalEP()
+	analyzedGroupedMapStr, err := analyzedGroupedMap.GenConnectivityOutput(synTest.outputParams())
+	require.Nil(t, err)
+	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_grouped_connectivity.txt"), analyzedGroupedMapStr)
+	require.Nil(t, err)
+	if !notFullySupported {
+		// the validation of the abstract model conversion is here:
+		// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
+		require.Equal(t, connGroupedMapStr, analyzedGroupedMapStr,
 			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+	} else {
+		logging.Debugf("test %s: skip comparing vmware connectivity with connectivity analyzed from generated nsx resources", synTest.name)
 	}
 }
 

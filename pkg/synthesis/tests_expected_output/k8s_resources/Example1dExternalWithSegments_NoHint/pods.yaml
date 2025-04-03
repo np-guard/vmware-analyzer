@@ -3,6 +3,7 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
+        VMs_within_IPs__0.0.1.0-25: "true"
         group__default-group: "true"
     name: A
     namespace: default
@@ -15,6 +16,7 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
+        VMs_within_IPs__0.0.1.128-25: "true"
         group__default-group: "true"
     name: B
     namespace: default
@@ -27,6 +29,7 @@ kind: Pod
 metadata:
     creationTimestamp: null
     labels:
+        VMs_within_IPs__0.0.2.0-24: "true"
         group__default-group: "true"
     name: C-no-address
     namespace: default
