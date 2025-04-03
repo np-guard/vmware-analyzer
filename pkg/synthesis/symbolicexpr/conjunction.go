@@ -130,8 +130,8 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 
 func (c *Conjunction) hasExternalIPBlockTerm() bool {
 	for _, term := range *c {
-		if term.IsTautology() {
-			return true
+		if term.IsTautology() { // tautology is both external and internal
+			continue
 		}
 		if term.GetExternalBlock() != nil {
 			return true
@@ -256,9 +256,12 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if c.areConjunctionNotSameType(other) {
 		return false
 	}
-	// got here: both conjunctions refer to external ips or both refer to internal resources, c not tautology
+	if other.isTautology() { // c is not tautology, then can't be superset of tautology
+		return false
+	}
+	// got here: both conjunctions refer to external ips or both refer to internal resources, c and other both not tautology
 
-	// tautology/allGroups superset of everything
+	// tautology/allGroups superset of everything which is internal
 	if c.isAllGroup() {
 		return true
 	}
