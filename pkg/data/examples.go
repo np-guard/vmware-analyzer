@@ -322,6 +322,8 @@ var Example1c = registerExample(&Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// External IPs
+
 var Example1d = registerExample(&Example{
 	Name: "Example1d",
 	VMs:  []string{"A", "B", "C"},
@@ -675,6 +677,43 @@ var policiesInternalWithInterDenyAllow = []Category{
 		},
 	},
 }
+
+var ExampleExternalWithTautology = registerExample(&Example{
+	Name: "ExampleExternalWithTautology",
+	VMs:  []string{"A"},
+	GroupsByVMs: map[string][]string{
+		"frontend": {"A"},
+	},
+	Policies: []Category{
+		{
+			Name:         "app-x",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:      "deny",
+					ID:        1004,
+					Source:    "1.0.0.0/24",
+					Dest:      AnyStr,
+					Conn:      netset.AllTransports(),
+					Direction: string(nsx.RuleDirectionIN),
+					Action:    Drop,
+				},
+				{
+					Name:      "allow",
+					ID:        1005,
+					Source:    "0.0.0.0/0",
+					Dest:      AnyStr,
+					Conn:      netset.AllTransports(),
+					Direction: string(nsx.RuleDirectionIN),
+					Action:    Allow,
+				},
+				DefaultDenyRule(denyRuleIDApp),
+			},
+		},
+	},
+})
+
+// Internal IPS
 
 var ExampleInternalWithInterDenyAllow = registerExample(&Example{
 	Name:        "ExampleInternalWithInterDenyAllow",
