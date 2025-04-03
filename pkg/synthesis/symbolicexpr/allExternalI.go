@@ -57,10 +57,7 @@ func (allExternal) isNegation() bool {
 
 // returns true iff otherAtom refers to external ips
 func (allExternal) disjoint(otherAtom atomic, hints *Hints) bool {
-	if otherAtom.GetExternalBlock() != nil {
-		return false
-	}
-	return true
+	return otherAtom.GetExternalBlock() == nil
 }
 
 // returns true iff otherAtom refers to external ips

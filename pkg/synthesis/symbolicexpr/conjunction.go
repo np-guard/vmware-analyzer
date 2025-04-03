@@ -332,11 +332,3 @@ func (c *Conjunction) processTautology() []*Conjunction {
 	var allExtrenalConj = Conjunction{allExternal{}}
 	return []*Conjunction{&conjWOTautology, &allExtrenalConj}
 }
-
-func processTautology(inputConjunctions []*Conjunction) []*Conjunction {
-	resConjunctions := []*Conjunction{}
-	for _, conj := range inputConjunctions {
-		resConjunctions = append(resConjunctions, conj.processTautology()...)
-	}
-	return resConjunctions
-}
