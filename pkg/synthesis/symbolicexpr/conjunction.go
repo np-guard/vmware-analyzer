@@ -278,14 +278,18 @@ func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 }
 
 // if the Conjunction has a tautology and also other terms, then it should be processed:
-// this is since the Conjunction (excluding the tautology) has externals *or* internals while tautology has both
+// this is since the Conjunction (excluding the tautology) has externals *or* internals while tautology refers to
 // and as a result the Conjunction is a mess
-// if the Conjunction has externals (excluding the tautology) then it should be replaced with two Conjunctions:
-// 1. All terms
-// 2.
+// if the Conjunction has externals (in addition to the tautology) then it should be replaced with two Conjunctions:
+// 1. *All Groups Term* (equiv to all internals)
+// 2. The externals in the original Conjunction (excluding the tautology)
+// if the Conjunction has internals (in addition to the tautology) then it should be replaced with two Conjunctions:
+// 1. *All Externals Term*
+// 2. The internals in the original Conjunction (excluding the tautology)
 func (c *Conjunction) processTautology() []*Conjunction {
+	resOrig := []*Conjunction{c}
 	if len(*c) < 2 {
-		return []*Conjunction{c}
+		return resOrig
 	}
 	tautIndex := -1
 	for i, term := range *c {
@@ -295,17 +299,18 @@ func (c *Conjunction) processTautology() []*Conjunction {
 		}
 	}
 	if tautIndex == -1 { // no tautology in Conjunction? nothing to do here
-		return []*Conjunction{c}
-	}
-	// we get here after removeRedundant; so, in addition to the tautology, we either have externals *xor* internals
-	if !c.hasExternalIPBlockTerm() { // todo: handle as well https://github.com/np-guard/vmware-analyzer/issues/391
-		return []*Conjunction{c}
+		return resOrig
 	}
 	// Conjunction of and externals. Divided to two Conjunctions: one of *allGroup* and the non-tautology externals
 	var atomicsWOTautology []atomic
 	atomicsWOTautology = append(atomicsWOTautology, (*c)[:tautIndex]...)
 	atomicsWOTautology = append(atomicsWOTautology, (*c)[tautIndex+1:]...)
 	var conjWOTautology Conjunction = atomicsWOTautology
+	// we get here after removeRedundant; so, in addition to the tautology, we either have externals *xor* internals
+	if !c.hasExternalIPBlockTerm() { // todo: handle as well https://github.com/np-guard/vmware-analyzer/issues/391
+		return resOrig
+	}
 	var allGroupConj = Conjunction{allGroup{}}
 	return []*Conjunction{&conjWOTautology, &allGroupConj}
+
 }
