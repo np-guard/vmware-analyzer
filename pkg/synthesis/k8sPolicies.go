@@ -74,14 +74,7 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 	policies.NotFullySupported = policies.NotFullySupported || k8sNotFullySupported(p.Src) || k8sNotFullySupported(p.Dst)
 	srcSelector := createSelector(p.Src)
 	dstSelector := createSelector(p.Dst)
-	// the following two if should move to to the a separate pre process phase:
-	if inbound && dstSelector.isTautology() {
-		dstSelector.convertAllCidrToAllPodsSelector()
-	}
-	if !inbound && srcSelector.isTautology() {
-		srcSelector.convertAllCidrToAllPodsSelector()
-	}
-	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
+	if isAdmin && inbound && !srcSelector.isTautology() && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
 		policies.NotFullySupported = true
 		return
@@ -275,14 +268,26 @@ func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 }
 
 func (selector *policySelector) toPodSelector() meta.LabelSelector {
+	if selector.isTautology() {
+		selector.convertAllCidrToAllPodsSelector()
+	}
 	return *selector.pods
 }
 
 func (selector *policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
+	if selector.isTautology() {
+		selector.convertAllCidrToAllPodsSelector()
+	}
 	return []admin.AdminNetworkPolicyIngressPeer{
 		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
 func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
+	if selector.isTautology() {
+		return []admin.AdminNetworkPolicyEgressPeer{
+			{Networks: []admin.CIDR{admin.CIDR(netset.CidrAll)}},
+			{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	}
+
 	if len(selector.cidrs) > 0 {
 		res := make([]admin.AdminNetworkPolicyEgressPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {
@@ -294,6 +299,9 @@ func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkP
 		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
 func (selector *policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
+	if selector.isTautology() {
+		selector.convertAllCidrToAllPodsSelector()
+	}
 	return admin.AdminNetworkPolicySubject{
 		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
 }
