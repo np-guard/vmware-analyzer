@@ -455,8 +455,7 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.isTautology())
 	require.Equal(t, true, allGroupConj.hasTagOrGroupOrInternalIPTerm())
 	require.Equal(t, false, allGroupConj.hasExternalIPBlockTerm())
-	require.Equal(t, true, tautologyConj.hasExternalIPBlockTerm())
-	require.Equal(t, true, tautologyConj.hasTagOrGroupOrInternalIPTerm())
+	require.Equal(t, false, tautologyConj.hasTagOrGroupOrInternalIPTerm()) // tautology only is not considered internal
 	require.Equal(t, true, tautologyConj.isAllGroup())
 	require.Equal(t, true, tautologyConj.isTautology())
 
@@ -517,16 +516,18 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.disjoint(&conjGroupTag, emptyHints))
 }
 
-func TestIPConjWithInternalResourceConj(t *testing.T) {
+func getTagGroupConj() (conjTag, conjGroup, conjGroupTag Conjunction) {
 	atomicTag := NewTagTerm("myTag", false)
-	conjTag := Conjunction{}
 	conjTag = *conjTag.add(atomicTag)
 	atomicGroup := NewDummyGroupTerm("group1", false)
-	conjGroup := Conjunction{}
 	conjGroup = *conjGroup.add(*atomicGroup)
-	conjGroupTag := Conjunction{}
 	conjGroupTag = *conjGroupTag.add(atomicTag)
 	conjGroupTag = *conjGroupTag.add(atomicGroup)
+	return
+}
+
+func TestIPConjWithInternalResourceConj(t *testing.T) {
+	conjTag, conjGroup, conjGroupTag := getTagGroupConj()
 	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
 	ipBlockConj := Conjunction{ipBlockTerm}
@@ -544,4 +545,17 @@ func TestIPConjWithInternalResourceConj(t *testing.T) {
 	require.Equal(t, false, conjTag.isSuperset(&ipBlockConj, emptyHints))
 	require.Equal(t, false, conjGroup.isSuperset(&ipBlockConj, emptyHints))
 	require.Equal(t, false, conjGroupTag.isSuperset(&ipBlockConj, emptyHints))
+}
+
+func TestProcessTautologyWithInternals(t *testing.T) {
+	_, _, conjGroupTag := getTagGroupConj()
+	allIPBlockTerm := &tautology{}
+	combinedConj := *conjGroupTag.add(allIPBlockTerm)
+	combinedConjAfterProcess := combinedConj.processTautology()
+	fmt.Printf("combinedConj is %v\ncombinedConjAfterProcess is %v\n", combinedConj.String(),
+		str(combinedConjAfterProcess))
+	fmt.Println("combinedConjAfterProcess[0] is", combinedConjAfterProcess[0])
+	require.Equal(t, true, combinedConjAfterProcess[0].hasTagOrGroupOrInternalIPTerm())
+	require.Equal(t, false, combinedConjAfterProcess[1].isTautology())
+	require.Equal(t, true, combinedConjAfterProcess[1].hasExternalIPBlockTerm())
 }

@@ -61,3 +61,7 @@ func (contradiction) GetExternalBlock() *netset.IPBlock {
 func (contradiction) getInternalBlock() *netset.IPBlock {
 	return nil
 }
+
+func (contradiction) isInternalOnly() bool {
+	return false
+}

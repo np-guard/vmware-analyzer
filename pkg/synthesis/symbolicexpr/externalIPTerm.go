@@ -110,6 +110,10 @@ func (ipBlockTerm *externalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bo
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
 }
 
+func (*externalIPTerm) isInternalOnly() bool {
+	return false
+}
+
 // Translates RuleIPBlock it into []*Conjunction
 // 3 relevant types:
 // 1. tautology: 0.0.0.0/0; if one of the blocks of a RuleIPBlock is a tautology then it overrides all other blocks

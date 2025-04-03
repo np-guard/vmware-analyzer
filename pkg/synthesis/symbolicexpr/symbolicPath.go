@@ -150,7 +150,8 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 			Conn: allowPath.Conn.Subtract(denyPath.Conn)}, hints)
 	}
 	// removes empty SymbolicPaths; of non-empty paths removed redundant terms
-	return resAllowPaths.removeRedundant(hints)
+	// process tautology - divide tautology to internal and external components
+	return resAllowPaths.removeRedundant(hints).processTautology()
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
@@ -203,4 +204,26 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 		res = append(res, getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)...)
 	}
 	return
+}
+
+// divide tautology to internal and external components
+func (path *SymbolicPath) processTautology() *SymbolicPaths {
+	resPaths := SymbolicPaths{}
+	newSrc := path.Src.processTautology()
+	newDst := path.Dst.processTautology()
+	for _, src := range newSrc {
+		for _, dst := range newDst {
+			newPath := SymbolicPath{Src: *src, Dst: *dst, Conn: path.Conn}
+			resPaths = append(resPaths, &newPath)
+		}
+	}
+	return &resPaths
+}
+
+func (paths *SymbolicPaths) processTautology() *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		newPaths = append(newPaths, *path.processTautology()...)
+	}
+	return &newPaths
 }
