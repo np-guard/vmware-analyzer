@@ -65,7 +65,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	logging.Debug("environment created")
 
 	// check connections:
-	checkErr := testConnections(synTest.name, kubeDir, rc)
+	checkErr := testConnections(synTest, kubeDir, rc)
 	// clean environment - services and policies are deleted
 	// we must clean before we checks for errors:
 	cleanErr := runCmdFile(cleanEnvironmentFile)
@@ -173,7 +173,7 @@ func createCleanEnvironmentFile(fileName string, pods []*core.Pod) error {
 }
 
 // ///////////////////////////////////////////////////////////////
-func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerModel) error {
+func testConnections(test *synthesisTest, kubeDir string, rc *collector.ResourcesContainerModel) error {
 	connTestFile := path.Join(kubeDir, "connTest.sh")
 	connReportFile := path.Join(kubeDir, "connTestReport.txt")
 	// create one bash file for all tests:
@@ -182,7 +182,7 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 		return err
 	}
 	// get analyzed connectivity:
-	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, common.OutputParameters{})
+	_, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, test.outputParams())
 	if err != nil {
 		return err
 	}
@@ -192,8 +192,8 @@ func testConnections(testName, kubeDir string, rc *collector.ResourcesContainerM
 		for dst, conn := range dsts {
 			test := &connTest{
 				connTestFile: connTestFile,
-				src:          podTestName(testName, src.Name()),
-				dst:          podTestName(testName, dst.Name()),
+				src:          podTestName(test.name, src.Name()),
+				dst:          podTestName(test.name, dst.Name()),
 				allowed:      !conn.Conn.Intersect(netset.AllTCPTransport()).IsEmpty(),
 			}
 			tests = append(tests, test)

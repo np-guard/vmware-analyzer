@@ -17,7 +17,7 @@ func compareConfigToTraceflows(
 	resources *collector.ResourcesContainerModel,
 	server collector.ServerData,
 	vmFilter vmFilter) (*collector.TraceFlows, error) {
-	config, connMap, _, err := NSXConnectivityFromResourcesContainer(resources, common.OutputParameters{})
+	config, connMap, _, err := NSXConnectivityFromResourcesContainer(resources, common.OutputParameters{Format: common.TextFormat})
 	if err != nil {
 		return nil, err
 	}
@@ -94,11 +94,11 @@ func createTraceFlowsForConnNewSingleExplain(traceFlows *collector.TraceFlows, s
 	fmt.Printf("isAllow: %t, rulesConnString: %s\n", isAllow, rulesConnString)
 	if !connExplain.Conn.TCPUDPSet().IsEmpty() {
 		traceFlows.AddTraceFlow(srcIP, dstIP,
-			toTCPTraceFlowProtocol(connExplain.Conn.TCPUDPSet()), isAllow, ingressRules, egressRules, rulesConnString)
+			toTCPTraceFlowProtocol(connExplain.Conn.TCPUDPSet()), isAllow, egressRules, ingressRules, rulesConnString)
 	}
 	if !connExplain.Conn.ICMPSet().IsEmpty() {
 		traceFlows.AddTraceFlow(srcIP, dstIP,
-			collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, isAllow, ingressRules, egressRules, rulesConnString)
+			collector.TraceFlowProtocol{Protocol: collector.ProtocolICMP}, isAllow, egressRules, ingressRules, rulesConnString)
 	}
 }
 

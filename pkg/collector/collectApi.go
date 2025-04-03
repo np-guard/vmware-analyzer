@@ -38,38 +38,31 @@ func fixLowerCaseEnums(b []byte) []byte {
 	return b
 }
 
-func collectResult[A any](server ServerData, resourceQuery string, resource *A) error {
-	b, err := curlGetRequest(server, resourceQuery)
-	if err != nil {
-		return err
-	}
-	b = fixLowerCaseEnums(b)
-	res, err := unmarshalResults[A](b)
-	if err != nil {
-		return err
-	}
-	*resource = *res
-	return nil
-}
-
 func collectResultList[A any](server ServerData, resourceQuery string, resourceList *[]A) error {
-	var totalRes []A
-	for cursor := ""; totalRes == nil || cursor != ""; {
-		currentQuery := resourceQuery
-		if cursor != "" {
-			currentQuery = fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor)
-		}
-		b, err := curlGetRequest(server, currentQuery)
+	// here we might collect more than one page, using a cursor.
+	// the total number of elements to be collected is obtained from the first page.
+	oneCollection := func(query string) (res []A, totalCount int, cursor string, err error) {
+		b, err := curlGetRequest(server, query)
 		if err != nil {
-			return err
+			return nil, 0, "", err
 		}
 		b = fixLowerCaseEnums(b)
+		return unmarshalResultsToList[A](b)
+	}
+	totalRes, totalCount, cursor, err := oneCollection(resourceQuery)
+	if err != nil {
+		return err
+	}
+	for len(totalRes) < totalCount {
+		if cursor == "" {
+			return fmt.Errorf("collected only %d of %d items with query %s", len(totalRes), totalCount, resourceQuery)
+		}
 		var currentRes []A
-		currentRes, cursor, err = unmarshalResultsToList[A](b)
+		currentRes, _, cursor, err = oneCollection(fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor))
 		if err != nil {
 			return err
 		}
-		totalRes = append(currentRes, totalRes...)
+		totalRes = append(totalRes, currentRes...)
 	}
 	*resourceList = totalRes
 	return nil
@@ -87,12 +80,12 @@ func collectResource[A json.Unmarshaler](server ServerData, resourceQuery string
 	return nil
 }
 
-func PutResource[A json.Unmarshaler](server ServerData, query string, resource A) error {
-	bs, err := curlPutRequest(server, query, resource)
+func PostResource[A, B json.Unmarshaler](server ServerData, query string, resource A, response B) error {
+	bs, err := curlPostRequest(server, query, resource)
 	if err != nil {
 		return err
 	}
-	err = (resource).UnmarshalJSON(bs)
+	err = response.UnmarshalJSON(bs)
 	if err != nil {
 		return err
 	}
@@ -114,13 +107,13 @@ func curlDeleteRequest(server ServerData, query string) ([]byte, error) {
 	return curlRequest(server, query, http.MethodDelete, "", http.NoBody)
 }
 
-func curlPutRequest(server ServerData, query string, data any) ([]byte, error) {
+func curlPostRequest(server ServerData, query string, data any) ([]byte, error) {
 	bs, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 	body := bytes.NewReader(bs)
-	return curlRequest(server, query, http.MethodPut, "application/json", body)
+	return curlRequest(server, query, http.MethodPost, "application/json", body)
 }
 
 func curlRequest(server ServerData, query, method, contentType string, body io.Reader) ([]byte, error) {
@@ -157,31 +150,20 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 	return b, nil
 }
 
-func unmarshalResultsToList[A any](b []byte) (res []A, cursor string, err error) {
+func unmarshalResultsToList[A any](b []byte) (res []A, totalCount int, cursor string, err error) {
 	data := struct {
-		Results *[]A
-		Cursor  string
+		Results     []A    `json:"results,omitempty"`
+		ResultCount *int   `json:"result_count"`
+		Cursor      string `json:"cursor,omitempty"`
 	}{}
 	err = json.Unmarshal(b, &data)
 	if err != nil {
-		return nil, "", err
+		return nil, 0, "", err
 	}
-	if data.Results == nil {
-		return nil, "", getUnmarshalError(b)
+	if data.Results == nil && data.ResultCount == nil {
+		return nil, 0, "", getUnmarshalError(b)
 	}
-	return *data.Results, data.Cursor, nil
-}
-
-func unmarshalResults[A any](b []byte) (*A, error) {
-	data := struct{ Results *A }{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Results == nil {
-		return nil, getUnmarshalError(b)
-	}
-	return data.Results, nil
+	return data.Results, *data.ResultCount, data.Cursor, nil
 }
 
 type nestedError struct {
