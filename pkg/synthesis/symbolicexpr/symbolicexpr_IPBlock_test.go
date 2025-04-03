@@ -215,8 +215,8 @@ func TestInternalIPTerms(t *testing.T) {
 		"192.168.0.0/16 neg supersetOf 172.16.0.0/12")
 }
 
-func TestProcessTautology(t *testing.T) {
-	//_, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
+func TestProcessTautologyWithExternals(t *testing.T) {
+	// tautology with external terms
 	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, _, _ := getIPBlocksTerms()
 	Conjunction1 := Conjunction{ipBlockTerm1, allIPBlockTautology}
 	Conj1AfterProcess := Conjunction1.processTautology()
