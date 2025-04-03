@@ -248,6 +248,7 @@ func TestProcessTautology(t *testing.T) {
 	fmt.Printf("Conjunction4 after processTautology is\n%v\n\n", str(Conj4AfterProcess))
 	require.Equal(t, 1, len(Conj4AfterProcess))
 	require.Equal(t, true, Conj4AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, false, Conj4AfterProcess[0].isAllGroup())
 }
 
 func str(cs []*Conjunction) string {
