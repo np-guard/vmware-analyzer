@@ -14,7 +14,6 @@ import (
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
 	vms             []topology.Endpoint
-	segments        []*topology.Segment
 	allGroups       []*collector.Group      // todo - should we need it?
 	allRuleIPBlocks []*topology.RuleIPBlock // todo - should we need it?
 	epToGroups      map[topology.Endpoint][]*collector.Group

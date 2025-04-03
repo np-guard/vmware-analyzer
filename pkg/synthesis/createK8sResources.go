@@ -20,8 +20,7 @@ const k8sResourcesDir = "k8s_resources"
 
 type k8sResources struct {
 	k8sPolicies
-	pods       []*core.Pod
-	namespaces []*core.Namespace
+	pods []*core.Pod
 }
 
 func (resources *k8sResources) K8sPolicies() []*v1.NetworkPolicy {
@@ -35,7 +34,6 @@ func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
 	k8sResources := &k8sResources{}
 	k8sResources.createPolicies(model, createDNSPolicy)
-	k8sResources.createNamespaces(model)
 	k8sResources.createPods(model)
 	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
 		len(k8sResources.networkPolicies), len(k8sResources.adminNetworkPolicies), len(k8sResources.pods))
@@ -59,32 +57,11 @@ func (resources *k8sResources) CreateDir(outDir string) error {
 			return err
 		}
 	}
-	if len(resources.namespaces) > 0 {
-		namespacesFileName := path.Join(outDir, "namespaces.yaml")
-		if err := common.WriteYamlUsingJSON(resources.namespaces, namespacesFileName); err != nil {
-			return err
-		}
-	}
 	podsFileName := path.Join(outDir, "pods.yaml")
 	if err := common.WriteYamlUsingJSON(resources.pods, podsFileName); err != nil {
 		return err
 	}
 	return nil
-}
-
-// //////////////////////////////////////////////////////
-const theTrue = "true"
-
-func (resources *k8sResources) createNamespaces(model *AbstractModelSyn) {
-	for _, segment := range model.segments {
-		namespace := &core.Namespace{}
-		namespace.Kind = "Namespace"
-		namespace.APIVersion = "v1"
-		namespace.Name = toLegalK8SString(segment.Name)
-		namespace.Namespace = namespace.Name
-		namespace.Labels = map[string]string{}
-		resources.namespaces = append(resources.namespaces, namespace)
-	}
 }
 
 // ///////////////////////////////////////////////////////////////////////////////
@@ -94,11 +71,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		pod.Kind = "Pod"
 		pod.APIVersion = "v1"
 		pod.Name = toLegalK8SString(vm.Name())
-		if len(model.vmSegments[vm]) > 0 {
-			pod.Namespace = toLegalK8SString(model.vmSegments[vm][0].Name)
-		} else {
-			pod.Namespace = core.NamespaceDefault
-		}
+		pod.Namespace = core.NamespaceDefault
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}

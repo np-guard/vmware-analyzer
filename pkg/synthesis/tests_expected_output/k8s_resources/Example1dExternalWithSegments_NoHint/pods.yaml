@@ -6,7 +6,7 @@ metadata:
         VMs_within_IPs__0.0.1.0-25: "true"
         group__default-group: "true"
     name: A
-    namespace: seg_a_and_b
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -19,7 +19,7 @@ metadata:
         VMs_within_IPs__0.0.1.128-25: "true"
         group__default-group: "true"
     name: B
-    namespace: seg_a_and_b
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -32,7 +32,7 @@ metadata:
         VMs_within_IPs__0.0.2.0-24: "true"
         group__default-group: "true"
     name: C-no-address
-    namespace: seg_c
+    namespace: default
 spec:
     containers: null
 status: {}
