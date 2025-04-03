@@ -324,10 +324,11 @@ func (c *Conjunction) processTautology() []*Conjunction {
 	var conjWOTautology Conjunction = atomicsWOTautology
 	// we get here after removeRedundant; so, in addition to the tautology, we either have externals *xor* internals
 	if c.hasExternalIPBlockTerm() {
+		// todo https://github.com/np-guard/vmware-analyzer/issues/364?issue=np-guard%7Cvmware-analyzer%7C391
+		// todo not yet working - need to fix func (c *Conjunction) add(atom atomic) *Conjunction
 		var allGroupConj = Conjunction{allGroup{}}
 		return []*Conjunction{&conjWOTautology, &allGroupConj}
 	}
-	// c has internal terms (in addition to the tautology)
 	var allExtrenalConj = Conjunction{allExternal{}}
 	return []*Conjunction{&conjWOTautology, &allExtrenalConj}
 }
