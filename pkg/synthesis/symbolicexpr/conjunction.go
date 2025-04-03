@@ -17,7 +17,9 @@ func (c *Conjunction) String() string {
 }
 
 func (c *Conjunction) add(atom atomic) *Conjunction {
-	if c.contains(atom) {
+	// tautology is the only term that refers to both internals and externals; thus treated differently and added unless
+	// already exists
+	if c.contains(atom) && !atom.IsTautology() || (atom.IsTautology() && c.hasTautology()) {
 		return c
 	}
 	var ipBlockAddedToExisting bool
@@ -25,7 +27,8 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	// in the former case we lose the OriginalIP
 	block := atom.GetExternalBlock()
 	var res Conjunction
-	if block != nil { // atom is an IPBlockTerm
+	// since tautology refers to both external and internal it should not be mixed with externals overriding the internals
+	if block != nil && !atom.IsTautology() { // atom is an IPBlockTerm
 		// looks for an  IPBlock in c
 		for _, itemAtom := range *c {
 			itemBlock := itemAtom.GetExternalBlock()
@@ -48,6 +51,15 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	res = append(*c, atom)
 
 	return &res
+}
+
+func (c *Conjunction) hasTautology() bool {
+	for _, item := range *c {
+		if item.IsTautology() {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Conjunction) copy() *Conjunction {
