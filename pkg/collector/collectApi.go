@@ -39,29 +39,30 @@ func fixLowerCaseEnums(b []byte) []byte {
 }
 
 func collectResultList[A any](server ServerData, resourceQuery string, resourceList *[]A) error {
-	var totalRes []A
-	totalCount := 1
-	cursor := ""
-	for len(totalRes) < totalCount {
-		currentQuery := resourceQuery
-		if cursor != "" {
-			currentQuery = fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor)
-		}
-		b, err := curlGetRequest(server, currentQuery)
+	// here we might collect more than one page, using a cursor.
+	// the total number of elements to be collected is obtained from the first page.
+	oneCollection := func(query string) (res []A, totalCount int, cursor string, err error) {
+		b, err := curlGetRequest(server, query)
 		if err != nil {
-			return err
+			return nil, 0, "", err
 		}
 		b = fixLowerCaseEnums(b)
+		return unmarshalResultsToList[A](b)
+	}
+	totalRes, totalCount, cursor, err := oneCollection(resourceQuery)
+	if err != nil {
+		return err
+	}
+	for len(totalRes) < totalCount {
+		if cursor == "" {
+			return fmt.Errorf("collected only %d of %d items with query %s", len(totalRes), totalCount, resourceQuery)
+		}
 		var currentRes []A
-		var currentCount int
-		currentRes, currentCount, cursor, err = unmarshalResultsToList[A](b)
+		currentRes, _, cursor, err = oneCollection(fmt.Sprintf("%s?cursor=%s", resourceQuery, cursor))
 		if err != nil {
 			return err
 		}
-		if cursor == "" {
-			totalCount = currentCount
-		}
-		totalRes = append(currentRes, totalRes...)
+		totalRes = append(totalRes, currentRes...)
 	}
 	*resourceList = totalRes
 	return nil
