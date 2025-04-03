@@ -14,7 +14,7 @@ import (
 )
 
 type nsxTopology struct {
-	Segments           []*topology.Segment
+	segments           []*topology.Segment
 	VmSegments         map[topology.Endpoint][]*topology.Segment
 	AllRuleIPBlocks    map[string]*topology.RuleIPBlock              // a map from the ip string,to the block
 	RuleBlockPerEP     map[topology.Endpoint][]*topology.RuleIPBlock // map from ep to its blocks
@@ -68,7 +68,7 @@ func (p *nsxConfigParser) getSegments() (err error) {
 		}
 		p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(segment.Block)
 		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(segment.Block)
-		p.configRes.Topology.Segments = append(p.configRes.Topology.Segments, segment)
+		p.configRes.Topology.segments = append(p.configRes.Topology.segments, segment)
 	}
 	return nil
 }
@@ -163,7 +163,7 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 	}
 	// iterate over segments, if segment is in the block, add all its vms
 	for _, block := range p.configRes.Topology.AllRuleIPBlocks {
-		for _, segment := range p.configRes.Topology.Segments {
+		for _, segment := range p.configRes.Topology.segments {
 			if !segment.Block.IsEmpty() && segment.Block.IsSubset(block.Block) {
 				block.VMs = append(block.VMs, segment.VMs...)
 				block.SegmentsVMs = append(block.SegmentsVMs, segment.VMs...)
