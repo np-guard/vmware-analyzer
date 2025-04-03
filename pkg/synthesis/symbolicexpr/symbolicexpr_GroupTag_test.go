@@ -517,16 +517,18 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.disjoint(&conjGroupTag, emptyHints))
 }
 
-func TestIPConjWithInternalResourceConj(t *testing.T) {
+func getTagGroupConj() (conjTag, conjGroup, conjGroupTag Conjunction) {
 	atomicTag := NewTagTerm("myTag", false)
-	conjTag := Conjunction{}
 	conjTag = *conjTag.add(atomicTag)
 	atomicGroup := NewDummyGroupTerm("group1", false)
-	conjGroup := Conjunction{}
 	conjGroup = *conjGroup.add(*atomicGroup)
-	conjGroupTag := Conjunction{}
 	conjGroupTag = *conjGroupTag.add(atomicTag)
 	conjGroupTag = *conjGroupTag.add(atomicGroup)
+	return
+}
+
+func TestIPConjWithInternalResourceConj(t *testing.T) {
+	conjTag, conjGroup, conjGroupTag := getTagGroupConj()
 	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
 	ipBlockConj := Conjunction{ipBlockTerm}
@@ -544,4 +546,9 @@ func TestIPConjWithInternalResourceConj(t *testing.T) {
 	require.Equal(t, false, conjTag.isSuperset(&ipBlockConj, emptyHints))
 	require.Equal(t, false, conjGroup.isSuperset(&ipBlockConj, emptyHints))
 	require.Equal(t, false, conjGroupTag.isSuperset(&ipBlockConj, emptyHints))
+}
+
+func TestProcessTautologyWithInternals(t *testing.T) {
+	//allIPBlockTerm := &tautology{}
+
 }
