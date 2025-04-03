@@ -24,7 +24,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-24: "true"
         group__default-group: "true"
     name: vm2
-    namespace: default
+    namespace: seg_2-3
 spec:
     containers: null
 status: {}
@@ -39,7 +39,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-24: "true"
         group__default-group: "true"
     name: vm3
-    namespace: default
+    namespace: seg_2-3
 spec:
     containers: null
 status: {}
@@ -53,7 +53,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-20: "true"
         group__default-group: "true"
     name: vm4
-    namespace: default
+    namespace: seg_4-5
 spec:
     containers: null
 status: {}
@@ -67,7 +67,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-20: "true"
         group__default-group: "true"
     name: vm5
-    namespace: default
+    namespace: seg_4-5
 spec:
     containers: null
 status: {}
@@ -79,7 +79,7 @@ metadata:
     labels:
         group__default-group: "true"
     name: vm6
-    namespace: default
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
@@ -91,7 +91,7 @@ metadata:
     labels:
         group__default-group: "true"
     name: vm7
-    namespace: default
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
