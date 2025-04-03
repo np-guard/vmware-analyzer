@@ -140,7 +140,7 @@ func TestIpBlockWithConj(t *testing.T) {
 
 	// test isTautologyOrAllGroups
 	require.Equal(t, true, conjAllIPBlockTermOnly.isTautologyOrAllGroups(), "1.2.3.0/16 is tautology")
-	require.Equal(t, false, conjAllIPBlockTermOnly.add(atomicSly).isTautologyOrAllGroups(), "adding a "+
+	require.Equal(t, false, conjAllIPBlockTermOnly.add(ipBlockTerm2).isTautologyOrAllGroups(), "adding a "+
 		"non tautology block to 0.0.0.0/0 is not a tautology")
 	require.Equal(t, false, conjIPBlockTerm2Only.isTautologyOrAllGroups(), "1.2.3.0/16 with OriginalIP not tautology")
 	require.Equal(t, false, conjIPBlockTerm3.isTautologyOrAllGroups(), "192.0.2.0/24 not tautology")
