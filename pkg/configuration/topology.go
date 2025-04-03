@@ -93,10 +93,7 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
 	// create the blocks:
 	for _, ip := range allIPs {
-		block, err := netset.IPBlockFromCidrOrAddress(ip)
-		if err != nil {
-			block, err = netset.IPBlockFromIPRangeStr(ip)
-		}
+		block, err := common.IPBlockFromCidrOrAddressOrIPRange(ip)
 		if err != nil {
 			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 			continue
