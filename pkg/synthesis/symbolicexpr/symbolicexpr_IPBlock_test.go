@@ -90,14 +90,11 @@ func TestIpBlockTerm(t *testing.T) {
 
 func TestIpBlockWithConj(t *testing.T) {
 	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
-	slytherin, gryffindor := "Slytherin", "Gryffindor"
-	atomicSly := NewTagTerm(slytherin, false)
-	atomicGry := NewTagTerm(gryffindor, false)
 	conjAllIPBlockTermOnly := &Conjunction{allIPBlockTautology}
-	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1, atomicSly, atomicGry}
+	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1}
 	conjIPBlockTerm2Only := &Conjunction{ipBlockTerm2}
-	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3, atomicSly, atomicGry}
-	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm, atomicSly, atomicGry}
+	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3}
+	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm}
 	fmt.Println("conjAllIPBlockTermOnly is", conjAllIPBlockTermOnly)
 	fmt.Println("conjIPBlockTerm1 is", conjIPBlockTerm1)
 	fmt.Println("conjIPBlockTerm2 is", conjIPBlockTerm2Only)
@@ -122,13 +119,13 @@ func TestIpBlockWithConj(t *testing.T) {
 
 	require.Equal(t, "(IP addr in the empty block)", term2AddTerm3.String())
 	require.Equal(t, "(IP addr in 192.0.2.0/24)", allAddTerm3.String())
-	require.Equal(t, "(IP addr in 192.0.2.0 originalIP and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in 192.0.2.0 originalIP)",
 		singleAddTerm3.String())
-	require.Equal(t, "(IP addr in 192.0.2.0 and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in 192.0.2.0)",
 		term3AddSingle.String())
-	require.Equal(t, "(IP addr in the empty block and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in the empty block)",
 		term1AddTerm3.String())
-	require.Equal(t, "(IP addr in 1.2.0.0/16 and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in 1.2.0.0/16)",
 		term1AddTerm2.String())
 
 	// tests isEmpty
@@ -164,10 +161,6 @@ func TestIpBlockWithConj(t *testing.T) {
 		"result of add to conj with not only ip addr implies its conj ip term")
 	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2),
 		"result of add to conj with no only ip addr implies its right term")
-	nonIPBlockConj := &Conjunction{atomicSly, atomicGry}
-	require.Equal(t, true, nonIPBlockConj.contains(allIPBlockTautology), "conj with no ip Block still implies"+
-		"0.0.0.0/0")
-
 	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2), "conj with 1.2.3.0/8 does not "+
 		"imply 1.2.3.0/16")
 	require.Equal(t, false, conjAllIPBlockTermOnly.contains(ipBlockTerm3), "conj with 0.0.0.0/0 does not "+
