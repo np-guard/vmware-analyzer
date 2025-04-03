@@ -554,4 +554,8 @@ func TestProcessTautologyWithInternals(t *testing.T) {
 	combinedConjAfterProcess := combinedConj.processTautology()
 	fmt.Printf("combinedConj is %v\ncombinedConjAfterProcess is %v\n", combinedConj.String(),
 		str(combinedConjAfterProcess))
+	fmt.Println("combinedConjAfterProcess[0] is", combinedConjAfterProcess[0])
+	require.Equal(t, true, combinedConjAfterProcess[0].hasTagOrGroupOrInternalIPTerm())
+	require.Equal(t, false, combinedConjAfterProcess[1].isTautology())
+	require.Equal(t, true, combinedConjAfterProcess[1].hasExternalIPBlockTerm())
 }
