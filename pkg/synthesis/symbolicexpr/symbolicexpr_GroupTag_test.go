@@ -549,6 +549,10 @@ func TestIPConjWithInternalResourceConj(t *testing.T) {
 }
 
 func TestProcessTautologyWithInternals(t *testing.T) {
-	//allIPBlockTerm := &tautology{}
-
+	_, _, conjGroupTag := getTagGroupConj()
+	allIPBlockTerm := &tautology{}
+	combinedConj := *conjGroupTag.add(allIPBlockTerm)
+	combinedConjAfterProcess := combinedConj.processTautology()
+	fmt.Printf("combinedConj is %v\ncombinedConjAfterProcess is %v\n", combinedConj.String(),
+		str(combinedConjAfterProcess))
 }
