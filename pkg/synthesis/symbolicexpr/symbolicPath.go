@@ -204,3 +204,24 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 	}
 	return
 }
+
+func (path *SymbolicPath) processTautology() *SymbolicPaths {
+	resPaths := SymbolicPaths{}
+	newSrc := path.Src.processTautology()
+	newDst := path.Dst.processTautology()
+	for _, src := range newSrc {
+		for _, dst := range newDst {
+			newPath := SymbolicPath{Src: *src, Dst: *dst, Conn: path.Conn}
+			resPaths = append(resPaths, &newPath)
+		}
+	}
+	return &resPaths
+}
+
+func (paths *SymbolicPaths) processTautology() *SymbolicPaths {
+	newPaths := SymbolicPaths{}
+	for _, path := range *paths {
+		newPaths = append(newPaths, *path.processTautology()...)
+	}
+	return &newPaths
+}
