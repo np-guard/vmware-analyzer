@@ -14,6 +14,8 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
+const lportFieldName = "lport_id"
+
 // ///////////////////////////////////////////////////////////////////////////////////////
 type TraceflowConfig struct {
 	// Configuration of packet data
@@ -21,11 +23,20 @@ type TraceflowConfig struct {
 	// Policy path or UUID (validated for syntax only) of segment port to start
 	// traceflow from. Auto-plumbed ports don't have corresponding policy path. Both
 	// overlay backed port and VLAN backed port are supported.
-	SourceID *string `json:"source_id,omitempty"`
+	LPortID *string `json:"lport_id,omitempty"`
 }
 
 func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
-	return Unmarshal2Fields(b, "packet", &config.Packet, "source_id", &config.SourceID)
+	return Unmarshal2Fields(b, "packet", &config.Packet, lportFieldName, &config.LPortID)
+}
+
+type TraceflowResponse struct {
+	ID      *string `json:"id,omitempty"`
+	LPortID *string `json:"lport_id,omitempty"`
+}
+
+func (response *TraceflowResponse) UnmarshalJSON(b []byte) error {
+	return Unmarshal2Fields(b, "id", &response.ID, lportFieldName, &response.LPortID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

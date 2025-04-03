@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	traceFlowsQuery              = "policy/api/v1/infra/traceflows"
-	traceFlowQuery               = "policy/api/v1/infra/traceflows/%s"
-	getTraceFlowObservationQuery = "policy/api/v1/infra/traceflows/%s/observations"
+	traceFlowsQuery              = "api/v1/traceflows"
+	traceFlowQuery               = "api/v1/traceflows/%s"
+	getTraceFlowObservationQuery = "api/v1/traceflows/%s/observations"
 )
 const (
 	ProtocolTCP   = "tcp"
@@ -78,10 +78,6 @@ type traceFlow struct {
 }
 
 func (tf *traceFlow) send(resources *ResourcesContainerModel, server ServerData) (string, error) {
-	traceFlowName, err := traceFlowRandomID()
-	if err != nil {
-		return "", err
-	}
 	srcVni := resources.GetVirtualNetworkInterfaceByAddress(tf.Src)
 	dstVni := resources.GetVirtualNetworkInterfaceByAddress(tf.Dst)
 
@@ -105,7 +101,7 @@ func (tf *traceFlow) send(resources *ResourcesContainerModel, server ServerData)
 	}
 
 	traceReq := &TraceflowConfig{}
-	traceReq.SourceID = port.UniqueId
+	traceReq.LPortID = port.UniqueId
 	traceReq.Packet = &nsx.FieldsPacketData{}
 	traceReq.Packet.EthHeader = &nsx.EthernetHeader{SrcMac: srcMac, DstMac: dstMac}
 	srcIPv4 := nsx.IPAddress(tf.Src)
@@ -123,11 +119,12 @@ func (tf *traceFlow) send(resources *ResourcesContainerModel, server ServerData)
 	if err != nil {
 		return "", err
 	}
-	err = putTraceFlow(server, traceFlowName, traceReq)
+	response := &TraceflowResponse{}
+	err = postTraceFlow(server, traceReq, response)
 	if err != nil {
 		return "", err
 	}
-	return traceFlowName, nil
+	return *response.ID, nil
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////
@@ -268,16 +265,8 @@ func (traceFlows *TraceFlows) Summary() {
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////
-func traceFlowRandomID() (string, error) {
-	rnd := make([]byte, traceflowIDSize)
-	if _, err := rand.Read(rnd); err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("traceFlow%X", rnd), nil
-}
-
-func putTraceFlow(server ServerData, traceFlowName string, traceReq *TraceflowConfig) error {
-	return PutResource(server, fmt.Sprintf(traceFlowQuery, traceFlowName), traceReq)
+func postTraceFlow(server ServerData, traceReq *TraceflowConfig, traceRes *TraceflowResponse) error {
+	return PostResource(server, traceFlowsQuery, traceReq, traceRes)
 }
 
 func deleteTraceFlow(server ServerData, traceFlowName string) error {
@@ -285,8 +274,8 @@ func deleteTraceFlow(server ServerData, traceFlowName string) error {
 }
 
 func collectTraceFlowObservation(server ServerData, traceFlowName string) (TraceFlowObservations, error) {
-	var t TraceFlowObservations
-	err := collectResult(server, fmt.Sprintf(getTraceFlowObservationQuery, traceFlowName), &t)
+	var t []TraceFlowObservationElement
+	err := collectResultList(server, fmt.Sprintf(getTraceFlowObservationQuery, traceFlowName), &t)
 	return t, err
 }
 
