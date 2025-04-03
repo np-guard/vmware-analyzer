@@ -38,20 +38,6 @@ func fixLowerCaseEnums(b []byte) []byte {
 	return b
 }
 
-func collectResult[A any](server ServerData, resourceQuery string, resource *A) error {
-	b, err := curlGetRequest(server, resourceQuery)
-	if err != nil {
-		return err
-	}
-	b = fixLowerCaseEnums(b)
-	res, err := unmarshalResults[A](b)
-	if err != nil {
-		return err
-	}
-	*resource = *res
-	return nil
-}
-
 func collectResultList[A any](server ServerData, resourceQuery string, resourceList *[]A) error {
 	var totalRes []A
 	totalCount := 1
@@ -93,12 +79,12 @@ func collectResource[A json.Unmarshaler](server ServerData, resourceQuery string
 	return nil
 }
 
-func PostResource[A, B json.Unmarshaler](server ServerData, query string, resource A, responce B) error {
+func PostResource[A, B json.Unmarshaler](server ServerData, query string, resource A, response B) error {
 	bs, err := curlPostRequest(server, query, resource)
 	if err != nil {
 		return err
 	}
-	err = responce.UnmarshalJSON(bs)
+	err = response.UnmarshalJSON(bs)
 	if err != nil {
 		return err
 	}
@@ -166,7 +152,7 @@ func curlRequest(server ServerData, query, method, contentType string, body io.R
 func unmarshalResultsToList[A any](b []byte) (res []A, totalCount int, cursor string, err error) {
 	data := struct {
 		Results     []A    `json:"results,omitempty"`
-		ResultCount *int    `json:"result_count"`
+		ResultCount *int   `json:"result_count"`
 		Cursor      string `json:"cursor,omitempty"`
 	}{}
 	err = json.Unmarshal(b, &data)
@@ -177,18 +163,6 @@ func unmarshalResultsToList[A any](b []byte) (res []A, totalCount int, cursor st
 		return nil, 0, "", getUnmarshalError(b)
 	}
 	return data.Results, *data.ResultCount, data.Cursor, nil
-}
-
-func unmarshalResults[A any](b []byte) (*A, error) {
-	data := struct{ Results *A }{}
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return nil, err
-	}
-	if data.Results == nil {
-		return nil, getUnmarshalError(b)
-	}
-	return data.Results, nil
 }
 
 type nestedError struct {

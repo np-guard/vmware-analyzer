@@ -119,12 +119,12 @@ func (tf *traceFlow) send(resources *ResourcesContainerModel, server ServerData)
 	if err != nil {
 		return "", err
 	}
-	responce := &TraceflowResponce{}
-	err = postTraceFlow(server, traceReq, responce)
+	response := &TraceflowResponse{}
+	err = postTraceFlow(server, traceReq, response)
 	if err != nil {
 		return "", err
 	}
-	return *responce.ID, nil
+	return *response.ID, nil
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////
@@ -265,7 +265,7 @@ func (traceFlows *TraceFlows) Summary() {
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////////
-func postTraceFlow(server ServerData, traceReq *TraceflowConfig, traceRes *TraceflowResponce) error {
+func postTraceFlow(server ServerData, traceReq *TraceflowConfig, traceRes *TraceflowResponse) error {
 	return PostResource(server, traceFlowsQuery, traceReq, traceRes)
 }
 

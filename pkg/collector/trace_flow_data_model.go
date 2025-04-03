@@ -14,6 +14,8 @@ import (
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
+const lportFieldName = "lport_id"
+
 // ///////////////////////////////////////////////////////////////////////////////////////
 type TraceflowConfig struct {
 	// Configuration of packet data
@@ -25,16 +27,16 @@ type TraceflowConfig struct {
 }
 
 func (config *TraceflowConfig) UnmarshalJSON(b []byte) error {
-	return Unmarshal2Fields(b, "packet", &config.Packet, "lport_id", &config.LPortID)
+	return Unmarshal2Fields(b, "packet", &config.Packet, lportFieldName, &config.LPortID)
 }
 
-type TraceflowResponce struct {
+type TraceflowResponse struct {
 	ID      *string `json:"id,omitempty"`
 	LPortID *string `json:"lport_id,omitempty"`
 }
 
-func (traceflow *TraceflowResponce) UnmarshalJSON(b []byte) error {
-	return Unmarshal2Fields(b, "id", &traceflow.ID, "lport_id", &traceflow.LPortID)
+func (response *TraceflowResponse) UnmarshalJSON(b []byte) error {
+	return Unmarshal2Fields(b, "id", &response.ID, lportFieldName, &response.LPortID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

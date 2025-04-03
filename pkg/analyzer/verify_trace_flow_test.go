@@ -43,7 +43,6 @@ func Test_verifyTraceflow(t *testing.T) {
 		return
 	}
 	filter := func(vm topology.Endpoint) bool { return strings.Contains(vm.Name(), "") }
-	// filter := func(vm topology.Endpoint) bool { return strings.Contains(vm.Name(), "New-VM-1") || strings.Contains(vm.Name(), "New-VM-2")}
 	tfs, err := compareConfigToTraceflows(collectedResources, server, filter)
 	if err != nil {
 		t.Errorf("verifyTraceflow() error = %v", err)
