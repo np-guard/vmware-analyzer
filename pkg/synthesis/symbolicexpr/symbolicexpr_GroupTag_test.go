@@ -455,8 +455,7 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.isTautology())
 	require.Equal(t, true, allGroupConj.hasTagOrGroupOrInternalIPTerm())
 	require.Equal(t, false, allGroupConj.hasExternalIPBlockTerm())
-	require.Equal(t, true, tautologyConj.hasExternalIPBlockTerm())
-	require.Equal(t, true, tautologyConj.hasTagOrGroupOrInternalIPTerm())
+	require.Equal(t, false, tautologyConj.hasTagOrGroupOrInternalIPTerm()) // tautology only is not considered internal
 	require.Equal(t, true, tautologyConj.isAllGroup())
 	require.Equal(t, true, tautologyConj.isTautology())
 
