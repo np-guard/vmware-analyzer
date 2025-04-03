@@ -99,7 +99,8 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	newC := Conjunction{}
 	redundantRemoved := false
 	for _, atom := range *c {
-		if !atom.IsAllGroups() && !atomRedundantInConj(atom, c, hints) {
+		// tautology is both external and internal, thus the "superset" redundancy does not apply to it
+		if atom.IsTautology() || (!atom.IsAllGroups() && !atomRedundantInConj(atom, c, hints)) {
 			newC = append(newC, atom)
 		} else {
 			redundantRemoved = true
