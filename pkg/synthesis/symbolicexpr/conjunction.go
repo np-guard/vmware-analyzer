@@ -142,7 +142,7 @@ func (c *Conjunction) hasExternalIPBlockTerm() bool {
 
 func (c *Conjunction) hasTagOrGroupOrInternalIPTerm() bool {
 	for _, term := range *c {
-		if isTagOrGroupOrInternalIPTerm(term) {
+		if term.isInternalOnly() {
 			return true
 		}
 	}

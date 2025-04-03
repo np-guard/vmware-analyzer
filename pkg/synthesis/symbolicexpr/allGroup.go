@@ -4,7 +4,7 @@ import "github.com/np-guard/models/pkg/netset"
 
 // allGroups: represents all internal resources (e.g. VMs)
 // true for any internal resource (false for external address)
-// any tagTerm and groupTerm is contained in allGroups
+// any tagTerm and groupTerm, internalIPTerm is contained in allGroups
 // disjoint to ipBlockTerm (which presents external address)
 
 func (allGroup) String() string {
@@ -57,7 +57,7 @@ func (allGroup) disjoint(atom atomic, hints *Hints) bool {
 
 // allGroup is superSet of any groupTerm and of any tagTerm
 func (allGroup) supersetOf(atom atomic, hints *Hints) bool {
-	return isTagOrGroupOrInternalIPTerm(atom)
+	return atom.isInternalOnly()
 }
 
 func (allGroup) GetExternalBlock() *netset.IPBlock {
@@ -66,4 +66,8 @@ func (allGroup) GetExternalBlock() *netset.IPBlock {
 
 func (allGroup) getInternalBlock() *netset.IPBlock {
 	return netset.GetCidrAll()
+}
+
+func (allGroup) isInternalOnly() bool {
+	return true
 }

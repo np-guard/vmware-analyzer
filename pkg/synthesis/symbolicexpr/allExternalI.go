@@ -71,3 +71,7 @@ func (allExt allExternal) supersetOf(otherAtom atomic, hints *Hints) bool {
 func (allExternal) getInternalBlock() *netset.IPBlock {
 	return nil
 }
+
+func (allExternal) isInternalOnly() bool {
+	return false
+}

@@ -72,12 +72,3 @@ func eqSign(atom atomic) string {
 	}
 	return equalSign
 }
-
-func isTagOrGroupOrInternalIPTerm(atom atomic) bool {
-	switch atom.(type) {
-	case groupAtomicTerm, tagAtomicTerm, internalIPTerm, allGroup, tautology:
-		return true
-	default:
-		return false
-	}
-}
