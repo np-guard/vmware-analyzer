@@ -195,7 +195,7 @@ func nsxNotFullySupported(con symbolicexpr.Conjunction) bool {
 		switch {
 		case a.IsTautology():
 			return len(con) > 1
-		case a.IsAllExternal(), a.IsAllGroups():
+		case a.IsAllExternal():
 			return true
 		case a.GetExternalBlock() != nil && len(con) > 1:
 			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
