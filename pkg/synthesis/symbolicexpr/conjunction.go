@@ -302,7 +302,7 @@ func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 // if the Conjunction has internals (in addition to the tautology) then it should be replaced with two Conjunctions:
 // 1. *All Externals Term*
 // 2. The internals in the original Conjunction (excluding the tautology)
-func (c *Conjunction) processTautology() []*Conjunction {
+func (c *Conjunction) processTautology(externalRelevant bool) []*Conjunction {
 	resOrig := []*Conjunction{c}
 	if len(*c) < 2 {
 		return resOrig
@@ -328,6 +328,9 @@ func (c *Conjunction) processTautology() []*Conjunction {
 		// todo not yet working - need to fix func (c *Conjunction) add(atom atomic) *Conjunction
 		var allGroupConj = Conjunction{allGroup{}}
 		return []*Conjunction{&conjWOTautology, &allGroupConj}
+	}
+	if !externalRelevant {
+		return []*Conjunction{&conjWOTautology}
 	}
 	var allExtrenalConj = Conjunction{allExternal{}}
 	return []*Conjunction{&conjWOTautology, &allExtrenalConj}

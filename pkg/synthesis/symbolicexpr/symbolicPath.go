@@ -91,7 +91,7 @@ func (path *SymbolicPath) removeRedundant(hints *Hints) *SymbolicPath {
 // if there are no allow paths then no paths are allowed - the empty set will be returned
 // if there are no deny paths then allowPaths are returned as is
 // all optimizations are documented in README
-func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints) *SymbolicPaths {
+func ComputeAllowGivenDenies(isInbound bool, allowPaths, denyPaths *SymbolicPaths, hints *Hints) *SymbolicPaths {
 	if len(*denyPaths) == 0 {
 		return allowPaths
 	}
@@ -115,7 +115,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 			computedAllowPaths = newComputedAllowPaths
 			newComputedAllowPaths = SymbolicPaths{}
 			for _, computedAllow := range computedAllowPaths {
-				thisComputed := *computeAllowGivenAllowHigherDeny(*computedAllow, *denyPath, hints)
+				thisComputed := *computeAllowGivenAllowHigherDeny(isInbound, *computedAllow, *denyPath, hints)
 				thisComputed = thisComputed.RemoveIsSubsetPath(hints)
 				newComputedAllowPaths = append(newComputedAllowPaths, thisComputed...)
 			}
@@ -128,7 +128,7 @@ func ComputeAllowGivenDenies(allowPaths, denyPaths *SymbolicPaths, hints *Hints)
 }
 
 // algorithm described in README of symbolicexpr
-func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
+func computeAllowGivenAllowHigherDeny(isInbound bool, allowPath, denyPath SymbolicPath, hints *Hints) *SymbolicPaths {
 	resAllowPaths := &SymbolicPaths{}
 	// In the below, note that Tautology (0.0.0.0/0) also returns true for IsAllGroups
 	for _, srcAtom := range denyPath.Src {
@@ -151,7 +151,7 @@ func computeAllowGivenAllowHigherDeny(allowPath, denyPath SymbolicPath, hints *H
 	}
 	// removes empty SymbolicPaths; of non-empty paths removed redundant terms
 	// process tautology - divide tautology to internal and external components
-	return resAllowPaths.removeRedundant(hints).processTautology()
+	return resAllowPaths.removeRedundant(hints).processTautology(isInbound)
 }
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
@@ -207,10 +207,10 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 }
 
 // divide tautology to internal and external components
-func (path *SymbolicPath) processTautology() *SymbolicPaths {
+func (path *SymbolicPath) processTautology(isInbound bool) *SymbolicPaths {
 	resPaths := SymbolicPaths{}
-	newSrc := path.Src.processTautology()
-	newDst := path.Dst.processTautology()
+	newSrc := path.Src.processTautology(isInbound)  // inbound (ingress): external source relevant
+	newDst := path.Dst.processTautology(!isInbound) // !inbound (egress): external dst relevant
 	for _, src := range newSrc {
 		for _, dst := range newDst {
 			newPath := SymbolicPath{Src: *src, Dst: *dst, Conn: path.Conn}
@@ -220,10 +220,10 @@ func (path *SymbolicPath) processTautology() *SymbolicPaths {
 	return &resPaths
 }
 
-func (paths *SymbolicPaths) processTautology() *SymbolicPaths {
+func (paths *SymbolicPaths) processTautology(isInbound bool) *SymbolicPaths {
 	newPaths := SymbolicPaths{}
 	for _, path := range *paths {
-		newPaths = append(newPaths, *path.processTautology()...)
+		newPaths = append(newPaths, *path.processTautology(isInbound)...)
 	}
 	return &newPaths
 }
