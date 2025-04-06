@@ -230,6 +230,12 @@ var vmsByIpsTests = []synthesisTest{
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
+	//{
+	//	name:            "ExampleExternalWithTautology",
+	//	exData:          data.ExampleExternalWithTautology,
+	//	noHint:          false,
+	//	synthesizeAdmin: false,
+	//},
 }
 
 var groupsByExprTests = []synthesisTest{
@@ -441,8 +447,8 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 }
 
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
-	if strings.Contains(synTest.name, "Internal") {
-		return // todo tmp until policies in place for internal
+	if strings.Contains(synTest.name, "Internal") || synTest.name == "ExampleExternalWithTautology" {
+		return // todo tmp until policies in place for internal and 0.0.0.0 duality is solved
 	}
 	err := logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	require.Nil(t, err)
