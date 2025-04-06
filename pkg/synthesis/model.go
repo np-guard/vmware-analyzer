@@ -30,9 +30,6 @@ type AbstractModelSyn struct {
 	defaultDenyRule *dfw.FwRule
 }
 
-// Tags map from tag's name to the tag
-type Tags map[string]*collector.Tag
-
 // symbolicRule input to synthesis. Synthesis very likely to non-prioritized only allow policy
 //
 //nolint:all

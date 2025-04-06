@@ -35,6 +35,7 @@ const noNSXRuleID = "none"
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
+	namespacesInfo       *namespacesInfo
 	NotFullySupported    bool
 }
 
@@ -72,8 +73,8 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
 	policies.NotFullySupported = policies.NotFullySupported || k8sNotFullySupported(p.Src) || k8sNotFullySupported(p.Dst)
-	srcSelector := createSelector(p.Src)
-	dstSelector := createSelector(p.Dst)
+	srcSelector := policies.createSelector(p.Src)
+	dstSelector := policies.createSelector(p.Dst)
 	if isAdmin && inbound && !srcSelector.isTautology() && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
 		policies.NotFullySupported = true
@@ -162,14 +163,14 @@ func (policies *k8sPolicies) setAdminNetworkPolicy(
 }
 
 func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
-	dnsSelector := createSelector(nil)
+	dnsSelector := policies.createSelector(nil)
 	dnsSelector.pods = &meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{
 		Key:      dnsLabelKey,
 		Operator: meta.LabelSelectorOpIn,
 		Values:   []string{dnsLabelVal}},
 	}}
-	dnsSelector.namespace = meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}}
-	allSelector := createSelector(nil)
+	dnsSelector.namespaces = []meta.LabelSelector{{MatchExpressions: []meta.LabelSelectorRequirement{}}}
+	allSelector := policies.createSelector(nil)
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPol := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
@@ -212,9 +213,9 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *admin.AdminNetw
 // 1. OR of cidrs.
 // 2. a label selector of pods
 type policySelector struct {
-	pods      *meta.LabelSelector
-	cidrs     []string
-	namespace meta.LabelSelector
+	pods       *meta.LabelSelector
+	cidrs      []string
+	namespaces []meta.LabelSelector
 }
 
 func (selector *policySelector) isTautology() bool {
@@ -225,11 +226,16 @@ func (selector *policySelector) convertAllCidrToAllPodsSelector() {
 	selector.cidrs = []string{}
 }
 
-func createSelector(con symbolicexpr.Conjunction) policySelector {
+func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
+	namespacesNames := common.CustomStrSliceToStrings(policies.namespacesInfo.getConNamespaces(con), func(namespace *namespace) string { return namespace.name })
 
 	res := policySelector{pods: &meta.LabelSelector{},
-		namespace: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}
+		namespaces: make([]meta.LabelSelector, len(namespacesNames))}
+	for i,name := range namespacesNames{
+		res.namespaces[i].MatchLabels = map[string]string{namespaceNameKey: name}
+	}
+
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
@@ -278,14 +284,17 @@ func (selector *policySelector) toAdminPolicyIngressPeers() []admin.AdminNetwork
 	if selector.isTautology() {
 		selector.convertAllCidrToAllPodsSelector()
 	}
-	return []admin.AdminNetworkPolicyIngressPeer{
-		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	res := make([]admin.AdminNetworkPolicyIngressPeer, len(selector.namespaces))
+	for i, namespaceSelector := range selector.namespaces{
+		res[i] = admin.AdminNetworkPolicyIngressPeer{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: namespaceSelector}}
+	} 
+	return res
 }
 func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
 	if selector.isTautology() {
 		return []admin.AdminNetworkPolicyEgressPeer{
 			{Networks: []admin.CIDR{admin.CIDR(netset.CidrAll)}},
-			{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+			{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespaces[0]}}}
 	}
 
 	if len(selector.cidrs) > 0 {
@@ -295,15 +304,19 @@ func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkP
 		}
 		return res
 	}
-	return []admin.AdminNetworkPolicyEgressPeer{
-		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	res := make([]admin.AdminNetworkPolicyEgressPeer, len(selector.namespaces))
+	for i, namespaceSelector := range selector.namespaces{
+		res[i] = admin.AdminNetworkPolicyEgressPeer{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: namespaceSelector}}
+	} 
+	return res
 }
+
 func (selector *policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
 	if selector.isTautology() {
 		selector.convertAllCidrToAllPodsSelector()
 	}
 	return admin.AdminNetworkPolicySubject{
-		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
+		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector:meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey:meta.NamespaceDefault}}}}
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////

@@ -34,8 +34,10 @@ func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
 	k8sResources := &k8sResources{}
+	k8sResources.k8sPolicies.namespacesInfo = newNamespacesInfo(model.vms)
+	k8sResources.k8sPolicies.namespacesInfo.initNamespaces(model)
 	k8sResources.createPolicies(model, createDNSPolicy)
-	k8sResources.createNamespaces(model)
+	k8sResources.namespaces = k8sResources.k8sPolicies.namespacesInfo.createResources()
 	k8sResources.createPods(model)
 	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
 		len(k8sResources.networkPolicies), len(k8sResources.adminNetworkPolicies), len(k8sResources.pods))
@@ -74,18 +76,6 @@ func (resources *k8sResources) CreateDir(outDir string) error {
 
 // //////////////////////////////////////////////////////
 const theTrue = "true"
-
-func (resources *k8sResources) createNamespaces(model *AbstractModelSyn) {
-	for _, segment := range model.segments {
-		namespace := &core.Namespace{}
-		namespace.Kind = "Namespace"
-		namespace.APIVersion = "v1"
-		namespace.Name = toLegalK8SString(segment.Name)
-		namespace.Namespace = namespace.Name
-		namespace.Labels = map[string]string{}
-		resources.namespaces = append(resources.namespaces, namespace)
-	}
-}
 
 // ///////////////////////////////////////////////////////////////////////////////
 func (resources *k8sResources) createPods(model *AbstractModelSyn) {

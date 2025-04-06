@@ -24,7 +24,6 @@ func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSy
 }
 
 type absToNXS struct {
-	vmLabels   map[topology.Endpoint][]string
 	labelsVMs  map[string][]topology.Endpoint
 	allVMs     []topology.Endpoint
 	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
@@ -37,7 +36,6 @@ type absToNXS struct {
 
 func newAbsToNXS() *absToNXS {
 	return &absToNXS{
-		vmLabels:   map[topology.Endpoint][]string{},
 		labelsVMs:  map[string][]topology.Endpoint{},
 		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
 	}
@@ -55,30 +53,34 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 			}
 		}
 	}
-	for _, vm := range a.allVMs {
-		addVMLabel := func(vm topology.Endpoint, label string) {
-			a.vmLabels[vm] = append(a.vmLabels[vm], label)
-			a.labelsVMs[label] = append(a.labelsVMs[label], vm)
-		}
+	a.labelsVMs = collectLabelsVMs(model)
+}
+
+// todo - move this method to the right place.
+func collectLabelsVMs(model *AbstractModelSyn) map[string][]topology.Endpoint {
+	labelsVMs := map[string][]topology.Endpoint{}
+
+	for _, vm := range model.vms {
 		for _, tag := range vm.Tags() {
 			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
-			addVMLabel(vm, label)
+			labelsVMs[label] = append(labelsVMs[label], vm)
 		}
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			addVMLabel(vm, label)
+			labelsVMs[label] = append(labelsVMs[label], vm)
 		}
 		for _, segment := range model.vmSegments[vm] {
 			label, _ := symbolicexpr.NewSegmentTerm(segment).AsSelector()
-			addVMLabel(vm, label)
+			labelsVMs[label] = append(labelsVMs[label], vm)
 		}
 		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
 			if !ruleIPBlock.IsAll() {
 				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
-				addVMLabel(vm, label)
+				labelsVMs[label] = append(labelsVMs[label], vm)
 			}
 		}
 	}
+	return labelsVMs
 }
 
 var fwRuleToDataRuleAction = map[dfw.RuleAction]string{
