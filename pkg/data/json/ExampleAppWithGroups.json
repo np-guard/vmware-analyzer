@@ -28442,320 +28442,28 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "vm1",
-            "external_id": "vm1"
+            "display_name": "New-VM-1",
+            "external_id": "New-VM-1"
         },
         {
-            "display_name": "vm2",
-            "external_id": "vm2"
+            "display_name": "New-VM-2",
+            "external_id": "New-VM-2"
         },
         {
-            "display_name": "vm3",
-            "external_id": "vm3"
+            "display_name": "New-VM-3",
+            "external_id": "New-VM-3"
         },
         {
-            "display_name": "vm4",
-            "external_id": "vm4"
+            "display_name": "New-VM-4",
+            "external_id": "New-VM-4"
         },
         {
-            "display_name": "vm5",
-            "external_id": "vm5"
-        },
-        {
-            "display_name": "vm6",
-            "external_id": "vm6"
-        },
-        {
-            "display_name": "vm7",
-            "external_id": "vm7"
-        },
-        {
-            "display_name": "vm8",
-            "external_id": "vm8"
-        },
-        {
-            "display_name": "vm9",
-            "external_id": "vm9"
-        },
-        {
-            "display_name": "vm10",
-            "external_id": "vm10"
-        },
-        {
-            "display_name": "vm-no-address1",
-            "external_id": "vm-no-address1"
-        },
-        {
-            "display_name": "vm-no-address2",
-            "external_id": "vm-no-address2"
+            "display_name": "New Virtual Machine",
+            "external_id": "New Virtual Machine"
         }
     ],
-    "virtual_network_interface": [
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.250.1.0"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm6",
-            "owner_vm_id": "vm6"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.250.1.1"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm7",
-            "owner_vm_id": "vm7"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "172.16.10.10"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm8",
-            "owner_vm_id": "vm8"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "192.168.0.0"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm9",
-            "owner_vm_id": "vm9"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "192.168.255.0"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm10",
-            "owner_vm_id": "vm10"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.0.0.2"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm1",
-            "owner_vm_id": "vm1"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.0.0.100"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm2",
-            "owner_vm_id": "vm2"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.0.0.101"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm3",
-            "owner_vm_id": "vm3"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.0.1.0"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm4",
-            "owner_vm_id": "vm4"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
-                        "10.0.1.1"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "port_vm5",
-            "owner_vm_id": "vm5"
-        }
-    ],
-    "segments": [
-        {
-            "display_name": "seg-6-7",
-            "path": "seg-6-7",
-            "subnets": [
-                {
-                    "network": "10.0.0.0/16"
-                }
-            ],
-            "unique_id": "seg-6-7",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm6"
-                    },
-                    "display_name": "port_vm6",
-                    "parent_path": "seg-6-7",
-                    "unique_id": "port_vm6"
-                },
-                {
-                    "attachment": {
-                        "id": "port_vm7"
-                    },
-                    "display_name": "port_vm7",
-                    "parent_path": "seg-6-7",
-                    "unique_id": "port_vm7"
-                }
-            ]
-        },
-        {
-            "display_name": "seg-8",
-            "path": "seg-8",
-            "subnets": [
-                {
-                    "network": "172.16.10.10/16"
-                }
-            ],
-            "unique_id": "seg-8",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm8"
-                    },
-                    "display_name": "port_vm8",
-                    "parent_path": "seg-8",
-                    "unique_id": "port_vm8"
-                }
-            ]
-        },
-        {
-            "display_name": "seg-9-10",
-            "path": "seg-9-10",
-            "subnets": [
-                {
-                    "network": "192.168.0.0/16"
-                }
-            ],
-            "unique_id": "seg-9-10",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm9"
-                    },
-                    "display_name": "port_vm9",
-                    "parent_path": "seg-9-10",
-                    "unique_id": "port_vm9"
-                },
-                {
-                    "attachment": {
-                        "id": "port_vm10"
-                    },
-                    "display_name": "port_vm10",
-                    "parent_path": "seg-9-10",
-                    "unique_id": "port_vm10"
-                }
-            ]
-        },
-        {
-            "display_name": "seg_1",
-            "path": "seg_1",
-            "subnets": [
-                {
-                    "network": "10.0.0.0/30"
-                }
-            ],
-            "unique_id": "seg_1",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm1"
-                    },
-                    "display_name": "port_vm1",
-                    "parent_path": "seg_1",
-                    "unique_id": "port_vm1"
-                }
-            ]
-        },
-        {
-            "display_name": "seg_2-3",
-            "path": "seg_2-3",
-            "subnets": [
-                {
-                    "network": "10.0.0.0/24"
-                }
-            ],
-            "unique_id": "seg_2-3",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm2"
-                    },
-                    "display_name": "port_vm2",
-                    "parent_path": "seg_2-3",
-                    "unique_id": "port_vm2"
-                },
-                {
-                    "attachment": {
-                        "id": "port_vm3"
-                    },
-                    "display_name": "port_vm3",
-                    "parent_path": "seg_2-3",
-                    "unique_id": "port_vm3"
-                }
-            ]
-        },
-        {
-            "display_name": "seg_4-5",
-            "path": "seg_4-5",
-            "subnets": [
-                {
-                    "network": "10.0.0.0/20"
-                }
-            ],
-            "unique_id": "seg_4-5",
-            "segment_ports": [
-                {
-                    "attachment": {
-                        "id": "port_vm4"
-                    },
-                    "display_name": "port_vm4",
-                    "parent_path": "seg_4-5",
-                    "unique_id": "port_vm4"
-                },
-                {
-                    "attachment": {
-                        "id": "port_vm5"
-                    },
-                    "display_name": "port_vm5",
-                    "parent_path": "seg_4-5",
-                    "unique_id": "port_vm5"
-                }
-            ]
-        }
-    ],
+    "virtual_network_interface": null,
+    "segments": null,
     "tier0": null,
     "tier1": null,
     "domains": [
@@ -28765,7 +28473,154 @@
                 "security_policies": [
                     {
                         "category": "Application",
-                        "display_name": "app-x",
+                        "display_name": "foo-app",
+                        "scope": [
+                            "ANY"
+                        ],
+                        "rules": [
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "foo-backend"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-icmp-to-backend",
+                                "rule_id": 1027,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "/infra/services/ICMPv4-ALL"
+                                ],
+                                "source_groups": [
+                                    "foo-app",
+                                    "research-test-expr-2"
+                                ],
+                                "sources_excluded": true
+                            }
+                        ]
+                    },
+                    {
+                        "category": "Application",
+                        "display_name": "New Policy",
+                        "scope": [
+                            "ANY"
+                        ],
+                        "rules": [
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "research-seg-1"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "research-seg-1-allow-tcp-udp",
+                                "rule_id": 1023,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "research-seg-1"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "TCP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    },
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "UDP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    }
+                                ]
+                            },
+                            {
+                                "action": "DROP",
+                                "description": "",
+                                "destination_groups": [
+                                    "research-seg-1"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "research-seg-1-drop-icmp",
+                                "rule_id": 1022,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "/infra/services/ICMPv4-ALL"
+                                ],
+                                "source_groups": [
+                                    "research-seg-1"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "research-app"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-research-app-icmp",
+                                "rule_id": 1009,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "/infra/services/ICMPv4-ALL"
+                                ],
+                                "source_groups": [
+                                    "research-app"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "research-app"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-research-app-http",
+                                "rule_id": 1024,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "/infra/services/HTTP"
+                                ],
+                                "source_groups": [
+                                    "research-app"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "research-app"
+                                ],
+                                "direction": "IN_OUT",
+                                "display_name": "allow-research-app-http-redundant",
+                                "rule_id": 1020,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "services": [
+                                    "/infra/services/HTTP"
+                                ],
+                                "source_groups": [
+                                    "research-app"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "category": "Application",
+                        "display_name": "Default Layer3 Section",
                         "scope": [
                             "ANY"
                         ],
@@ -28774,11 +28629,11 @@
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "0.0.0.0/0"
+                                    "research-app"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "deny1",
-                                "rule_id": 1004,
+                                "display_name": "deny-research-app",
+                                "rule_id": 1021,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28786,140 +28641,7 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "10.0.0.0/30"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "0.0.0.0/0"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow1",
-                                "rule_id": 1005,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "10.0.0.0/24"
-                                ]
-                            },
-                            {
-                                "action": "DROP",
-                                "description": "",
-                                "destination_groups": [
-                                    "0.0.0.0/0"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "deny2",
-                                "rule_id": 1006,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "10.0.0.0/20"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "0.0.0.0/0"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow2",
-                                "rule_id": 1007,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "10.0.0.0/16"
-                                ]
-                            },
-                            {
-                                "action": "DROP",
-                                "description": "",
-                                "destination_groups": [
-                                    "real-group"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "drop-real-group",
-                                "rule_id": 2000,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "172.16.10.10/16"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "0.0.0.0/0"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-all-after-drop-real-group",
-                                "rule_id": 2200,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "172.16.10.10/16"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "0.0.0.0/0"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-only-2",
-                                "rule_id": 3000,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "192.168.0.0/16"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "real-group"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-group",
-                                "rule_id": 4008,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "real-group"
+                                    "research-app"
                                 ]
                             },
                             {
@@ -28930,7 +28652,7 @@
                                 ],
                                 "direction": "IN_OUT",
                                 "display_name": "default-deny-rule",
-                                "rule_id": 1003,
+                                "rule_id": 2,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28948,62 +28670,90 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "default-group",
-                        "path": "default-group",
+                        "display_name": "foo-frontend",
+                        "path": "foo-frontend",
                         "vm_members": [
                             {
-                                "display_name": "vm1",
-                                "id": "vm1"
-                            },
-                            {
-                                "display_name": "vm2",
-                                "id": "vm2"
-                            },
-                            {
-                                "display_name": "vm3",
-                                "id": "vm3"
-                            },
-                            {
-                                "display_name": "vm4",
-                                "id": "vm4"
-                            },
-                            {
-                                "display_name": "vm5",
-                                "id": "vm5"
-                            },
-                            {
-                                "display_name": "vm6",
-                                "id": "vm6"
-                            },
-                            {
-                                "display_name": "vm7",
-                                "id": "vm7"
-                            },
-                            {
-                                "display_name": "vm8",
-                                "id": "vm8"
-                            },
-                            {
-                                "display_name": "vm9",
-                                "id": "vm9"
-                            },
-                            {
-                                "display_name": "vm10",
-                                "id": "vm10"
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
                             }
                         ]
                     },
                     {
-                        "display_name": "real-group",
-                        "path": "real-group",
+                        "display_name": "research-test-expr-2",
+                        "path": "research-test-expr-2",
                         "vm_members": [
                             {
-                                "display_name": "vm-no-address1",
-                                "id": "vm-no-address1"
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "research-app",
+                        "path": "research-app",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
                             },
                             {
-                                "display_name": "vm-no-address2",
-                                "id": "vm-no-address2"
+                                "display_name": "New-VM-2",
+                                "id": "New-VM-2"
+                            },
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            },
+                            {
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "research-seg-1",
+                        "path": "research-seg-1",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
+                            },
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "foo-app",
+                        "path": "foo-app",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "foo-backend",
+                        "path": "foo-backend",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
                             }
                         ]
                     }

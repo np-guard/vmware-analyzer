@@ -15,26 +15,26 @@ import (
 
 type nsxTopology struct {
 	segments           []*topology.Segment
-	vmSegments         map[topology.Endpoint][]*topology.Segment
-	allRuleIPBlocks    map[string]*topology.RuleIPBlock              // a map from the ip string,to the block
-	ruleBlockPerEP     map[topology.Endpoint][]*topology.RuleIPBlock // map from vm to its blocks
+	VmSegments         map[topology.Endpoint][]*topology.Segment
+	AllRuleIPBlocks    map[string]*topology.RuleIPBlock              // a map from the ip string,to the block
+	RuleBlockPerEP     map[topology.Endpoint][]*topology.RuleIPBlock // map from ep to its blocks
 	allIPBlock         *netset.IPBlock                               // the union of segments and rule path IPs
 	allInternalIPBlock *netset.IPBlock
-	allExternalIPBlock *netset.IPBlock
+	AllExternalIPBlock *netset.IPBlock
 }
 
 func newTopology() *nsxTopology {
 	return &nsxTopology{
-		vmSegments:         map[topology.Endpoint][]*topology.Segment{},
-		allRuleIPBlocks:    map[string]*topology.RuleIPBlock{},
-		ruleBlockPerEP:     map[topology.Endpoint][]*topology.RuleIPBlock{},
+		VmSegments:         map[topology.Endpoint][]*topology.Segment{},
+		AllRuleIPBlocks:    map[string]*topology.RuleIPBlock{},
+		RuleBlockPerEP:     map[topology.Endpoint][]*topology.RuleIPBlock{},
 		allIPBlock:         netset.NewIPBlock(),
 		allInternalIPBlock: netset.NewIPBlock(),
 	}
 }
 
 func (p *nsxConfigParser) getTopology() (err error) {
-	p.configRes.topology = newTopology()
+	p.configRes.Topology = newTopology()
 	if err := p.getSegments(); err != nil {
 		return err
 	}
@@ -62,13 +62,13 @@ func (p *nsxConfigParser) getSegments() (err error) {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
 			vni := p.rc.GetVirtualNetworkInterfaceByPort(att)
 			if vm, ok := p.configRes.VMsMap[*vni.OwnerVmId]; ok {
-				p.configRes.topology.vmSegments[vm] = append(p.configRes.topology.vmSegments[vm], segment)
+				p.configRes.Topology.VmSegments[vm] = append(p.configRes.Topology.VmSegments[vm], segment)
 				segment.VMs = append(segment.VMs, vm)
 			}
 		}
-		p.configRes.topology.allInternalIPBlock = p.configRes.topology.allInternalIPBlock.Union(segment.Block)
-		p.configRes.topology.allIPBlock = p.configRes.topology.allIPBlock.Union(segment.Block)
-		p.configRes.topology.segments = append(p.configRes.topology.segments, segment)
+		p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(segment.Block)
+		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(segment.Block)
+		p.configRes.Topology.segments = append(p.configRes.Topology.segments, segment)
 	}
 	return nil
 }
@@ -93,30 +93,27 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
 	// create the blocks:
 	for _, ip := range allIPs {
-		block, err := netset.IPBlockFromCidrOrAddress(ip)
-		if err != nil {
-			block, err = netset.IPBlockFromIPRangeStr(ip)
-		}
+		block, err := common.IPBlockFromCidrOrAddressOrIPRange(ip)
 		if err != nil {
 			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
 			continue
 		}
-		p.configRes.topology.allIPBlock = p.configRes.topology.allIPBlock.Union(block)
-		p.configRes.topology.allRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
+		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(block)
+		p.configRes.Topology.AllRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
 	}
 }
 
 // creating external endpoints
 func (p *nsxConfigParser) getExternalIPs() {
 	// calc external range:
-	p.configRes.topology.allExternalIPBlock = p.configRes.topology.allIPBlock.Subtract(p.configRes.topology.allInternalIPBlock)
-	if p.configRes.topology.allExternalIPBlock.IsEmpty() {
+	p.configRes.Topology.AllExternalIPBlock = p.configRes.Topology.allIPBlock.Subtract(p.configRes.Topology.allInternalIPBlock)
+	if p.configRes.Topology.AllExternalIPBlock.IsEmpty() {
 		return
 	}
 	// collect all the blocks:
-	exBlocks := make([]*netset.IPBlock, len(p.configRes.topology.allRuleIPBlocks))
-	for i, ruleBlock := range slices.Collect(maps.Values(p.configRes.topology.allRuleIPBlocks)) {
-		ruleBlock.ExternalRange = ruleBlock.Block.Intersect(p.configRes.topology.allExternalIPBlock)
+	exBlocks := make([]*netset.IPBlock, len(p.configRes.Topology.AllRuleIPBlocks))
+	for i, ruleBlock := range slices.Collect(maps.Values(p.configRes.Topology.AllRuleIPBlocks)) {
+		ruleBlock.ExternalRange = ruleBlock.Block.Intersect(p.configRes.Topology.AllExternalIPBlock)
 		exBlocks[i] = ruleBlock.ExternalRange
 	}
 	// creating disjoint blocks:
@@ -127,11 +124,11 @@ func (p *nsxConfigParser) getExternalIPs() {
 		p.configRes.externalIPs[i] = topology.NewExternalIP(disjointBlock)
 	}
 	// keep the external ips of each block:
-	for _, ruleBlock := range p.configRes.topology.allRuleIPBlocks {
+	for _, ruleBlock := range p.configRes.Topology.AllRuleIPBlocks {
 		for _, externalIP := range p.configRes.externalIPs {
 			if externalIP.(*topology.ExternalIP).Block.IsSubset(ruleBlock.Block) {
 				ruleBlock.ExternalIPs = append(ruleBlock.ExternalIPs, externalIP)
-				p.configRes.topology.ruleBlockPerEP[externalIP] = append(p.configRes.topology.ruleBlockPerEP[externalIP], ruleBlock)
+				p.configRes.Topology.RuleBlockPerEP[externalIP] = append(p.configRes.Topology.RuleBlockPerEP[externalIP], ruleBlock)
 			}
 		}
 	}
@@ -139,39 +136,44 @@ func (p *nsxConfigParser) getExternalIPs() {
 
 func (p *nsxConfigParser) getRuleBlocksVMs() {
 	// iterate over VMs, look if the vm address is in the block:
+	allCidrBlock := p.configRes.Topology.AllRuleIPBlocks[netset.CidrAll]
 	for _, vm := range p.configRes.VMs {
-		for _, address := range vm.(*topology.VM).IPAddresses() {
+		addresses := vm.(*topology.VM).IPAddresses()
+		if len(addresses) == 0 && allCidrBlock != nil {
+			allCidrBlock.VMs = append(allCidrBlock.VMs, vm)
+		}
+		for _, address := range addresses {
 			address, err := iIPBlockFromIPAddress(address)
 			if err != nil {
 				logging.Debugf("Could not resolve address %s of vm %s", address, vm.Name())
 				continue
 			}
-			p.configRes.topology.allInternalIPBlock = p.configRes.topology.allInternalIPBlock.Union(address)
-			p.configRes.topology.allIPBlock = p.configRes.topology.allIPBlock.Union(address)
-			for _, block := range p.configRes.topology.allRuleIPBlocks {
+			p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(address)
+			p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(address)
+			for _, block := range p.configRes.Topology.AllRuleIPBlocks {
 				if address.IsSubset(block.Block) {
 					block.VMs = append(block.VMs, vm)
-					p.configRes.topology.ruleBlockPerEP[vm] = append(p.configRes.topology.ruleBlockPerEP[vm], block)
+					p.configRes.Topology.RuleBlockPerEP[vm] = append(p.configRes.Topology.RuleBlockPerEP[vm], block)
 				}
 			}
 		}
 	}
 	// iterate over segments, if segment is in the block, add all its vms
-	for _, block := range p.configRes.topology.allRuleIPBlocks {
-		for _, segment := range p.configRes.topology.segments {
+	for _, block := range p.configRes.Topology.AllRuleIPBlocks {
+		for _, segment := range p.configRes.Topology.segments {
 			if !segment.Block.IsEmpty() && segment.Block.IsSubset(block.Block) {
 				block.VMs = append(block.VMs, segment.VMs...)
 				block.SegmentsVMs = append(block.SegmentsVMs, segment.VMs...)
 				block.Segments = append(block.Segments, segment)
 				for _, vm := range segment.VMs {
-					p.configRes.topology.ruleBlockPerEP[vm] = append(p.configRes.topology.ruleBlockPerEP[vm], block)
+					p.configRes.Topology.RuleBlockPerEP[vm] = append(p.configRes.Topology.RuleBlockPerEP[vm], block)
 				}
 			}
 		}
 		block.VMs = common.SliceCompact(block.VMs)
 	}
 	for _, vm := range p.configRes.VMs {
-		p.configRes.topology.ruleBlockPerEP[vm] = common.SliceCompact(p.configRes.topology.ruleBlockPerEP[vm])
+		p.configRes.Topology.RuleBlockPerEP[vm] = common.SliceCompact(p.configRes.Topology.RuleBlockPerEP[vm])
 	}
 }
 

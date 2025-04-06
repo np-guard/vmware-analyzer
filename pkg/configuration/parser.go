@@ -166,7 +166,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	for _, block := range p.configRes.topology.allRuleIPBlocks {
+	for _, block := range p.configRes.Topology.AllRuleIPBlocks {
 		res[block.OriginalIP] = block.OriginalIP
 	}
 	p.configRes.FW.SetPathsToDisplayNames(res)
@@ -302,6 +302,7 @@ func (p *nsxConfigParser) getEndpointsFromScopePaths(groupsPaths []string) ([]to
 	ruleEndpoints := p.getEndpointsFromGroupsPaths(groupsPaths, false)
 	return ruleEndpoints.VMs, ruleEndpoints.Groups
 }
+
 func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, exclude bool) *dfw.RuleEndpoints {
 	res := &dfw.RuleEndpoints{}
 	if slices.Contains(groupsPaths, anyStr) {
@@ -311,29 +312,40 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		}
 		return &dfw.RuleEndpoints{VMs: p.configRes.VMs, Groups: p.allGroups, IsAllGroups: true} // all groups
 	}
+	// cidrs/ip addresses are given as input groupsPaths, and are not expected to be in p.allGroupsPaths, thus filtering them into ips slice
 	ips := slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return slices.Contains(p.allGroupsPaths, path) })
+	// remaining actual groups paths strings  are expected to be in p.allGroupsPaths, thus filtering them into groupsPaths slice
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
+
 	if exclude {
-		groupsPaths = slices.DeleteFunc(slices.Clone(p.allGroupsPaths), func(path string) bool { return slices.Contains(groupsPaths, path) })
 		if len(ips) > 0 {
-			logging.Debugf("Rule with IPs and SourcesExcluded is not supported. ignoring the following IPs\n%s",
+			// TODO: support excluded with ip ranges as well
+			logging.Debugf("Rule with IPs and Excluded is not supported. ignoring the following IPs\n%s",
 				strings.Join(ips, common.CommaSeparator))
 		}
 	} else {
 		for _, ip := range ips {
-			if ruleBlock := p.configRes.topology.allRuleIPBlocks[ip]; ruleBlock != nil {
+			if ruleBlock := p.configRes.Topology.AllRuleIPBlocks[ip]; ruleBlock != nil {
 				res.VMs = append(res.VMs, ruleBlock.VMs...)
 				res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
 				res.Blocks = append(res.Blocks, ruleBlock)
 			}
 		}
 	}
+
 	res.Groups = make([]*collector.Group, len(groupsPaths))
 	for i, groupPath := range groupsPaths {
 		thisGroupVMs, thisGroup := p.getGroupVMs(groupPath)
 		res.VMs = append(res.VMs, thisGroupVMs...)
 		res.Groups[i] = thisGroup
 	}
+
+	if exclude {
+		vms := topology.Subtract(p.configRes.VMs, res.VMs) // vms contain the actual remaining vms after exclude operation
+		res.VMs = vms
+		res.IsExclude = true // todo: to be used by synthesis (the combination of res.Groups & res.IsExclude)
+	}
+
 	res.VMs = common.SliceCompact(res.VMs)
 	return res
 }
