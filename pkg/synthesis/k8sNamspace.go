@@ -1,7 +1,6 @@
 package synthesis
 
 import (
-	"maps"
 	"slices"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
@@ -16,18 +15,17 @@ type namespace struct {
 }
 
 type namespacesInfo struct {
-	namespaces  map[string]*namespace
+	namespaces  []*namespace
 	vmNamespace map[topology.Endpoint]*namespace
 	labelVMs    map[string][]topology.Endpoint
 	vms         []topology.Endpoint
 }
 
 func (namespacesInfo *namespacesInfo) hasNonDefault() bool {
-	return len(namespacesInfo.namespaces) > 1 || namespacesInfo.namespaces[meta.NamespaceDefault] != nil
+	return len(namespacesInfo.namespaces) > 1 || namespacesInfo.namespaces[0].name != meta.NamespaceDefault
 }
 func newNamespacesInfo(vms []topology.Endpoint) *namespacesInfo {
 	return &namespacesInfo{
-		namespaces:  map[string]*namespace{},
 		vmNamespace: map[topology.Endpoint]*namespace{},
 		vms:         vms,
 	}
@@ -42,16 +40,16 @@ func (namespacesInfo *namespacesInfo) initNamespaces(model *AbstractModelSyn) {
 		for _, vm := range segment.VMs {
 			namespacesInfo.vmNamespace[vm] = namespace
 		}
-		namespacesInfo.namespaces[namespace.name] = namespace
+		namespacesInfo.namespaces = append(namespacesInfo.namespaces, namespace)
 	}
-	if len(namespacesInfo.vms) > len(namespacesInfo.namespaces) {
+	if len(namespacesInfo.vms) == 0 || len(namespacesInfo.vms) > len(namespacesInfo.namespaces) {
 		defaultNamespace := &namespace{name: meta.NamespaceDefault}
 		for _, vm := range namespacesInfo.vms {
 			if _, ok := namespacesInfo.vmNamespace[vm]; !ok {
 				namespacesInfo.vmNamespace[vm] = defaultNamespace
 			}
 		}
-		namespacesInfo.namespaces[defaultNamespace.name] = defaultNamespace
+		namespacesInfo.namespaces = append(namespacesInfo.namespaces,   defaultNamespace)
 	}
 }
 
@@ -79,8 +77,8 @@ func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunct
 	res := []*namespace{}
 	for _, a := range con {
 		switch {
-		case a.IsTautology():
-			return slices.Collect(maps.Values(namespacesInfo.namespaces))
+		case a.IsTautology(), a.IsAllGroups():
+			return namespacesInfo.namespaces
 		case a.GetExternalBlock() != nil:
 			continue
 		default:

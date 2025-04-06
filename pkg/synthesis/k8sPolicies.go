@@ -102,7 +102,7 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 	if inbound {
 		from := srcSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
-		for _, namespace := range dstSelector.namespaces{	
+		for _, namespace := range dstSelector.namespaces {
 			pol := newPolicy(namespace.MatchLabels[namespaceNameKey])
 			pol.Spec.Ingress = rules
 			pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
@@ -111,7 +111,7 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 	} else {
 		to := dstSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
-		for _, namespace := range srcSelector.namespaces{	
+		for _, namespace := range srcSelector.namespaces {
 			pol := newPolicy(namespace.MatchLabels[namespaceNameKey])
 			pol.Spec.Egress = rules
 			pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
@@ -125,8 +125,8 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 	if defaultRule != nil {
 		ruleID = defaultRule.RuleIDStr()
 	}
-	for namespaceName := range policies.namespacesInfo.namespaces {
-		pol := newNetworkPolicy("default-deny", namespaceName, "Default Deny Network Policy", ruleID)
+	for _, namespace := range policies.namespacesInfo.namespaces {
+		pol := newNetworkPolicy("default-deny", namespace.name, "Default Deny Network Policy", ruleID)
 		policies.networkPolicies = append(policies.networkPolicies, pol)
 		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
 	}
