@@ -649,7 +649,7 @@ var policiesInternalWithInterDenyAllow = []Category{
 			},
 			{
 				Name:   "allow-all-after-drop-real-group",
-				ID:     2000,
+				ID:     2200,
 				Source: "172.16.10.10/16",
 				Dest:   "0.0.0.0/0",
 				Action: Allow,
