@@ -117,7 +117,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-5
@@ -140,10 +140,32 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (segment seg-8) dst: (IP addr is external) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-6
+    namespace: default
+spec:
+    egress:
+        - to:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+            - podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg-8
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
+        nsx-id: "2200"
+    creationTimestamp: null
+    name: policy-7
     namespace: default
 spec:
     ingress:
@@ -166,7 +188,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-7
+    name: policy-8
     namespace: default
 spec:
     egress:
@@ -188,7 +210,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-8
+    name: policy-9
     namespace: default
 spec:
     ingress:
@@ -208,7 +230,7 @@ metadata:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-9
+    name: policy-10
     namespace: default
 spec:
     egress:
@@ -235,7 +257,7 @@ metadata:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-10
+    name: policy-11
     namespace: default
 spec:
     ingress:

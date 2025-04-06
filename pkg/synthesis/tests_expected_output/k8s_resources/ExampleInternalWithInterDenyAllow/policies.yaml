@@ -177,7 +177,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-7
@@ -200,10 +200,32 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (IP addr in 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr is external) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-8
+    namespace: default
+spec:
+    egress:
+        - to:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+            - podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: VMs_within_IPs__172.16.10.10-16
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (IP addr in 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
+        nsx-id: "2200"
+    creationTimestamp: null
+    name: policy-9
     namespace: default
 spec:
     ingress:
@@ -251,10 +273,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (VMs within IPs 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-9
+    name: policy-10
     namespace: default
 spec:
     ingress:
@@ -277,7 +299,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-10
+    name: policy-11
     namespace: default
 spec:
     egress:
@@ -299,7 +321,7 @@ metadata:
         description: 'src: (IP addr in 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-11
+    name: policy-12
     namespace: default
 spec:
     ingress:
@@ -375,7 +397,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-12
+    name: policy-13
     namespace: default
 spec:
     ingress:
@@ -395,7 +417,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-13
+    name: policy-14
     namespace: default
 spec:
     egress:
@@ -422,7 +444,7 @@ metadata:
         description: 'src: (group = real-group and VMs not within IPs 10.0.0.0/20 and VMs not within IPs 172.16.10.10/16) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-14
+    name: policy-15
     namespace: default
 spec:
     ingress:
