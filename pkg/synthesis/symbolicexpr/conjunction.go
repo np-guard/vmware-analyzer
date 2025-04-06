@@ -28,11 +28,11 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	block := atom.GetExternalBlock()
 	var res Conjunction
 	// since tautology refers to both external and internal it should not be mixed with externals overriding the internals
-	if block != nil && !atom.IsTautology() { // atom is an IPBlockTerm
+	if block != nil && !atom.IsTautology() && c.hasExternalIPBlockTerm() { // atom is an IPBlockTerm
 		// looks for an  IPBlock in c
 		for _, itemAtom := range *c {
 			itemBlock := itemAtom.GetExternalBlock()
-			if itemBlock == nil { // itemAtom not an IPBlock
+			if itemBlock == nil || itemAtom.IsTautology() { // itemAtom not an external IP Term
 				res = append(res, itemAtom)
 			} else {
 				// note that there could be at most one IPBlock in a conjunction, by design

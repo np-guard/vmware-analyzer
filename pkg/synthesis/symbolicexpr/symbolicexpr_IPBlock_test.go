@@ -118,7 +118,8 @@ func TestIpBlockWithConj(t *testing.T) {
 	fmt.Println("conjIPBlockTerm1.add(ipBlockTerm2)", term1AddTerm2)
 
 	require.Equal(t, "(IP addr in the empty block)", term2AddTerm3.String())
-	require.Equal(t, "(IP addr in 192.0.2.0/24)", allAddTerm3.String())
+	// tautology not merged by add with other IP blocks since it also has an internal component
+	require.Equal(t, "(IP addr in 0.0.0.0/0 and IP addr in 192.0.2.0/24)", allAddTerm3.String())
 	require.Equal(t, "(IP addr in 192.0.2.0 originalIP)",
 		singleAddTerm3.String())
 	require.Equal(t, "(IP addr in 192.0.2.0)",
