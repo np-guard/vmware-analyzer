@@ -1,0 +1,118 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (IP addr not in 1.0.0.0/24) dst: (*) conn: All Connections'
+        nsx-id: "1005"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - ipBlock:
+                cidr: 0.0.0.0/8
+            - ipBlock:
+                cidr: 1.0.1.0/24
+            - ipBlock:
+                cidr: 1.0.2.0/23
+            - ipBlock:
+                cidr: 1.0.4.0/22
+            - ipBlock:
+                cidr: 1.0.8.0/21
+            - ipBlock:
+                cidr: 1.0.16.0/20
+            - ipBlock:
+                cidr: 1.0.32.0/19
+            - ipBlock:
+                cidr: 1.0.64.0/18
+            - ipBlock:
+                cidr: 1.0.128.0/17
+            - ipBlock:
+                cidr: 1.1.0.0/16
+            - ipBlock:
+                cidr: 1.2.0.0/15
+            - ipBlock:
+                cidr: 1.4.0.0/14
+            - ipBlock:
+                cidr: 1.8.0.0/13
+            - ipBlock:
+                cidr: 1.16.0.0/12
+            - ipBlock:
+                cidr: 1.32.0.0/11
+            - ipBlock:
+                cidr: 1.64.0.0/10
+            - ipBlock:
+                cidr: 1.128.0.0/9
+            - ipBlock:
+                cidr: 2.0.0.0/7
+            - ipBlock:
+                cidr: 4.0.0.0/6
+            - ipBlock:
+                cidr: 8.0.0.0/5
+            - ipBlock:
+                cidr: 16.0.0.0/4
+            - ipBlock:
+                cidr: 32.0.0.0/3
+            - ipBlock:
+                cidr: 64.0.0.0/2
+            - ipBlock:
+                cidr: 128.0.0.0/1
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (*) dst: (*) conn: All Connections'
+        nsx-id: "1005"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector: {}
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

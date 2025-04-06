@@ -28,11 +28,11 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	block := atom.GetExternalBlock()
 	var res Conjunction
 	// since tautology refers to both external and internal it should not be mixed with externals overriding the internals
-	if block != nil && !atom.IsTautology() { // atom is an IPBlockTerm
+	if block != nil && !atom.IsTautology() && c.hasExternalIPBlockTerm() { // atom is an IPBlockTerm
 		// looks for an  IPBlock in c
 		for _, itemAtom := range *c {
 			itemBlock := itemAtom.GetExternalBlock()
-			if itemBlock == nil { // itemAtom not an IPBlock
+			if itemBlock == nil || itemAtom.IsTautology() { // itemAtom not an external IP Term
 				res = append(res, itemAtom)
 			} else {
 				// note that there could be at most one IPBlock in a conjunction, by design
@@ -317,18 +317,17 @@ func (c *Conjunction) processTautology(externalRelevant bool) []*Conjunction {
 	if tautIndex == -1 { // no tautology in Conjunction? nothing to do here
 		return resOrig
 	}
-	// Conjunction of and externals. Divided to two Conjunctions: one of *allGroup* and the non-tautology externals
 	var atomicsWOTautology []atomic
 	atomicsWOTautology = append(atomicsWOTautology, (*c)[:tautIndex]...)
 	atomicsWOTautology = append(atomicsWOTautology, (*c)[tautIndex+1:]...)
 	var conjWOTautology Conjunction = atomicsWOTautology
-	// we get here after removeRedundant; so, in addition to the tautology, we either have externals *xor* internals
+	// by design (in ComputeAllowGivenDenies()), in addition to the tautology, we either have externals *xor* internals
 	if c.hasExternalIPBlockTerm() {
-		// todo https://github.com/np-guard/vmware-analyzer/issues/364?issue=np-guard%7Cvmware-analyzer%7C391
-		// todo not yet working - need to fix func (c *Conjunction) add(atom atomic) *Conjunction
+		// Conjunction of tautology and externals. Divided to two Conjunctions: one of *allGroup* and the non-tautology externals
 		var allGroupConj = Conjunction{allGroup{}}
 		return []*Conjunction{&conjWOTautology, &allGroupConj}
 	}
+	// Conjunction of tautology and internals. Divided to two Conjunctions: one of *allExternal* and the non-tautology externals
 	if !externalRelevant {
 		return []*Conjunction{&conjWOTautology}
 	}
