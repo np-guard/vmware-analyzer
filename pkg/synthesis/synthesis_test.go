@@ -232,12 +232,12 @@ var vmsByIpsTests = []synthesisTest{
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
-	//{
-	//	name:            "ExampleExternalWithTautology",
-	//	exData:          data.ExampleExternalWithTautology,
-	//	noHint:          false,
-	//	synthesizeAdmin: false,
-	//},
+	{
+		name:            "ExampleExternalWithTautology",
+		exData:          data.ExampleExternalWithTautology,
+		noHint:          false,
+		synthesizeAdmin: false,
+	},
 }
 
 var groupsByExprTests = []synthesisTest{
