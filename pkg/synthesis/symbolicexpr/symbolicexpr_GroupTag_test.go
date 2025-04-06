@@ -107,7 +107,7 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllUDPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
-	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(true, allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t, "src: (tag = src1 and tag != src2) dst: (tag = dst1) conn: All Connections\n"+
 		"src: (tag = src1) dst: (tag = dst1 and tag != dst2) conn: All Connections\n"+
@@ -135,14 +135,14 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllUDPTransport()}
 	denyPath := SymbolicPath{Src: conjSrc2, Dst: conjDst2, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
-	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(true, allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	// computeAllowGivenAllowHigherDeny not optimized
 	require.Equal(t, "src: (tag = src1 and tag != src2) dst: (tag = dst1) conn: UDP\n"+
 		"src: (tag = src1) dst: (tag = dst1 and tag != dst2) conn: UDP\nsrc: (tag = src1) dst: (tag = dst1) conn: UDP",
 		allowGivenDeny.String(), "allowGivenDeny single term computation not as expected")
 	// ComputeAllowGivenDenies optimize
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(true, &SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "src: (tag = src1) dst: (tag = dst1) conn: UDP", allowGivenDenyPaths.String(),
@@ -166,7 +166,7 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.NewTCPTransport(0, 50,
 		netp.MinPort, netp.MaxPort)}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", allowPath.String(), denyPath.String())
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(true, &SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "src: (group = src1) dst: (group = dst1) conn: TCP src-ports: 51-65535", allowGivenDenyPaths.String(),
@@ -187,7 +187,7 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 	conjDst1 = *conjDst1.add(*atomicDst1)
 	path := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTCPTransport()}
 	fmt.Printf("allowPath is %v\ndenyPath is %v\n", path.String(), path.String())
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&path}, &SymbolicPaths{&path},
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(true, &SymbolicPaths{&path}, &SymbolicPaths{&path},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allowGivenDenyPaths is %v\n", allowGivenDenyPaths.String())
 	require.Equal(t, "empty set ", allowGivenDenyPaths.String(),
@@ -230,7 +230,7 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTCPTransport()}
 	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()}
 	denyPathNoEffect := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
-	allowGivenDenyPaths := *ComputeAllowGivenDenies(&SymbolicPaths{&allowPath},
+	allowGivenDenyPaths := *ComputeAllowGivenDenies(true, &SymbolicPaths{&allowPath},
 		&SymbolicPaths{&denyPath, &denyPathNoEffect}, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDenyPaths.String())
@@ -276,7 +276,7 @@ func TestComputeAllowGivenDenyAllowAllGroup(t *testing.T) {
 	allowPath := SymbolicPath{Src: allGroupConj, Dst: allGroupConj, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
-	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(true, allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t,
 		"src: (group != src1`) dst: (*) conn: All Connections\n"+
@@ -305,7 +305,7 @@ func TestComputeAllowGivenDenyDenyAllGroup(t *testing.T) {
 	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: allGroupConj, Dst: allGroupConj, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
-	allowGivenDeny := *computeAllowGivenAllowHigherDeny(allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
+	allowGivenDeny := *computeAllowGivenAllowHigherDeny(true, allowPath, denyPath, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("computeAllowGivenAllowHigherDeny(allowPath, denyPath) is\n%v\n", allowGivenDeny.String())
 	require.Equal(t, emptySet, allowGivenDeny.String(),
 		"allowGivenDeny deny allGroup computation not as expected")
@@ -354,7 +354,7 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		denyPaths = append(denyPaths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
 	}
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.String(), denyPaths.String())
-	res := ComputeAllowGivenDenies(&allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}})
+	res := ComputeAllowGivenDenies(true, &allowPaths, &denyPaths, &Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("ComputeAllowGivenDenies:\n%v\n", res.String())
 	require.Equal(t,
 		"src: (group = t0 and group != s0 and group != s2 and group != s4) dst: (group = t1) conn: TCP\n"+
@@ -390,7 +390,7 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 	conjDst1 = *conjDst1.add(*atomicDst1)
 	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{allGroup{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
-	allowWithDeny := ComputeAllowGivenDenies(&SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
+	allowWithDeny := ComputeAllowGivenDenies(true, &SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
 	fmt.Printf("allow path: %v with higher priority deny path:%v is:\n%v\n\n",
 		allowPath.String(), denyPath.String(), allowWithDeny.String())
@@ -551,11 +551,16 @@ func TestProcessTautologyWithInternals(t *testing.T) {
 	_, _, conjGroupTag := getTagGroupConj()
 	allIPBlockTerm := &tautology{}
 	combinedConj := *conjGroupTag.add(allIPBlockTerm)
-	combinedConjAfterProcess := combinedConj.processTautology()
+	combinedConjAfterProcess := combinedConj.processTautology(true)
 	fmt.Printf("combinedConj is %v\ncombinedConjAfterProcess is %v\n", combinedConj.String(),
 		str(combinedConjAfterProcess))
-	fmt.Println("combinedConjAfterProcess[0] is", combinedConjAfterProcess[0])
 	require.Equal(t, true, combinedConjAfterProcess[0].hasTagOrGroupOrInternalIPTerm())
 	require.Equal(t, false, combinedConjAfterProcess[1].isTautology())
 	require.Equal(t, true, combinedConjAfterProcess[1].hasExternalIPBlockTerm())
+	combinedConjAfterProcessNoExternal := combinedConj.processTautology(false)
+	fmt.Printf("combinedConjAfterProcessNoExternal is %v of length %v with internals %v\n",
+		str(combinedConjAfterProcessNoExternal), len(combinedConjAfterProcessNoExternal),
+		combinedConjAfterProcessNoExternal[0].hasTagOrGroupOrInternalIPTerm())
+	require.Equal(t, 1, len(combinedConjAfterProcessNoExternal))
+	require.Equal(t, true, combinedConjAfterProcessNoExternal[0].hasTagOrGroupOrInternalIPTerm())
 }

@@ -13,9 +13,12 @@ import (
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
-	vms        []topology.Endpoint
-	allGroups  []*collector.Group
-	epToGroups map[topology.Endpoint][]*collector.Group
+	vms             []topology.Endpoint
+	allGroups       []*collector.Group      // todo - should we need it?
+	allRuleIPBlocks []*topology.RuleIPBlock // todo - should we need it?
+	epToGroups      map[topology.Endpoint][]*collector.Group
+	ruleBlockPerEP  map[topology.Endpoint][]*topology.RuleIPBlock
+	vmSegments      map[topology.Endpoint][]*topology.Segment
 	// todo: add similar maps to OS, hostname
 
 	// if synthesizeAdmin is true, rules will be translated to allow only starting with category MinNonAdminCategory();

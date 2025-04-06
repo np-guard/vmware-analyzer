@@ -66,3 +66,7 @@ func (tautology) getInternalBlock() *netset.IPBlock {
 func (tautology) isInternalOnly() bool {
 	return false
 }
+
+func (tautology) IsAllExternal() bool {
+	return false
+}

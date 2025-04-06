@@ -9,6 +9,7 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	admin "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
@@ -34,6 +35,7 @@ const noNSXRuleID = "none"
 type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
+	NotFullySupported    bool
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -69,20 +71,12 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 }
 
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
+	policies.NotFullySupported = policies.NotFullySupported || k8sNotFullySupported(p.Src) || k8sNotFullySupported(p.Dst)
 	srcSelector := createSelector(p.Src)
 	dstSelector := createSelector(p.Dst)
-	// a tmp check, this case should be filtered the abstract phase:
-	if !inbound && len(srcSelector.cidrs) > 0 {
-		logging.Debugf("did not synthesize policy %s, egress policy can not have source IPs", p.String())
-		return
-	}
-	// a tmp check, this case should be filtered the abstract phase:
-	if inbound && len(dstSelector.cidrs) > 0 {
-		logging.Debugf("did not synthesize policy %s, ingress policy can not have destination IPs", p.String())
-		return
-	}
-	if isAdmin && inbound && len(srcSelector.cidrs) > 0 {
-		logging.Debugf("Ignoring %s. admin network policy peer with IPs for Ingress are not supported", p.String())
+	if isAdmin && inbound && !srcSelector.isTautology() && len(srcSelector.cidrs) > 0 {
+		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
+		policies.NotFullySupported = true
 		return
 	}
 	if isAdmin {
@@ -223,6 +217,14 @@ type policySelector struct {
 	namespace meta.LabelSelector
 }
 
+func (selector *policySelector) isTautology() bool {
+	return len(selector.cidrs) == 1 && selector.cidrs[0] == netset.CidrAll
+}
+
+func (selector *policySelector) convertAllCidrToAllPodsSelector() {
+	selector.cidrs = []string{}
+}
+
 func createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
@@ -231,7 +233,9 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
-			res.cidrs = a.GetExternalBlock().ToCidrList()
+			if len(con) == 1 {
+				res.cidrs = []string{netset.CidrAll}
+			} // else we just ignore for now
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces
@@ -247,7 +251,12 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	return res
 }
 
-func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
+func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
+	if selector.isTautology() {
+		return []networking.NetworkPolicyPeer{
+			{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}},
+			{PodSelector: selector.pods}}
+	}
 	if len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {
@@ -258,15 +267,27 @@ func (selector policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	return []networking.NetworkPolicyPeer{{PodSelector: selector.pods}}
 }
 
-func (selector policySelector) toPodSelector() meta.LabelSelector {
+func (selector *policySelector) toPodSelector() meta.LabelSelector {
+	if selector.isTautology() {
+		selector.convertAllCidrToAllPodsSelector()
+	}
 	return *selector.pods
 }
 
-func (selector policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
+func (selector *policySelector) toAdminPolicyIngressPeers() []admin.AdminNetworkPolicyIngressPeer {
+	if selector.isTautology() {
+		selector.convertAllCidrToAllPodsSelector()
+	}
 	return []admin.AdminNetworkPolicyIngressPeer{
 		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
-func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
+func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
+	if selector.isTautology() {
+		return []admin.AdminNetworkPolicyEgressPeer{
+			{Networks: []admin.CIDR{admin.CIDR(netset.CidrAll)}},
+			{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
+	}
+
 	if len(selector.cidrs) > 0 {
 		res := make([]admin.AdminNetworkPolicyEgressPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {
@@ -277,7 +298,10 @@ func (selector policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPo
 	return []admin.AdminNetworkPolicyEgressPeer{
 		{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}}
 }
-func (selector policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
+func (selector *policySelector) toAdminPolicySubject() admin.AdminNetworkPolicySubject {
+	if selector.isTautology() {
+		selector.convertAllCidrToAllPodsSelector()
+	}
 	return admin.AdminNetworkPolicySubject{
 		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: selector.namespace}}
 }
@@ -292,4 +316,23 @@ var reg = regexp.MustCompile(`[^-A-Za-z0-9_.]`)
 
 func toLegalK8SString(s string) string {
 	return reg.ReplaceAllString(s, "-NLC")
+}
+
+// a tmp function, mark all the cases we do not support correctly
+func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
+	for _, a := range con {
+		_, isSegment := a.(*symbolicexpr.SegmentTerm)
+		switch {
+		case a.IsAllExternal(): // policies not supported yet
+			return true
+		case a.IsTautology():
+			return len(con) > 1
+		case a.GetExternalBlock() != nil && len(con) > 1:
+			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
+			return true
+		case isSegment:
+			return true
+		}
+	}
+	return false
 }
