@@ -166,7 +166,7 @@ func (p *nsxConfigParser) addPathsToDisplayNames() {
 	for sPath, sObj := range p.servicePathsToObjects {
 		res[sPath] = *sObj.DisplayName
 	}
-	for _, block := range p.configRes.topology.allRuleIPBlocks {
+	for _, block := range p.configRes.Topology.AllRuleIPBlocks {
 		res[block.OriginalIP] = block.OriginalIP
 	}
 	p.configRes.FW.SetPathsToDisplayNames(res)
@@ -325,7 +325,7 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		}
 	} else {
 		for _, ip := range ips {
-			if ruleBlock := p.configRes.topology.allRuleIPBlocks[ip]; ruleBlock != nil {
+			if ruleBlock := p.configRes.Topology.AllRuleIPBlocks[ip]; ruleBlock != nil {
 				res.VMs = append(res.VMs, ruleBlock.VMs...)
 				res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
 				res.Blocks = append(res.Blocks, ruleBlock)

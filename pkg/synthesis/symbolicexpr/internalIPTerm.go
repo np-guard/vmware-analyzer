@@ -1,6 +1,9 @@
 package symbolicexpr
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
@@ -23,8 +26,8 @@ func (internalIP internalIPTerm) name() string {
 	return internalIP.ruleBlock.OriginalIP
 }
 
-func (internalIPTerm) AsSelector() (string, bool) {
-	return toImplement, false
+func (internalIP internalIPTerm) AsSelector() (string, bool) {
+	return fmt.Sprintf("VMs_within_IPs__%s", strings.ReplaceAll(internalIP.name(), "/", "-")), internalIP.neg
 }
 
 func (internalIP internalIPTerm) negate() atomic {

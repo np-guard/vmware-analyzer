@@ -38,11 +38,11 @@ spec:
           to:
             - podSelector:
                 matchExpressions:
-                    - key: to-NLCimplement
+                    - key: VMs_within_IPs__0.0.1.128-25
                       operator: Exists
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: VMs_within_IPs__0.0.1.0-25
               operator: Exists
     policyTypes:
         - Egress
@@ -61,14 +61,14 @@ spec:
         - from:
             - podSelector:
                 matchExpressions:
-                    - key: to-NLCimplement
+                    - key: VMs_within_IPs__0.0.1.0-25
                       operator: Exists
           ports:
             - port: 445
               protocol: TCP
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: VMs_within_IPs__0.0.1.128-25
               operator: Exists
     policyTypes:
         - Ingress
@@ -92,7 +92,7 @@ spec:
                 cidr: 0.0.2.0/24
     podSelector:
         matchExpressions:
-            - key: to-NLCimplement
+            - key: VMs_within_IPs__0.0.1.128-25
               operator: Exists
     policyTypes:
         - Egress
