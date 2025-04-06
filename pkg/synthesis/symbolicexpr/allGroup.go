@@ -71,3 +71,7 @@ func (allGroup) getInternalBlock() *netset.IPBlock {
 func (allGroup) isInternalOnly() bool {
 	return true
 }
+
+func (allGroup) IsAllExternal() bool {
+	return false
+}

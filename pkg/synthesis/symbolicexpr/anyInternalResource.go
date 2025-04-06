@@ -31,3 +31,7 @@ func (anyInternalResource) GetExternalBlock() *netset.IPBlock {
 func (anyInternalResource) isInternalOnly() bool {
 	return true
 }
+
+func (anyInternalResource) IsAllExternal() bool {
+	return false
+}

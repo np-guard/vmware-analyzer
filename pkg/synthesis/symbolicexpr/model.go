@@ -86,6 +86,7 @@ type atomic interface {
 	IsContradiction() bool             // is term contradiction (negation of tautology)?
 	IsAllGroups() bool                 // term is true for any internal resource (allGroup, tautology)?
 	IsNoGroup() bool                   // term is false for any internal resource (noGroup, contradiction)?
+	IsAllExternal() bool               // term is allExternal
 	isNegateOf(atomic) bool            // is the term negation of the other given term
 	isInternalOnly() bool              // is the atom internal, not including tautology
 	AsSelector() (string, bool)        // for the usage of policy synthesis

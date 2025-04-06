@@ -114,6 +114,10 @@ func (*externalIPTerm) isInternalOnly() bool {
 	return false
 }
 
+func (*externalIPTerm) IsAllExternal() bool {
+	return false
+}
+
 // Translates RuleIPBlock it into []*Conjunction
 // 3 relevant types:
 // 1. tautology: 0.0.0.0/0; if one of the blocks of a RuleIPBlock is a tautology then it overrides all other blocks
