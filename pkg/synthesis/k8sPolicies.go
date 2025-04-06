@@ -323,6 +323,8 @@ func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
 		_, isSegment := a.(*symbolicexpr.SegmentTerm)
 		switch {
+		case a.IsAllExternal(): // policies not supported yet
+			return true
 		case a.IsTautology():
 			return len(con) > 1
 		case a.GetExternalBlock() != nil && len(con) > 1:

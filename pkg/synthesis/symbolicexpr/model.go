@@ -71,6 +71,10 @@ type allGroup struct {
 type noGroup struct {
 }
 
+// allExternal: representative of *all* external IPs
+type allExternal struct {
+}
+
 // atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
 // tautology and contradiction
 type atomic interface {
@@ -82,7 +86,9 @@ type atomic interface {
 	IsContradiction() bool             // is term contradiction (negation of tautology)?
 	IsAllGroups() bool                 // term is true for any internal resource (allGroup, tautology)?
 	IsNoGroup() bool                   // term is false for any internal resource (noGroup, contradiction)?
+	IsAllExternal() bool               // term is allExternal
 	isNegateOf(atomic) bool            // is the term negation of the other given term
+	isInternalOnly() bool              // is the atom internal, not including tautology
 	AsSelector() (string, bool)        // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool      // based on hints
 	supersetOf(atomic, *Hints) bool    // super set of resources satisfying atom, given Hints based on hints

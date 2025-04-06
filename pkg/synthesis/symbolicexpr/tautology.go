@@ -62,3 +62,11 @@ func (tautology) GetExternalBlock() *netset.IPBlock {
 func (tautology) getInternalBlock() *netset.IPBlock {
 	return netset.GetCidrAll()
 }
+
+func (tautology) isInternalOnly() bool {
+	return false
+}
+
+func (tautology) IsAllExternal() bool {
+	return false
+}
