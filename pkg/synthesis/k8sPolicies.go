@@ -41,7 +41,7 @@ type k8sPolicies struct {
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	if createDNSPolicy {
-		if model.synthesizeAdmin {
+		if model.synthesizeAdmin || policies.namespacesInfo.hasNonDefault() {
 			policies.addDNSAllowAdminNetworkPolicy()
 		} else {
 			policies.addDNSAllowNetworkPolicy()
@@ -94,20 +94,29 @@ func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound,
 func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySelector,
 	ports []networking.NetworkPolicyPort, inbound bool,
 	description, nsxRuleID string) {
-	pol := newNetworkPolicy(fmt.Sprintf("policy-%d", len(policies.networkPolicies)), description, nsxRuleID)
-	policies.networkPolicies = append(policies.networkPolicies, pol)
+	newPolicy := func(namespace string) *networking.NetworkPolicy {
+		pol := newNetworkPolicy(fmt.Sprintf("policy-%d", len(policies.networkPolicies)), namespace, description, nsxRuleID)
+		policies.networkPolicies = append(policies.networkPolicies, pol)
+		return pol
+	}
 	if inbound {
 		from := srcSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
-		pol.Spec.Ingress = rules
-		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
-		pol.Spec.PodSelector = dstSelector.toPodSelector()
+		for _, namespace := range dstSelector.namespaces{	
+			pol := newPolicy(namespace.MatchLabels[namespaceNameKey])
+			pol.Spec.Ingress = rules
+			pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress}
+			pol.Spec.PodSelector = dstSelector.toPodSelector()
+		}
 	} else {
 		to := dstSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
-		pol.Spec.Egress = rules
-		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
-		pol.Spec.PodSelector = srcSelector.toPodSelector()
+		for _, namespace := range srcSelector.namespaces{	
+			pol := newPolicy(namespace.MatchLabels[namespaceNameKey])
+			pol.Spec.Egress = rules
+			pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
+			pol.Spec.PodSelector = srcSelector.toPodSelector()
+		}
 	}
 }
 
@@ -116,13 +125,15 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 	if defaultRule != nil {
 		ruleID = defaultRule.RuleIDStr()
 	}
-	pol := newNetworkPolicy("default-deny", "Default Deny Network Policy", ruleID)
-	policies.networkPolicies = append(policies.networkPolicies, pol)
-	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
+	for namespaceName := range policies.namespacesInfo.namespaces {
+		pol := newNetworkPolicy("default-deny", namespaceName, "Default Deny Network Policy", ruleID)
+		policies.networkPolicies = append(policies.networkPolicies, pol)
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
+	}
 }
 
 func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
-	pol := newNetworkPolicy("dns-policy", "Network Policy To Allow Access To DNS Server", noNSXRuleID)
+	pol := newNetworkPolicy("dns-policy", meta.NamespaceDefault, "Network Policy To Allow Access To DNS Server", noNSXRuleID)
 	policies.networkPolicies = append(policies.networkPolicies, pol)
 	pol.Spec.PodSelector = meta.LabelSelector{}
 	to := []networking.NetworkPolicyPeer{{
@@ -182,12 +193,12 @@ func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
 const annotationDescription = "description"
 const annotationUID = "nsx-id"
 
-func newNetworkPolicy(name, description, nsxRuleID string) *networking.NetworkPolicy {
+func newNetworkPolicy(name, namespace, description, nsxRuleID string) *networking.NetworkPolicy {
 	pol := &networking.NetworkPolicy{}
 	pol.Kind = "NetworkPolicy"
 	pol.APIVersion = "networking.k8s.io/v1"
 	pol.Name = toLegalK8SString(name)
-	pol.Namespace = meta.NamespaceDefault
+	pol.Namespace = namespace
 	pol.Annotations = map[string]string{
 		annotationDescription: description,
 		annotationUID:         nsxRuleID,
@@ -232,7 +243,7 @@ func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policy
 
 	res := policySelector{pods: &meta.LabelSelector{},
 		namespaces: make([]meta.LabelSelector, len(namespacesNames))}
-	for i,name := range namespacesNames{
+	for i, name := range namespacesNames {
 		res.namespaces[i].MatchLabels = map[string]string{namespaceNameKey: name}
 	}
 
@@ -285,9 +296,9 @@ func (selector *policySelector) toAdminPolicyIngressPeers() []admin.AdminNetwork
 		selector.convertAllCidrToAllPodsSelector()
 	}
 	res := make([]admin.AdminNetworkPolicyIngressPeer, len(selector.namespaces))
-	for i, namespaceSelector := range selector.namespaces{
+	for i, namespaceSelector := range selector.namespaces {
 		res[i] = admin.AdminNetworkPolicyIngressPeer{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: namespaceSelector}}
-	} 
+	}
 	return res
 }
 func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkPolicyEgressPeer {
@@ -305,9 +316,9 @@ func (selector *policySelector) toAdminPolicyEgressPeers() []admin.AdminNetworkP
 		return res
 	}
 	res := make([]admin.AdminNetworkPolicyEgressPeer, len(selector.namespaces))
-	for i, namespaceSelector := range selector.namespaces{
+	for i, namespaceSelector := range selector.namespaces {
 		res[i] = admin.AdminNetworkPolicyEgressPeer{Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: namespaceSelector}}
-	} 
+	}
 	return res
 }
 
@@ -316,7 +327,7 @@ func (selector *policySelector) toAdminPolicySubject() admin.AdminNetworkPolicyS
 		selector.convertAllCidrToAllPodsSelector()
 	}
 	return admin.AdminNetworkPolicySubject{
-		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector:meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey:meta.NamespaceDefault}}}}
+		Pods: &admin.NamespacedPod{PodSelector: *selector.pods, NamespaceSelector: meta.LabelSelector{MatchLabels: map[string]string{namespaceNameKey: meta.NamespaceDefault}}}}
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////

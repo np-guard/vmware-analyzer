@@ -22,6 +22,9 @@ type namespacesInfo struct {
 	vms         []topology.Endpoint
 }
 
+func (namespacesInfo *namespacesInfo) hasNonDefault() bool {
+	return len(namespacesInfo.namespaces) > 1 || namespacesInfo.namespaces[meta.NamespaceDefault] != nil
+}
 func newNamespacesInfo(vms []topology.Endpoint) *namespacesInfo {
 	return &namespacesInfo{
 		namespaces:  map[string]*namespace{},
