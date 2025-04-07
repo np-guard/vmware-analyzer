@@ -480,7 +480,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	// get analyzed connectivity:
 	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
-	noIcmpGroupedExternalToAllMap := adjustConnToK8s(connMap, config.Topology.AllExternalIPBlock)
+	noIcmpGroupedExternalToAllMap := removeICMP(connMap)
 	debugDir := synTest.debugDir()
 	noICMPGroupedMapStr, err := noIcmpGroupedExternalToAllMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
@@ -488,8 +488,8 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 
 	k8sConnMap := readK8SConnFile(t, k8sConnectivityFile)
-	k8sGroupedMap := k8sConnMap.GroupExternalEP()
-	k8sGroupedMapStr, err := k8sGroupedMap.GenConnectivityOutput(synTest.outputParams())
+	k8sGroupedNoExternalMap := removeInternalAddresses(k8sConnMap, config.Topology.AllExternalIPBlock)
+	k8sGroupedMapStr, err := k8sGroupedNoExternalMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
 	require.Nil(t, err)
@@ -499,8 +499,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 // adjust connectivity map to be later compared to netpol analyzer map:
 // 1. remove ICMP
-// 2. replace all external with 0.0.0.0/0
-func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap {
+func removeICMP(connMap connectivity.ConnMap) connectivity.ConnMap {
 	noIcmpMap := connectivity.ConnMap{}
 	for src, srcMap := range connMap {
 		for dst, conn := range srcMap {
@@ -511,25 +510,42 @@ func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) 
 		}
 	}
 	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
-	// allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
 	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
 		if !ep.IsExternal() {
 			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
 		}
-		// if ep.(*topology.ExternalIP).Block.Equal(allExternal) {
-		// 	return allCidrEP
-		// }
 		return ep
 	}
 
-	noIcmpGroupedExternalToAllMap := connectivity.ConnMap{}
+	noIcmpGroupedLegalMap := connectivity.ConnMap{}
 	for src, srcMap := range noIcmpGroupedMap {
 		for dst, conn := range srcMap {
-			noIcmpGroupedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
+			noIcmpGroupedLegalMap.Add(adjustEP(src), adjustEP(dst), conn)
 		}
 	}
-	return noIcmpGroupedExternalToAllMap
+	return noIcmpGroupedLegalMap
 }
+
+// replace 0.0.0.0/0 with all external 
+func removeInternalAddresses(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap {
+	groupedMap := connMap.GroupExternalEP()
+	allExternalEP := topology.NewExternalIP(allExternal)
+	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
+		if ep.IsExternal() && ep.(*topology.ExternalIP).Block.Equal(netset.GetCidrAll()) {
+			return allExternalEP
+		}
+		return ep
+	}
+
+	GroupedExternalToAllMap := connectivity.ConnMap{}
+	for src, srcMap := range groupedMap {
+		for dst, conn := range srcMap {
+			GroupedExternalToAllMap.Add(adjustEP(src), adjustEP(dst), conn)
+		}
+	}
+	return GroupedExternalToAllMap
+}
+
 
 func readK8SConnFile(t *testing.T, k8sConnectivityFile string) connectivity.ConnMap {
 	// we get a file with lines in the foramt:
