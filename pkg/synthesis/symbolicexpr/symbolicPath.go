@@ -202,7 +202,7 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 		// if 0.0.0.0/0 then this is the only relevant input; if exclude isAllGroup then only ipBlocks rule is relevant
 		return res
 	case isTautology && isExclude:
-		// if IPBlocks is 0.0.0.0/0 exclude then the ipBlock segment is ill relevant
+		// if IPBlocks is exclude 0.0.0.0/0 then the ipBlock rule is not relevant
 		res = append(res, getConjunctionForGroups(isExclude, groups, groupToConjunctions, rule.RuleID)...)
 	case isAllGroups && !isExclude:
 		res = append(res, &Conjunction{allGroup{}}) // if "Any" group then this is the only relevant internal resource

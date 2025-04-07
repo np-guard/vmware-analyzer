@@ -35,8 +35,7 @@ func getConjunctionForGroups(isExclude bool, groups []*collector.Group, groupToC
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			// todo: handle isExclude for tags as well
-			tagConj := GetTagConjunctionForExpr(&group.Expression, group.Name())
+			tagConj := GetTagConjunctionForExpr(isExclude, &group.Expression, group.Name())
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
