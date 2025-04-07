@@ -1,0 +1,20 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group    |Expression |VM
+frontend |           |A
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                         |Dst |Connection
+0                            |1005    |(*)                         |(*) |All Connections
+0                            |1005    |(IP addr not in 1.0.0.0/24) |(*) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src |Dst |Connection
+
+

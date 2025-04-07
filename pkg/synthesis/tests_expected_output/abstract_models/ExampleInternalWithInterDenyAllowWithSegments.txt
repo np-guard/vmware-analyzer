@@ -11,18 +11,19 @@ real-group    |           |vm-no-address1, vm-no-address2
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-Original allow rule priority |Rule id |Src                                                                      |Dst                                            |Connection
-0                            |1005    |(segment seg_2-3 and not in segment seg_1)                               |(IP addr in 0.0.0.0/0)                         |All Connections
-1                            |1007    |(segment seg-6-7 and not in segment seg_4-5)                             |(IP addr in 0.0.0.0/0)                         |All Connections
-2                            |2200    |(segment seg-8)                                                          |(IP addr in 0.0.0.0/0 and group != real-group) |All Connections
-3                            |3000    |(segment seg-9-10)                                                       |(IP addr in 0.0.0.0/0)                         |All Connections
-4                            |4008    |(group = real-group and not in segment seg_4-5 and not in segment seg-8) |(group = real-group)                           |All Connections
+Original allow rule priority |Rule id |Src                                                                      |Dst                    |Connection
+0                            |1005    |(segment seg_2-3 and not in segment seg_1)                               |(IP addr in 0.0.0.0/0) |All Connections
+1                            |1007    |(segment seg-6-7 and not in segment seg_4-5)                             |(IP addr in 0.0.0.0/0) |All Connections
+2                            |2200    |(segment seg-8)                                                          |(group != real-group)  |All Connections
+3                            |3000    |(segment seg-9-10)                                                       |(IP addr in 0.0.0.0/0) |All Connections
+4                            |4008    |(group = real-group and not in segment seg_4-5 and not in segment seg-8) |(group = real-group)   |All Connections
 
 outbound rules
-Original allow rule priority |Rule id |Src                                                                      |Dst                                            |Connection
-0                            |1005    |(segment seg_2-3 and not in segment seg_1)                               |(IP addr in 0.0.0.0/0)                         |All Connections
-1                            |1007    |(segment seg-6-7 and not in segment seg_4-5)                             |(IP addr in 0.0.0.0/0)                         |All Connections
-2                            |2200    |(segment seg-8)                                                          |(IP addr in 0.0.0.0/0 and group != real-group) |All Connections
-3                            |3000    |(segment seg-9-10)                                                       |(IP addr in 0.0.0.0/0)                         |All Connections
-4                            |4008    |(group = real-group and not in segment seg_4-5 and not in segment seg-8) |(group = real-group)                           |All Connections
+Original allow rule priority |Rule id |Src                                                                      |Dst                    |Connection
+0                            |1005    |(segment seg_2-3 and not in segment seg_1)                               |(IP addr in 0.0.0.0/0) |All Connections
+1                            |1007    |(segment seg-6-7 and not in segment seg_4-5)                             |(IP addr in 0.0.0.0/0) |All Connections
+2                            |2200    |(segment seg-8)                                                          |(IP addr is external)  |All Connections
+2                            |2200    |(segment seg-8)                                                          |(group != real-group)  |All Connections
+3                            |3000    |(segment seg-9-10)                                                       |(IP addr in 0.0.0.0/0) |All Connections
+4                            |4008    |(group = real-group and not in segment seg_4-5 and not in segment seg-8) |(group = real-group)   |All Connections
 

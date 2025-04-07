@@ -1,0 +1,13 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src                     |Dst |Connection
+0        |1004    |deny   |(IP addr in 1.0.0.0/24) |(*) |All Connections
+1        |1005    |allow  |(IP addr in 0.0.0.0/0)  |(*) |All Connections
+2        |1003    |deny   |(*)                     |(*) |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src |Dst |Connection
+0        |1003    |deny   |(*) |(*) |All Connections
+

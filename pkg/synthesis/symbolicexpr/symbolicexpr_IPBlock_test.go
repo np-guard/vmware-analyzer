@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -89,14 +90,11 @@ func TestIpBlockTerm(t *testing.T) {
 
 func TestIpBlockWithConj(t *testing.T) {
 	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
-	slytherin, gryffindor := "Slytherin", "Gryffindor"
-	atomicSly := NewTagTerm(slytherin, false)
-	atomicGry := NewTagTerm(gryffindor, false)
 	conjAllIPBlockTermOnly := &Conjunction{allIPBlockTautology}
-	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1, atomicSly, atomicGry}
+	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1}
 	conjIPBlockTerm2Only := &Conjunction{ipBlockTerm2}
-	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3, atomicSly, atomicGry}
-	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm, atomicSly, atomicGry}
+	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3}
+	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm}
 	fmt.Println("conjAllIPBlockTermOnly is", conjAllIPBlockTermOnly)
 	fmt.Println("conjIPBlockTerm1 is", conjIPBlockTerm1)
 	fmt.Println("conjIPBlockTerm2 is", conjIPBlockTerm2Only)
@@ -120,14 +118,15 @@ func TestIpBlockWithConj(t *testing.T) {
 	fmt.Println("conjIPBlockTerm1.add(ipBlockTerm2)", term1AddTerm2)
 
 	require.Equal(t, "(IP addr in the empty block)", term2AddTerm3.String())
-	require.Equal(t, "(IP addr in 192.0.2.0/24)", allAddTerm3.String())
-	require.Equal(t, "(IP addr in 192.0.2.0 originalIP and tag = Slytherin and tag = Gryffindor)",
+	// tautology not merged by add with other IP blocks since it also has an internal component
+	require.Equal(t, "(IP addr in 0.0.0.0/0 and IP addr in 192.0.2.0/24)", allAddTerm3.String())
+	require.Equal(t, "(IP addr in 192.0.2.0 originalIP)",
 		singleAddTerm3.String())
-	require.Equal(t, "(IP addr in 192.0.2.0 and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in 192.0.2.0)",
 		term3AddSingle.String())
-	require.Equal(t, "(IP addr in the empty block and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in the empty block)",
 		term1AddTerm3.String())
-	require.Equal(t, "(IP addr in 1.2.0.0/16 and tag = Slytherin and tag = Gryffindor)",
+	require.Equal(t, "(IP addr in 1.2.0.0/16)",
 		term1AddTerm2.String())
 
 	// tests isEmpty
@@ -142,7 +141,7 @@ func TestIpBlockWithConj(t *testing.T) {
 
 	// test isTautologyOrAllGroups
 	require.Equal(t, true, conjAllIPBlockTermOnly.isTautologyOrAllGroups(), "1.2.3.0/16 is tautology")
-	require.Equal(t, false, conjAllIPBlockTermOnly.add(atomicSly).isTautologyOrAllGroups(), "adding a "+
+	require.Equal(t, false, conjAllIPBlockTermOnly.add(ipBlockTerm2).isTautologyOrAllGroups(), "adding a "+
 		"non tautology block to 0.0.0.0/0 is not a tautology")
 	require.Equal(t, false, conjIPBlockTerm2Only.isTautologyOrAllGroups(), "1.2.3.0/16 with OriginalIP not tautology")
 	require.Equal(t, false, conjIPBlockTerm3.isTautologyOrAllGroups(), "192.0.2.0/24 not tautology")
@@ -163,10 +162,6 @@ func TestIpBlockWithConj(t *testing.T) {
 		"result of add to conj with not only ip addr implies its conj ip term")
 	require.Equal(t, true, term1AddTerm3.contains(ipBlockTerm2),
 		"result of add to conj with no only ip addr implies its right term")
-	nonIPBlockConj := &Conjunction{atomicSly, atomicGry}
-	require.Equal(t, true, nonIPBlockConj.contains(allIPBlockTautology), "conj with no ip Block still implies"+
-		"0.0.0.0/0")
-
 	require.Equal(t, false, conjIPBlockTerm1.contains(ipBlockTerm2), "conj with 1.2.3.0/8 does not "+
 		"imply 1.2.3.0/16")
 	require.Equal(t, false, conjAllIPBlockTermOnly.contains(ipBlockTerm3), "conj with 0.0.0.0/0 does not "+
@@ -212,4 +207,48 @@ func TestInternalIPTerms(t *testing.T) {
 		"172.16.0.0/12 neg supersetOf 192.168.0.0/16")
 	require.Equal(t, true, internalIPTerm2Neg.supersetOf(ipInternalTerm1, &Hints{GroupsDisjoint: [][]string{}}),
 		"192.168.0.0/16 neg supersetOf 172.16.0.0/12")
+}
+
+func TestProcessTautologyWithExternals(t *testing.T) {
+	// tautology with external terms
+	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, _, _ := getIPBlocksTerms()
+	Conjunction1 := Conjunction{ipBlockTerm1, allIPBlockTautology}
+	Conj1AfterProcess := Conjunction1.processTautology(true)
+	fmt.Printf("Conjunction1 is %v\n", Conjunction1.String())
+	fmt.Printf("Conjunction1 after processTautology is\n%v\n\n", str(Conj1AfterProcess))
+	require.Equal(t, 2, len(Conj1AfterProcess))
+	require.Equal(t, true, Conj1AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, true, Conj1AfterProcess[1].isAllGroup())
+
+	Conjunction2 := Conjunction{allIPBlockTautology, ipBlockTerm1}
+	Conj2AfterProcess := Conjunction2.processTautology(true)
+	fmt.Printf("Conjunction2 is %v\n", Conjunction2.String())
+	fmt.Printf("Conjunction2 after processTautology is\n%v\n\n", str(Conj2AfterProcess))
+	require.Equal(t, 2, len(Conj2AfterProcess))
+	require.Equal(t, true, Conj2AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, true, Conj2AfterProcess[1].isAllGroup())
+
+	Conjunction3 := Conjunction{ipBlockTerm2, allIPBlockTautology, ipBlockTerm1}
+	Conj3AfterProcess := Conjunction3.processTautology(true)
+	fmt.Printf("Conjunction3 is %v\n", Conjunction3.String())
+	fmt.Printf("Conjunction3 after processTautology is\n%v\n\n", str(Conj3AfterProcess))
+	require.Equal(t, 2, len(Conj3AfterProcess))
+	require.Equal(t, true, Conj3AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, true, Conj3AfterProcess[1].isAllGroup())
+
+	Conjunction4 := Conjunction{ipBlockTerm2, ipBlockTerm1}
+	Conj4AfterProcess := Conjunction4.processTautology(true)
+	fmt.Printf("Conjunction4 is %v\n\n", Conjunction4.String())
+	fmt.Printf("Conjunction4 after processTautology is\n%v\n\n", str(Conj4AfterProcess))
+	require.Equal(t, 1, len(Conj4AfterProcess))
+	require.Equal(t, true, Conj4AfterProcess[0].hasExternalIPBlockTerm())
+	require.Equal(t, false, Conj4AfterProcess[0].isAllGroup())
+}
+
+func str(cs []*Conjunction) string {
+	res := make([]string, len(cs))
+	for i, conj := range cs {
+		res[i] = conj.String()
+	}
+	return strings.Join(res, "\n")
 }
