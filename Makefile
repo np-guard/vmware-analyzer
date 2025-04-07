@@ -3,6 +3,7 @@ EXE:= nsxanalyzer
 COVERAGE:=nsxanalyzer.coverprofile
 EXE_WINDOWS:= nsxanalyzer_windows_amd64.exe
 EXE_LINUX:= nsxanalyzer_linux_amd64
+#PKGS:= $(go list ./...)
 
 # TODO: update NSX_ANALYZER_IMAGE to the actual image name
 NSX_ANALYZER_IMAGE = nsx-analyzer
@@ -48,6 +49,9 @@ build-linux:
 test:
 	@echo -- $@ --
 	go test ./... -v -coverpkg=./... -coverprofile $(COVERAGE)
+
+test-fail-fast:		
+	./scripts/tests_fail_fast.sh	
 
 coverage:
 	go tool cover -html="$(COVERAGE)"

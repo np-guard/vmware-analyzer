@@ -178,7 +178,6 @@ func (p *nsxConfigParser) storeParsedGroups() {
 	p.configRes.GroupsPerVM = p.vMsGroups()
 }
 
-// func (p *nsxConfigParser) getDFW() {}
 func (p *nsxConfigParser) storeParsedDFW() {
 	p.configRes.FW = dfw.NewEmptyDFW()
 	for i := range p.rc.DomainList {
@@ -191,15 +190,17 @@ func (p *nsxConfigParser) storeParsedDFW() {
 			category := *secPolicy.Category
 			// more fields to consider: sequence_number , stateful,tcp_strict, unique_id
 
-			// This scope will take precedence over rule level scope.
-			scope, _ := p.getEndpointsFromScopePaths(secPolicy.Scope)
-			policyHasScope := !slices.Equal(secPolicy.Scope, []string{anyStr})
+			// This policy scope will take precedence over rule level scope (if it specifies an actual scope and not "ANY")
+			policyScope := dfw.RuleEndpoints{}
+			policyScope.VMs, policyScope.Groups = p.getEndpointsFromScopePaths(secPolicy.Scope)
+			policyScope.IsAllGroups = slices.Equal(secPolicy.Scope, []string{anyStr})
+			policyHasScope := !policyScope.IsAllGroups
 
 			rules := secPolicy.Rules
 			for i := range rules {
 				rule := &rules[i]
 				r := p.getDFWRule(rule)
-				r.scope.VMs = scope // scope from policy
+				r.scope = policyScope
 				if !policyHasScope {
 					// if policy scope is not configured, rule's scope takes effect
 					r.scope.IsAllGroups = slices.Equal(rule.Scope, []string{anyStr})
@@ -220,7 +221,7 @@ func (p *nsxConfigParser) storeParsedDFW() {
 				if defaultRule == nil {
 					logging.Debugf("skipping default rule for policy %s\n", *secPolicy.DisplayName)
 				} else {
-					defaultRule.scope.VMs = scope
+					defaultRule.scope = policyScope // default-rule is relevant to a scoped policy only
 					defaultRule.secPolicyName = *secPolicy.DisplayName
 					p.addFWRule(defaultRule, category, nil)
 				}

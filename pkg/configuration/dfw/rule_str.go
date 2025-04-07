@@ -39,6 +39,14 @@ func getRulesHeader() []string {
 	}
 }
 
+func (f *FwRule) scopeStr() string {
+	if f.Scope.IsAllGroups {
+		return common.AnyStr
+	}
+	return common.SortedJoinCustomStrFuncSlice(f.Scope.Groups,
+		func(g *collector.Group) string { return *g.DisplayName }, common.CommaSeparator)
+}
+
 // originalRuleComponentsStr returns a string representation of a single rule with original attribute values (including groups),
 // matching to fields as returned from getRulesHeader()
 func (f *FwRule) originalRuleComponentsStr() []string {
@@ -80,7 +88,7 @@ func (f *FwRule) originalRuleComponentsStr() []string {
 		f.getDstString(),
 		f.servicesString(),
 		string(f.Action), f.direction,
-		strings.Join(f.OrigRuleObj.Scope, common.CommaSeparator),
+		f.scopeStr(),
 		f.secPolicyName,
 		f.secPolicyCategory,
 	}
