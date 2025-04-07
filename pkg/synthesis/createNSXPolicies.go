@@ -130,6 +130,7 @@ func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, c
 	rule.Dest = a.createGroup(p.Dst)
 	rule.Conn = p.Conn
 	rule.Direction = direction
+	rule.Description = p.String()
 }
 
 func (a *absToNXS) addNewRule(categoryType string) *data.Rule {

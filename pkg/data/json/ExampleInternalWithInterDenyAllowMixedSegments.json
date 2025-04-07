@@ -28495,6 +28495,105 @@
             "ip_address_info": [
                 {
                     "ip_addresses": [
+                        "10.0.0.2"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm1",
+            "owner_vm_id": "vm1"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.100"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm2",
+            "owner_vm_id": "vm2"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.101"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm3",
+            "owner_vm_id": "vm3"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.2"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm1",
+            "owner_vm_id": "vm1"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.100"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm2",
+            "owner_vm_id": "vm2"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.101"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm3",
+            "owner_vm_id": "vm3"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.1.0"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm4",
+            "owner_vm_id": "vm4"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.1.1"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm5",
+            "owner_vm_id": "vm5"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
+                        "10.0.0.2"
+                    ]
+                }
+            ],
+            "lport_attachment_id": "port_vm1",
+            "owner_vm_id": "vm1"
+        },
+        {
+            "ip_address_info": [
+                {
+                    "ip_addresses": [
                         "10.0.0.100"
                     ]
                 }
@@ -28561,17 +28660,6 @@
             "ip_address_info": [
                 {
                     "ip_addresses": [
-                        "10.0.0.2"
-                    ]
-                }
-            ],
-            "lport_attachment_id": "non-relevant-port-id",
-            "owner_vm_id": "vm1"
-        },
-        {
-            "ip_address_info": [
-                {
-                    "ip_addresses": [
                         "172.16.10.10"
                     ]
                 }
@@ -28625,6 +28713,14 @@
             "segment_ports": [
                 {
                     "attachment": {
+                        "id": "port_vm1"
+                    },
+                    "display_name": "port_vm1",
+                    "parent_path": "seg_2-3",
+                    "unique_id": "port_vm1"
+                },
+                {
+                    "attachment": {
                         "id": "port_vm2"
                     },
                     "display_name": "port_vm2",
@@ -28653,6 +28749,30 @@
             "segment_ports": [
                 {
                     "attachment": {
+                        "id": "port_vm1"
+                    },
+                    "display_name": "port_vm1",
+                    "parent_path": "seg_4-5",
+                    "unique_id": "port_vm1"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm2"
+                    },
+                    "display_name": "port_vm2",
+                    "parent_path": "seg_4-5",
+                    "unique_id": "port_vm2"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm3"
+                    },
+                    "display_name": "port_vm3",
+                    "parent_path": "seg_4-5",
+                    "unique_id": "port_vm3"
+                },
+                {
+                    "attachment": {
                         "id": "port_vm4"
                     },
                     "display_name": "port_vm4",
@@ -28679,6 +28799,46 @@
             ],
             "unique_id": "seg-6-7",
             "segment_ports": [
+                {
+                    "attachment": {
+                        "id": "port_vm1"
+                    },
+                    "display_name": "port_vm1",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm1"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm2"
+                    },
+                    "display_name": "port_vm2",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm2"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm3"
+                    },
+                    "display_name": "port_vm3",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm3"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm4"
+                    },
+                    "display_name": "port_vm4",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm4"
+                },
+                {
+                    "attachment": {
+                        "id": "port_vm5"
+                    },
+                    "display_name": "port_vm5",
+                    "parent_path": "seg-6-7",
+                    "unique_id": "port_vm5"
+                },
                 {
                     "attachment": {
                         "id": "port_vm6"
