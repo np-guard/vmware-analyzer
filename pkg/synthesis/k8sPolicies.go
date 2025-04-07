@@ -36,7 +36,7 @@ type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 	NotFullySupported    bool
-	externalIP *netset.IPBlock
+	externalIP           *netset.IPBlock
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -226,7 +226,7 @@ func (selector *policySelector) convertAllCidrToAllPodsSelector() {
 	selector.cidrs = []string{}
 }
 
-func (policies *k8sPolicies)createSelector(con symbolicexpr.Conjunction) policySelector {
+func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
 	res := policySelector{pods: &meta.LabelSelector{},
@@ -234,7 +234,7 @@ func (policies *k8sPolicies)createSelector(con symbolicexpr.Conjunction) policyS
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
-				res.cidrs = []string{netset.CidrAll}
+			res.cidrs = []string{netset.CidrAll}
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces

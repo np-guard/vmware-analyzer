@@ -28,11 +28,10 @@ type absToNXS struct {
 	allVMs     []topology.Endpoint
 	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
 
-	categories        []data.Category
-	groups            []collector.Group
-	ruleIDCounter     int
-	externalIP *netset.IPBlock
-
+	categories    []data.Category
+	groups        []collector.Group
+	ruleIDCounter int
+	externalIP    *netset.IPBlock
 }
 
 func newAbsToNXS(externalIP *netset.IPBlock) *absToNXS {
@@ -40,7 +39,7 @@ func newAbsToNXS(externalIP *netset.IPBlock) *absToNXS {
 		vmLabels:   map[topology.Endpoint][]string{},
 		labelsVMs:  map[string][]topology.Endpoint{},
 		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
-		externalIP :externalIP,
+		externalIP: externalIP,
 	}
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {

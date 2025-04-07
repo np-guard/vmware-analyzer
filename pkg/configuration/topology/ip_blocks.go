@@ -36,13 +36,11 @@ func (block *RuleIPBlock) HasExternal() bool {
 func (block *RuleIPBlock) ExternalIPBlock() *IPBlock {
 	return &IPBlock{block.ExternalRange, block.OriginalIP}
 }
-func (block *RuleIPBlock) HasVMsNotInSegments() bool {
-	return len(block.VMs) > len(block.SegmentsVMs)
-}
+
 func (block *RuleIPBlock) HasInternalIPNotInSegments() bool {
 	ip := block.Block
 	ip = ip.Subtract(block.ExternalRange)
-	for _, segment := range block.Segments{
+	for _, segment := range block.Segments {
 		ip = ip.Subtract(segment.Block)
 	}
 	return !ip.IsEmpty()

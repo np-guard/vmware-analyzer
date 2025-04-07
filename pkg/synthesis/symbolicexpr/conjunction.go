@@ -134,7 +134,7 @@ func (c *Conjunction) hasExternalIPBlockTerm() bool {
 		if term.IsTautology() { // tautology is both external and internal
 			continue
 		}
-		if term.IsAllExternal(){
+		if term.IsAllExternal() {
 			return true
 		}
 		if term.GetExternalBlock() != nil {

@@ -754,9 +754,9 @@ var ExampleInternalWithInterDenyAllowMixedSegments = registerExample(&Example{
 	GroupsByVMs: groupsInternalWithInterDenyAllow,
 	VMsAddress:  vmsAddresses,
 	SegmentsByVMs: map[string][]string{
-		"seg_2-3": {"vm1","vm2", "vm3"},
-		"seg_4-5": {"vm1","vm2", "vm3", "vm4", "vm5"},
-		"seg-6-7": {"vm1","vm2", "vm3", "vm4", "vm5", "vm6", "vm7"},
+		"seg_2-3": {"vm1", "vm2", "vm3"},
+		"seg_4-5": {"vm1", "vm2", "vm3", "vm4", "vm5"},
+		"seg-6-7": {"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7"},
 	},
 	SegmentsBlock: map[string]string{
 		"seg_1":   "10.0.0.0/32",
