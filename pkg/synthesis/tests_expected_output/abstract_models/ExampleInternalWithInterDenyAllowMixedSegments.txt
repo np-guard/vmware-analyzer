@@ -12,18 +12,20 @@ Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
 Original allow rule priority |Rule id |Src                                                                                    |Dst                    |Connection
-0                            |1005    |(segment seg_2-3 and VMs not within IPs 10.0.0.0/30)                                   |(IP addr in 0.0.0.0/0) |All Connections
-1                            |2200    |(IP addr in 172.16.10.10/16)                                                           |(group != real-group)  |All Connections
-1                            |2200    |(VMs within IPs 172.16.10.10/16)                                                       |(group != real-group)  |All Connections
-2                            |3000    |(IP addr in 192.168.0.0/16)                                                            |(IP addr in 0.0.0.0/0) |All Connections
-2                            |3000    |(VMs within IPs 192.168.0.0/16)                                                        |(IP addr in 0.0.0.0/0) |All Connections
-3                            |4008    |(group = real-group and not in segment seg_4-5 and VMs not within IPs 172.16.10.10/16) |(group = real-group)   |All Connections
+0                            |1005    |(VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30)                        |(IP addr in 0.0.0.0/0) |All Connections
+1                            |1007    |(VMs within IPs 10.0.0.0/16 and not in segment seg_4-5)                                |(IP addr in 0.0.0.0/0) |All Connections
+2                            |2200    |(IP addr in 172.16.10.10/16)                                                           |(group != real-group)  |All Connections
+2                            |2200    |(VMs within IPs 172.16.10.10/16)                                                       |(group != real-group)  |All Connections
+3                            |3000    |(IP addr in 192.168.0.0/16)                                                            |(IP addr in 0.0.0.0/0) |All Connections
+3                            |3000    |(VMs within IPs 192.168.0.0/16)                                                        |(IP addr in 0.0.0.0/0) |All Connections
+4                            |4008    |(group = real-group and not in segment seg_4-5 and VMs not within IPs 172.16.10.10/16) |(group = real-group)   |All Connections
 
 outbound rules
 Original allow rule priority |Rule id |Src                                                                                    |Dst                    |Connection
-0                            |1005    |(segment seg_2-3 and VMs not within IPs 10.0.0.0/30)                                   |(IP addr in 0.0.0.0/0) |All Connections
-1                            |2200    |(VMs within IPs 172.16.10.10/16)                                                       |(IP addr is external)  |All Connections
-1                            |2200    |(VMs within IPs 172.16.10.10/16)                                                       |(group != real-group)  |All Connections
-2                            |3000    |(VMs within IPs 192.168.0.0/16)                                                        |(IP addr in 0.0.0.0/0) |All Connections
-3                            |4008    |(group = real-group and not in segment seg_4-5 and VMs not within IPs 172.16.10.10/16) |(group = real-group)   |All Connections
+0                            |1005    |(VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30)                        |(IP addr in 0.0.0.0/0) |All Connections
+1                            |1007    |(VMs within IPs 10.0.0.0/16 and not in segment seg_4-5)                                |(IP addr in 0.0.0.0/0) |All Connections
+2                            |2200    |(VMs within IPs 172.16.10.10/16)                                                       |(IP addr is external)  |All Connections
+2                            |2200    |(VMs within IPs 172.16.10.10/16)                                                       |(group != real-group)  |All Connections
+3                            |3000    |(VMs within IPs 192.168.0.0/16)                                                        |(IP addr in 0.0.0.0/0) |All Connections
+4                            |4008    |(group = real-group and not in segment seg_4-5 and VMs not within IPs 172.16.10.10/16) |(group = real-group)   |All Connections
 
