@@ -88,29 +88,6 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = DumbledoreNoSly) dst: (group != Slytherin) conn: All Connections'
-        nsx-id: "9200"
-    creationTimestamp: null
-    name: policy-4
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: group__DumbledoreNoSly
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__Slytherin
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: Default Deny Network Policy
         nsx-id: "10230"
     creationTimestamp: null
