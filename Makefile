@@ -3,7 +3,6 @@ EXE:= nsxanalyzer
 COVERAGE:=nsxanalyzer.coverprofile
 EXE_WINDOWS:= nsxanalyzer_windows_amd64.exe
 EXE_LINUX:= nsxanalyzer_linux_amd64
-#PKGS:= $(go list ./...)
 
 # TODO: update NSX_ANALYZER_IMAGE to the actual image name
 NSX_ANALYZER_IMAGE = nsx-analyzer
