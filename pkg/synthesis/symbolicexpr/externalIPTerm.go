@@ -152,3 +152,7 @@ func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExternalRe
 func (externalIPTerm) getInternalBlock() *netset.IPBlock {
 	return nil
 }
+
+func (externalIPTerm) IsSegment() bool {
+	return false
+}

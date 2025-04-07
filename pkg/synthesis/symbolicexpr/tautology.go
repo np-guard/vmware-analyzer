@@ -70,3 +70,7 @@ func (tautology) isInternalOnly() bool {
 func (tautology) IsAllExternal() bool {
 	return false
 }
+
+func (tautology) IsSegment() bool {
+	return false
+}
