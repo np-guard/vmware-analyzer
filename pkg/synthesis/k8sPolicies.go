@@ -322,13 +322,11 @@ func toLegalK8SString(s string) string {
 // a tmp function, mark all the cases we do not support correctly
 func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
-		_, isSegment := a.(symbolicexpr.SegmentTerm)
-		_, isSegmentPointer := a.(*symbolicexpr.SegmentTerm)
 		switch {
 		case !a.IsAllExternal() && a.GetExternalBlock() != nil && len(con) > 1:
 			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
 			return true
-		case isSegment || isSegmentPointer:
+		case a.IsSegment():
 			return true
 		}
 	}
