@@ -17,7 +17,7 @@ const firstRuleID = 3984
 const firstGroupID = 4826
 
 func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group, bool) {
-	a := newAbsToNXS()
+	a := newAbsToNXS(model.ExternalIP)
 	a.getVMsInfo(rc, model)
 	a.convertPolicies(model.policy, model.synthesizeAdmin)
 	return data.ToPoliciesList(a.categories), a.groups, a.notFullySupported
@@ -33,13 +33,16 @@ type absToNXS struct {
 	groups            []collector.Group
 	ruleIDCounter     int
 	notFullySupported bool
+	externalIP *netset.IPBlock
+
 }
 
-func newAbsToNXS() *absToNXS {
+func newAbsToNXS(externalIP *netset.IPBlock) *absToNXS {
 	return &absToNXS{
 		vmLabels:   map[topology.Endpoint][]string{},
 		labelsVMs:  map[string][]topology.Endpoint{},
 		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
+		externalIP :externalIP,
 	}
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
@@ -154,24 +157,23 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	a.notFullySupported = a.notFullySupported || nsxNotFullySupported(con)
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
-		if atom.IsTautology() {
+		switch {
+		case atom.IsTautology():
 			return netset.CidrAll
-		}
-		if atom.IsAllGroups() {
+		case atom.IsAllExternal():
+			return a.externalIP.String()
+		case atom.IsAllGroups():
 			continue
-		}
-		if ip := atom.GetExternalBlock(); ip != nil {
-			if len(con) != 1 {
-				logging.InternalErrorf("got a multi atom Conjunction with external IP %s", ip.String())
+		case atom.GetExternalBlock() != nil:
+			return atom.GetExternalBlock().String()
+		default:
+			label, not := atom.AsSelector()
+			atomVMs := a.labelsVMs[label]
+			if not {
+				atomVMs = topology.Subtract(a.allVMs, atomVMs)
 			}
-			return ip.String()
+			vms = topology.Intersection(vms, atomVMs)
 		}
-		label, not := atom.AsSelector()
-		atomVMs := a.labelsVMs[label]
-		if not {
-			atomVMs = topology.Subtract(a.allVMs, atomVMs)
-		}
-		vms = topology.Intersection(vms, atomVMs)
 	}
 	if len(vms) == len(a.allVMs) {
 		return data.AnyStr
@@ -193,11 +195,7 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 func nsxNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
 		switch {
-		case a.IsTautology():
-			return len(con) > 1
-		case a.IsAllExternal():
-			return true
-		case a.GetExternalBlock() != nil && len(con) > 1:
+		case !a.IsAllExternal() && a.GetExternalBlock() != nil && len(con) > 1:
 			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
 			return true
 		}
