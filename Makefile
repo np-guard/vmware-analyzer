@@ -49,6 +49,9 @@ test:
 	@echo -- $@ --
 	go test ./... -v -coverpkg=./... -coverprofile $(COVERAGE)
 
+test-fail-fast:		
+	./scripts/tests_fail_fast.sh	
+
 coverage:
 	go tool cover -html="$(COVERAGE)"
 

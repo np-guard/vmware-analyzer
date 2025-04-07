@@ -27,3 +27,11 @@ func (anyInternalResource) IsNoGroup() bool {
 func (anyInternalResource) GetExternalBlock() *netset.IPBlock {
 	return nil
 }
+
+func (anyInternalResource) isInternalOnly() bool {
+	return true
+}
+
+func (anyInternalResource) IsAllExternal() bool {
+	return false
+}

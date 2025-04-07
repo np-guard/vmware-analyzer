@@ -2,23 +2,22 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: none
     creationTimestamp: null
-    name: policy-0
-    namespace: seg_2-3
+    name: dns-policy
+    namespace: default
 spec:
     egress:
-        - to:
-            - ipBlock:
-                cidr: 0.0.0.0/0
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: in_Segment__seg_2-3
-              operator: Exists
-            - key: in_Segment__seg_1
-              operator: DoesNotExist
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -30,7 +29,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-1
-    namespace: seg_1
+    namespace: default
 spec:
     egress:
         - to:
@@ -54,7 +53,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-2
-    namespace: seg-9-10
+    namespace: default
 spec:
     ingress:
         - from:
@@ -72,322 +71,34 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
+        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
+        nsx-id: "1007"
     creationTimestamp: null
     name: policy-3
-    namespace: seg_1
+    namespace: default
 spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
+    egress:
+        - to:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+            - podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg-6-7
+              operator: Exists
+            - key: in_Segment__seg_4-5
+              operator: DoesNotExist
     policyTypes:
-        - Ingress
+        - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
+        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
+        nsx-id: "1007"
     creationTimestamp: null
     name: policy-4
-    namespace: seg_2-3
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-5
-    namespace: seg_4-5
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-6
-    namespace: seg-6-7
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-7
-    namespace: seg-8
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-8
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-9
-    namespace: seg-6-7
-spec:
-    egress:
-        - to:
-            - ipBlock:
-                cidr: 0.0.0.0/0
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: in_Segment__seg-6-7
-              operator: Exists
-            - key: in_Segment__seg_4-5
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-10
-    namespace: seg_4-5
-spec:
-    egress:
-        - to:
-            - ipBlock:
-                cidr: 0.0.0.0/0
-            - podSelector: {}
-    podSelector:
-        matchExpressions:
-            - key: in_Segment__seg-6-7
-              operator: Exists
-            - key: in_Segment__seg_4-5
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-11
-    namespace: seg-9-10
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-6-7
-                      operator: Exists
-                    - key: in_Segment__seg_4-5
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-12
-    namespace: seg_1
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-6-7
-                      operator: Exists
-                    - key: in_Segment__seg_4-5
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-13
-    namespace: seg_2-3
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-6-7
-                      operator: Exists
-                    - key: in_Segment__seg_4-5
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-14
-    namespace: seg_4-5
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-6-7
-                      operator: Exists
-                    - key: in_Segment__seg_4-5
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-15
-    namespace: seg-6-7
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-6-7
-                      operator: Exists
-                    - key: in_Segment__seg_4-5
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-16
-    namespace: seg-8
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-6-7
-                      operator: Exists
-                    - key: in_Segment__seg_4-5
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1007"
-    creationTimestamp: null
-    name: policy-17
     namespace: default
 spec:
     ingress:
@@ -406,11 +117,11 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-18
-    namespace: seg-8
+    name: policy-5
+    namespace: default
 spec:
     egress:
         - to:
@@ -429,148 +140,32 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (segment seg-8) dst: (IP addr is external) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-19
-    namespace: seg-9-10
+    name: policy-6
+    namespace: default
 spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
+    egress:
+        - to:
+            - ipBlock:
+                cidr: 0.0.0.0/0
+            - podSelector: {}
     podSelector:
         matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
+            - key: in_Segment__seg-8
+              operator: Exists
     policyTypes:
-        - Ingress
+        - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
+        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-20
-    namespace: seg_1
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-21
-    namespace: seg_2-3
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-22
-    namespace: seg_4-5
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-23
-    namespace: seg-6-7
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-24
-    namespace: seg-8
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (IP addr in 0.0.0.0/0 and group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-25
+    name: policy-7
     namespace: default
 spec:
     ingress:
@@ -593,8 +188,8 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-26
-    namespace: seg-9-10
+    name: policy-8
+    namespace: default
 spec:
     egress:
         - to:
@@ -615,127 +210,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-27
-    namespace: seg-9-10
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-28
-    namespace: seg_1
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-29
-    namespace: seg_2-3
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-30
-    namespace: seg_4-5
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-31
-    namespace: seg-6-7
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-32
-    namespace: seg-8
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-33
+    name: policy-9
     namespace: default
 spec:
     ingress:
@@ -755,7 +230,7 @@ metadata:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-34
+    name: policy-10
     namespace: default
 spec:
     egress:
@@ -782,61 +257,7 @@ metadata:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
     creationTimestamp: null
-    name: policy-35
-    namespace: seg_4-5
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__real-group
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: Exists
-            - key: in_Segment__seg_4-5
-              operator: DoesNotExist
-            - key: in_Segment__seg-8
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
-        nsx-id: "4008"
-    creationTimestamp: null
-    name: policy-36
-    namespace: seg-8
-spec:
-    egress:
-        - to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__real-group
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: Exists
-            - key: in_Segment__seg_4-5
-              operator: DoesNotExist
-            - key: in_Segment__seg-8
-              operator: DoesNotExist
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
-        nsx-id: "4008"
-    creationTimestamp: null
-    name: policy-37
+    name: policy-11
     namespace: default
 spec:
     ingress:
@@ -855,96 +276,6 @@ spec:
               operator: Exists
     policyTypes:
         - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg-9-10
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg_1
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg_2-3
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg_4-5
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg-6-7
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg-8
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

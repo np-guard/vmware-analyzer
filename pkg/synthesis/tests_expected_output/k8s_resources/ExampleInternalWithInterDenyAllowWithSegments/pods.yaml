@@ -9,7 +9,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-30: "true"
         group__default-group: "true"
     name: vm1
-    namespace: seg_1
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -24,7 +24,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-24: "true"
         group__default-group: "true"
     name: vm2
-    namespace: seg_2-3
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -39,7 +39,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-24: "true"
         group__default-group: "true"
     name: vm3
-    namespace: seg_2-3
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -53,7 +53,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-20: "true"
         group__default-group: "true"
     name: vm4
-    namespace: seg_4-5
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -67,7 +67,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-20: "true"
         group__default-group: "true"
     name: vm5
-    namespace: seg_4-5
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -80,7 +80,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-16: "true"
         group__default-group: "true"
     name: vm6
-    namespace: seg-6-7
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -93,7 +93,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-16: "true"
         group__default-group: "true"
     name: vm7
-    namespace: seg-6-7
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -106,7 +106,7 @@ metadata:
         VMs_within_IPs__172.16.10.10-16: "true"
         group__default-group: "true"
     name: vm8
-    namespace: seg-8
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -119,7 +119,7 @@ metadata:
         VMs_within_IPs__192.168.0.0-16: "true"
         group__default-group: "true"
     name: vm9
-    namespace: seg-9-10
+    namespace: default
 spec:
     containers: null
 status: {}
@@ -132,7 +132,7 @@ metadata:
         VMs_within_IPs__192.168.0.0-16: "true"
         group__default-group: "true"
     name: vm10
-    namespace: seg-9-10
+    namespace: default
 spec:
     containers: null
 status: {}

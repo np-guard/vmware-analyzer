@@ -17,7 +17,9 @@ func (c *Conjunction) String() string {
 }
 
 func (c *Conjunction) add(atom atomic) *Conjunction {
-	if c.contains(atom) {
+	// tautology is the only term that refers to both internals and externals; thus treated differently and added unless
+	// already exists
+	if c.contains(atom) && !atom.IsTautology() || (atom.IsTautology() && c.hasTautology()) {
 		return c
 	}
 	var ipBlockAddedToExisting bool
@@ -25,11 +27,12 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	// in the former case we lose the OriginalIP
 	block := atom.GetExternalBlock()
 	var res Conjunction
-	if block != nil { // atom is an IPBlockTerm
+	// since tautology refers to both external and internal it should not be mixed with externals overriding the internals
+	if block != nil && !atom.IsTautology() && c.hasExternalIPBlockTerm() { // atom is an IPBlockTerm
 		// looks for an  IPBlock in c
 		for _, itemAtom := range *c {
 			itemBlock := itemAtom.GetExternalBlock()
-			if itemBlock == nil { // itemAtom not an IPBlock
+			if itemBlock == nil || itemAtom.IsTautology() { // itemAtom not an external IP Term
 				res = append(res, itemAtom)
 			} else {
 				// note that there could be at most one IPBlock in a conjunction, by design
@@ -48,6 +51,15 @@ func (c *Conjunction) add(atom atomic) *Conjunction {
 	res = append(*c, atom)
 
 	return &res
+}
+
+func (c *Conjunction) hasTautology() bool {
+	for _, item := range *c {
+		if item.IsTautology() {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Conjunction) copy() *Conjunction {
@@ -87,7 +99,8 @@ func (c *Conjunction) removeRedundant(hints *Hints) Conjunction {
 	newC := Conjunction{}
 	redundantRemoved := false
 	for _, atom := range *c {
-		if !atom.IsAllGroups() && !atomRedundantInConj(atom, c, hints) {
+		// tautology is both external and internal, thus the "superset" redundancy does not apply to it
+		if atom.IsTautology() || (!atom.IsAllGroups() && !atomRedundantInConj(atom, c, hints)) {
 			newC = append(newC, atom)
 		} else {
 			redundantRemoved = true
@@ -118,8 +131,8 @@ func atomRedundantInConj(atom atomic, c *Conjunction, hints *Hints) bool {
 
 func (c *Conjunction) hasExternalIPBlockTerm() bool {
 	for _, term := range *c {
-		if term.IsTautology() {
-			return true
+		if term.IsTautology() { // tautology is both external and internal
+			continue
 		}
 		if term.GetExternalBlock() != nil {
 			return true
@@ -130,7 +143,7 @@ func (c *Conjunction) hasExternalIPBlockTerm() bool {
 
 func (c *Conjunction) hasTagOrGroupOrInternalIPTerm() bool {
 	for _, term := range *c {
-		if isTagOrGroupOrInternalIPTerm(term) {
+		if term.isInternalOnly() {
 			return true
 		}
 	}
@@ -244,9 +257,12 @@ func (c *Conjunction) isSuperset(other *Conjunction, hints *Hints) bool {
 	if c.areConjunctionNotSameType(other) {
 		return false
 	}
-	// got here: both conjunctions refer to external ips or both refer to internal resources, c not tautology
+	if other.isTautology() { // c is not tautology, then can't be superset of tautology
+		return false
+	}
+	// got here: both conjunctions refer to external ips or both refer to internal resources, c and other both not tautology
 
-	// tautology/allGroups superset of everything
+	// tautology/allGroups superset of everything which is internal
 	if c.isAllGroup() {
 		return true
 	}
@@ -275,4 +291,46 @@ func conjSupersetOfAtom(c *Conjunction, atom atomic, hints *Hints) bool {
 		}
 	}
 	return true
+}
+
+// if the Conjunction has a tautology and also other terms, then it should be processed:
+// this is since the Conjunction (excluding the tautology) has externals *or* internals while tautology refers to
+// and as a result the Conjunction is a mess
+// if the Conjunction has externals (in addition to the tautology) then it should be replaced with two Conjunctions:
+// 1. *All Groups Term* (equiv to all internals)
+// 2. The externals in the original Conjunction (excluding the tautology)
+// if the Conjunction has internals (in addition to the tautology) then it should be replaced with two Conjunctions:
+// 1. *All Externals Term*
+// 2. The internals in the original Conjunction (excluding the tautology)
+func (c *Conjunction) processTautology(externalRelevant bool) []*Conjunction {
+	resOrig := []*Conjunction{c}
+	if len(*c) < 2 {
+		return resOrig
+	}
+	tautIndex := -1
+	for i, term := range *c {
+		if term.IsTautology() {
+			tautIndex = i
+			break
+		}
+	}
+	if tautIndex == -1 { // no tautology in Conjunction? nothing to do here
+		return resOrig
+	}
+	var atomicsWOTautology []atomic
+	atomicsWOTautology = append(atomicsWOTautology, (*c)[:tautIndex]...)
+	atomicsWOTautology = append(atomicsWOTautology, (*c)[tautIndex+1:]...)
+	var conjWOTautology Conjunction = atomicsWOTautology
+	// by design (in ComputeAllowGivenDenies()), in addition to the tautology, we either have externals *xor* internals
+	if c.hasExternalIPBlockTerm() {
+		// Conjunction of tautology and externals. Divided to two Conjunctions: one of *allGroup* and the non-tautology externals
+		var allGroupConj = Conjunction{allGroup{}}
+		return []*Conjunction{&conjWOTautology, &allGroupConj}
+	}
+	// Conjunction of tautology and internals. Divided to two Conjunctions: one of *allExternal* and the non-tautology externals
+	if !externalRelevant {
+		return []*Conjunction{&conjWOTautology}
+	}
+	var allExtrenalConj = Conjunction{allExternal{}}
+	return []*Conjunction{&conjWOTautology, &allExtrenalConj}
 }
