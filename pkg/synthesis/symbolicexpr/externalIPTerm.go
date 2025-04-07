@@ -15,7 +15,7 @@ func NewIPBlockTerm(ipBlock *topology.IPBlock) *externalIPTerm {
 // OrigIP is non-empty for an ipTerm that is in its original rule form, or a negation of such ipTerm
 // once we have more than one ipTerm in a Conjunction we merge; and then the OrigIP component is lost
 
-func (ipBlockTerm *externalIPTerm) String() string {
+func (ipBlockTerm externalIPTerm) String() string {
 	var ipStr string
 	if ipBlockTerm.Block.IsEmpty() {
 		ipStr = "the empty block"
@@ -36,35 +36,35 @@ func (ipBlockTerm *externalIPTerm) String() string {
 
 // following 2 functions are false and the last one true for ipBlock since ipBlock presents only external IPs
 
-func (ipBlockTerm *externalIPTerm) IsTautology() bool {
+func (ipBlockTerm externalIPTerm) IsTautology() bool {
 	return false
 }
 
-func (ipBlockTerm *externalIPTerm) IsAllGroups() bool {
+func (ipBlockTerm externalIPTerm) IsAllGroups() bool {
 	return false
 }
 
 // IsNoGroup externalIPTerm neq 0.0.0.0/0 presents external addresses, thus IsNoGroup is true
-func (ipBlockTerm *externalIPTerm) IsNoGroup() bool {
+func (ipBlockTerm externalIPTerm) IsNoGroup() bool {
 	return true
 }
 
 // IsContradiction true iff the ipBlock is empty
-func (ipBlockTerm *externalIPTerm) IsContradiction() bool {
+func (ipBlockTerm externalIPTerm) IsContradiction() bool {
 	return ipBlockTerm.GetExternalBlock().IsEmpty()
 }
 
 //
 
-func (ipBlockTerm *externalIPTerm) name() string {
+func (ipBlockTerm externalIPTerm) name() string {
 	return ipBlockTerm.String()
 }
 
-func (ipBlockTerm *externalIPTerm) AsSelector() (string, bool) {
+func (ipBlockTerm externalIPTerm) AsSelector() (string, bool) {
 	return toImplement, false
 }
 
-func (ipBlockTerm *externalIPTerm) GetExternalBlock() *netset.IPBlock {
+func (ipBlockTerm externalIPTerm) GetExternalBlock() *netset.IPBlock {
 	block := ipBlockTerm.Block
 	if ipBlockTerm.isNegation() {
 		block = block.Complementary()
@@ -73,7 +73,7 @@ func (ipBlockTerm *externalIPTerm) GetExternalBlock() *netset.IPBlock {
 }
 
 // negate an externalIPTerm; if it has the OrigIP component then uses neg; otherwise complement the IP block
-func (ipBlockTerm *externalIPTerm) negate() atomic {
+func (ipBlockTerm externalIPTerm) negate() atomic {
 	if ipBlockTerm.OriginalIP != "" { // orig block from rule
 		return &externalIPTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
@@ -84,7 +84,7 @@ func (ipBlockTerm *externalIPTerm) negate() atomic {
 }
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
-func (ipBlockTerm *externalIPTerm) isNegateOf(otherAtom atomic) bool {
+func (ipBlockTerm externalIPTerm) isNegateOf(otherAtom atomic) bool {
 	otherBlock := otherAtom.GetExternalBlock()
 	if otherBlock == nil {
 		return false
@@ -93,7 +93,7 @@ func (ipBlockTerm *externalIPTerm) isNegateOf(otherAtom atomic) bool {
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
-func (ipBlockTerm *externalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+func (ipBlockTerm externalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 	block := ipBlockTerm.GetExternalBlock()
 	otherBlock := otherAtom.GetExternalBlock()
 	if otherBlock == nil {
@@ -103,18 +103,18 @@ func (ipBlockTerm *externalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool
 }
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
-func (ipBlockTerm *externalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (ipBlockTerm externalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	if otherAtom.GetExternalBlock() == nil {
 		return false
 	}
 	return ipBlockTerm.negate().disjoint(otherAtom, hints)
 }
 
-func (*externalIPTerm) isInternalOnly() bool {
+func (externalIPTerm) isInternalOnly() bool {
 	return false
 }
 
-func (*externalIPTerm) IsAllExternal() bool {
+func (externalIPTerm) IsAllExternal() bool {
 	return false
 }
 
@@ -151,4 +151,8 @@ func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExternalRe
 
 func (externalIPTerm) getInternalBlock() *netset.IPBlock {
 	return nil
+}
+
+func (externalIPTerm) IsSegment() bool {
+	return false
 }

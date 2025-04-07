@@ -75,3 +75,7 @@ func (allGroup) isInternalOnly() bool {
 func (allGroup) IsAllExternal() bool {
 	return false
 }
+
+func (allGroup) IsSegment() bool {
+	return false
+}

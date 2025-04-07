@@ -53,6 +53,10 @@ func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
 }
 
+func (tagAtomicTerm) IsSegment() bool {
+	return false
+}
+
 // evaluates symbolic Conjunctions from a given Expression
 //////////////////////////////////////////////////////////
 
