@@ -36,6 +36,7 @@ type k8sPolicies struct {
 	networkPolicies      []*networking.NetworkPolicy
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 	NotFullySupported    bool
+	externalIP *netset.IPBlock
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -72,8 +73,8 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
 	policies.NotFullySupported = policies.NotFullySupported || k8sNotFullySupported(p.Src) || k8sNotFullySupported(p.Dst)
-	srcSelector := createSelector(p.Src)
-	dstSelector := createSelector(p.Dst)
+	srcSelector := policies.createSelector(p.Src)
+	dstSelector := policies.createSelector(p.Dst)
 	if isAdmin && inbound && !srcSelector.isTautology() && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
 		policies.NotFullySupported = true
@@ -162,14 +163,14 @@ func (policies *k8sPolicies) setAdminNetworkPolicy(
 }
 
 func (policies *k8sPolicies) addDNSAllowAdminNetworkPolicy() {
-	dnsSelector := createSelector(nil)
+	dnsSelector := policies.createSelector(nil)
 	dnsSelector.pods = &meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{
 		Key:      dnsLabelKey,
 		Operator: meta.LabelSelectorOpIn,
 		Values:   []string{dnsLabelVal}},
 	}}
 	dnsSelector.namespace = meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{}}
-	allSelector := createSelector(nil)
+	allSelector := policies.createSelector(nil)
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPol := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
@@ -225,7 +226,7 @@ func (selector *policySelector) convertAllCidrToAllPodsSelector() {
 	selector.cidrs = []string{}
 }
 
-func createSelector(con symbolicexpr.Conjunction) policySelector {
+func (policies *k8sPolicies)createSelector(con symbolicexpr.Conjunction) policySelector {
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
 	res := policySelector{pods: &meta.LabelSelector{},
@@ -233,12 +234,12 @@ func createSelector(con symbolicexpr.Conjunction) policySelector {
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
-			if len(con) == 1 {
 				res.cidrs = []string{netset.CidrAll}
-			} // else we just ignore for now
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces
+		case a.IsAllExternal():
+			res.cidrs = policies.externalIP.ToCidrList()
 		case a.GetExternalBlock() != nil:
 			res.cidrs = a.GetExternalBlock().ToCidrList()
 		default:
@@ -323,11 +324,7 @@ func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
 		_, isSegment := a.(*symbolicexpr.SegmentTerm)
 		switch {
-		case a.IsAllExternal(): // policies not supported yet
-			return true
-		case a.IsTautology():
-			return len(con) > 1
-		case a.GetExternalBlock() != nil && len(con) > 1:
+		case !a.IsAllExternal() && a.GetExternalBlock() != nil && len(con) > 1:
 			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
 			return true
 		case isSegment:

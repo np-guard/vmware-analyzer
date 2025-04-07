@@ -511,14 +511,14 @@ func adjustConnToK8s(connMap connectivity.ConnMap, allExternal *netset.IPBlock) 
 		}
 	}
 	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
-	allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
+	// allCidrEP := topology.NewExternalIP(netset.GetCidrAll())
 	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
 		if !ep.IsExternal() {
 			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
 		}
-		if ep.(*topology.ExternalIP).Block.Equal(allExternal) {
-			return allCidrEP
-		}
+		// if ep.(*topology.ExternalIP).Block.Equal(allExternal) {
+		// 	return allCidrEP
+		// }
 		return ep
 	}
 
