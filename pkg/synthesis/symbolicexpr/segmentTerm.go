@@ -9,8 +9,8 @@ import (
 
 // segmentTerms represents a segment
 
-func NewSegmentTerm(segment *topology.Segment) *SegmentTerm {
-	return &SegmentTerm{segment: segment}
+func NewSegmentTerm(segment *topology.Segment, negate bool) *SegmentTerm {
+	return &SegmentTerm{segment: segment, atomicTerm: atomicTerm{neg: negate}}
 }
 
 func (segment SegmentTerm) name() string {
