@@ -526,7 +526,7 @@ func removeICMP(connMap connectivity.ConnMap) connectivity.ConnMap {
 	return noIcmpGroupedLegalMap
 }
 
-// replace 0.0.0.0/0 with all external 
+// replace 0.0.0.0/0 with all external
 func removeInternalAddresses(connMap connectivity.ConnMap, allExternal *netset.IPBlock) connectivity.ConnMap {
 	groupedMap := connMap.GroupExternalEP()
 	allExternalEP := topology.NewExternalIP(allExternal)
@@ -545,7 +545,6 @@ func removeInternalAddresses(connMap connectivity.ConnMap, allExternal *netset.I
 	}
 	return GroupedExternalToAllMap
 }
-
 
 func readK8SConnFile(t *testing.T, k8sConnectivityFile string) connectivity.ConnMap {
 	// we get a file with lines in the foramt:
@@ -627,7 +626,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	// create abstract model convert it to a new equiv NSX resources:
 	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	policies, groups, notFullySupported := toNSXPolicies(rc, abstractModel)
+	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
@@ -654,14 +653,10 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_grouped_connectivity.txt"), analyzedGroupedMapStr)
 	require.Nil(t, err)
-	if !notFullySupported {
-		// the validation of the abstract model conversion is here:
-		// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
-		require.Equal(t, connGroupedMapStr, analyzedGroupedMapStr,
-			fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
-	} else {
-		logging.Debugf("test %s: skip comparing vmware connectivity with connectivity analyzed from generated nsx resources", synTest.name)
-	}
+	// the validation of the abstract model conversion is here:
+	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
+	require.Equal(t, connGroupedMapStr, analyzedGroupedMapStr,
+		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
 }
 
 // /////////////////////////////////////////////////////////////////////

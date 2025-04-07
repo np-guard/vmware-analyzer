@@ -9,18 +9,17 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 const firstRuleID = 3984
 const firstGroupID = 4826
 
-func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group, bool) {
+func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group) {
 	a := newAbsToNXS(model.ExternalIP)
 	a.getVMsInfo(rc, model)
 	a.convertPolicies(model.policy, model.synthesizeAdmin)
-	return data.ToPoliciesList(a.categories), a.groups, a.notFullySupported
+	return data.ToPoliciesList(a.categories), a.groups
 }
 
 type absToNXS struct {
@@ -32,7 +31,6 @@ type absToNXS struct {
 	categories        []data.Category
 	groups            []collector.Group
 	ruleIDCounter     int
-	notFullySupported bool
 	externalIP *netset.IPBlock
 
 }
@@ -155,7 +153,6 @@ func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
 }
 
 func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
-	a.notFullySupported = a.notFullySupported || nsxNotFullySupported(con)
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
 		switch {
@@ -190,16 +187,4 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	}
 	a.groups = append(a.groups, group)
 	return *group.Path
-}
-
-// a tmp function, mark all the cases we do not support correctly
-func nsxNotFullySupported(con symbolicexpr.Conjunction) bool {
-	for _, a := range con {
-		switch {
-		case !a.IsAllExternal() && a.GetExternalBlock() != nil && len(con) > 1:
-			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
-			return true
-		}
-	}
-	return false
 }
