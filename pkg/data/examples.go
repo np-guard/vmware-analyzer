@@ -2338,7 +2338,7 @@ var ExampleAppWithGroups = registerExample(&Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var ExampleAppWithGroups2 = registerExample(createExampleAppWithGroups2())
+var ExampleAppWithGroupsAdditionalDropRule = registerExample(createExampleAppWithGroups2())
 
 //nolint:all
 func createExampleAppWithGroups2() *Example {
@@ -2360,7 +2360,7 @@ func createExampleAppWithGroups2() *Example {
 	// add the above rule as first rule in first category
 	res.Policies[0].Rules = slices.Concat(newRules, res.Policies[0].Rules)
 
-	res.Name = "ExampleAppWithGroups2"
+	res.Name = "ExampleAppWithGroupsAdditionalDropRule"
 	return &res
 }
 

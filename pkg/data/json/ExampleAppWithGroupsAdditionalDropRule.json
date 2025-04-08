@@ -28689,6 +28689,42 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "research-test-expr-2",
+                        "path": "research-test-expr-2",
+                        "vm_members": [
+                            {
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "research-app",
+                        "path": "research-app",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
+                            },
+                            {
+                                "display_name": "New-VM-2",
+                                "id": "New-VM-2"
+                            },
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            },
+                            {
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
+                            }
+                        ]
+                    },
+                    {
                         "display_name": "research-seg-1",
                         "path": "research-seg-1",
                         "vm_members": [
@@ -28737,42 +28773,6 @@
                             {
                                 "display_name": "New-VM-3",
                                 "id": "New-VM-3"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "research-test-expr-2",
-                        "path": "research-test-expr-2",
-                        "vm_members": [
-                            {
-                                "display_name": "New Virtual Machine",
-                                "id": "New Virtual Machine"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "research-app",
-                        "path": "research-app",
-                        "vm_members": [
-                            {
-                                "display_name": "New-VM-1",
-                                "id": "New-VM-1"
-                            },
-                            {
-                                "display_name": "New-VM-2",
-                                "id": "New-VM-2"
-                            },
-                            {
-                                "display_name": "New-VM-3",
-                                "id": "New-VM-3"
-                            },
-                            {
-                                "display_name": "New-VM-4",
-                                "id": "New-VM-4"
-                            },
-                            {
-                                "display_name": "New Virtual Machine",
-                                "id": "New Virtual Machine"
                             }
                         ]
                     }
