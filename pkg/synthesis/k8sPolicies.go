@@ -344,7 +344,6 @@ func toLegalK8SString(s string) string {
 // a tmp function, mark all the cases we do not support correctly
 func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
-		_, isSegment := a.(*symbolicexpr.SegmentTerm)
 		switch {
 		case a.IsAllExternal(): // policies not supported yet
 			return true
@@ -352,8 +351,6 @@ func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 			return len(con) > 1
 		case a.GetExternalBlock() != nil && len(con) > 1:
 			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
-			return true
-		case isSegment:
 			return true
 		}
 	}
