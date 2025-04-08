@@ -2095,6 +2095,75 @@ var ExampleHogwartsSimplerNonSymInOut = registerExample(&Example{
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
+var ExampleHogwartsExcludeSimple = registerExample(&Example{
+	Name: "ExampleHogwartsExcludeSimple",
+	VMs: []string{SlyWeb, slyApp, slyDB,
+		GryWeb, gryApp, gryDB,
+		HufWeb, hufApp, hufDB},
+	GroupsByVMs: hogwartsBidimensionalGroups,
+	Policies: []Category{
+		{
+			Name:         "allow-inbound",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-all-in",
+					ID:        10218,
+					Source:    AnyStr,
+					Dest:      AnyStr,
+					Action:    Allow,
+					Conn:      netset.AllTransports(),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         "allow-out",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:                 "allow-Slytherin-to-nonSlytherin-out",
+					ID:                   10220,
+					Source:               sly,
+					Dest:                 sly,
+					DestinationsExcluded: true,
+					Action:               Allow,
+					Conn:                 netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction:            string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:                 "allow-Gryffindor-to-nonGryffindor-out",
+					ID:                   10221,
+					Source:               gry,
+					Dest:                 gry,
+					DestinationsExcluded: true,
+					Action:               Allow,
+					Conn:                 netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction:            string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:                 "allow-Hufflepuff-to-nonHufflepuff-out",
+					ID:                   10222,
+					Source:               huf,
+					Dest:                 huf,
+					DestinationsExcluded: true,
+					Action:               Allow,
+					Conn:                 netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction:            string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleHogwartsExternal = registerExample(&Example{

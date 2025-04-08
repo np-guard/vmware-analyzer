@@ -91,10 +91,11 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 		return nil
 	}
 	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
-	if isExcluded { // De-Morgan: And -> Or ; Or -> And
-		*conjunctionOperatorConjunctionOperator = resources.ConjunctionOperatorConjunctionOperatorAND
+	if isExcluded { // De-Morgan
 		if *conj.ConjunctionOperator.ConjunctionOperator == resources.ConjunctionOperatorConjunctionOperatorAND {
-			*conjunctionOperatorConjunctionOperator = resources.ConjunctionOperatorConjunctionOperatorOR
+			*conjunctionOperatorConjunctionOperator = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
+		} else {
+			*conjunctionOperatorConjunctionOperator = resources.ConjunctionOperatorConjunctionOperatorAND // Or -> And
 		}
 	}
 	return conjunctionOperatorConjunctionOperator

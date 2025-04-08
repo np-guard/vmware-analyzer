@@ -162,6 +162,12 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleHogwartsExcludeSimple",
+		exData:          data.ExampleHogwartsExcludeSimple,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
 }
 
 var vmsByIpsTests = []synthesisTest{
