@@ -32,33 +32,7 @@ metadata:
         nsx-id: "1004"
     creationTimestamp: null
     name: policy-1
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 445
-              protocol: TCP
-          to:
-            - podSelector:
-                matchExpressions:
-                    - key: VMs_within_IPs__0.0.1.128-25
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: VMs_within_IPs__0.0.1.0-25
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (VMs within IPs 0.0.1.0/25) dst: (VMs within IPs 0.0.1.128/25) conn: TCP dst-ports: 445'
-        nsx-id: "1004"
-    creationTimestamp: null
-    name: policy-2
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     ingress:
         - from:
@@ -110,33 +84,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-3
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 443
-              protocol: TCP
-          to:
-            - podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_c
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: VMs_within_IPs__0.0.1.128-25
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-4
-    namespace: default
+    namespace: seg_c
 spec:
     ingress:
         - from:
