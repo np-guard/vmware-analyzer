@@ -13,12 +13,13 @@ const (
 )
 
 const (
-	sly  = "Slytherin"
-	huf  = "Hufflepuff"
-	gry  = "Gryffindor"
-	dum  = "Dumbledore"
-	Dum1 = "Dumbledore1"
-	Dum2 = "Dumbledore2"
+	sly    = "Slytherin"
+	huf    = "Hufflepuff"
+	gry    = "Gryffindor"
+	dum    = "Dumbledore"
+	Dum1   = "Dumbledore1"
+	Dum2   = "Dumbledore2"
+	notSly = "Not Slytherin"
 
 	house = "House"
 	funct = "Function"
@@ -1199,7 +1200,7 @@ var ExampleTwoDeniesSimple = registerExample(&Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, Dum1, Dum2}}
+var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, Dum1, Dum2}, {sly, notSly}}
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
@@ -1279,11 +1280,12 @@ var ExampleHintsDisjoint = registerExample(&Example{
 	Name: "ExampleHintsDisjoint",
 	VMs:  []string{sly, huf, gry, Dum1, Dum2},
 	GroupsByVMs: map[string][]string{
-		sly:  {sly},
-		huf:  {huf},
-		gry:  {gry},
-		Dum1: {Dum1},
-		Dum2: {Dum2},
+		sly:    {sly},
+		huf:    {huf},
+		gry:    {gry},
+		Dum1:   {Dum1},
+		Dum2:   {Dum2},
+		notSly: {huf, gry, Dum1, Dum2},
 	},
 	Policies: []Category{
 		{
@@ -1291,12 +1293,13 @@ var ExampleHintsDisjoint = registerExample(&Example{
 			CategoryType: application,
 			Rules: []Rule{
 				{
-					Name:     "Dumb1-Not-Sly",
-					ID:       newRuleID,
-					Source:   Dum1,
-					Dest:     sly,
-					Services: []string{AnyStr},
-					Action:   Drop,
+					Name:                 "Dumb1-Not-Sly",
+					ID:                   newRuleID,
+					Source:               Dum1,
+					Dest:                 notSly,
+					DestinationsExcluded: true,
+					Services:             []string{AnyStr},
+					Action:               Drop,
 				},
 				{
 					Name:     "Dumb2-Not-Gryf",
