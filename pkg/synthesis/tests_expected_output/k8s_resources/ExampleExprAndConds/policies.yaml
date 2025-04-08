@@ -33,7 +33,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector: {}
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector: {}
     podSelector:
         matchExpressions:
             - key: tag__Slytherin
@@ -55,7 +61,13 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: Exists
@@ -80,7 +92,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector: {}
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector: {}
     podSelector:
         matchExpressions:
             - key: tag__Gryffindor
@@ -102,7 +120,13 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Hufflepuff
                       operator: Exists

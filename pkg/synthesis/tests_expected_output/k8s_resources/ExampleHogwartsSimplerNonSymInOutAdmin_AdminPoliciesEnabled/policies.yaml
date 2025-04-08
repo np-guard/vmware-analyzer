@@ -10,7 +10,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector: {}
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector: {}
     podSelector:
         matchExpressions:
             - key: group__Web
@@ -30,7 +36,13 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__Web
                       operator: Exists
@@ -50,7 +62,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__Web
                       operator: Exists
@@ -75,7 +93,13 @@ spec:
         - ports:
             - protocol: TCP
           to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__App
                       operator: Exists

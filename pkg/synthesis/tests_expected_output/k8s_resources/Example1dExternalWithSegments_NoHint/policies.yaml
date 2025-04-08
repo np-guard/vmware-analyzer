@@ -134,7 +134,7 @@ metadata:
         nsx-id: "1003"
     creationTimestamp: null
     name: default-deny
-    namespace: seg_c
+    namespace: seg_a_and_b
 spec:
     podSelector: {}
     policyTypes:
@@ -149,7 +149,7 @@ metadata:
         nsx-id: "1003"
     creationTimestamp: null
     name: default-deny
-    namespace: seg_a_and_b
+    namespace: seg_c
 spec:
     podSelector: {}
     policyTypes:
