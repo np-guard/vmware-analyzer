@@ -57,6 +57,11 @@ var allTests = []analyzerTest{
 		name:   "ExampleAppWithGroups",
 		exData: data.ExampleAppWithGroups,
 	},
+	{
+
+		name:   "ExampleAppWithGroupsAdditionalDropRule",
+		exData: data.ExampleAppWithGroupsAdditionalDropRule,
+	},
 }
 
 func (a *analyzerTest) file() string {
