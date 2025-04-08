@@ -269,19 +269,21 @@ func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policy
 }
 
 func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
-	if selector.isTautology() {
-		return []networking.NetworkPolicyPeer{
-			{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}},
-			{PodSelector: selector.pods}}
-	}
-	if len(selector.cidrs) > 0 {
+	if !selector.isTautology() && len(selector.cidrs) > 0 {
 		res := make([]networking.NetworkPolicyPeer, len(selector.cidrs))
 		for i, cidr := range selector.cidrs {
 			res[i] = networking.NetworkPolicyPeer{IPBlock: &networking.IPBlock{CIDR: cidr}}
 		}
 		return res
 	}
-	return []networking.NetworkPolicyPeer{{PodSelector: selector.pods}}
+	res := make([]networking.NetworkPolicyPeer, len(selector.namespaces))
+	for i, namespaceSelector := range selector.namespaces {
+		res[i] = networking.NetworkPolicyPeer{PodSelector: selector.pods, NamespaceSelector: &namespaceSelector}
+		if selector.isTautology() {
+			res[i].IPBlock = &networking.IPBlock{CIDR: netset.CidrAll}
+		}
+	}
+	return res
 }
 
 func (selector *policySelector) toPodSelector() meta.LabelSelector {

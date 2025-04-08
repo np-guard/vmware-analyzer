@@ -56,31 +56,39 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 	a.labelsVMs = collectLabelsVMs(model)
 }
 
-// todo - move this method to the right place.
+// todo - move these two methods to the right place.
 func collectLabelsVMs(model *AbstractModelSyn) map[string][]topology.Endpoint {
 	labelsVMs := map[string][]topology.Endpoint{}
-
 	for _, vm := range model.vms {
-		for _, tag := range vm.Tags() {
-			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+		labels := collectVMLabels(model, vm)
+		for _, label := range labels {
 			labelsVMs[label] = append(labelsVMs[label], vm)
-		}
-		for _, group := range model.epToGroups[vm] {
-			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			labelsVMs[label] = append(labelsVMs[label], vm)
-		}
-		for _, segment := range model.vmSegments[vm] {
-			label, _ := symbolicexpr.NewSegmentTerm(segment).AsSelector()
-			labelsVMs[label] = append(labelsVMs[label], vm)
-		}
-		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
-			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
-				labelsVMs[label] = append(labelsVMs[label], vm)
-			}
 		}
 	}
 	return labelsVMs
+}
+func collectVMLabels(model *AbstractModelSyn, vm topology.Endpoint) []string {
+	labels := []string{}
+
+	for _, tag := range vm.Tags() {
+		label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+		labels = append(labels, label)
+	}
+	for _, group := range model.epToGroups[vm] {
+		label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
+		labels = append(labels, label)
+	}
+	for _, segment := range model.vmSegments[vm] {
+		label, _ := symbolicexpr.NewSegmentTerm(segment).AsSelector()
+		labels = append(labels, label)
+	}
+	for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
+		if !ruleIPBlock.IsAll() {
+			label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
+			labels = append(labels, label)
+		}
+	}
+	return labels
 }
 
 var fwRuleToDataRuleAction = map[dfw.RuleAction]string{
