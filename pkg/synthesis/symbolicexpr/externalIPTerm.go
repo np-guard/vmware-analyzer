@@ -134,8 +134,8 @@ func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExclude,
 		}
 		if isExternalRelevant && ruleIPBlock.HasExternal() {
 			externalIPBlock := &topology.IPBlock{Block: ruleIPBlock.ExternalRange, OriginalIP: ruleIPBlock.OriginalIP}
-			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions, &Conjunction{&externalIPTerm{atomicTerm: atomicTerm{},
-				IPBlock: externalIPBlock}})
+			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions,
+				&Conjunction{&externalIPTerm{atomicTerm: atomicTerm{neg: isExclude}, IPBlock: externalIPBlock}})
 		}
 		for _, segment := range ruleIPBlock.Segments {
 			newSegmentTerm := NewSegmentTerm(segment, isExclude)
