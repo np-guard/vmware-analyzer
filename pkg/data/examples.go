@@ -2281,9 +2281,10 @@ var ExampleHogwartsExternal = registerExample(&Example{
 					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
-					Name:      "to-Dumb",
-					ID:        10406,
-					Source:    "122.0.0.0/8",
+					Name:   "to-Dumb",
+					ID:     10406,
+					Source: "122.0.0.0/8",
+					// SourcesExcluded: true, // todo: not working!!
 					Dest:      dum,
 					Services:  []string{AnyStr},
 					Action:    Allow,
