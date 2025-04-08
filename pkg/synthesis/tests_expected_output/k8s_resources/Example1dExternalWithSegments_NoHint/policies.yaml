@@ -13,7 +13,13 @@ spec:
             - port: 445
               protocol: TCP
           to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_a_and_b
+              podSelector:
                 matchExpressions:
                     - key: VMs_within_IPs__0.0.1.128-25
                       operator: Exists
@@ -36,7 +42,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_a_and_b
+              podSelector:
                 matchExpressions:
                     - key: VMs_within_IPs__0.0.1.0-25
                       operator: Exists
@@ -65,7 +77,13 @@ spec:
             - port: 443
               protocol: TCP
           to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_c
+              podSelector:
                 matchExpressions:
                     - key: in_Segment__seg_c
                       operator: Exists
@@ -88,7 +106,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_a_and_b
+              podSelector:
                 matchExpressions:
                     - key: VMs_within_IPs__0.0.1.128-25
                       operator: Exists
