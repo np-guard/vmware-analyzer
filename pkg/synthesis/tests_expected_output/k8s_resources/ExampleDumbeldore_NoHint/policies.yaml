@@ -33,7 +33,13 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector: {}
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector: {}
     podSelector:
         matchExpressions:
             - key: group__DumbledoreAll
@@ -53,7 +59,13 @@ metadata:
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__DumbledoreAll
                       operator: Exists
