@@ -1,6 +1,8 @@
 package data
 
 import (
+	"slices"
+
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
@@ -2333,3 +2335,33 @@ var ExampleAppWithGroups = registerExample(&Example{
 		},
 	},
 })
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleAppWithGroups2 = registerExample(createExampleAppWithGroups2())
+
+//nolint:all
+func createExampleAppWithGroups2() *Example {
+	res := *ExampleAppWithGroups
+	res.Policies = slices.Clone(ExampleAppWithGroups.Policies)
+
+	newRules := []Rule{
+		{
+			Name:     "drop-icmp-foo-app-scope",
+			ID:       1028,
+			Source:   "research-app",
+			Dest:     "research-app",
+			Services: []string{"/infra/services/ICMPv4-ALL"},
+			Action:   Drop,
+			Scope:    "foo-app",
+		},
+	}
+
+	// add the above rule as first rule in first category
+	res.Policies[0].Rules = slices.Concat(newRules, res.Policies[0].Rules)
+
+	res.Name = "ExampleAppWithGroups2"
+	return &res
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
