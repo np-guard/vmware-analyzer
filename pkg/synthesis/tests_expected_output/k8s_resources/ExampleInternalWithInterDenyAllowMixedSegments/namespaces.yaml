@@ -2,24 +2,6 @@ apiVersion: v1
 kind: Namespace
 metadata:
     creationTimestamp: null
-    name: seg_1
-    namespace: seg_1
-spec: {}
-status: {}
----
-apiVersion: v1
-kind: Namespace
-metadata:
-    creationTimestamp: null
-    name: seg_2-3
-    namespace: seg_2-3
-spec: {}
-status: {}
----
-apiVersion: v1
-kind: Namespace
-metadata:
-    creationTimestamp: null
     name: seg_4-5
     namespace: seg_4-5
 spec: {}
@@ -31,5 +13,23 @@ metadata:
     creationTimestamp: null
     name: seg-6-7
     namespace: seg-6-7
+spec: {}
+status: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    creationTimestamp: null
+    name: seg_1
+    namespace: seg_1
+spec: {}
+status: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+    creationTimestamp: null
+    name: seg_2-3
+    namespace: seg_2-3
 spec: {}
 status: {}

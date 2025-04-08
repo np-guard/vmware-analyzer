@@ -85,7 +85,7 @@ func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunct
 			label, neg := a.AsSelector()
 			vms := namespacesInfo.labelVMs[label]
 			if neg {
-				vms = slices.DeleteFunc(slices.Clone(namespacesInfo.vms), func(vm topology.Endpoint) bool { return !slices.Contains(vms, vm) })
+				vms = slices.DeleteFunc(slices.Clone(namespacesInfo.vms), func(vm topology.Endpoint) bool { return slices.Contains(vms, vm) })
 			}
 			for _, vm := range vms {
 				res = append(res, namespacesInfo.vmNamespace[vm])

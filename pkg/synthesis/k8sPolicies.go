@@ -283,7 +283,7 @@ func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	}
 	res := []networking.NetworkPolicyPeer{{PodSelector: selector.pods, NamespaceSelector: selector.namespaceLabelSelector(false)}}
 	if selector.isTautology() {
-		res[0].IPBlock = &networking.IPBlock{CIDR: netset.CidrAll}
+		res=append(res,  networking.NetworkPolicyPeer{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}})
 	}
 	return res
 }

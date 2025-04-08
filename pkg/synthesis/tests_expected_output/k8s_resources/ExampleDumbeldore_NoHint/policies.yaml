@@ -85,7 +85,13 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__Slytherin
                       operator: DoesNotExist
@@ -95,6 +101,35 @@ spec:
               operator: Exists
     policyTypes:
         - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = DumbledoreNoSly) dst: (group != Slytherin) conn: All Connections'
+        nsx-id: "9200"
+    creationTimestamp: null
+    name: policy-4
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__DumbledoreNoSly
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Slytherin
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
