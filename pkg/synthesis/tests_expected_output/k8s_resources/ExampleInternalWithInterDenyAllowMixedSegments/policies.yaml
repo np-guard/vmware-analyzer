@@ -6,7 +6,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-0
-    namespace: seg_4-5
+    namespace: seg-6-7
 spec:
     egress:
         - to:
@@ -40,7 +40,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-1
-    namespace: seg-6-7
+    namespace: seg_4-5
 spec:
     egress:
         - to:
@@ -117,8 +117,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -147,8 +147,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -177,8 +177,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -207,8 +207,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -237,8 +237,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -258,7 +258,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-8
-    namespace: seg_4-5
+    namespace: seg-6-7
 spec:
     egress:
         - to:
@@ -292,7 +292,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-9
-    namespace: seg-6-7
+    namespace: seg_4-5
 spec:
     egress:
         - to:
@@ -369,8 +369,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -399,8 +399,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -429,8 +429,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -459,8 +459,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -489,8 +489,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -519,8 +519,8 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_4-5
                         - seg-6-7
+                        - seg_4-5
                         - default
               podSelector:
                 matchExpressions:
@@ -778,7 +778,7 @@ metadata:
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-18
-    namespace: seg_4-5
+    namespace: seg-6-7
 spec:
     ingress:
         - from:
@@ -829,7 +829,7 @@ metadata:
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-19
-    namespace: seg-6-7
+    namespace: seg_4-5
 spec:
     ingress:
         - from:
@@ -931,7 +931,7 @@ metadata:
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-21
-    namespace: seg_4-5
+    namespace: seg-6-7
 spec:
     ingress:
         - from:
@@ -960,7 +960,7 @@ metadata:
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-22
-    namespace: seg-6-7
+    namespace: seg_4-5
 spec:
     ingress:
         - from:
@@ -1668,9 +1668,9 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
+                        - seg-6-7
                         - seg_4-5
                         - default
-                        - seg-6-7
               podSelector:
                 matchExpressions:
                     - key: group__real-group

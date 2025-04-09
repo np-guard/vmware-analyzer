@@ -95,7 +95,7 @@ func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunct
 	res = common.SliceCompact(res)
 	// sort it by order of the namespacesInfo.namespaces 
 	slices.SortFunc(res, func(n1, n2 *namespace) int {
-		return slices.Index(namespacesInfo.namespaces, n1) - slices.Index(namespacesInfo.namespaces, n1)
+		return slices.Index(namespacesInfo.namespaces, n1) - slices.Index(namespacesInfo.namespaces, n2)
 	})
 	return res
 }
