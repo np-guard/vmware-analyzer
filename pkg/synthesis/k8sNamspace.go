@@ -38,6 +38,7 @@ func (namespacesInfo *namespacesInfo) initNamespaces(model *AbstractModelSyn) {
 		}
 		namespacesInfo.namespaces = append(namespacesInfo.namespaces, namespace)
 	}
+	// for VMs w/o segments - add the default namespace
 	if len(namespacesInfo.vms) == 0 || len(namespacesInfo.vms) > len(namespacesInfo.vmNamespace) {
 		defaultNamespace := &namespace{name: meta.NamespaceDefault}
 		for _, vm := range namespacesInfo.vms {
@@ -69,7 +70,11 @@ func (namespaceInfo *namespace) createResource() *core.Namespace {
 	return resource
 }
 
-func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunction) []*namespace {
+// getConjunctionNamespaces() obtain the namspaces of a Conjunction
+// since the Conjunction is abstract, we:
+// 1. obtain the list of VMs using the atom labels
+// 2. find the namespaces of the VM
+func (namespacesInfo *namespacesInfo) getConjunctionNamespaces(con symbolicexpr.Conjunction) []*namespace {
 	res := []*namespace{}
 	for _, a := range con {
 		switch {
@@ -89,7 +94,7 @@ func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunct
 		}
 	}
 	res = common.SliceCompact(res)
-	// sort it by order of the namespacesInfo.namespaces 
+	// sort it by order of the namespacesInfo.namespaces
 	slices.SortFunc(res, func(n1, n2 *namespace) int {
 		return slices.Index(namespacesInfo.namespaces, n1) - slices.Index(namespacesInfo.namespaces, n2)
 	})

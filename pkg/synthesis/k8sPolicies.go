@@ -260,7 +260,7 @@ func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policy
 	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
 
 	res := policySelector{pods: &meta.LabelSelector{}}
-	res.namespaces = common.CustomStrSliceToStrings(policies.namespacesInfo.getConNamespaces(con), func(namespace *namespace) string { return namespace.name })
+	res.namespaces = common.CustomStrSliceToStrings(policies.namespacesInfo.getConjunctionNamespaces(con), func(namespace *namespace) string { return namespace.name })
 	for _, a := range con {
 		switch {
 		case a.IsTautology():

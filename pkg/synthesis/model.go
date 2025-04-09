@@ -93,10 +93,6 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 	return res
 }
 
-// maps used by AbstractModelSyn
-
-// Segments topology; map from segment name to the segment
-type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +

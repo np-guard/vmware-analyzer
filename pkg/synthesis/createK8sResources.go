@@ -32,10 +32,9 @@ func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy
 }
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
-	k8sResources := &k8sResources{}
+	k8sResources := &k8sResources{k8sPolicies: k8sPolicies{externalIP: model.ExternalIP}}
 	k8sResources.k8sPolicies.namespacesInfo = newNamespacesInfo(model.vms)
 	k8sResources.k8sPolicies.namespacesInfo.initNamespaces(model)
-	k8sResources.k8sPolicies.externalIP = model.ExternalIP
 	k8sResources.createPolicies(model, createDNSPolicy)
 	k8sResources.namespaces = k8sResources.k8sPolicies.namespacesInfo.createResources()
 	k8sResources.createPods(model)
@@ -74,22 +73,15 @@ func (resources *k8sResources) CreateDir(outDir string) error {
 	return nil
 }
 
-// //////////////////////////////////////////////////////
-const theTrue = "true"
-
 // ///////////////////////////////////////////////////////////////////////////////
 func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 	for _, vm := range model.vms {
+		resources.NotFullySupported = resources.NotFullySupported || len(model.vmSegments[vm]) > 1
 		pod := &core.Pod{}
 		pod.Kind = "Pod"
 		pod.APIVersion = "v1"
 		pod.Name = toLegalK8SString(vm.Name())
-		if len(model.vmSegments[vm]) > 0 {
-			resources.NotFullySupported =  resources.NotFullySupported || len(model.vmSegments[vm]) > 1
-			pod.Namespace = toLegalK8SString(model.vmSegments[vm][0].Name)
-		} else {
-			pod.Namespace = core.NamespaceDefault
-		}
+		pod.Namespace = resources.namespacesInfo.vmNamespace[vm].name
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
