@@ -3,11 +3,12 @@ package synthesis
 import (
 	"slices"
 
+	core "k8s.io/api/core/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
-	core "k8s.io/api/core/v1"
-	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type namespace struct {
@@ -63,7 +64,7 @@ func (namespacesInfo *namespacesInfo) createResources() []*core.Namespace {
 func (namespaceInfo *namespace) createResource() *core.Namespace {
 	resource := &core.Namespace{}
 	resource.Kind = "Namespace"
-	resource.APIVersion = "v1"
+	resource.APIVersion = apiVersion
 	resource.Name = toLegalK8SString(namespaceInfo.name)
 	resource.Namespace = resource.Name
 	resource.Labels = map[string]string{}

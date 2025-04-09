@@ -16,6 +16,7 @@ import (
 )
 
 const k8sResourcesDir = "k8s_resources"
+const apiVersion = "v1"
 
 type k8sResources struct {
 	k8sPolicies
@@ -33,10 +34,10 @@ func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
 	k8sResources := &k8sResources{k8sPolicies: k8sPolicies{externalIP: model.ExternalIP}}
-	k8sResources.k8sPolicies.namespacesInfo = newNamespacesInfo(model.vms)
-	k8sResources.k8sPolicies.namespacesInfo.initNamespaces(model)
+	k8sResources.namespacesInfo = newNamespacesInfo(model.vms)
+	k8sResources.namespacesInfo.initNamespaces(model)
 	k8sResources.createPolicies(model, createDNSPolicy)
-	k8sResources.namespaces = k8sResources.k8sPolicies.namespacesInfo.createResources()
+	k8sResources.namespaces = k8sResources.namespacesInfo.createResources()
 	k8sResources.createPods(model)
 	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
 		len(k8sResources.networkPolicies), len(k8sResources.adminNetworkPolicies), len(k8sResources.pods))
@@ -79,7 +80,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		resources.NotFullySupported = resources.NotFullySupported || len(model.vmSegments[vm]) > 1
 		pod := &core.Pod{}
 		pod.Kind = "Pod"
-		pod.APIVersion = "v1"
+		pod.APIVersion = apiVersion
 		pod.Name = toLegalK8SString(vm.Name())
 		pod.Namespace = resources.namespacesInfo.vmNamespace[vm].name
 		if len(model.epToGroups[vm]) == 0 {

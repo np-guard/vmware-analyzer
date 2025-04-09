@@ -457,7 +457,6 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
-	require.Nil(t, err)
 	// compare k8s resources to expected results:
 	if synTest.hasExpectedResults() {
 		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
@@ -465,6 +464,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	}
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
+	require.Nil(t, err)
 	k8sConnectivityFile := path.Join(synTest.debugDir(), "k8s_connectivity.txt")
 	k8sConnectivityFileCreated, err := k8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
 	require.Nil(t, err)
