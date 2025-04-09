@@ -238,7 +238,6 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector: {}
             - ipBlock:
                 cidr: 0.0.0.0/5
             - ipBlock:

@@ -6,7 +6,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-0
-    namespace: seg-8
+    namespace: default
 spec:
     egress:
         - to:
@@ -15,12 +15,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -42,7 +42,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-1
-    namespace: seg-9-10
+    namespace: seg_2-3
 spec:
     egress:
         - to:
@@ -51,12 +51,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -78,7 +78,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-2
-    namespace: default
+    namespace: seg_4-5
 spec:
     egress:
         - to:
@@ -87,12 +87,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -114,7 +114,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-3
-    namespace: seg_2-3
+    namespace: seg-6-7
 spec:
     egress:
         - to:
@@ -123,12 +123,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -150,7 +150,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-4
-    namespace: seg_4-5
+    namespace: seg-8
 spec:
     egress:
         - to:
@@ -159,12 +159,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -186,7 +186,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-5
-    namespace: seg-6-7
+    namespace: seg-9-10
 spec:
     egress:
         - to:
@@ -195,12 +195,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -222,7 +222,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-6
-    namespace: seg-9-10
+    namespace: seg_2-3
 spec:
     ingress:
         - from:
@@ -255,72 +255,6 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-7
-    namespace: seg_1
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - seg_2-3
-                        - seg_4-5
-                        - seg-6-7
-                        - seg-8
-                        - seg-9-10
-                        - default
-              podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-8
-    namespace: seg_2-3
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - seg_2-3
-                        - seg_4-5
-                        - seg-6-7
-                        - seg-8
-                        - seg-9-10
-                        - default
-              podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg_2-3
-                      operator: Exists
-                    - key: in_Segment__seg_1
-                      operator: DoesNotExist
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "1005"
-    creationTimestamp: null
-    name: policy-9
     namespace: seg_4-5
 spec:
     ingress:
@@ -353,7 +287,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-10
+    name: policy-8
     namespace: seg-6-7
 spec:
     ingress:
@@ -386,8 +320,74 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-11
+    name: policy-9
     namespace: seg-8
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_2-3
+                        - seg_4-5
+                        - seg-6-7
+                        - seg-8
+                        - seg-9-10
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg_2-3
+                      operator: Exists
+                    - key: in_Segment__seg_1
+                      operator: DoesNotExist
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
+        nsx-id: "1005"
+    creationTimestamp: null
+    name: policy-10
+    namespace: seg-9-10
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_2-3
+                        - seg_4-5
+                        - seg-6-7
+                        - seg-8
+                        - seg-9-10
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg_2-3
+                      operator: Exists
+                    - key: in_Segment__seg_1
+                      operator: DoesNotExist
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
+        nsx-id: "1005"
+    creationTimestamp: null
+    name: policy-11
+    namespace: seg_1
 spec:
     ingress:
         - from:
@@ -462,12 +462,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -498,12 +498,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -534,12 +534,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -570,12 +570,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -606,12 +606,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -642,12 +642,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -669,7 +669,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-19
-    namespace: seg-9-10
+    namespace: seg_2-3
 spec:
     ingress:
         - from:
@@ -678,12 +678,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -702,7 +702,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-20
-    namespace: seg_1
+    namespace: seg_4-5
 spec:
     ingress:
         - from:
@@ -711,12 +711,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -735,7 +735,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-21
-    namespace: seg_2-3
+    namespace: seg-6-7
 spec:
     ingress:
         - from:
@@ -744,12 +744,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -768,7 +768,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-22
-    namespace: seg_4-5
+    namespace: seg-8
 spec:
     ingress:
         - from:
@@ -777,12 +777,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -801,7 +801,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-23
-    namespace: seg-6-7
+    namespace: seg-9-10
 spec:
     ingress:
         - from:
@@ -810,12 +810,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -834,7 +834,7 @@ metadata:
         nsx-id: "1007"
     creationTimestamp: null
     name: policy-24
-    namespace: seg-8
+    namespace: seg_1
 spec:
     ingress:
         - from:
@@ -843,12 +843,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -876,12 +876,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg_2-3
-                        - seg-8
                         - seg-9-10
                         - default
                         - seg-6-7
                         - seg_1
+                        - seg_2-3
+                        - seg-8
               podSelector:
                 matchExpressions:
                     - key: in_Segment__seg-6-7
@@ -909,12 +909,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
-                        - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
+                        - seg_2-3
               podSelector:
                 matchExpressions:
                     - key: group__real-group
@@ -938,7 +938,6 @@ metadata:
 spec:
     egress:
         - to:
-            - podSelector: {}
             - ipBlock:
                 cidr: 0.0.0.0/5
             - ipBlock:
@@ -1082,64 +1081,6 @@ metadata:
         nsx-id: "2200"
     creationTimestamp: null
     name: policy-28
-    namespace: seg_1
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - seg-8
-              podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-29
-    namespace: seg_2-3
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - seg-8
-              podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-8
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__real-group
-              operator: DoesNotExist
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
-        nsx-id: "2200"
-    creationTimestamp: null
-    name: policy-30
     namespace: seg_4-5
 spec:
     ingress:
@@ -1168,7 +1109,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-31
+    name: policy-29
     namespace: seg-6-7
 spec:
     ingress:
@@ -1197,7 +1138,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-32
+    name: policy-30
     namespace: seg-8
 spec:
     ingress:
@@ -1226,8 +1167,66 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-33
+    name: policy-31
     namespace: seg-9-10
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg-8
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg-8
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__real-group
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
+        nsx-id: "2200"
+    creationTimestamp: null
+    name: policy-32
+    namespace: seg_1
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg-8
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg-8
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__real-group
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
+        nsx-id: "2200"
+    creationTimestamp: null
+    name: policy-33
+    namespace: seg_2-3
 spec:
     ingress:
         - from:
@@ -1265,12 +1264,12 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
-                        - seg-9-10
-                        - seg_1
                         - seg_2-3
                         - seg_4-5
                         - seg-6-7
                         - seg-8
+                        - seg-9-10
+                        - seg_1
                         - default
               podSelector: {}
             - ipBlock:
@@ -1290,58 +1289,6 @@ metadata:
         nsx-id: "3000"
     creationTimestamp: null
     name: policy-35
-    namespace: seg-9-10
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - seg-9-10
-              podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-36
-    namespace: seg_1
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - seg-9-10
-              podSelector:
-                matchExpressions:
-                    - key: in_Segment__seg-9-10
-                      operator: Exists
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
-        nsx-id: "3000"
-    creationTimestamp: null
-    name: policy-37
     namespace: seg_2-3
 spec:
     ingress:
@@ -1367,7 +1314,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-38
+    name: policy-36
     namespace: seg_4-5
 spec:
     ingress:
@@ -1393,7 +1340,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-39
+    name: policy-37
     namespace: seg-6-7
 spec:
     ingress:
@@ -1419,8 +1366,60 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-40
+    name: policy-38
     namespace: seg-8
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg-9-10
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg-9-10
+                      operator: Exists
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
+        nsx-id: "3000"
+    creationTimestamp: null
+    name: policy-39
+    namespace: seg-9-10
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg-9-10
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg-9-10
+                      operator: Exists
+    podSelector: {}
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
+        nsx-id: "3000"
+    creationTimestamp: null
+    name: policy-40
+    namespace: seg_1
 spec:
     ingress:
         - from:
@@ -1712,13 +1711,13 @@ spec:
                     - key: kubernetes.io/metadata.name
                       operator: In
                       values:
+                        - seg_1
+                        - seg_2-3
                         - seg-6-7
                         - seg-8
                         - seg-9-10
                         - seg_4-5
                         - default
-                        - seg_1
-                        - seg_2-3
               podSelector:
                 matchExpressions:
                     - key: group__real-group
@@ -1733,36 +1732,6 @@ spec:
               operator: Exists
     policyTypes:
         - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg-9-10
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg_1
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -1818,6 +1787,36 @@ metadata:
     creationTimestamp: null
     name: default-deny
     namespace: seg-8
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: seg-9-10
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: seg_1
 spec:
     podSelector: {}
     policyTypes:

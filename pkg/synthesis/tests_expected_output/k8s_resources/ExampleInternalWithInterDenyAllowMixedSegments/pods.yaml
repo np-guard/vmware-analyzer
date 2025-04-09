@@ -8,8 +8,11 @@ metadata:
         VMs_within_IPs__10.0.0.0-24: "true"
         VMs_within_IPs__10.0.0.0-30: "true"
         group__default-group: "true"
+        in_Segment__seg-6-7: "true"
+        in_Segment__seg_2-3: "true"
+        in_Segment__seg_4-5: "true"
     name: vm1
-    namespace: default
+    namespace: seg_2-3
 spec:
     containers: null
 status: {}
@@ -23,7 +26,9 @@ metadata:
         VMs_within_IPs__10.0.0.0-20: "true"
         VMs_within_IPs__10.0.0.0-24: "true"
         group__default-group: "true"
+        in_Segment__seg-6-7: "true"
         in_Segment__seg_2-3: "true"
+        in_Segment__seg_4-5: "true"
     name: vm2
     namespace: seg_2-3
 spec:
@@ -39,7 +44,9 @@ metadata:
         VMs_within_IPs__10.0.0.0-20: "true"
         VMs_within_IPs__10.0.0.0-24: "true"
         group__default-group: "true"
+        in_Segment__seg-6-7: "true"
         in_Segment__seg_2-3: "true"
+        in_Segment__seg_4-5: "true"
     name: vm3
     namespace: seg_2-3
 spec:
@@ -54,6 +61,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
         group__default-group: "true"
+        in_Segment__seg-6-7: "true"
         in_Segment__seg_4-5: "true"
     name: vm4
     namespace: seg_4-5
@@ -69,6 +77,7 @@ metadata:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
         group__default-group: "true"
+        in_Segment__seg-6-7: "true"
         in_Segment__seg_4-5: "true"
     name: vm5
     namespace: seg_4-5

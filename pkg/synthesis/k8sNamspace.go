@@ -79,7 +79,7 @@ func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunct
 		switch {
 		case a.IsTautology(), a.IsAllGroups():
 			return namespacesInfo.namespaces
-		case a.GetExternalBlock() != nil:
+		case a.IsAllExternal(), a.GetExternalBlock() != nil:
 			continue
 		default:
 			label, neg := a.AsSelector()
