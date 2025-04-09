@@ -6,7 +6,7 @@ metadata:
         nsx-id: none
     creationTimestamp: null
     name: dns-policy
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     egress:
         - ports:
@@ -29,7 +29,7 @@ metadata:
         nsx-id: "1004"
     creationTimestamp: null
     name: policy-1
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     egress:
         - ports:
@@ -55,7 +55,7 @@ metadata:
         nsx-id: "1004"
     creationTimestamp: null
     name: policy-2
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     ingress:
         - from:
@@ -81,7 +81,7 @@ metadata:
         nsx-id: "1005"
     creationTimestamp: null
     name: policy-3
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     egress:
         - ports:
@@ -105,7 +105,7 @@ metadata:
         nsx-id: "1003"
     creationTimestamp: null
     name: default-deny
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     podSelector: {}
     policyTypes:
