@@ -91,7 +91,7 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 		debugMsg(group, fmt.Sprintf("contains an operator %s which is not supported (yet)", conj.String()))
 		return nil
 	}
-	var retOp resources.ConjunctionOperatorConjunctionOperator
+	var retOp = *conj.ConjunctionOperator.ConjunctionOperator
 	if isExcluded { // De-Morgan
 		if *conj.ConjunctionOperator.ConjunctionOperator == resources.ConjunctionOperatorConjunctionOperatorAND {
 			retOp = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
