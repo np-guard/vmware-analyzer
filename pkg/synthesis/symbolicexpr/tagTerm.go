@@ -83,6 +83,7 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
 		debugMsg(group, fmt.Sprintf("contains an operator of type %T which is not a legal NSX operator", elem))
+		return nil
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
@@ -90,15 +91,15 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 		debugMsg(group, fmt.Sprintf("contains an operator %s which is not supported (yet)", conj.String()))
 		return nil
 	}
-	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
+	var retOp resources.ConjunctionOperatorConjunctionOperator
 	if isExcluded { // De-Morgan
 		if *conj.ConjunctionOperator.ConjunctionOperator == resources.ConjunctionOperatorConjunctionOperatorAND {
-			*conjunctionOperatorConjunctionOperator = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
+			retOp = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
 		} else {
-			*conjunctionOperatorConjunctionOperator = resources.ConjunctionOperatorConjunctionOperatorAND // Or -> And
+			retOp = resources.ConjunctionOperatorConjunctionOperatorAND // Or -> And
 		}
 	}
-	return conjunctionOperatorConjunctionOperator
+	return &retOp
 }
 
 // GetTagConjunctionForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
