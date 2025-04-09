@@ -21,9 +21,6 @@ type namespacesInfo struct {
 	vms         []topology.Endpoint
 }
 
-func (namespacesInfo *namespacesInfo) hasNonDefault() bool {
-	return len(namespacesInfo.namespaces) > 1 || namespacesInfo.namespaces[0].name != meta.NamespaceDefault
-}
 func newNamespacesInfo(vms []topology.Endpoint) *namespacesInfo {
 	return &namespacesInfo{
 		vmNamespace: map[topology.Endpoint]*namespace{},
@@ -32,7 +29,6 @@ func newNamespacesInfo(vms []topology.Endpoint) *namespacesInfo {
 }
 
 func (namespacesInfo *namespacesInfo) initNamespaces(model *AbstractModelSyn) {
-
 	namespacesInfo.labelVMs = collectLabelsVMs(model)
 	// create the namespaces:
 	for _, segment := range model.segments {
@@ -42,7 +38,7 @@ func (namespacesInfo *namespacesInfo) initNamespaces(model *AbstractModelSyn) {
 		}
 		namespacesInfo.namespaces = append(namespacesInfo.namespaces, namespace)
 	}
-	if len(namespacesInfo.vms) == 0 || len(namespacesInfo.vms) > len(namespacesInfo.namespaces) {
+	if len(namespacesInfo.vms) == 0 || len(namespacesInfo.vms) > len(namespacesInfo.vmNamespace) {
 		defaultNamespace := &namespace{name: meta.NamespaceDefault}
 		for _, vm := range namespacesInfo.vms {
 			if _, ok := namespacesInfo.vmNamespace[vm]; !ok {
