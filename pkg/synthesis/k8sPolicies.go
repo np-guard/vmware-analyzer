@@ -42,7 +42,7 @@ type k8sPolicies struct {
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
 	if createDNSPolicy {
-		if model.synthesizeAdmin || policies.namespacesInfo.hasNonDefault() {
+		if model.synthesizeAdmin {
 			policies.addDNSAllowAdminNetworkPolicy()
 		} else {
 			policies.addDNSAllowNetworkPolicy()
@@ -99,14 +99,11 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 		policies.networkPolicies = append(policies.networkPolicies, pol)
 		return pol
 	}
-	if len(srcSelector.namespaces) == 1 && len(dstSelector.namespaces) == 1 && srcSelector.namespaces[0] == dstSelector.namespaces[0] {
-		if inbound {
-			srcSelector.namespaces = nil
-		} else {
-			dstSelector.namespaces = nil
-		}
-	}
+	oneSameNamespace := len(srcSelector.namespaces) == 1 && len(dstSelector.namespaces) == 1 && srcSelector.namespaces[0] == dstSelector.namespaces[0]
 	if inbound {
+		if oneSameNamespace {
+			srcSelector.namespaces = nil
+		}
 		from := srcSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		for _, namespace := range dstSelector.namespaces {
@@ -116,6 +113,9 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 			pol.Spec.PodSelector = dstSelector.toPodSelector()
 		}
 	} else {
+		if oneSameNamespace {
+			dstSelector.namespaces = nil
+		}
 		to := dstSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		for _, namespace := range srcSelector.namespaces {
@@ -140,15 +140,17 @@ func (policies *k8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule
 }
 
 func (policies *k8sPolicies) addDNSAllowNetworkPolicy() {
-	pol := newNetworkPolicy("dns-policy", meta.NamespaceDefault, "Network Policy To Allow Access To DNS Server", noNSXRuleID)
-	policies.networkPolicies = append(policies.networkPolicies, pol)
-	pol.Spec.PodSelector = meta.LabelSelector{}
-	to := []networking.NetworkPolicyPeer{{
-		PodSelector:       &meta.LabelSelector{MatchLabels: map[string]string{dnsLabelKey: dnsLabelVal}},
-		NamespaceSelector: &meta.LabelSelector{},
-	}}
-	pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
-	pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
+	for _, namespace := range policies.namespacesInfo.namespaces {
+		pol := newNetworkPolicy("dns-policy", namespace.name, "Network Policy To Allow Access To DNS Server", noNSXRuleID)
+		policies.networkPolicies = append(policies.networkPolicies, pol)
+		pol.Spec.PodSelector = meta.LabelSelector{}
+		to := []networking.NetworkPolicyPeer{{
+			PodSelector:       &meta.LabelSelector{MatchLabels: map[string]string{dnsLabelKey: dnsLabelVal}},
+			NamespaceSelector: &meta.LabelSelector{},
+		}}
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeEgress}
+		pol.Spec.Egress = []networking.NetworkPolicyEgressRule{{To: to, Ports: connToPolicyPort(dnsPortConn)}}
+	}
 }
 
 // //////////////////////////////////////////////////////////////////////////////////////////
