@@ -93,7 +93,6 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 	return res
 }
 
-
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
 		strGroups(abstractModel.allGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +

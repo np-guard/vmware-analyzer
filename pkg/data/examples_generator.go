@@ -58,7 +58,7 @@ func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContaine
 	segmentedVMs := map[string]bool{}
 	segmentNames := slices.Collect(maps.Keys(e.SegmentsBlock))
 	slices.Sort(segmentNames)
-	for _,segmentName := range segmentNames {
+	for _, segmentName := range segmentNames {
 		ip := e.SegmentsBlock[segmentName]
 		segment := collector.Segment{
 			Segment: nsx.Segment{
