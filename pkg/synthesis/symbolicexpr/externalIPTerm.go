@@ -141,7 +141,7 @@ func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExternalRe
 			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Conjunction{newSegmentTerm})
 		}
 		// if there is *any* VM not in subnet then the *entire* IP is handled as internalIPTerm
-		if ruleIPBlock.HasVMsNotInSubnet() {
+		if ruleIPBlock.HasInternalIPNotInSegments() {
 			newInternalIPTerm := NewInternalIPTerm(ruleIPBlock)
 			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Conjunction{newInternalIPTerm})
 		}

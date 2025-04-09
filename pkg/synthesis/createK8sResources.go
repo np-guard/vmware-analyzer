@@ -32,7 +32,7 @@ func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy
 }
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
-	k8sResources := &k8sResources{}
+	k8sResources := &k8sResources{k8sPolicies: k8sPolicies{externalIP: model.ExternalIP}}
 	k8sResources.createPolicies(model, createDNSPolicy)
 	k8sResources.createPods(model)
 	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
