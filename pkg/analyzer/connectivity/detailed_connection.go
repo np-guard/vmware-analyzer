@@ -11,6 +11,8 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 //////////////////////////////////////////////////////////////////////
@@ -40,6 +42,7 @@ type Explanation struct {
 type RuleAndConn struct {
 	Conn   *netset.TransportSet
 	RuleID int
+	Action dfw.RuleAction
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -81,17 +84,17 @@ func (es *Explanation) RuleIDs() (ingress, egress []int) {
 }
 
 func (rac *RuleAndConn) String() string {
-	return fmt.Sprintf("{conn: %s, ruleID: %d}", rac.Conn.String(), rac.RuleID)
+	return fmt.Sprintf("{conn: %s, ruleID: %d, action: %s}", rac.Conn.String(), rac.RuleID, rac.Action)
 }
 
 func FilterExplanation(allExplanations []*RuleAndConn, connSet *netset.TransportSet) []*RuleAndConn {
 	res := []*RuleAndConn{}
 	for _, r := range allExplanations {
 		if r == nil {
-			panic(r)
+			logging.InternalErrorf("unexpected nil entry in allExplanations []*RuleAndConn")
 		}
 		if !r.Conn.Intersect(connSet).IsEmpty() {
-			res = append(res, &RuleAndConn{RuleID: r.RuleID, Conn: r.Conn.Intersect(connSet)})
+			res = append(res, &RuleAndConn{RuleID: r.RuleID, Conn: r.Conn.Intersect(connSet), Action: r.Action})
 		}
 	}
 	return res

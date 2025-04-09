@@ -69,3 +69,7 @@ func (contradiction) isInternalOnly() bool {
 func (contradiction) IsAllExternal() bool {
 	return false
 }
+
+func (contradiction) IsSegment() bool {
+	return false
+}
