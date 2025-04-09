@@ -58,3 +58,7 @@ func (segment SegmentTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 func (segment SegmentTerm) getInternalBlock() *netset.IPBlock {
 	return getInternalBlock(segment.segment.Block, segment.isNegation())
 }
+
+func (SegmentTerm) IsSegment() bool {
+	return true
+}

@@ -4,6 +4,7 @@ package symbolicexpr
 
 import (
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 func (allExternal) String() string {
@@ -37,6 +38,7 @@ func (allExt allExternal) AsSelector() (string, bool) {
 
 // GetExternalBlock allExternal kept only symbolically; GetExternalBlock() just used to symbolize it is external
 func (allExternal) GetExternalBlock() *netset.IPBlock {
+	logging.InternalError("do not call GetExternalBlock() of externalIPTerm")
 	return netset.GetCidrAll()
 }
 
@@ -75,4 +77,8 @@ func (allExternal) isInternalOnly() bool {
 
 func (allExternal) IsAllExternal() bool {
 	return true
+}
+
+func (allExternal) IsSegment() bool {
+	return false
 }

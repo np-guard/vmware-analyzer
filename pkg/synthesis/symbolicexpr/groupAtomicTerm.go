@@ -51,3 +51,7 @@ func (groupTerm groupAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 func (groupTerm groupAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 	return supersetOf(groupTerm, otherAtom, hints)
 }
+
+func (groupAtomicTerm) IsSegment() bool {
+	return false
+}

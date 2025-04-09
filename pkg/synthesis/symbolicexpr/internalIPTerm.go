@@ -61,6 +61,10 @@ func (internalIP internalIPTerm) getInternalBlock() *netset.IPBlock {
 	return getInternalBlock(internalIP.ruleBlock.Block, internalIP.isNegation())
 }
 
+func (internalIPTerm) IsSegment() bool {
+	return false
+}
+
 // if otherAtom is also internal Block, then check explicit disjointness
 func isIPDisjoint(thisInternalBlock *netset.IPBlock, otherAtom atomic) bool {
 	if otherAtom.GetExternalBlock() != nil {

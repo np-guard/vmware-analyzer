@@ -1,6 +1,8 @@
 package data
 
 import (
+	"slices"
+
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
@@ -755,9 +757,9 @@ var ExampleInternalWithInterDenyAllowMixedSegments = registerExample(&Example{
 	GroupsByVMs: groupsInternalWithInterDenyAllow,
 	VMsAddress:  vmsAddresses,
 	SegmentsByVMs: map[string][]string{
-		"seg_2-3": {"vm2", "vm3"},
-		"seg_4-5": {"vm4", "vm5"},
-		"seg-6-7": {"vm6", "vm7"},
+		"seg_2-3": {"vm1", "vm2", "vm3"},
+		"seg_4-5": {"vm1", "vm2", "vm3", "vm4", "vm5"},
+		"seg-6-7": {"vm1", "vm2", "vm3", "vm4", "vm5", "vm6", "vm7"},
 	},
 	SegmentsBlock: map[string]string{
 		"seg_1":   "10.0.0.0/32",
@@ -2429,3 +2431,33 @@ var ExampleAppWithGroups = registerExample(&Example{
 		},
 	},
 })
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleAppWithGroupsAdditionalDropRule = registerExample(createExampleAppWithGroups2())
+
+//nolint:all
+func createExampleAppWithGroups2() *Example {
+	res := *ExampleAppWithGroups
+	res.Policies = slices.Clone(ExampleAppWithGroups.Policies)
+
+	newRules := []Rule{
+		{
+			Name:     "drop-icmp-foo-app-scope",
+			ID:       1028,
+			Source:   "research-app",
+			Dest:     "research-app",
+			Services: []string{"/infra/services/ICMPv4-ALL"},
+			Action:   Drop,
+			Scope:    "foo-app",
+		},
+	}
+
+	// add the above rule as first rule in first category
+	res.Policies[0].Rules = slices.Concat(newRules, res.Policies[0].Rules)
+
+	res.Name = "ExampleAppWithGroupsAdditionalDropRule"
+	return &res
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
