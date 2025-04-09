@@ -37,6 +37,7 @@ type k8sPolicies struct {
 	adminNetworkPolicies []*admin.AdminNetworkPolicy
 	namespacesInfo       *namespacesInfo
 	NotFullySupported    bool
+	externalIP           *netset.IPBlock
 }
 
 func (policies *k8sPolicies) createPolicies(model *AbstractModelSyn, createDNSPolicy bool) {
@@ -255,12 +256,12 @@ func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policy
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
-			if len(con) == 1 {
-				res.cidrs = []string{netset.CidrAll}
-			} // else we just ignore for now
+			res.cidrs = []string{netset.CidrAll}
 		case a.IsAllGroups():
 			// leaving it empty - will match all labels
 			// todo: should be fixed when supporting namespaces
+		case a.IsAllExternal():
+			res.cidrs = policies.externalIP.ToCidrList()
 		case a.GetExternalBlock() != nil:
 			res.cidrs = a.GetExternalBlock().ToCidrList()
 		default:
@@ -341,11 +342,7 @@ func toLegalK8SString(s string) string {
 func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
 	for _, a := range con {
 		switch {
-		case a.IsAllExternal(): // policies not supported yet
-			return true
-		case a.IsTautology():
-			return len(con) > 1
-		case a.GetExternalBlock() != nil && len(con) > 1:
+		case !a.IsAllExternal() && a.GetExternalBlock() != nil && len(con) > 1:
 			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
 			return true
 		}

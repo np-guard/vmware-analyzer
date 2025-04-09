@@ -33,7 +33,8 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 			switch rule.Action {
 			case dfw.ActionAllow:
 				addedAllowedConns := rule.Conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns),
+					Action: dfw.ActionAllow}
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					allowedConns.partitionsByRules = append(allowedConns.partitionsByRules, rulePartition)
@@ -41,7 +42,8 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 
 			case dfw.ActionDeny:
 				addedDeniedConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns),
+					Action: dfw.ActionDeny}
 				deniedConns.accumulatedConns = deniedConns.accumulatedConns.Union(addedDeniedConns)
 				if !rulePartition.Conn.IsEmpty() {
 					deniedConns.partitionsByRules = append(deniedConns.partitionsByRules, rulePartition)
@@ -49,7 +51,8 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 
 			case dfw.ActionJumpToApp:
 				addedJumpToAppConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns)}
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns),
+					Action: dfw.ActionJumpToApp}
 				jumpToAppConns.accumulatedConns = jumpToAppConns.accumulatedConns.Union(addedJumpToAppConns)
 				if !rulePartition.Conn.IsEmpty() {
 					jumpToAppConns.partitionsByRules = append(jumpToAppConns.partitionsByRules, rulePartition)

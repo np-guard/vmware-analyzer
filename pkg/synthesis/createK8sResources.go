@@ -35,6 +35,7 @@ func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResou
 	k8sResources := &k8sResources{}
 	k8sResources.k8sPolicies.namespacesInfo = newNamespacesInfo(model.vms)
 	k8sResources.k8sPolicies.namespacesInfo.initNamespaces(model)
+	k8sResources.k8sPolicies.externalIP = model.ExternalIP
 	k8sResources.createPolicies(model, createDNSPolicy)
 	k8sResources.namespaces = k8sResources.k8sPolicies.namespacesInfo.createResources()
 	k8sResources.createPods(model)
@@ -92,7 +93,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 			continue
 		}
 		pod.Labels = map[string]string{}
-		for _, label := range collectVMLabels(model,vm){
+		for _, label := range collectVMLabels(model, vm) {
 			pod.Labels[toLegalK8SString(label)] = "true"
 		}
 		resources.pods = append(resources.pods, pod)

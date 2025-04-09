@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
@@ -20,6 +21,7 @@ type AbstractModelSyn struct {
 	epToGroups      map[topology.Endpoint][]*collector.Group
 	ruleBlockPerEP  map[topology.Endpoint][]*topology.RuleIPBlock
 	vmSegments      map[topology.Endpoint][]*topology.Segment
+	ExternalIP      *netset.IPBlock
 	// todo: add similar maps to OS, hostname
 
 	// if synthesizeAdmin is true, rules will be translated to allow only starting with category MinNonAdminCategory();

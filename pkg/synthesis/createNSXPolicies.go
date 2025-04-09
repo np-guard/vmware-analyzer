@@ -9,18 +9,17 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 const firstRuleID = 3984
 const firstGroupID = 4826
 
-func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group, bool) {
-	a := newAbsToNXS()
+func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group) {
+	a := newAbsToNXS(model.ExternalIP)
 	a.getVMsInfo(rc, model)
 	a.convertPolicies(model.policy, model.synthesizeAdmin)
-	return data.ToPoliciesList(a.categories), a.groups, a.notFullySupported
+	return data.ToPoliciesList(a.categories), a.groups
 }
 
 type absToNXS struct {
@@ -28,16 +27,17 @@ type absToNXS struct {
 	allVMs     []topology.Endpoint
 	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
 
-	categories        []data.Category
-	groups            []collector.Group
-	ruleIDCounter     int
-	notFullySupported bool
+	categories    []data.Category
+	groups        []collector.Group
+	ruleIDCounter int
+	externalIP    *netset.IPBlock
 }
 
-func newAbsToNXS() *absToNXS {
+func newAbsToNXS(externalIP *netset.IPBlock) *absToNXS {
 	return &absToNXS{
 		labelsVMs:  map[string][]topology.Endpoint{},
 		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
+		externalIP: externalIP,
 	}
 }
 func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
@@ -137,6 +137,7 @@ func (a *absToNXS) pathToRule(p *symbolicexpr.SymbolicPath, direction, action, c
 	rule.Dest = a.createGroup(p.Dst)
 	rule.Conn = p.Conn
 	rule.Direction = direction
+	rule.Description = p.String()
 }
 
 func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
@@ -161,27 +162,25 @@ func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
 }
 
 func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
-	a.notFullySupported = a.notFullySupported || nsxNotFullySupported(con)
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
-		if atom.IsTautology() {
+		switch {
+		case atom.IsTautology():
 			return netset.CidrAll
-		}
-		if atom.IsAllGroups() {
+		case atom.IsAllExternal():
+			return a.externalIP.String()
+		case atom.IsAllGroups():
 			continue
-		}
-		if ip := atom.GetExternalBlock(); ip != nil {
-			if len(con) != 1 {
-				logging.InternalErrorf("got a multi atom Conjunction with external IP %s", ip.String())
+		case atom.GetExternalBlock() != nil:
+			return atom.GetExternalBlock().String()
+		default:
+			label, not := atom.AsSelector()
+			atomVMs := a.labelsVMs[label]
+			if not {
+				atomVMs = topology.Subtract(a.allVMs, atomVMs)
 			}
-			return ip.String()
+			vms = topology.Intersection(vms, atomVMs)
 		}
-		label, not := atom.AsSelector()
-		atomVMs := a.labelsVMs[label]
-		if not {
-			atomVMs = topology.Subtract(a.allVMs, atomVMs)
-		}
-		vms = topology.Intersection(vms, atomVMs)
 	}
 	if len(vms) == len(a.allVMs) {
 		return data.AnyStr
@@ -197,20 +196,4 @@ func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
 	}
 	a.groups = append(a.groups, group)
 	return *group.Path
-}
-
-// a tmp function, mark all the cases we do not support correctly
-func nsxNotFullySupported(con symbolicexpr.Conjunction) bool {
-	for _, a := range con {
-		switch {
-		case a.IsTautology():
-			return len(con) > 1
-		case a.IsAllExternal():
-			return true
-		case a.GetExternalBlock() != nil && len(con) > 1:
-			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
-			return true
-		}
-	}
-	return false
 }

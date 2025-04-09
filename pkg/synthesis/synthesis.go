@@ -63,6 +63,7 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 		allRuleIPBlocks: slices.Collect(maps.Values(config.Topology.AllRuleIPBlocks)),
 		ruleBlockPerEP:  config.Topology.RuleBlockPerEP,
 		vmSegments:      config.Topology.VmSegments,
+		ExternalIP:      config.Topology.AllExternalIPBlock,
 		synthesizeAdmin: options.SynthesizeAdmin,
 		policy:          []*symbolicPolicy{allowOnlyPolicyWithOptimization},
 		defaultDenyRule: config.DefaultDenyRule()}
