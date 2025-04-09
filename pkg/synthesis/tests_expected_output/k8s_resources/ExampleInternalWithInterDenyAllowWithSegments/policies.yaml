@@ -1741,6 +1741,36 @@ metadata:
         nsx-id: "1003"
     creationTimestamp: null
     name: default-deny
+    namespace: seg-6-7
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: seg-8
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
     namespace: seg-9-10
 spec:
     podSelector: {}
@@ -1787,36 +1817,6 @@ metadata:
     creationTimestamp: null
     name: default-deny
     namespace: seg_4-5
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg-6-7
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "1003"
-    creationTimestamp: null
-    name: default-deny
-    namespace: seg-8
 spec:
     podSelector: {}
     policyTypes:

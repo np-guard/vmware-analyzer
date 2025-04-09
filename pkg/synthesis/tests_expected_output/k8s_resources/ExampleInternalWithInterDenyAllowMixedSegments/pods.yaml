@@ -12,7 +12,7 @@ metadata:
         in_Segment__seg_2-3: "true"
         in_Segment__seg_4-5: "true"
     name: vm1
-    namespace: seg_2-3
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
@@ -30,7 +30,7 @@ metadata:
         in_Segment__seg_2-3: "true"
         in_Segment__seg_4-5: "true"
     name: vm2
-    namespace: seg_2-3
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
@@ -48,7 +48,7 @@ metadata:
         in_Segment__seg_2-3: "true"
         in_Segment__seg_4-5: "true"
     name: vm3
-    namespace: seg_2-3
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
@@ -64,7 +64,7 @@ metadata:
         in_Segment__seg-6-7: "true"
         in_Segment__seg_4-5: "true"
     name: vm4
-    namespace: seg_4-5
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
@@ -80,7 +80,7 @@ metadata:
         in_Segment__seg-6-7: "true"
         in_Segment__seg_4-5: "true"
     name: vm5
-    namespace: seg_4-5
+    namespace: seg-6-7
 spec:
     containers: null
 status: {}
