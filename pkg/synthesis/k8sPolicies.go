@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path"
 	"regexp"
+	"slices"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,7 +74,6 @@ func (policies *k8sPolicies) symbolicRulesToPolicies(model *AbstractModelSyn, ru
 }
 
 func (policies *k8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
-	policies.NotFullySupported = policies.NotFullySupported || k8sNotFullySupported(p.Src) || k8sNotFullySupported(p.Dst)
 	srcSelector := policies.createSelector(p.Src)
 	dstSelector := policies.createSelector(p.Dst)
 	if isAdmin && inbound && !srcSelector.isTautology() && len(srcSelector.cidrs) > 0 {
@@ -253,6 +253,7 @@ func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policy
 
 	res := policySelector{pods: &meta.LabelSelector{}}
 	res.namespaces = common.CustomStrSliceToStrings(policies.namespacesInfo.getConNamespaces(con), func(namespace *namespace) string { return namespace.name })
+	slices.Sort(res.namespaces)
 	for _, a := range con {
 		switch {
 		case a.IsTautology():
@@ -284,7 +285,7 @@ func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {
 	}
 	res := []networking.NetworkPolicyPeer{{PodSelector: selector.pods, NamespaceSelector: selector.namespaceLabelSelector(false)}}
 	if selector.isTautology() {
-		res=append(res,  networking.NetworkPolicyPeer{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}})
+		res = append(res, networking.NetworkPolicyPeer{IPBlock: &networking.IPBlock{CIDR: netset.CidrAll}})
 	}
 	return res
 }
@@ -336,16 +337,4 @@ var reg = regexp.MustCompile(`[^-A-Za-z0-9_.]`)
 
 func toLegalK8SString(s string) string {
 	return reg.ReplaceAllString(s, "-NLC")
-}
-
-// a tmp function, mark all the cases we do not support correctly
-func k8sNotFullySupported(con symbolicexpr.Conjunction) bool {
-	for _, a := range con {
-		switch {
-		case !a.IsAllExternal() && a.GetExternalBlock() != nil && len(con) > 1:
-			logging.InternalErrorf("symbolicexpr.Conjunction %s can not have both IP and labels", con.String())
-			return true
-		}
-	}
-	return false
 }

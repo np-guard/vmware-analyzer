@@ -85,6 +85,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		pod.APIVersion = "v1"
 		pod.Name = toLegalK8SString(vm.Name())
 		if len(model.vmSegments[vm]) > 0 {
+			resources.NotFullySupported =  resources.NotFullySupported || len(model.vmSegments[vm]) > 1
 			pod.Namespace = toLegalK8SString(model.vmSegments[vm][0].Name)
 		} else {
 			pod.Namespace = core.NamespaceDefault
