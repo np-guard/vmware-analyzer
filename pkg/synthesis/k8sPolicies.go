@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"path"
 	"regexp"
-	"slices"
 
 	networking "k8s.io/api/networking/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -253,7 +252,6 @@ func (policies *k8sPolicies) createSelector(con symbolicexpr.Conjunction) policy
 
 	res := policySelector{pods: &meta.LabelSelector{}}
 	res.namespaces = common.CustomStrSliceToStrings(policies.namespacesInfo.getConNamespaces(con), func(namespace *namespace) string { return namespace.name })
-	slices.Sort(res.namespaces)
 	for _, a := range con {
 		switch {
 		case a.IsTautology():

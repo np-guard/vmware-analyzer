@@ -49,7 +49,7 @@ func (namespacesInfo *namespacesInfo) initNamespaces(model *AbstractModelSyn) {
 				namespacesInfo.vmNamespace[vm] = defaultNamespace
 			}
 		}
-		namespacesInfo.namespaces = append(namespacesInfo.namespaces,   defaultNamespace)
+		namespacesInfo.namespaces = append(namespacesInfo.namespaces, defaultNamespace)
 	}
 }
 
@@ -92,5 +92,10 @@ func (namespacesInfo *namespacesInfo) getConNamespaces(con symbolicexpr.Conjunct
 			}
 		}
 	}
-	return common.SliceCompact(res)
+	res = common.SliceCompact(res)
+	// sort it by order of the namespacesInfo.namespaces 
+	slices.SortFunc(res, func(n1, n2 *namespace) int {
+		return slices.Index(namespacesInfo.namespaces, n1) - slices.Index(namespacesInfo.namespaces, n1)
+	})
+	return res
 }
