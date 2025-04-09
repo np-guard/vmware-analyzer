@@ -284,6 +284,16 @@ var groupsByExprTests = []synthesisTest{
 		noHint:          false,
 		synthesizeAdmin: true,
 	},
+	{
+		name:   "ExampleExprOrCondsExclude",
+		exData: data.ExampleExprOrCondsExclude,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprAndCondsExclude",
+		exData: data.ExampleExprAndCondsExclude,
+		noHint: false,
+	},
 }
 var liveNsxTest = synthesisTest{
 	name:            "fromCollection",

@@ -1862,7 +1862,7 @@ var ExampleExprAndConds = registerExample(&Example{
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
 	GroupsByExpr:       getAndOrOrExpr(And),
-	Policies:           getAndOrOrPolicies(And),
+	Policies:           getAndOrOrPolicies(And, false),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
@@ -1874,7 +1874,29 @@ var ExampleExprOrConds = registerExample(&Example{
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
 	GroupsByExpr:       getAndOrOrExpr(Or),
-	Policies:           getAndOrOrPolicies(Or),
+	Policies:           getAndOrOrPolicies(Or, false),
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
+// same examples with exclude - on expr
+
+var ExampleExprAndCondsExclude = registerExample(&Example{
+	Name:               "ExampleExprAndCondsExclude",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       getAndOrOrExpr(And),
+	Policies:           getAndOrOrPolicies(And, true),
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleExprOrCondsExclude = registerExample(&Example{
+	Name:               "ExampleExprOrCondsExclude",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       getAndOrOrExpr(Or),
+	Policies:           getAndOrOrPolicies(Or, true),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
@@ -1919,7 +1941,7 @@ func getOrOrAndGroupNames(op ExampleOp) (slyDB, hufDB, gryDB string) {
 	return
 }
 
-func getAndOrOrPolicies(op ExampleOp) []Category {
+func getAndOrOrPolicies(op ExampleOp, withExclude bool) []Category {
 	slyCondDB, hufCondDB, gryCondDB := getOrOrAndGroupNames(op)
 	return []Category{
 		{
@@ -1958,12 +1980,13 @@ func getAndOrOrPolicies(op ExampleOp) []Category {
 				{
 					Name: "to-Hufflepuff-out",
 					//nolint:all // this is the required id
-					ID:        newRuleID + 3,
-					Source:    AnyStr,
-					Dest:      hufCondDB,
-					Services:  []string{AnyStr},
-					Action:    Allow,
-					Direction: string(nsx.RuleDirectionOUT),
+					ID:                   newRuleID + 3,
+					Source:               AnyStr,
+					Dest:                 hufCondDB,
+					DestinationsExcluded: withExclude,
+					Services:             []string{AnyStr},
+					Action:               Allow,
+					Direction:            string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name: "default-deny-env",
