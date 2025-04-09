@@ -99,6 +99,13 @@ func (policies *k8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 		policies.networkPolicies = append(policies.networkPolicies, pol)
 		return pol
 	}
+	if len(srcSelector.namespaces) == 1 && len(dstSelector.namespaces) == 1 && srcSelector.namespaces[0] == dstSelector.namespaces[0] {
+		if inbound {
+			srcSelector.namespaces = nil
+		} else {
+			dstSelector.namespaces = nil
+		}
+	}
 	if inbound {
 		from := srcSelector.toPolicyPeers()
 		rules := []networking.NetworkPolicyIngressRule{{From: from, Ports: ports}}
