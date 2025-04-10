@@ -25,9 +25,7 @@ const (
 	virtualInterfaceQuery       = "api/v1/fabric/vifs"
 	groupsQuery                 = "policy/api/v1/infra/domains/%s/groups"
 	groupQuery                  = "policy/api/v1/infra/domains/%s/groups/%s"
-	groupMembersVMQuery         = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
-	groupMembersVIFQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/vifs"
-	groupMembersIPAddressQuery  = "policy/api/v1/infra/domains/%s/groups/%s/members/ip-addresses"
+	groupMembersQuery           = "policy/api/v1/infra/domains/%s/groups/%s/members/%s"
 	securityPoliciesQuery       = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery    = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery     = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
@@ -133,22 +131,20 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 			if err != nil {
 				return nil, err
 			}
-			err = collectResultList(server,
-				fmt.Sprintf(groupMembersVMQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].VMMembers)
-			if err != nil {
+			if err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"virtual-machines"), &domainResources.GroupList[i].VMMembers); err != nil {
 				return nil, err
 			}
-			err = collectResultList(server,
-				fmt.Sprintf(groupMembersVIFQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].VIFMembers)
-			if err != nil {
+			if err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"vifs"), &domainResources.GroupList[i].VIFMembers); err != nil {
 				return nil, err
 			}
-			err = collectResultList(server,
-				fmt.Sprintf(groupMembersIPAddressQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].AddressMembers)
-			if err != nil {
+			if err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"ip-addresses"), &domainResources.GroupList[i].AddressMembers); err != nil {
+				return nil, err
+			}
+			if err = collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"segments"), &domainResources.GroupList[i].Segments); err != nil {
 				return nil, err
 			}
 		}

@@ -18,18 +18,19 @@ import (
 )
 
 const (
-	rulesJSONEntry          = "rules"
-	membersJSONEntry        = "vm_members"
-	vifMembersJSONEntry     = "vif_members"
-	addressMembersJSONEntry = "ips_members"
-	expressionJSONEntry     = "expression"
-	resourcesJSONEntry      = "resources"
-	serviceEntriesJSONEntry = "service_entries"
-	resourceTypeJSONEntry   = "resource_type"
-	defaultRuleJSONEntry    = "default_rule"
-	firewallRuleJSONEntry   = "firewall_rule"
-	segmentPortsJSONEntry   = "segment_ports"
-	policyNatsJSONEntry     = "policy_nats"
+	rulesJSONEntry           = "rules"
+	membersJSONEntry         = "vm_members"
+	vifMembersJSONEntry      = "vif_members"
+	addressMembersJSONEntry  = "ips_members"
+	segmentsMembersJSONEntry = "segments_members"
+	expressionJSONEntry      = "expression"
+	resourcesJSONEntry       = "resources"
+	serviceEntriesJSONEntry  = "service_entries"
+	resourceTypeJSONEntry    = "resource_type"
+	defaultRuleJSONEntry     = "default_rule"
+	firewallRuleJSONEntry    = "firewall_rule"
+	segmentPortsJSONEntry    = "segment_ports"
+	policyNatsJSONEntry      = "policy_nats"
 )
 
 type Rule struct {
@@ -535,15 +536,21 @@ type Group struct {
 	VMMembers      []RealizedVirtualMachine  `json:"vm_members,omitempty"`
 	VIFMembers     []VirtualNetworkInterface `json:"vif_members,omitempty"`
 	AddressMembers []nsx.IPElement           `json:"ips_members,omitempty"`
-	Expression     Expression                `json:"expression,omitempty"`
+	Segments       []Segment                 `json:"segments_members,omitempty"`
+
+	Expression Expression `json:"expression,omitempty"`
 }
 
 func (group *Group) UnmarshalJSON(b []byte) error {
-	return UnmarshalBaseStructAnd4Fields(b, &group.Group,
+	return UnmarshalBaseStructAnd8Fields(b, &group.Group,
 		membersJSONEntry, &group.VMMembers,
 		vifMembersJSONEntry, &group.VIFMembers,
 		addressMembersJSONEntry, &group.AddressMembers,
+		addressMembersJSONEntry, &group.Segments,
 		expressionJSONEntry, &group.Expression,
+		"",nilWithType,
+		"",nilWithType,
+		"",nilWithType,
 	)
 }
 
@@ -617,6 +624,21 @@ func UnmarshalBaseStructAnd4Fields[baseType any, fieldType1 any, fieldType2 any,
 	entry3 string, field3 *fieldType3,
 	entry4 string, field4 *fieldType4,
 ) error {
+	return UnmarshalBaseStructAnd8Fields(b, base, entry1, field1, entry2, field2, entry3, field3, entry4, field4,
+		"", nilWithType, "", nilWithType, "", nilWithType, "", nilWithType)
+}
+
+func UnmarshalBaseStructAnd8Fields[baseType any, fieldType1 any, fieldType2 any, fieldType3 any, fieldType4 any, fieldType5 any, fieldType6 any, fieldType7 any, fieldType8 any](
+	b []byte, base *baseType,
+	entry1 string, field1 *fieldType1,
+	entry2 string, field2 *fieldType2,
+	entry3 string, field3 *fieldType3,
+	entry4 string, field4 *fieldType4,
+	entry5 string, field5 *fieldType5,
+	entry6 string, field6 *fieldType6,
+	entry7 string, field7 *fieldType7,
+	entry8 string, field8 *fieldType8,
+) error {
 	var raw map[string]json.RawMessage
 	if err := json.Unmarshal(b, &raw); err != nil {
 		return err
@@ -643,6 +665,26 @@ func UnmarshalBaseStructAnd4Fields[baseType any, fieldType1 any, fieldType2 any,
 	}
 	if field4 != nil {
 		if err := unmarshalFromRaw(raw, entry4, field4); err != nil {
+			return err
+		}
+	}
+	if field5 != nil {
+		if err := unmarshalFromRaw(raw, entry5, field5); err != nil {
+			return err
+		}
+	}
+	if field6 != nil {
+		if err := unmarshalFromRaw(raw, entry6, field6); err != nil {
+			return err
+		}
+	}
+	if field7 != nil {
+		if err := unmarshalFromRaw(raw, entry7, field7); err != nil {
+			return err
+		}
+	}
+	if field8 != nil {
+		if err := unmarshalFromRaw(raw, entry8, field8); err != nil {
 			return err
 		}
 	}
