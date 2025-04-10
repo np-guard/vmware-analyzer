@@ -89,7 +89,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		}
 		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
 			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
+				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
 				label = toLegalK8SString(label)
 				pod.Labels[label] = theTrue
 			}

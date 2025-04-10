@@ -28442,24 +28442,40 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin",
-            "external_id": "Slytherin"
+            "display_name": "Slytherin-Web",
+            "external_id": "Slytherin-Web"
         },
         {
-            "display_name": "Hufflepuff",
-            "external_id": "Hufflepuff"
+            "display_name": "Slytherin-App",
+            "external_id": "Slytherin-App"
         },
         {
-            "display_name": "Gryffindor",
-            "external_id": "Gryffindor"
+            "display_name": "Slytherin-DB",
+            "external_id": "Slytherin-DB"
         },
         {
-            "display_name": "Dumbledore1",
-            "external_id": "Dumbledore1"
+            "display_name": "Gryffindor-Web",
+            "external_id": "Gryffindor-Web"
         },
         {
-            "display_name": "Dumbledore2",
-            "external_id": "Dumbledore2"
+            "display_name": "Gryffindor-App",
+            "external_id": "Gryffindor-App"
+        },
+        {
+            "display_name": "Gryffindor-DB",
+            "external_id": "Gryffindor-DB"
+        },
+        {
+            "display_name": "Hufflepuff-Web",
+            "external_id": "Hufflepuff-Web"
+        },
+        {
+            "display_name": "Hufflepuff-App",
+            "external_id": "Hufflepuff-App"
+        },
+        {
+            "display_name": "Hufflepuff-DB",
+            "external_id": "Hufflepuff-DB"
         }
     ],
     "virtual_network_interface": null,
@@ -28472,22 +28488,21 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Application",
-                        "display_name": "From-Dumbledore-connection",
+                        "category": "Environment",
+                        "display_name": "allow-inbound",
                         "scope": [
                             "ANY"
                         ],
                         "rules": [
                             {
-                                "action": "DROP",
+                                "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "Not Slytherin"
+                                    "ANY"
                                 ],
-                                "destinations_excluded": true,
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb1-Not-Sly",
-                                "rule_id": 9198,
+                                "direction": "IN",
+                                "display_name": "allow-all-in",
+                                "rule_id": 10218,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28495,64 +28510,115 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Dumbledore1"
+                                    "ANY"
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "category": "Application",
+                        "display_name": "allow-out",
+                        "scope": [
+                            "ANY"
+                        ],
+                        "rules": [
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "Slytherin"
+                                ],
+                                "destinations_excluded": true,
+                                "direction": "OUT",
+                                "display_name": "allow-Slytherin-to-nonSlytherin-out",
+                                "rule_id": 10220,
+                                "scope": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "Slytherin"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "TCP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    },
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "UDP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    }
                                 ]
                             },
                             {
-                                "action": "DROP",
+                                "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
                                     "Gryffindor"
                                 ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb2-Not-Gryf",
-                                "rule_id": 9199,
+                                "destinations_excluded": true,
+                                "direction": "OUT",
+                                "display_name": "allow-Gryffindor-to-nonGryffindor-out",
+                                "rule_id": 10221,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "ANY"
-                                ],
                                 "source_groups": [
-                                    "Dumbledore2"
+                                    "Gryffindor"
+                                ],
+                                "service_entries": [
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "TCP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    },
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "UDP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    }
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "ANY"
+                                    "Hufflepuff"
                                 ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb1-To-All",
-                                "rule_id": 9200,
+                                "destinations_excluded": true,
+                                "direction": "OUT",
+                                "display_name": "allow-Hufflepuff-to-nonHufflepuff-out",
+                                "rule_id": 10222,
                                 "scope": [
                                     "ANY"
                                 ],
-                                "services": [
-                                    "ANY"
-                                ],
                                 "source_groups": [
-                                    "Dumbledore1"
-                                ]
-                            },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "ANY"
+                                    "Hufflepuff"
                                 ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb2-To-All",
-                                "rule_id": 9201,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Dumbledore2"
+                                "service_entries": [
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "TCP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    },
+                                    {
+                                        "destination_ports": [
+                                            "1-65535"
+                                        ],
+                                        "l4_protocol": "UDP",
+                                        "resource_type": "L4PortSetServiceEntry"
+                                    }
                                 ]
                             }
                         ]
@@ -28590,12 +28656,56 @@
                 "redirection_policies": null,
                 "groups": [
                     {
+                        "display_name": "App",
+                        "path": "App",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            },
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            },
+                            {
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "DB",
+                        "path": "DB",
+                        "vm_members": [
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
+                            },
+                            {
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
+                            },
+                            {
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
+                            }
+                        ]
+                    },
+                    {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
                         "vm_members": [
                             {
-                                "display_name": "Slytherin",
-                                "id": "Slytherin"
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            },
+                            {
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
                             }
                         ]
                     },
@@ -28604,8 +28714,16 @@
                         "path": "Hufflepuff",
                         "vm_members": [
                             {
-                                "display_name": "Hufflepuff",
-                                "id": "Hufflepuff"
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
+                            },
+                            {
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
+                            },
+                            {
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
                             }
                         ]
                     },
@@ -28614,25 +28732,27 @@
                         "path": "Gryffindor",
                         "vm_members": [
                             {
-                                "display_name": "Gryffindor",
-                                "id": "Gryffindor"
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
+                            },
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            },
+                            {
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
                             }
                         ]
                     },
                     {
-                        "display_name": "Dumbledore1",
-                        "path": "Dumbledore1",
+                        "display_name": "Dumbledore",
+                        "path": "Dumbledore",
                         "vm_members": [
                             {
                                 "display_name": "Dumbledore1",
                                 "id": "Dumbledore1"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Dumbledore2",
-                        "path": "Dumbledore2",
-                        "vm_members": [
+                            },
                             {
                                 "display_name": "Dumbledore2",
                                 "id": "Dumbledore2"
@@ -28640,24 +28760,20 @@
                         ]
                     },
                     {
-                        "display_name": "Not Slytherin",
-                        "path": "Not Slytherin",
+                        "display_name": "Web",
+                        "path": "Web",
                         "vm_members": [
                             {
-                                "display_name": "Hufflepuff",
-                                "id": "Hufflepuff"
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
                             },
                             {
-                                "display_name": "Gryffindor",
-                                "id": "Gryffindor"
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
                             },
                             {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
-                            },
-                            {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
                             }
                         ]
                     }

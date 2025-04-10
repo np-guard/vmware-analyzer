@@ -159,13 +159,13 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 	resSymbolicPaths := SymbolicPaths{}
 	externalRelevantSrc := isInbound
 	externalRelevantDst := !isInbound
-	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, externalRelevantSrc, rule.Src.IsAllGroups,
-		rule.Src.Groups, rule.Src.Blocks)
-	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, externalRelevantDst, rule.Dst.IsAllGroups,
-		rule.Dst.Groups, rule.Dst.Blocks)
+	srcConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Src.IsExclude, externalRelevantSrc,
+		rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
+	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Dst.IsExclude, externalRelevantDst,
+		rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
 	if !rule.OrigScope.IsAllGroups { // do not add *any* to Conjunction
-		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, false, false,
-			rule.OrigScope.Groups, nil)
+		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Scope.IsExclude,
+			false, false, rule.OrigScope.Groups, nil)
 		if isInbound {
 			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
 		} else { // outbound
@@ -189,19 +189,26 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 	}
 }
 
-func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction, isExternalRelevant,
+func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction, isExclude, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
-		getConjunctionForIPBlock(ruleBlocks, isExternalRelevant)
+		getConjunctionForIPBlock(ruleBlocks, isExclude, isExternalRelevant)
 	res = append(res, ipExternalBlockConjunctions...)
+	// todo add tests for all switch cases https://github.com/np-guard/vmware-analyzer/issues/402
 	switch {
-	case isTautology:
-		return res // if 0.0.0.0/0 then this is the only relevant input
-	case isAllGroups:
+	case isExclude && isTautology && isAllGroups:
+		return []*Conjunction{}
+	case (isTautology && !isExclude) || (isAllGroups && isExclude):
+		// if 0.0.0.0/0 then this is the only relevant input; if exclude isAllGroup then only ipBlocks rule is relevant
+		return res
+	case isTautology && isExclude:
+		// if IPBlocks is exclude 0.0.0.0/0 then the ipBlock rule is not relevant
+		res = append(res, getConjunctionForGroups(isExclude, groups, groupToConjunctions, rule.RuleID)...)
+	case isAllGroups && !isExclude:
 		res = append(res, &Conjunction{allGroup{}}) // if "Any" group then this is the only relevant internal resource
 	default:
 		res = append(res, ipInternalBlockConjunctions...)
-		res = append(res, getConjunctionForGroups(groups, groupToConjunctions, rule.RuleID)...)
+		res = append(res, getConjunctionForGroups(isExclude, groups, groupToConjunctions, rule.RuleID)...)
 	}
 	return
 }

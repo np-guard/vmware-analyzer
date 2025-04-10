@@ -1,0 +1,18 @@
+category: Environment
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src |Dst                |Connection
+0        |9198    |allow  |(*) |(tag != DB)        |All Connections
+0        |9198    |allow  |(*) |(tag = Slytherin)  |All Connections
+1        |9200    |allow  |(*) |(tag != DB)        |All Connections
+1        |9200    |allow  |(*) |(tag = Gryffindor) |All Connections
+2        |10300   |deny   |(*) |(*)                |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src                |Dst                              |Connection
+0        |9199    |allow  |(tag = Gryffindor) |(tag != DB)                      |All Connections
+0        |9199    |allow  |(tag = Gryffindor) |(tag = Slytherin)                |All Connections
+1        |9201    |allow  |(*)                |(tag != Hufflepuff and tag = DB) |All Connections
+2        |10300   |deny   |(*)                |(*)                              |All Connections
+
