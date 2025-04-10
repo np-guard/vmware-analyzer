@@ -108,9 +108,12 @@ type ALGTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -790,9 +793,12 @@ type Condition struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -1436,9 +1442,12 @@ type ConjunctionOperator struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -1907,9 +1916,12 @@ type Domain struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -2052,9 +2064,12 @@ type EtherTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -2467,9 +2482,12 @@ type ExternalIDExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -3230,9 +3248,12 @@ type GatewayPolicy struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -3466,9 +3487,12 @@ type Group struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -3700,9 +3724,12 @@ type ICMPTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -3910,9 +3937,12 @@ type IGMPTypeServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -4108,9 +4138,12 @@ type IPAddressExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -4315,9 +4348,12 @@ type IPProtocolServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -4531,9 +4567,12 @@ type IdentityGroupExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -4934,9 +4973,12 @@ type L4PortSetServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -5223,9 +5265,12 @@ type MACAddressExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -5526,9 +5571,12 @@ type NestedExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -5714,9 +5762,12 @@ type NestedServiceServiceEntry struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -6046,9 +6097,12 @@ type PathExpression struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// ResourceType corresponds to the JSON schema field "resource_type".
@@ -6291,6 +6345,18 @@ type PolicyApiError struct {
 
 type PolicyApiErrorErrorData map[string]interface{}
 
+// Details of the member belonging to a Group
+type PolicyGroupMemberDetails struct {
+	// DisplayName corresponds to the JSON schema field "display_name".
+	DisplayName *string `json:"display_name,omitempty" yaml:"display_name,omitempty" mapstructure:"display_name,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Path corresponds to the JSON schema field "path".
+	Path *string `json:"path,omitempty" yaml:"path,omitempty" mapstructure:"path,omitempty"`
+}
+
 // Represents NAT section. This object is created by default when corresponding
 // tier-0/tier-1 is created. Under tier-0/tier-1 there will be 4 different
 // NATs(sections). (INTERNAL, USER, DEFAULT and NAT64).
@@ -6390,9 +6456,12 @@ type PolicyNat struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -6594,9 +6663,12 @@ type PolicyNatRule struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -8655,9 +8727,12 @@ type RealizedVirtualMachine struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -8943,9 +9018,12 @@ type RedirectionPolicy struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -10120,9 +10198,12 @@ type SecurityPolicy struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -10453,9 +10534,12 @@ type Segment struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// If this field is not set for overlay segment, then the default of MTEP will be
@@ -10919,9 +11003,12 @@ type SegmentPort struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -11293,9 +11380,12 @@ type Service struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -11705,6 +11795,10 @@ type Tier0 struct {
 	// the search API to get these objects.
 	MarkedForDelete bool `json:"marked_for_delete,omitempty" yaml:"marked_for_delete,omitempty" mapstructure:"marked_for_delete,omitempty"`
 
+	// Flag to enable/disable multi_vrf_inter_sr_routing. Warning: This is one time
+	// toggle flag and can't be disabled once enabled.
+	MultiVrfInterSrRouting *bool `json:"multi_vrf_inter_sr_routing,omitempty" yaml:"multi_vrf_inter_sr_routing,omitempty" mapstructure:"multi_vrf_inter_sr_routing,omitempty"`
+
 	// This is a UUID generated by the system for knowing which site owns an object.
 	// This is used in NSX+.
 	OriginSiteId *string `json:"origin_site_id,omitempty" yaml:"origin_site_id,omitempty" mapstructure:"origin_site_id,omitempty"`
@@ -11741,9 +11835,12 @@ type Tier0 struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -12231,9 +12328,12 @@ type Tier1 struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.
@@ -12729,9 +12829,12 @@ type TraceflowConfig struct {
 	// Path relative from its parent
 	RelativePath *string `json:"relative_path,omitempty" yaml:"relative_path,omitempty" mapstructure:"relative_path,omitempty"`
 
-	// This is the path of the object on the local managers when queried on the NSX+
-	// service, and path of the object on NSX+ service when queried from the local
-	// managers.
+	// This path is populated only in case of multi-site scenario. Currently it is
+	// supported only for LM objects. When LM is onboarded to multi-site platform like
+	// NAPP or GM, remote_path will be set to the globally unique path across
+	// multi-site topology . It is generated based on local site-name and uses /org
+	// tree namespace. Note: It is populated only for LM objects. Not supported on the
+	// GM.
 	RemotePath *string `json:"remote_path,omitempty" yaml:"remote_path,omitempty" mapstructure:"remote_path,omitempty"`
 
 	// The type of this resource.

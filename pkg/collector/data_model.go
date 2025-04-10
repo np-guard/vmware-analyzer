@@ -18,19 +18,22 @@ import (
 )
 
 const (
-	rulesJSONEntry           = "rules"
-	membersJSONEntry         = "vm_members"
-	vifMembersJSONEntry      = "vif_members"
-	addressMembersJSONEntry  = "ips_members"
-	segmentsMembersJSONEntry = "segments_members"
-	expressionJSONEntry      = "expression"
-	resourcesJSONEntry       = "resources"
-	serviceEntriesJSONEntry  = "service_entries"
-	resourceTypeJSONEntry    = "resource_type"
-	defaultRuleJSONEntry     = "default_rule"
-	firewallRuleJSONEntry    = "firewall_rule"
-	segmentPortsJSONEntry    = "segment_ports"
-	policyNatsJSONEntry      = "policy_nats"
+	rulesJSONEntry                 = "rules"
+	membersJSONEntry               = "vm_members"
+	vifMembersJSONEntry            = "vif_members"
+	addressMembersJSONEntry        = "ips_members"
+	segmentMembersJSONEntry        = "segment_members"
+	segmentPortMembersJSONEntry    = "segment_port_members"
+	transpoertNodeMembersJSONEntry = "transport_node_members"
+	ipGroupMembersJSONEntry        = "ip_group_members"
+	expressionJSONEntry            = "expression"
+	resourcesJSONEntry             = "resources"
+	serviceEntriesJSONEntry        = "service_entries"
+	resourceTypeJSONEntry          = "resource_type"
+	defaultRuleJSONEntry           = "default_rule"
+	firewallRuleJSONEntry          = "firewall_rule"
+	segmentPortsJSONEntry          = "segment_ports"
+	policyNatsJSONEntry            = "policy_nats"
 )
 
 type Rule struct {
@@ -533,10 +536,13 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 
 type Group struct {
 	nsx.Group
-	VMMembers      []RealizedVirtualMachine  `json:"vm_members,omitempty"`
-	VIFMembers     []VirtualNetworkInterface `json:"vif_members,omitempty"`
-	AddressMembers []nsx.IPElement           `json:"ips_members,omitempty"`
-	Segments       []Segment                 `json:"segments_members,omitempty"`
+	VMMembers      []RealizedVirtualMachine       `json:"vm_members,omitempty"`
+	VIFMembers     []VirtualNetworkInterface      `json:"vif_members,omitempty"`
+	AddressMembers []nsx.IPElement                `json:"ips_members,omitempty"`
+	Segments       []nsx.PolicyGroupMemberDetails `json:"segment_members,omitempty"`
+	SegmentPorts   []nsx.PolicyGroupMemberDetails `json:"segment_port_members,omitempty"`
+	IPGroups       []nsx.PolicyGroupMemberDetails `json:"ip_group_members,omitempty"`
+	TransportNodes []nsx.PolicyGroupMemberDetails `json:"transport_node_members,omitempty"`
 
 	Expression Expression `json:"expression,omitempty"`
 }
@@ -546,11 +552,11 @@ func (group *Group) UnmarshalJSON(b []byte) error {
 		membersJSONEntry, &group.VMMembers,
 		vifMembersJSONEntry, &group.VIFMembers,
 		addressMembersJSONEntry, &group.AddressMembers,
-		addressMembersJSONEntry, &group.Segments,
+		segmentMembersJSONEntry, &group.Segments,
+		segmentPortMembersJSONEntry, &group.SegmentPorts,
+		ipGroupMembersJSONEntry, &group.IPGroups,
+		transpoertNodeMembersJSONEntry, &group.TransportNodes,
 		expressionJSONEntry, &group.Expression,
-		"",nilWithType,
-		"",nilWithType,
-		"",nilWithType,
 	)
 }
 
