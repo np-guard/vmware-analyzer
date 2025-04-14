@@ -627,11 +627,11 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	err = common.WriteToFile(path.Join(debugDir, "nsx_resources.json"), jsonOut)
 	require.Nil(t, err)
 
-	// getting the vmware connectivity
-	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	// getting the vmware vmwareConnectivity
+	_, connMap, vmwareConnectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
-	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), vmwareConnectivity)
 	require.Nil(t, err)
 	connGroupedMap := connMap.GroupExternalEP()
 	connGroupedMapStr, err := connGroupedMap.GenConnectivityOutput(synTest.outputParams())
@@ -698,7 +698,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputGeneration
+const runTestMode = OutputComparison
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
