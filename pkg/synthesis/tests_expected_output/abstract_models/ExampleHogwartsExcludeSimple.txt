@@ -4,14 +4,14 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group      |Expression |VM
-App        |           |Slytherin-App, Gryffindor-App, Hufflepuff-App
-DB         |           |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB
-Dumbledore |           |Dumbledore1, Dumbledore2
-Gryffindor |           |Gryffindor-Web, Gryffindor-App, Gryffindor-DB
-Hufflepuff |           |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
-Slytherin  |           |Slytherin-Web, Slytherin-App, Slytherin-DB
-Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
+Group      |Expression |VM                                            |Addresses |Segment |Transport Node |IP Group
+App        |           |Slytherin-App, Gryffindor-App, Hufflepuff-App |          |        |               |
+DB         |           |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB    |          |        |               |
+Dumbledore |           |Dumbledore1, Dumbledore2                      |          |        |               |
+Gryffindor |           |Gryffindor-Web, Gryffindor-App, Gryffindor-DB |          |        |               |
+Hufflepuff |           |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB |          |        |               |
+Slytherin  |           |Slytherin-Web, Slytherin-App, Slytherin-DB    |          |        |               |
+Web        |           |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web |          |        |               |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
