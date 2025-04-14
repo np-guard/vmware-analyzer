@@ -2,12 +2,12 @@ package synthesis
 
 import (
 	"slices"
-	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
@@ -117,19 +117,21 @@ func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
 
 func strGroups(allGroups []*collector.Group, color bool) string {
 	// todo: identify here cases in which we were unable to process expr
-	header := []string{"Group", "Expression", "VM"}
+	header := []string{"Group", "Expression", "VM", "Addresses", "Segment", "Transport Node", "IP Group"}
 	lines := make([][]string, len(allGroups))
 	i := 0
 	for _, group := range allGroups {
+		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers, func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName }, common.CommaSpaceSeparator)
+		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers, func(a nsx.IPElement) string {return string(a)}, common.CommaSpaceSeparator)
+		display := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
+		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, display, common.CommaSpaceSeparator)
+		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, display, common.CommaSpaceSeparator)
+		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, display, common.CommaSpaceSeparator)
 		groupExprStr := ""
-		groupVMNames := make([]string, len(group.VMMembers))
 		if len(group.Expression) > 0 {
 			groupExprStr = group.Expression.String()
 		}
-		for j := range group.VMMembers {
-			groupVMNames[j] = *group.VMMembers[j].DisplayName
-		}
-		newLine := []string{*group.DisplayName, groupExprStr, strings.Join(groupVMNames, ", ")}
+		newLine := []string{*group.DisplayName, groupExprStr, groupVMNames,addresses, groupSegmentsNames, transportNodesNames, ipGrpoupsNames}
 		lines[i] = newLine
 		i++
 	}
