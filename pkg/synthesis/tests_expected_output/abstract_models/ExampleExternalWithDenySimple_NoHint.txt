@@ -4,8 +4,8 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group    |Expression |VM
-frontend |           |A
+Group    |Expression |VM |Addresses |Segment |Transport Node |IP Group
+frontend |           |A  |          |        |               |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

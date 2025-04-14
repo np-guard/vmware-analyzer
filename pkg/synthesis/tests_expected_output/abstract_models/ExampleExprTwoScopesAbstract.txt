@@ -4,13 +4,13 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group      |Expression                                  |VM
-App        |((Tag Of VirtualMachine EQUALS App))        |
-DB         |((Tag Of VirtualMachine EQUALS DB))         |
-Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor)) |
-Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff)) |
-Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |
-Web        |((Tag Of VirtualMachine EQUALS Web))        |
+Group      |Expression                                  |VM |Addresses |Segment |Transport Node |IP Group
+App        |((Tag Of VirtualMachine EQUALS App))        |   |          |        |               |
+DB         |((Tag Of VirtualMachine EQUALS DB))         |   |          |        |               |
+Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor)) |   |          |        |               |
+Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff)) |   |          |        |               |
+Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |   |          |        |               |
+Web        |((Tag Of VirtualMachine EQUALS Web))        |   |          |        |               |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

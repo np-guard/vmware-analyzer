@@ -4,13 +4,13 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group           |Expression |VM
-Dumbledore      |           |Dumbledore1, Dumbledore2
-DumbledoreAll   |           |Dumbledore1
-DumbledoreNoSly |           |Dumbledore2
-Gryffindor      |           |Gryffindor
-Hufflepuff      |           |Hufflepuff
-Slytherin       |           |
+Group           |Expression |VM                       |Addresses |Segment |Transport Node |IP Group
+Dumbledore      |           |Dumbledore1, Dumbledore2 |          |        |               |
+DumbledoreAll   |           |Dumbledore1              |          |        |               |
+DumbledoreNoSly |           |Dumbledore2              |          |        |               |
+Gryffindor      |           |Gryffindor               |          |        |               |
+Hufflepuff      |           |Hufflepuff               |          |        |               |
+Slytherin       |           |                         |          |        |               |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

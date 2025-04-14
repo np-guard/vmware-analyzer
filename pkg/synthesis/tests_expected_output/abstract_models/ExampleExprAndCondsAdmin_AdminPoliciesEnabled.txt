@@ -4,13 +4,13 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group                |Expression                                                                           |VM
-Gryffindor           |((Tag Of VirtualMachine EQUALS Gryffindor))                                          |Gryffindor-DB, Gryffindor-Web, Gryffindor-App
-Gryffindor-And-no-DB |((Tag Of VirtualMachine EQUALS Gryffindor) AND (Tag Of VirtualMachine NOTEQUALS DB)) |Gryffindor-Web, Gryffindor-App
-Hufflepuff           |((Tag Of VirtualMachine EQUALS Hufflepuff))                                          |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
-Hufflepuff-And-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) AND (Tag Of VirtualMachine NOTEQUALS DB)) |Hufflepuff-Web, Hufflepuff-App
-Slytherin            |((Tag Of VirtualMachine EQUALS Slytherin))                                           |Slytherin-DB, Slytherin-Web, Slytherin-App
-Slytherin-And-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) AND (Tag Of VirtualMachine NOTEQUALS DB))  |Slytherin-Web, Slytherin-App
+Group                |Expression                                                                           |VM                                            |Addresses |Segment |Transport Node |IP Group
+Gryffindor           |((Tag Of VirtualMachine EQUALS Gryffindor))                                          |Gryffindor-DB, Gryffindor-Web, Gryffindor-App |          |        |               |
+Gryffindor-And-no-DB |((Tag Of VirtualMachine EQUALS Gryffindor) AND (Tag Of VirtualMachine NOTEQUALS DB)) |Gryffindor-Web, Gryffindor-App                |          |        |               |
+Hufflepuff           |((Tag Of VirtualMachine EQUALS Hufflepuff))                                          |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App |          |        |               |
+Hufflepuff-And-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) AND (Tag Of VirtualMachine NOTEQUALS DB)) |Hufflepuff-Web, Hufflepuff-App                |          |        |               |
+Slytherin            |((Tag Of VirtualMachine EQUALS Slytherin))                                           |Slytherin-DB, Slytherin-Web, Slytherin-App    |          |        |               |
+Slytherin-And-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) AND (Tag Of VirtualMachine NOTEQUALS DB))  |Slytherin-Web, Slytherin-App                  |          |        |               |
 
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~

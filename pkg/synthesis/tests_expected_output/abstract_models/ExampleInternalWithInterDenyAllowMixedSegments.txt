@@ -4,9 +4,9 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group         |Expression |VM
-default-group |           |vm1, vm2, vm3, vm4, vm5, vm6, vm7, vm8, vm9, vm10
-real-group    |           |vm-no-address1, vm-no-address2
+Group         |Expression |VM                                                |Addresses |Segment |Transport Node |IP Group
+default-group |           |vm1, vm2, vm3, vm4, vm5, vm6, vm7, vm8, vm9, vm10 |          |        |               |
+real-group    |           |vm-no-address1, vm-no-address2                    |          |        |               |
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
