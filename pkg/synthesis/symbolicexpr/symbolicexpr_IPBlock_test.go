@@ -173,8 +173,8 @@ func TestInternalIPTerms(t *testing.T) {
 	ipInternal2, _ := netset.IPBlockFromCidr("192.168.0.0/16")
 	ruleIPInternal1 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal1, OriginalIP: "172.16.0.0/12"}}
 	ruleIPInternal2 := &topology.RuleIPBlock{IPBlock: topology.IPBlock{Block: ipInternal2, OriginalIP: "192.168.0.0/16"}}
-	ipInternalTerm1 := NewInternalIPTerm(ruleIPInternal1)
-	ipInternalTerm2 := NewInternalIPTerm(ruleIPInternal2)
+	ipInternalTerm1 := NewInternalIPTerm(ruleIPInternal1, false)
+	ipInternalTerm2 := NewInternalIPTerm(ruleIPInternal2, false)
 	internalIPTerm1Neg := ipInternalTerm1.negate()
 	internalIPTerm2Neg := ipInternalTerm2.negate()
 	fmt.Println("ipInternalTerm1 is", ipInternalTerm1.String())

@@ -162,6 +162,12 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleHogwartsExcludeSimple",
+		exData:          data.ExampleHogwartsExcludeSimple,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
 }
 
 var vmsByIpsTests = []synthesisTest{
@@ -277,6 +283,16 @@ var groupsByExprTests = []synthesisTest{
 		exData:          data.ExampleExprOrConds,
 		noHint:          false,
 		synthesizeAdmin: true,
+	},
+	{
+		name:   "ExampleExprOrCondsExclude",
+		exData: data.ExampleExprOrCondsExclude,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprAndCondsExclude",
+		exData: data.ExampleExprAndCondsExclude,
+		noHint: false,
 	},
 }
 var liveNsxTest = synthesisTest{

@@ -69,12 +69,12 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 			addVMLabel(vm, label)
 		}
 		for _, segment := range model.vmSegments[vm] {
-			label, _ := symbolicexpr.NewSegmentTerm(segment).AsSelector()
+			label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
 			addVMLabel(vm, label)
 		}
 		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
 			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
+				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
 				addVMLabel(vm, label)
 			}
 		}

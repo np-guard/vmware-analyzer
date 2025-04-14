@@ -28442,24 +28442,130 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin",
-            "external_id": "Slytherin"
+            "display_name": "Slytherin-DB",
+            "external_id": "Slytherin-DB",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Slytherin"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "DB"
+                }
+            ]
         },
         {
-            "display_name": "Hufflepuff",
-            "external_id": "Hufflepuff"
+            "display_name": "Slytherin-Web",
+            "external_id": "Slytherin-Web",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Slytherin"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "Web"
+                }
+            ]
         },
         {
-            "display_name": "Gryffindor",
-            "external_id": "Gryffindor"
+            "display_name": "Slytherin-App",
+            "external_id": "Slytherin-App",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Slytherin"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "App"
+                }
+            ]
         },
         {
-            "display_name": "Dumbledore1",
-            "external_id": "Dumbledore1"
+            "display_name": "Hufflepuff-DB",
+            "external_id": "Hufflepuff-DB",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Hufflepuff"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "DB"
+                }
+            ]
         },
         {
-            "display_name": "Dumbledore2",
-            "external_id": "Dumbledore2"
+            "display_name": "Hufflepuff-Web",
+            "external_id": "Hufflepuff-Web",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Hufflepuff"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "Web"
+                }
+            ]
+        },
+        {
+            "display_name": "Hufflepuff-App",
+            "external_id": "Hufflepuff-App",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Hufflepuff"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "App"
+                }
+            ]
+        },
+        {
+            "display_name": "Gryffindor-DB",
+            "external_id": "Gryffindor-DB",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Gryffindor"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "DB"
+                }
+            ]
+        },
+        {
+            "display_name": "Gryffindor-Web",
+            "external_id": "Gryffindor-Web",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Gryffindor"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "Web"
+                }
+            ]
+        },
+        {
+            "display_name": "Gryffindor-App",
+            "external_id": "Gryffindor-App",
+            "tags": [
+                {
+                    "scope": "House",
+                    "tag": "Gryffindor"
+                },
+                {
+                    "scope": "Function",
+                    "tag": "App"
+                }
+            ]
         }
     ],
     "virtual_network_interface": null,
@@ -28472,59 +28578,58 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Application",
-                        "display_name": "From-Dumbledore-connection",
+                        "category": "Environment",
+                        "display_name": "Protect-DBs",
                         "scope": [
                             "ANY"
                         ],
                         "rules": [
-                            {
-                                "action": "DROP",
-                                "description": "",
-                                "destination_groups": [
-                                    "Not Slytherin"
-                                ],
-                                "destinations_excluded": true,
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb1-Not-Sly",
-                                "rule_id": 9198,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Dumbledore1"
-                                ]
-                            },
-                            {
-                                "action": "DROP",
-                                "description": "",
-                                "destination_groups": [
-                                    "Gryffindor"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb2-Not-Gryf",
-                                "rule_id": 9199,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Dumbledore2"
-                                ]
-                            },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
                                     "ANY"
                                 ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb1-To-All",
+                                "direction": "IN",
+                                "display_name": "to-Slytherin-in",
+                                "rule_id": 9198,
+                                "scope": [
+                                    "Slytherin-And-no-DB"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "ANY"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "Slytherin-And-no-DB"
+                                ],
+                                "direction": "OUT",
+                                "display_name": "to-Slytherin-out",
+                                "rule_id": 9199,
+                                "scope": [
+                                    "Gryffindor"
+                                ],
+                                "services": [
+                                    "ANY"
+                                ],
+                                "source_groups": [
+                                    "ANY"
+                                ]
+                            },
+                            {
+                                "action": "ALLOW",
+                                "description": "",
+                                "destination_groups": [
+                                    "Gryffindor-And-no-DB"
+                                ],
+                                "direction": "IN",
+                                "display_name": "to-Gryffindor-in",
                                 "rule_id": 9200,
                                 "scope": [
                                     "ANY"
@@ -28533,17 +28638,18 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Dumbledore1"
+                                    "ANY"
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "ANY"
+                                    "Hufflepuff-And-no-DB"
                                 ],
-                                "direction": "IN_OUT",
-                                "display_name": "Dumb2-To-All",
+                                "destinations_excluded": true,
+                                "direction": "OUT",
+                                "display_name": "to-Hufflepuff-out",
                                 "rule_id": 9201,
                                 "scope": [
                                     "ANY"
@@ -28552,18 +28658,9 @@
                                     "ANY"
                                 ],
                                 "source_groups": [
-                                    "Dumbledore2"
+                                    "ANY"
                                 ]
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Default-L3-Section",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
+                            },
                             {
                                 "action": "DROP",
                                 "description": "",
@@ -28571,8 +28668,8 @@
                                     "ANY"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "default-deny-rule",
-                                "rule_id": 10230,
+                                "display_name": "default-deny-env",
+                                "rule_id": 10300,
                                 "scope": [
                                     "ANY"
                                 ],
@@ -28594,18 +28691,25 @@
                         "path": "Slytherin",
                         "vm_members": [
                             {
-                                "display_name": "Slytherin",
-                                "id": "Slytherin"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Hufflepuff",
-                        "path": "Hufflepuff",
-                        "vm_members": [
+                                "display_name": "Slytherin-DB",
+                                "id": "Slytherin-DB"
+                            },
                             {
-                                "display_name": "Hufflepuff",
-                                "id": "Hufflepuff"
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Slytherin"
                             }
                         ]
                     },
@@ -28614,50 +28718,154 @@
                         "path": "Gryffindor",
                         "vm_members": [
                             {
-                                "display_name": "Gryffindor",
-                                "id": "Gryffindor"
+                                "display_name": "Gryffindor-DB",
+                                "id": "Gryffindor-DB"
+                            },
+                            {
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
+                            },
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Gryffindor"
                             }
                         ]
                     },
                     {
-                        "display_name": "Dumbledore1",
-                        "path": "Dumbledore1",
+                        "display_name": "Hufflepuff",
+                        "path": "Hufflepuff",
                         "vm_members": [
                             {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
+                                "display_name": "Hufflepuff-DB",
+                                "id": "Hufflepuff-DB"
+                            },
+                            {
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
+                            },
+                            {
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Hufflepuff"
                             }
                         ]
                     },
                     {
-                        "display_name": "Dumbledore2",
-                        "path": "Dumbledore2",
+                        "display_name": "Slytherin-And-no-DB",
+                        "path": "Slytherin-And-no-DB",
                         "vm_members": [
                             {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
+                                "display_name": "Slytherin-Web",
+                                "id": "Slytherin-Web"
+                            },
+                            {
+                                "display_name": "Slytherin-App",
+                                "id": "Slytherin-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Slytherin"
+                            },
+                            {
+                                "conjunction_operator": "AND",
+                                "resource_type": "ConjunctionOperator"
+                            },
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "NOTEQUALS",
+                                "resource_type": "Condition",
+                                "value": "DB"
                             }
                         ]
                     },
                     {
-                        "display_name": "Not Slytherin",
-                        "path": "Not Slytherin",
+                        "display_name": "Hufflepuff-And-no-DB",
+                        "path": "Hufflepuff-And-no-DB",
                         "vm_members": [
                             {
-                                "display_name": "Hufflepuff",
-                                "id": "Hufflepuff"
+                                "display_name": "Hufflepuff-Web",
+                                "id": "Hufflepuff-Web"
                             },
                             {
-                                "display_name": "Gryffindor",
-                                "id": "Gryffindor"
+                                "display_name": "Hufflepuff-App",
+                                "id": "Hufflepuff-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Hufflepuff"
                             },
                             {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
+                                "conjunction_operator": "AND",
+                                "resource_type": "ConjunctionOperator"
                             },
                             {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "NOTEQUALS",
+                                "resource_type": "Condition",
+                                "value": "DB"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Gryffindor-And-no-DB",
+                        "path": "Gryffindor-And-no-DB",
+                        "vm_members": [
+                            {
+                                "display_name": "Gryffindor-Web",
+                                "id": "Gryffindor-Web"
+                            },
+                            {
+                                "display_name": "Gryffindor-App",
+                                "id": "Gryffindor-App"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "Gryffindor"
+                            },
+                            {
+                                "conjunction_operator": "AND",
+                                "resource_type": "ConjunctionOperator"
+                            },
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "NOTEQUALS",
+                                "resource_type": "Condition",
+                                "value": "DB"
                             }
                         ]
                     }

@@ -124,7 +124,8 @@ func (externalIPTerm) IsAllExternal() bool {
 // 2. External IP addr - these are further translated into externalIPTerm
 // 3. Segments - these are further translated in segmentTerm
 // 4. Internal IP addr - in case not all VMs are covered by segments, the *entire* IP is handled as internalIPTerm
-func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExternalRelevant bool) (externalIPBlocksConjunctions,
+func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExclude,
+	isExternalRelevant bool) (externalIPBlocksConjunctions,
 	internalIPBlocksConjunctions []*Conjunction, isTautology bool) {
 	externalIPBlocksConjunctions = []*Conjunction{}
 	for _, ruleIPBlock := range ruleIPBlocks {
@@ -133,16 +134,16 @@ func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExternalRe
 		}
 		if isExternalRelevant && ruleIPBlock.HasExternal() {
 			externalIPBlock := &topology.IPBlock{Block: ruleIPBlock.ExternalRange, OriginalIP: ruleIPBlock.OriginalIP}
-			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions, &Conjunction{&externalIPTerm{atomicTerm: atomicTerm{},
-				IPBlock: externalIPBlock}})
+			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions,
+				&Conjunction{&externalIPTerm{atomicTerm: atomicTerm{neg: isExclude}, IPBlock: externalIPBlock}})
 		}
 		for _, segment := range ruleIPBlock.Segments {
-			newSegmentTerm := NewSegmentTerm(segment)
+			newSegmentTerm := NewSegmentTerm(segment, isExclude)
 			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Conjunction{newSegmentTerm})
 		}
 		// if there is *any* VM not in subnet then the *entire* IP is handled as internalIPTerm
 		if ruleIPBlock.HasInternalIPNotInSegments() {
-			newInternalIPTerm := NewInternalIPTerm(ruleIPBlock)
+			newInternalIPTerm := NewInternalIPTerm(ruleIPBlock, isExclude)
 			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Conjunction{newInternalIPTerm})
 		}
 	}

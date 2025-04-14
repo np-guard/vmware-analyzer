@@ -10,8 +10,8 @@ import (
 
 // internalIPTerm represents VMs of a given internal IP address block which is not a segment
 
-func NewInternalIPTerm(ruleBlock *topology.RuleIPBlock) *internalIPTerm {
-	return &internalIPTerm{ruleBlock: ruleBlock}
+func NewInternalIPTerm(ruleBlock *topology.RuleIPBlock, isExclude bool) *internalIPTerm {
+	return &internalIPTerm{ruleBlock: ruleBlock, atomicTerm: atomicTerm{neg: isExclude}}
 }
 
 func (internalIP internalIPTerm) String() string {
