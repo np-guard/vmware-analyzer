@@ -122,16 +122,16 @@ func strGroups(allGroups []*collector.Group, color bool) string {
 	i := 0
 	for _, group := range allGroups {
 		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers, func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName }, common.CommaSpaceSeparator)
-		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers, func(a nsx.IPElement) string {return string(a)}, common.CommaSpaceSeparator)
-		display := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
-		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, display, common.CommaSpaceSeparator)
-		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, display, common.CommaSpaceSeparator)
-		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, display, common.CommaSpaceSeparator)
+		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers, func(a nsx.IPElement) string { return string(a) }, common.CommaSpaceSeparator)
+		displayName := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
+		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, displayName, common.CommaSpaceSeparator)
+		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, displayName, common.CommaSpaceSeparator)
+		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, displayName, common.CommaSpaceSeparator)
 		groupExprStr := ""
 		if len(group.Expression) > 0 {
 			groupExprStr = group.Expression.String()
 		}
-		newLine := []string{*group.DisplayName, groupExprStr, groupVMNames,addresses, groupSegmentsNames, transportNodesNames, ipGrpoupsNames}
+		newLine := []string{*group.DisplayName, groupExprStr, groupVMNames, addresses, groupSegmentsNames, transportNodesNames, ipGrpoupsNames}
 		lines[i] = newLine
 		i++
 	}
