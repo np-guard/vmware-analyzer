@@ -634,7 +634,12 @@ func UnmarshalBaseStructAnd4Fields[baseType any, fieldType1 any, fieldType2 any,
 		"", nilWithType, "", nilWithType, "", nilWithType, "", nilWithType)
 }
 
-func UnmarshalBaseStructAnd8Fields[baseType any, fieldType1 any, fieldType2 any, fieldType3 any, fieldType4 any, fieldType5 any, fieldType6 any, fieldType7 any, fieldType8 any](
+//nolint:gocyclo // just a long function
+func UnmarshalBaseStructAnd8Fields[baseType any,
+	fieldType1 any, fieldType2 any,
+	fieldType3 any, fieldType4 any,
+	fieldType5 any, fieldType6 any,
+	fieldType7 any, fieldType8 any](
 	b []byte, base *baseType,
 	entry1 string, field1 *fieldType1,
 	entry2 string, field2 *fieldType2,

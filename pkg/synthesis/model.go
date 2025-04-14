@@ -121,8 +121,12 @@ func strGroups(allGroups []*collector.Group, color bool) string {
 	lines := make([][]string, len(allGroups))
 	i := 0
 	for _, group := range allGroups {
-		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers, func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName }, common.CommaSpaceSeparator)
-		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers, func(a nsx.IPElement) string { return string(a) }, common.CommaSpaceSeparator)
+		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers,
+			func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName },
+			common.CommaSpaceSeparator)
+		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers,
+			func(a nsx.IPElement) string { return string(a) },
+			common.CommaSpaceSeparator)
 		displayName := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
 		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, displayName, common.CommaSpaceSeparator)
 		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, displayName, common.CommaSpaceSeparator)
