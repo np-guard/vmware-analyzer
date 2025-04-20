@@ -628,10 +628,10 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	_, connMap, connectivityRes, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
-	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivityRes)
 	require.Nil(t, err)
 	connGroupedMap := connMap.GroupExternalEP()
 	connGroupedMapStr, err := connGroupedMap.GenConnectivityOutput(synTest.outputParams())
