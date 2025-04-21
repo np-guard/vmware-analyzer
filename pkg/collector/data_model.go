@@ -27,6 +27,7 @@ const (
 	transpoertNodeMembersJSONEntry = "transport_node_members"
 	ipGroupMembersJSONEntry        = "ip_group_members"
 	expressionJSONEntry            = "expression"
+	expressionsJSONEntry           = "expressions"
 	resourcesJSONEntry             = "resources"
 	serviceEntriesJSONEntry        = "service_entries"
 	resourceTypeJSONEntry          = "resource_type"
@@ -441,6 +442,8 @@ func (e *ConjunctionOperator) String() string {
 
 type NestedExpression struct {
 	nsx.NestedExpression
+	//Content     []string   `json:"content"`
+	Expressions Expression `json:"expressions"`
 }
 
 const toImplement = "(String() not yet implemented for this expression element)"
@@ -511,7 +514,26 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 		case "ConjunctionOperator":
 			res = &ConjunctionOperator{}
 		case "NestedExpression":
-			res = &NestedExpression{}
+			expressionsContent := raw[expressionsJSONEntry]
+			var rawEntries []json.RawMessage
+			if err := json.Unmarshal(expressionsContent, &rawEntries); err != nil {
+				return err
+			}
+			nestedExprRes := make([]ExpressionElement, len(rawEntries))
+			var newResExpr Expression
+			newResExpr = nestedExprRes
+			newResExprPtr := &newResExpr
+			newResExprPtr.UnmarshalJSON(expressionsContent)
+
+			/*var content []string
+			for _, j := range rawEntries {
+				content = append(content, string(j[:]))
+				//var newExpr ExpressionElement
+			}*/
+			res = &NestedExpression{
+				// Content:     content,
+				Expressions: *newResExprPtr,
+			}
 		case "IPAddressExpression":
 			res = &IPAddressExpression{}
 		case "MACAddressExpression":
