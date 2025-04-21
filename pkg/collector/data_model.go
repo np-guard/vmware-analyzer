@@ -411,7 +411,7 @@ type RealizedVirtualMachine struct {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-func addParentheses(s []string) string { return fmt.Sprintf("(%s)", strings.Join(s, " ")) }
+func addParentheses(s []string) string { return fmt.Sprintf("(%s)", strings.Join(s, common.Space)) }
 
 type ExpressionElement interface {
 	String() string
@@ -442,25 +442,38 @@ func (e *ConjunctionOperator) String() string {
 
 type NestedExpression struct {
 	nsx.NestedExpression
-	//Content     []string   `json:"content"`
 	Expressions Expression `json:"expressions"`
 }
 
-const toImplement = "(String() not yet implemented for this expression element)"
+var toImplementFunc = func(exprKind string) string {
+	return fmt.Sprintf("(String() not yet implemented for %s expression element)", exprKind)
+}
 
-func (e *NestedExpression) String() string { return toImplement } // todo
+func (e *NestedExpression) String() string {
+	exprStr := make([]string, len(e.Expressions))
+	for i, subExpr := range e.Expressions {
+		exprStr[i] = subExpr.String()
+	}
+	return strings.Join(exprStr, common.Space)
+}
 
 type IPAddressExpression struct {
 	nsx.IPAddressExpression
 }
 
-func (e *IPAddressExpression) String() string { return toImplement } // todo
+func (e *IPAddressExpression) String() string {
+	return common.JoinCustomStrFuncSlice(e.IpAddresses,
+		func(a nsx.IPElement) string { return string(a) },
+		common.CommaSpaceSeparator)
+}
 
 type MACAddressExpression struct {
 	nsx.MACAddressExpression
 }
 
-func (e *MACAddressExpression) String() string { return toImplement } // todo
+func (e *MACAddressExpression) String() string {
+	return toImplementFunc(string(nsx.IdentityGroupExpressionResourceTypeMACAddressExpression))
+} // todo
 
 type ExternalIDExpression struct {
 	nsx.ExternalIDExpression
@@ -474,13 +487,17 @@ type PathExpression struct {
 	nsx.PathExpression
 }
 
-func (e *PathExpression) String() string { return toImplement } // todo
+func (e *PathExpression) String() string {
+	return strings.Join(e.Paths, common.CommaSpaceSeparator)
+}
 
 type IdentityGroupExpression struct {
 	nsx.IdentityGroupExpression
 }
 
-func (e *IdentityGroupExpression) String() string { return toImplement } // todo
+func (e *IdentityGroupExpression) String() string {
+	return toImplementFunc(string(nsx.IdentityGroupExpressionResourceTypeIdentityGroupExpression))
+} // todo
 
 type Expression []ExpressionElement
 
@@ -490,6 +507,20 @@ func (e *Expression) String() string {
 		elementsStrings[i] = el.String()
 	}
 	return addParentheses(elementsStrings)
+}
+
+func unmarshalNestedExpression(expressionsContent json.RawMessage) (*Expression, error) {
+	var rawEntries []json.RawMessage
+	if err := json.Unmarshal(expressionsContent, &rawEntries); err != nil {
+		return nil, err
+	}
+	nestedExprRes := make([]ExpressionElement, len(rawEntries))
+	var newResExpr Expression = nestedExprRes
+	newResExprPtr := &newResExpr
+	if err := newResExprPtr.UnmarshalJSON(expressionsContent); err != nil {
+		return nil, err
+	}
+	return newResExprPtr, nil
 }
 
 func (e *Expression) UnmarshalJSON(b []byte) error {
@@ -509,40 +540,27 @@ func (e *Expression) UnmarshalJSON(b []byte) error {
 		}
 		var res ExpressionElement
 		switch cType {
-		case "Condition":
+		case string(nsx.IdentityGroupExpressionResourceTypeCondition):
 			res = &Condition{}
-		case "ConjunctionOperator":
+		case string(nsx.IdentityGroupExpressionResourceTypeConjunctionOperator):
 			res = &ConjunctionOperator{}
-		case "NestedExpression":
-			expressionsContent := raw[expressionsJSONEntry]
-			var rawEntries []json.RawMessage
-			if err := json.Unmarshal(expressionsContent, &rawEntries); err != nil {
+		case string(nsx.IdentityGroupExpressionResourceTypeNestedExpression):
+			nestedExpr, err := unmarshalNestedExpression(raw[expressionsJSONEntry])
+			if err != nil {
 				return err
 			}
-			nestedExprRes := make([]ExpressionElement, len(rawEntries))
-			var newResExpr Expression
-			newResExpr = nestedExprRes
-			newResExprPtr := &newResExpr
-			newResExprPtr.UnmarshalJSON(expressionsContent)
-
-			/*var content []string
-			for _, j := range rawEntries {
-				content = append(content, string(j[:]))
-				//var newExpr ExpressionElement
-			}*/
 			res = &NestedExpression{
-				// Content:     content,
-				Expressions: *newResExprPtr,
+				Expressions: *nestedExpr,
 			}
-		case "IPAddressExpression":
+		case string(nsx.IdentityGroupExpressionResourceTypeIPAddressExpression):
 			res = &IPAddressExpression{}
-		case "MACAddressExpression":
+		case string(nsx.IdentityGroupExpressionResourceTypeMACAddressExpression):
 			res = &MACAddressExpression{}
-		case "ExternalIDExpression":
+		case string(nsx.IdentityGroupExpressionResourceTypeExternalIDExpression):
 			res = &ExternalIDExpression{}
-		case "PathExpression":
+		case string(nsx.IdentityGroupExpressionResourceTypePathExpression):
 			res = &PathExpression{}
-		case "IdentityGroupExpression":
+		case string(nsx.IdentityGroupExpressionResourceTypeIdentityGroupExpression):
 			res = &IdentityGroupExpression{}
 
 		default:

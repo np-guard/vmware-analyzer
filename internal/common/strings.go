@@ -16,6 +16,7 @@ const (
 	NewLine             string = "\n"
 	Tab                 string = "\t"
 	carriageReturn      string = "\r"
+	Space                      = " "
 
 	AnalyzedConnectivityHeader = "Analyzed connectivity:"
 
