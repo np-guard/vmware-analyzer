@@ -4,11 +4,33 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group      |Expression                                  |VM         |Addresses |Segment |Transport Node |IP Group
-Dumbledore |((Tag Of VirtualMachine EQUALS Dumbledore)) |Dumbledore |          |        |               |
-Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor)) |Gryffindor |          |        |               |
-Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff)) |Hufflepuff |          |        |               |
-Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |           |          |        |               |
+Group Name |Expression
+Dumbledore |((Tag Of VirtualMachine EQUALS Dumbledore))
+Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor))
+Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff))
+Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))
+
+
+Group Name |VMs
+Dumbledore |Dumbledore
+Gryffindor |Gryffindor
+Hufflepuff |Hufflepuff
+
+
+Group Name |Addresses
+
+
+
+Group Name |Segments
+
+
+
+Group Name |Transport Nodes
+
+
+
+Group Name |IP Groups
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

@@ -243,11 +243,15 @@ func (c *Config) GetGroupsStr(color bool) string {
 	}
 
 	for _, group := range c.Groups {
+		groupName := *group.DisplayName
+
 		// vms components
 		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers,
 			func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName },
 			common.CommaSpaceSeparator)
-		tablesLines[vmsComponent] = append(tablesLines[vmsComponent], []string{*group.DisplayName, groupVMNames})
+		if groupVMNames != "" {
+			tablesLines[vmsComponent] = append(tablesLines[vmsComponent], []string{groupName, groupVMNames})
+		}
 
 		displayNameFunc := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
 
@@ -255,26 +259,36 @@ func (c *Config) GetGroupsStr(color bool) string {
 		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers,
 			func(a nsx.IPElement) string { return string(a) },
 			common.CommaSpaceSeparator)
-		tablesLines[addressesComponent] = append(tablesLines[addressesComponent], []string{*group.DisplayName, addresses})
+		if addresses != "" {
+			tablesLines[addressesComponent] = append(tablesLines[addressesComponent], []string{groupName, addresses})
+		}
 
 		// segments components
 		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, displayNameFunc, common.CommaSpaceSeparator)
-		tablesLines[segmentsComponent] = append(tablesLines[segmentsComponent], []string{*group.DisplayName, groupSegmentsNames})
+		if groupSegmentsNames != "" {
+			tablesLines[segmentsComponent] = append(tablesLines[segmentsComponent], []string{groupName, groupSegmentsNames})
+		}
 
 		// nodes components
 		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, displayNameFunc, common.CommaSpaceSeparator)
-		tablesLines[nodesComponent] = append(tablesLines[nodesComponent], []string{*group.DisplayName, transportNodesNames})
+		if transportNodesNames != "" {
+			tablesLines[nodesComponent] = append(tablesLines[nodesComponent], []string{groupName, transportNodesNames})
+		}
 
 		// ip-groups components
 		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, displayNameFunc, common.CommaSpaceSeparator)
-		tablesLines[ipGroupsComponent] = append(tablesLines[ipGroupsComponent], []string{*group.DisplayName, ipGrpoupsNames})
+		if ipGrpoupsNames != "" {
+			tablesLines[ipGroupsComponent] = append(tablesLines[ipGroupsComponent], []string{groupName, ipGrpoupsNames})
+		}
 
 		// expr components
 		groupExprStr := ""
 		if len(group.Expression) > 0 {
 			groupExprStr = group.Expression.String()
 		}
-		tablesLines[expressionComponent] = append(tablesLines[expressionComponent], []string{*group.DisplayName, groupExprStr})
+		if groupExprStr != "" {
+			tablesLines[expressionComponent] = append(tablesLines[expressionComponent], []string{groupName, groupExprStr})
+		}
 	}
 
 	var componentToTableStrFunc = func(c string) string {

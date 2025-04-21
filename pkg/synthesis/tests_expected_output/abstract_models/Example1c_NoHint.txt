@@ -4,10 +4,30 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group     |Expression |VM |Addresses |Segment |Transport Node |IP Group
-backend   |           |B  |          |        |               |
-frontend  |           |A  |          |        |               |
-frontend1 |           |C  |          |        |               |
+Group Name |Expression
+
+
+
+Group Name |VMs
+backend    |B
+frontend   |A
+frontend1  |C
+
+
+Group Name |Addresses
+
+
+
+Group Name |Segments
+
+
+
+Group Name |Transport Nodes
+
+
+
+Group Name |IP Groups
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
