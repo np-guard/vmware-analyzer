@@ -405,8 +405,14 @@ func WithInsecureSkipVerify(insecureSkipVerify bool) RunnerOption {
 	}
 }
 
+<<<<<<< HEAD
 func WithLint(doLint bool) RunnerOption {
 	return func(r *Runner) {
 		r.lint = doLint
+=======
+func WithLint(lintCmd bool) RunnerOption {
+	return func(r *Runner) {
+		r.lint = lintCmd
+>>>>>>> main
 	}
 }
