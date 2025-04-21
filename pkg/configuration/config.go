@@ -292,6 +292,9 @@ func (c *Config) GetGroupsStr(color bool) string {
 	}
 
 	var componentToTableStrFunc = func(c string) string {
+		if len(tablesLines[c]) == 0 {
+			return ""
+		}
 		return common.GenerateTableString(headers[c], tablesLines[c], &common.TableOptions{SortLines: true, Colors: color})
 	}
 

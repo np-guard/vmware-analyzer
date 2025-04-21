@@ -16,22 +16,6 @@ Dumbledore |Dumbledore
 Gryffindor |Gryffindor
 Hufflepuff |Hufflepuff
 
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
-
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

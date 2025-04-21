@@ -12,26 +12,6 @@ Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff))
 Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))
 Web        |((Tag Of VirtualMachine EQUALS Web))
 
-
-Group Name |VMs
-
-
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
-
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

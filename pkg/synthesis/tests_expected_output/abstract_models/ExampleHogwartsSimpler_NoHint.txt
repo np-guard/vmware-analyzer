@@ -4,32 +4,12 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group Name |Expression
-
-
-
 Group Name         |VMs
 App                |Slytherin-App, Gryffindor-App
 Gryffindor         |Gryffindor-Web, Gryffindor-App
 Slytherin          |Slytherin-Web, Slytherin-App
 Web                |Slytherin-Web, Gryffindor-Web
 no-group-vms-group |Slytherin-DB, Gryffindor-DB
-
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

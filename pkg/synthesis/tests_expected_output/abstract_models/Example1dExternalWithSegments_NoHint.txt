@@ -4,28 +4,8 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group Name |Expression
-
-
-
 Group Name    |VMs
 default-group |A, B, C-no-address
-
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

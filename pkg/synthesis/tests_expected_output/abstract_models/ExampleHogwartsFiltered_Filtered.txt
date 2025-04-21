@@ -4,32 +4,12 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group Name |Expression
-
-
-
 Group Name |VMs
 Dumbledore |Dumbledore1, Dumbledore2
 Gryffindor |Gryffindor-Web
 Hufflepuff |Hufflepuff-Web
 Slytherin  |Slytherin-Web
 Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
-
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

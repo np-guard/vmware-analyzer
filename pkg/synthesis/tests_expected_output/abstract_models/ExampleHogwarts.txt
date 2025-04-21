@@ -4,10 +4,6 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group Name |Expression
-
-
-
 Group Name |VMs
 App        |Slytherin-App, Gryffindor-App, Hufflepuff-App
 DB         |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB
@@ -16,22 +12,6 @@ Gryffindor |Gryffindor-Web, Gryffindor-App, Gryffindor-DB
 Hufflepuff |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
 Slytherin  |Slytherin-Web, Slytherin-App, Slytherin-DB
 Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
-
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

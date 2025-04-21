@@ -21,22 +21,6 @@ Hufflepuff |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
 Slytherin  |Slytherin-DB, Slytherin-Web, Slytherin-App
 Web        |Slytherin-Web, Hufflepuff-Web, Gryffindor-Web
 
-
-Group Name |Addresses
-
-
-
-Group Name |Segments
-
-
-
-Group Name |Transport Nodes
-
-
-
-Group Name |IP Groups
-
-
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
