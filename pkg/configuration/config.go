@@ -10,6 +10,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
@@ -100,10 +102,15 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("Segments ports:\n")
 	sb.WriteString(c.getSegmentsPortsInfoStr(color))
 
-	// groups
+	// groups per vms
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Groups:\n")
+	sb.WriteString("Groups per VMs:\n")
 	sb.WriteString(c.getVMGroupsStr(color))
+
+	// groups definitions
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Groups definitions:\n")
+	sb.WriteString(c.GetGroupsStr(color))
 
 	// dfw
 	sb.WriteString(common.OutputSectionSep)
@@ -212,6 +219,69 @@ func (c *Config) getRuleBlocksStr(color bool) string {
 		lines = append(lines, []string{block.OriginalIP, eps, vms})
 	}
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+}
+
+func (c *Config) GetGroupsStr(color bool) string {
+	// todo: identify here cases in which we were unable to process expr
+
+	// split to various small tables per component type - for readaility
+	var headers = map[string][]string{} // map from copmonent type to table header
+	var tablesLines = map[string][][]string{}
+
+	const (
+		expressionComponent string = "Expression"
+		vmsComponent        string = "VMs"
+		addressesComponent  string = "Addresses"
+		segmentsComponent   string = "Segments"
+		nodesComponent      string = "Transport Nodes"
+		ipGroupsComponent   string = "IP Groups"
+	)
+
+	componentTypes := []string{expressionComponent, vmsComponent, addressesComponent, segmentsComponent, nodesComponent, ipGroupsComponent}
+	for _, component := range componentTypes {
+		headers[component] = []string{"Group Name", component}
+	}
+
+	for _, group := range c.Groups {
+		// vms components
+		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers,
+			func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName },
+			common.CommaSpaceSeparator)
+		tablesLines[vmsComponent] = append(tablesLines[vmsComponent], []string{*group.DisplayName, groupVMNames})
+
+		displayNameFunc := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
+
+		// address components
+		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers,
+			func(a nsx.IPElement) string { return string(a) },
+			common.CommaSpaceSeparator)
+		tablesLines[addressesComponent] = append(tablesLines[addressesComponent], []string{*group.DisplayName, addresses})
+
+		// segments components
+		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, displayNameFunc, common.CommaSpaceSeparator)
+		tablesLines[segmentsComponent] = append(tablesLines[segmentsComponent], []string{*group.DisplayName, groupSegmentsNames})
+
+		// nodes components
+		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, displayNameFunc, common.CommaSpaceSeparator)
+		tablesLines[nodesComponent] = append(tablesLines[nodesComponent], []string{*group.DisplayName, transportNodesNames})
+
+		// ip-groups components
+		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, displayNameFunc, common.CommaSpaceSeparator)
+		tablesLines[ipGroupsComponent] = append(tablesLines[ipGroupsComponent], []string{*group.DisplayName, ipGrpoupsNames})
+
+		// expr components
+		groupExprStr := ""
+		if len(group.Expression) > 0 {
+			groupExprStr = group.Expression.String()
+		}
+		tablesLines[expressionComponent] = append(tablesLines[expressionComponent], []string{*group.DisplayName, groupExprStr})
+	}
+
+	var componentToTableStrFunc = func(c string) string {
+		return common.GenerateTableString(headers[c], tablesLines[c], &common.TableOptions{SortLines: true, Colors: color})
+	}
+
+	return common.JoinCustomStrFuncSlice(componentTypes, componentToTableStrFunc, common.NewLine)
 }
 
 func (c *Config) DefaultDenyRule() *dfw.FwRule {

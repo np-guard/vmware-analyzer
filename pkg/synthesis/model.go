@@ -4,16 +4,16 @@ import (
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
+	config          *configuration.Config
 	vms             []topology.Endpoint
 	allGroups       []*collector.Group      // todo - should we need it?
 	allRuleIPBlocks []*topology.RuleIPBlock // todo - should we need it?
@@ -102,7 +102,7 @@ type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroups(abstractModel.allGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
+		strGroups(abstractModel.config, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
 		strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
 }
 
@@ -115,30 +115,6 @@ func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
 		strOrigSymbolicRules(policy.outbound, true, options.Color)
 }
 
-func strGroups(allGroups []*collector.Group, color bool) string {
-	// todo: identify here cases in which we were unable to process expr
-	header := []string{"Group", "Expression", "VM", "Addresses", "Segment", "Transport Node", "IP Group"}
-	lines := make([][]string, len(allGroups))
-	i := 0
-	for _, group := range allGroups {
-		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers,
-			func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName },
-			common.CommaSpaceSeparator)
-		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers,
-			func(a nsx.IPElement) string { return string(a) },
-			common.CommaSpaceSeparator)
-		displayName := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
-		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, displayName, common.CommaSpaceSeparator)
-		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, displayName, common.CommaSpaceSeparator)
-		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, displayName, common.CommaSpaceSeparator)
-		groupExprStr := ""
-		if len(group.Expression) > 0 {
-			groupExprStr = group.Expression.String()
-		}
-		newLine := []string{*group.DisplayName, groupExprStr, groupVMNames, addresses, groupSegmentsNames, transportNodesNames, ipGrpoupsNames}
-		lines[i] = newLine
-		i++
-	}
-	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" +
-		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+func strGroups(config *configuration.Config, color bool) string {
+	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" + config.GetGroupsStr(color)
 }

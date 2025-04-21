@@ -56,6 +56,7 @@ func NSXToPolicy(resources *collector.ResourcesContainerModel,
 		options.SynthesizeAdmin, options.Hints)
 	allowOnlyPolicyWithOptimization := optimizeSymbolicPolicy(&allowOnlyPolicy, options)
 	abstractModel := &AbstractModelSyn{
+		config:          config,
 		vms:             config.VMs,
 		allGroups:       config.Groups,
 		epToGroups:      config.GroupsPerVM,

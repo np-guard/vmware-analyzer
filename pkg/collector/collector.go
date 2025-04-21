@@ -11,7 +11,7 @@ import (
 	"slices"
 	"strings"
 
-	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -323,7 +323,7 @@ func FixResourcesForJSON(res *ResourcesContainerModel) {
 
 // Tag a tag used by VMs for labeling in NSX
 type Tag struct {
-	tagOrig resources.Tag
+	tagOrig nsx.Tag
 }
 
 func (tag *Tag) Name() string {
