@@ -13,7 +13,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 const k8sResourcesDir = "k8s_resources"
@@ -89,10 +88,11 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		}
 		pod.Labels = map[string]string{}
 
-		/*for _, label := range collectVMLabels(model, vm) {
-		pod.Labels[toLegalK8SString(label)] = "true"*/
+		for _, label := range collectVMLabels(model, vm) {
+			pod.Labels[toLegalK8SString(label)] = "true"
+		}
 
-		const theTrue = "true"
+		/*const theTrue = "true"
 		for _, group := range model.epToGroups[vm] {
 			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
 			label = toLegalK8SString(label)
@@ -109,7 +109,7 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 				label = toLegalK8SString(label)
 				pod.Labels[label] = theTrue
 			}
-		}
+		}*/
 		resources.pods = append(resources.pods, pod)
 	}
 }

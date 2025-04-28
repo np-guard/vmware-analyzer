@@ -53,7 +53,6 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 			}
 		}
 	}
-	//<<<<<<< HEAD
 	a.labelsVMs = collectLabelsVMs(model)
 }
 
