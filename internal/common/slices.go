@@ -22,3 +22,12 @@ func SliceCompact[A comparable](s []A) []A {
 	}
 	return slices.Collect(maps.Keys(set))
 }
+
+func NewFilteredSliceFunc[v any](s []v, f func(v) bool) (res []v) {
+	for _, val := range s {
+		if f(val) {
+			res = append(res, val)
+		}
+	}
+	return res
+}

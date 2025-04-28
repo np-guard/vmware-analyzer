@@ -19,7 +19,7 @@ const (
 	anyStr = "ANY" // ANY can specify any service or any src/dst in DFW rules
 )
 
-func NewNSXConfigParserFromFile(fileName string) (*nsxConfigParser, error) {
+func newNSXConfigParserFromFile(fileName string) (*nsxConfigParser, error) {
 	res := &nsxConfigParser{file: fileName}
 
 	inputConfigContent, err := os.ReadFile(fileName)
@@ -45,6 +45,7 @@ type nsxConfigParser struct {
 	rc                     *collector.ResourcesContainerModel
 	configRes              *Config
 	allGroups              []*collector.Group
+	pathToGroupMap         map[string]*collector.Group
 	allGroupsPaths         []string
 	groupToVMsListCache    map[*collector.Group][]topology.Endpoint
 	servicePathToConnCache map[string]*netset.TransportSet
@@ -59,6 +60,7 @@ func (p *nsxConfigParser) init() {
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
 	p.servicePathToConnCache = map[string]*netset.TransportSet{}
+	p.pathToGroupMap = map[string]*collector.Group{}
 }
 
 func (p *nsxConfigParser) runParser() error {
@@ -290,6 +292,7 @@ func (p *nsxConfigParser) getAllGroups() {
 			group := &domainRsc.GroupList[j]
 			p.allGroups = append(p.allGroups, group)
 			p.allGroupsPaths = append(p.allGroupsPaths, *group.Path)
+			p.pathToGroupMap[*group.Path] = group
 		}
 	}
 }
@@ -318,6 +321,13 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 	// remaining actual groups paths strings  are expected to be in p.allGroupsPaths, thus filtering them into groupsPaths slice
 	groupsPaths = slices.DeleteFunc(slices.Clone(groupsPaths), func(path string) bool { return !slices.Contains(p.allGroupsPaths, path) })
 
+	// add to ips the address members from these groups
+	for _, g := range groupsPaths {
+		if p.pathToGroupMap[g] != nil && p.pathToGroupMap[g].IsGroupTypeIPAddress() {
+			ips = append(ips, p.pathToGroupMap[g].AddressMembersStrings()...)
+		}
+	}
+
 	if exclude {
 		if len(ips) > 0 {
 			// TODO: support excluded with ip ranges as well
@@ -328,7 +338,6 @@ func (p *nsxConfigParser) getEndpointsFromGroupsPaths(groupsPaths []string, excl
 		for _, ip := range ips {
 			if ruleBlock := p.configRes.Topology.AllRuleIPBlocks[ip]; ruleBlock != nil {
 				res.VMs = append(res.VMs, ruleBlock.VMs...)
-				res.VMs = append(res.VMs, ruleBlock.ExternalIPs...)
 				res.Blocks = append(res.Blocks, ruleBlock)
 			}
 		}

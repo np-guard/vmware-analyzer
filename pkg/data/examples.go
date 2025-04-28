@@ -1707,10 +1707,10 @@ var ExampleExprSingleScope = registerExample(&Example{
 	VMs:     []string{huf, gry, dum},
 	VMsTags: map[string][]nsx.Tag{huf: {{Tag: huf}}, gry: {{Tag: gry}}, dum: {{Tag: dum}}},
 	GroupsByExpr: map[string]ExampleExpr{
-		sly: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: sly}}},
-		gry: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: gry}}},
-		huf: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: huf}}},
-		dum: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
+		sly: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: sly}}},
+		gry: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: gry}}},
+		huf: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: huf}}},
+		dum: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
 	Policies: []Category{
 		{
 			Name:         "From-Dumbledore-connection",
@@ -1824,12 +1824,12 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
 var twoScopeGroupsByExpr = map[string]ExampleExpr{
-	sly: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-	gry: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-	huf: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-	db:  {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
-	web: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
-	app: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
+	sly: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+	gry: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+	huf: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+	db:  {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+	web: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+	app: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
 
 var ExampleExprTwoScopes = registerExample(&Example{
 	Name: "ExampleExprTwoScopes",
@@ -1915,16 +1915,16 @@ const (
 
 func getAndOrOrExpr(op ExampleOp) map[string]ExampleExpr {
 	slyCondDB, hufCondDB, gryCondDB := getOrOrAndGroupNames(op)
-	slyAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
-		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
-	hufAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
-		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
-	gryAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
-		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	slyAndOrDBExpr := ExampleExpr{Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
+		Cond2: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	hufAndOrDBExpr := ExampleExpr{Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
+		Cond2: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	gryAndOrDBExpr := ExampleExpr{Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
+		Cond2: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	return map[string]ExampleExpr{
-		sly:       {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry:       {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf:       {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		sly:       {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry:       {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf:       {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
 		slyCondDB: slyAndOrDBExpr,
 		hufCondDB: hufAndOrDBExpr,
 		gryCondDB: gryAndOrDBExpr,

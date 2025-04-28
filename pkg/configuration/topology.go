@@ -23,6 +23,17 @@ type nsxTopology struct {
 	AllExternalIPBlock *netset.IPBlock
 }
 
+func (t *nsxTopology) addIPBlock(ip string) {
+	ipb, err := common.IPBlockFromCidrOrAddressOrIPRange(ip)
+	if err != nil {
+		logging.Debugf("Failed to parse IP string %s, ignoring this IP", ip)
+		return
+	}
+
+	t.allIPBlock = t.allIPBlock.Union(ipb)
+	t.AllRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, ipb)
+}
+
 func newTopology() *nsxTopology {
 	return &nsxTopology{
 		VmSegments:         map[topology.Endpoint][]*topology.Segment{},
@@ -74,7 +85,8 @@ func (p *nsxConfigParser) getSegments() (err error) {
 }
 
 func (p *nsxConfigParser) getAllRulesIPBlocks() {
-	allIPs := []string{}
+	allIPs := []string{} // allIPs will be populated with hard-coded IP Addresses from "paths" in src/dst of DFW rules
+	// paths in DFW rules src/dst elements may contain direct IP addresses
 	// collect all the paths from the rules:
 	for i := range p.rc.DomainList {
 		domainRsc := p.rc.DomainList[i].Resources
@@ -88,18 +100,22 @@ func (p *nsxConfigParser) getAllRulesIPBlocks() {
 			}
 		}
 	}
+
 	// remove duplications, "ANY" and paths to groups:
 	allIPs = common.SliceCompact(allIPs)
 	allIPs = slices.DeleteFunc(allIPs, func(path string) bool { return path == anyStr || slices.Contains(p.allGroupsPaths, path) })
 	// create the blocks:
 	for _, ip := range allIPs {
-		block, err := common.IPBlockFromCidrOrAddressOrIPRange(ip)
-		if err != nil {
-			logging.Warnf("Fail to parse IP %s, ignoring ip", ip)
-			continue
+		p.configRes.Topology.addIPBlock(ip)
+	}
+
+	// add also groups of type "IP addresses" rather than generic
+	for _, group := range p.allGroups {
+		if group.IsGroupTypeIPAddress() {
+			for _, ip := range group.AddressMembers {
+				p.configRes.Topology.addIPBlock(string(ip))
+			}
 		}
-		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(block)
-		p.configRes.Topology.AllRuleIPBlocks[ip] = topology.NewRuleIPBlock(ip, block)
 	}
 }
 
@@ -143,15 +159,15 @@ func (p *nsxConfigParser) getRuleBlocksVMs() {
 			allCidrBlock.VMs = append(allCidrBlock.VMs, vm)
 		}
 		for _, address := range addresses {
-			address, err := iIPBlockFromIPAddress(address)
+			parsedAddress, err := iIPBlockFromIPAddress(address)
 			if err != nil {
-				logging.Debugf("Could not resolve address %s of vm %s", address, vm.Name())
+				logging.Debugf("ignoring VM's address string: unsupported address %s of VM %s", address, vm.Name())
 				continue
 			}
-			p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(address)
-			p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(address)
+			p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(parsedAddress)
+			p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(parsedAddress)
 			for _, block := range p.configRes.Topology.AllRuleIPBlocks {
-				if address.IsSubset(block.Block) {
+				if parsedAddress.IsSubset(block.Block) {
 					block.VMs = append(block.VMs, vm)
 					p.configRes.Topology.RuleBlockPerEP[vm] = append(p.configRes.Topology.RuleBlockPerEP[vm], block)
 				}

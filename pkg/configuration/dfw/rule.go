@@ -13,26 +13,12 @@ import (
 
 type RuleAction string
 
-/*var egressDirections = []string{"OUT", "IN_OUT"}
-var ingressDirections = []string{"IN", "IN_OUT"}*/
-
 const (
 	ActionAllow     RuleAction = "allow"
 	ActionDeny      RuleAction = "deny" // currently not differentiating between "reject" and "drop"
+	ActionDrop      RuleAction = "drop"
 	ActionJumpToApp RuleAction = "jump_to_application"
 )
-
-/*func actionFromString(input string) RuleAction {
-	switch input {
-	case string(ActionAllow):
-		return ActionAllow
-	case string(ActionDeny):
-		return ActionDeny
-	case string(ActionJumpToApp):
-		return ActionJumpToApp
-	}
-	return ActionDeny
-}*/
 
 func actionFromString(s string) RuleAction {
 	switch strings.ToLower(s) {
@@ -47,22 +33,11 @@ func actionFromString(s string) RuleAction {
 	}
 }
 
-type RuleEndpoints struct {
-	VMs         []topology.Endpoint
-	Groups      []*collector.Group
-	IsAllGroups bool
-	Blocks      []*topology.RuleIPBlock
-	IsExclude   bool // todo: to be used by synthesis in excluded groups as src/dst
-}
-
 // FwRule captures original NSX dfw rule object with more relevant info for analysis/synthesis
 type FwRule struct {
-	Src       RuleEndpoints
-	Dst       RuleEndpoints
-	Scope     RuleEndpoints
-	OrigScope RuleEndpoints
-
-	// Scope implies additional condition on any Src and any Dst
+	Src                *RuleEndpoints
+	Dst                *RuleEndpoints
+	Scope              *RuleEndpoints // Scope implies additional condition on any Src and any Dst
 	Conn               *netset.TransportSet
 	Action             RuleAction
 	direction          string //	"IN","OUT",	"IN_OUT"
@@ -95,9 +70,9 @@ func NewFwRule(
 	priority int,
 ) *FwRule {
 	return &FwRule{
-		Src:                *src,
-		Dst:                *dst,
-		Scope:              *scope,
+		Src:                src,
+		Dst:                dst,
+		Scope:              scope,
 		Conn:               conn,
 		Action:             action,
 		direction:          direction,
@@ -136,12 +111,12 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 // 2. for synthesis: inbound and outbound rules which may not have effect on the current topology
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func (f *FwRule) getEvaluatedRulesAndEffectiveRules(c *CategorySpec) (inbound, outbound, inboundEffective, outboundEffective *FwRule) {
+func (f *FwRule) getEvaluatedRulesAndEffectiveRules(c *CategorySpec) (inbound, outbound *EvaluatedFWRule) {
 	// for synthesis, we do not ignore rules with no VMs in src, dst, since in the future the same src
 	// may have VMs in it. Empty connection, however, is empty regardless of the VMs snapshot
 	if f.Conn.IsEmpty() {
 		f.ruleWarning("has no effective inbound/outbound component, since its inferred services are empty")
-		return nil, nil, nil, nil
+		return nil, nil
 	}
 
 	inbound = f.getInboundRule()
@@ -151,49 +126,61 @@ func (f *FwRule) getEvaluatedRulesAndEffectiveRules(c *CategorySpec) (inbound, o
 	if len(f.Scope.VMs) == 0 {
 		// rules with no VMs in src, dst are not considered effective rules
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
-		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], "empty scope")
-		return inbound, outbound, nil, nil
+		c.ineffectiveRules[f.RuleID] = append(c.ineffectiveRules[f.RuleID], "empty scope")
+		if inbound != nil {
+			inbound.IsEffective = false
+		}
+		if outbound != nil {
+			outbound.IsEffective = false
+		}
+		return inbound, outbound
 	}
 
 	isInboundEffective, isOutboundEffective := f.isRuleEffective(c)
 
-	if isInboundEffective && inbound != nil {
-		inboundEffective = inbound.clone()
+	if inbound != nil {
+		inbound.IsEffective = isInboundEffective
 	}
-	if isOutboundEffective && outbound != nil {
-		outboundEffective = outbound.clone()
+	if outbound != nil {
+		outbound.IsEffective = isOutboundEffective
 	}
 
-	return inbound, outbound, inboundEffective, outboundEffective
+	return inbound, outbound
 }
 
-func (f *FwRule) getInboundRule() *FwRule {
+func (f *FwRule) getInboundRule() *EvaluatedFWRule {
 	// if action is OUT -> return nil
 	if !f.hasInboundComponent() {
 		f.ruleWarning("has no effective inbound component, since its direction is OUT only")
 		return nil
 	}
 	// inbound rule operates on intersection(dest, scope)
-	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, f.Src.VMs, topology.Intersection(f.Dst.VMs, f.Scope.VMs))
+	// todo:
+	// the result is a bad mix, because the src/dst ruleEndpoints considers intersection of vm compnent (per scope),
+	//  but original groups without scope consideration
+	// consider splitting to separate types, for capturing different pieces of info
+	return f.inboundOrOutboundRule(nsx.RuleDirectionIN, topology.Intersection(f.Dst.VMs, f.Scope.VMs))
 }
 
-func (f *FwRule) getOutboundRule() *FwRule {
+func (f *FwRule) getOutboundRule() *EvaluatedFWRule {
 	// if action is IN -> return nil
 	if !f.hasOutboundComponent() {
 		f.ruleWarning("has no effective outbound component, since its direction is IN only")
 		return nil
 	}
 	// outbound rule operates on intersection(src, scope)
-	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, topology.Intersection(f.Src.VMs, f.Scope.VMs), f.Dst.VMs)
+	return f.inboundOrOutboundRule(nsx.RuleDirectionOUT, topology.Intersection(f.Src.VMs, f.Scope.VMs))
 }
 
 // common functionality used for evaluating inbound and outbound rules; effective and (potentially) non-effective
 
 func (f *FwRule) hasInboundComponent() bool {
+	// direction is either "in" or "in_out"
 	return f.direction != string(nsx.RuleDirectionOUT)
 }
 
 func (f *FwRule) hasOutboundComponent() bool {
+	// direction is either "out" or "in_out"
 	return f.direction != string(nsx.RuleDirectionIN)
 }
 
@@ -203,13 +190,13 @@ const (
 )
 
 func (f *FwRule) isRuleEffective(c *CategorySpec) (inbound, outbound bool) {
-	if len(f.Dst.VMs) == 0 {
-		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], emptyDst)
+	if len(f.Dst.VMs) == 0 && len(f.Dst.Blocks) == 0 {
+		c.ineffectiveRules[f.RuleID] = append(c.ineffectiveRules[f.RuleID], emptyDst)
 		f.ruleWarning("has no effective inbound/outbound component, since its dest-vms component is empty")
 		return false, false
 	}
-	if len(f.Src.VMs) == 0 {
-		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], emptySrc)
+	if len(f.Src.VMs) == 0 && len(f.Src.Blocks) == 0 {
+		c.ineffectiveRules[f.RuleID] = append(c.ineffectiveRules[f.RuleID], emptySrc)
 		f.ruleWarning("has no effective inbound/outbound component, since its src-vms component is empty")
 		return false, false
 	}
@@ -218,47 +205,24 @@ func (f *FwRule) isRuleEffective(c *CategorySpec) (inbound, outbound bool) {
 	// check inbound with scope
 	newDest := topology.Intersection(f.Dst.VMs, f.Scope.VMs)
 	if len(newDest) == 0 {
-		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], "empty dest with scope")
+		c.ineffectiveRules[f.RuleID] = append(c.ineffectiveRules[f.RuleID], "empty dest with scope")
 		f.ruleWarning("has no effective inbound component, since its intersection for dest & scope is empty")
 		inbound = false
 	}
 	// check outbound with scope
 	newSrc := topology.Intersection(f.Src.VMs, f.Scope.VMs)
 	if len(newSrc) == 0 {
-		c.IneffectiveRules[f.RuleID] = append(c.IneffectiveRules[f.RuleID], "empty src with scope")
+		c.ineffectiveRules[f.RuleID] = append(c.ineffectiveRules[f.RuleID], "empty src with scope")
 		f.ruleWarning("has no effective outbound component, since its intersection for src & scope is empty")
 		outbound = false
 	}
 	return inbound, outbound
 }
 
-func (f *FwRule) clone() *FwRule {
-	return NewFwRule(&f.Src, &f.Dst, &f.Scope, f.Conn, f.Action,
-		f.direction, f.OrigRuleObj, f.origDefaultRuleObj, f.RuleID, f.secPolicyName,
-		f.secPolicyCategory, f.categoryRef, f.dfwRef, f.Priority)
-}
-
-func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, src, dest []topology.Endpoint) *FwRule {
-	// duplicating most fields, only updating src,dst as evaluated with scope + updating to one direction option (in/out),
-	// and scope field is changed to nil
-	res := f.clone()
-	res.Src.VMs = src
-	res.Dst.VMs = dest
-	res.Scope = RuleEndpoints{}
-	res.OrigScope = f.Scope
-	res.direction = string(direction)
-
-	return res
-}
-
-// return whether the rule captures the input src,dst VMs on the given direction
-/*func (f *FwRule) capturesPair(src, dst topology.EP, isIngress bool) bool {
-	vmsCaptured := slices.Contains(f.Src.VMs, src) && slices.Contains(f.Dst.VMs, dst)
-	if !vmsCaptured {
-		return false
+func (f *FwRule) inboundOrOutboundRule(direction nsx.RuleDirection, capturedVMs []topology.Endpoint) *EvaluatedFWRule {
+	return &EvaluatedFWRule{
+		RuleObj:    f,
+		Direction:  string(direction),
+		OperatesOn: capturedVMs,
 	}
-	if isIngress {
-		return slices.Contains(ingressDirections, f.direction) && slices.Contains(f.scope, dst)
-	}
-	return slices.Contains(egressDirections, f.direction) && slices.Contains(f.scope, src)
-}*/
+}

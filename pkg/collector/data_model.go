@@ -9,6 +9,7 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netp"
@@ -409,6 +410,16 @@ type RealizedVirtualMachine struct {
 	nsx.RealizedVirtualMachine
 }
 
+func (r RealizedVirtualMachine) String() string {
+	return *r.DisplayName
+}
+
+func RealizedVirtualMachineFromBaseElem(base *nsx.RealizedVirtualMachine) RealizedVirtualMachine {
+	res := RealizedVirtualMachine{}
+	res.RealizedVirtualMachine = *base
+	return res
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 func addParentheses(s []string) string { return fmt.Sprintf("(%s)", strings.Join(s, common.Space)) }
@@ -600,11 +611,23 @@ func (group *Group) UnmarshalJSON(b []byte) error {
 	)
 }
 
+func (group *Group) IsGroupTypeIPAddress() bool {
+	return slices.Contains(group.GroupType, nsx.GroupTypesIPAddress)
+}
+
+func (group *Group) AddressMembersStrings() []string {
+	return common.CustomStrSliceToStrings(group.AddressMembers, func(ip nsx.IPElement) string { return string(ip) })
+}
+
 func (group *Group) Name() string {
 	if group.DisplayName == nil {
 		return ""
 	}
 	return *group.DisplayName
+}
+
+func (group *Group) String() string {
+	return group.Name()
 }
 
 func (group *Group) Description() string {

@@ -28,14 +28,14 @@ func NSXToK8sSynthesis(
 	config *configuration.Config,
 	options *SynthesisOptions,
 ) (*k8sResources, error) {
-	abstractModel, err := NSXToPolicy(resources, config, options)
+	abstractModel, err := nsxToPolicy(resources, config, options)
 	if err != nil {
 		return nil, err
 	}
 	return createK8sResources(abstractModel, options.CreateDNSPolicy), nil
 }
 
-func NSXToPolicy(resources *collector.ResourcesContainerModel,
+func nsxToPolicy(resources *collector.ResourcesContainerModel,
 	config *configuration.Config,
 	options *SynthesisOptions) (*AbstractModelSyn, error) {
 	if config == nil {

@@ -1,0 +1,5 @@
+Analyzed connectivity:
+Source  |Destination |Permitted connections
+8.8.8.8 |A           |TCP dst-ports: 80
+A       |B           |TCP dst-ports: 445
+

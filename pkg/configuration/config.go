@@ -26,8 +26,7 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 	// in debug/verbose mode -- print the parsed config
 	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
-	logging.Debugf("the dfw processed rules details:\n%s", config.FW.String())
-	logging.Debugf("the dfw effective rules details:\n%s", config.FW.AllEffectiveRules())
+	logging.Debugf("the dfw evaluated rules details:\n%s", config.FW.AllEvaluatedRulesDetails())
 
 	return config, nil
 }
@@ -304,11 +303,7 @@ func (c *Config) GetGroupsStr(color bool) string {
 func (c *Config) DefaultDenyRule() *dfw.FwRule {
 	for _, category := range c.FW.CategoriesSpecs {
 		if category.Category == collector.LastCategory() {
-			for _, rule := range category.Rules {
-				if rule.IsDenyAll() {
-					return rule
-				}
-			}
+			return category.SearchDefaultDenyRule()
 		}
 	}
 	return nil

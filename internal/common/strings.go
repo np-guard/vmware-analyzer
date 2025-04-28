@@ -77,17 +77,20 @@ func CustomStrsSliceToStrings[S any](slice []S, f func(s S) []string) []string {
 	return SliceCompact(resStrSlice)
 }
 
-func stringifiedSliceToStrings[S HasString](slice []S) []string {
+func StringifiedSliceToStrings[S HasString](slice []S) []string {
+	if slice == nil {
+		return []string{}
+	}
 	return CustomStrSliceToStrings(slice, func(s S) string { return s.String() })
 }
 
 func JoinStringifiedSlice[S HasString](slice []S, separator string) string {
-	resStrSlice := stringifiedSliceToStrings(slice)
+	resStrSlice := StringifiedSliceToStrings(slice)
 	return strings.Join(resStrSlice, separator)
 }
 
 func SortedJoinStringifiedSlice[S HasString](slice []S, separator string) string {
-	resStrSlice := stringifiedSliceToStrings(slice)
+	resStrSlice := StringifiedSliceToStrings(slice)
 	slices.Sort(resStrSlice)
 	return strings.Join(resStrSlice, separator)
 }

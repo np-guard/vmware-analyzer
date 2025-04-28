@@ -33,20 +33,20 @@ func (d *DFW) OriginalRulesStrFormatted(color bool) string {
 }
 
 // return a string rep that shows the fw-rules in all categories
-func (d *DFW) String() string {
+/*func (d *DFW) AllEvaluatedRulesDetails() string {
 	return common.JoinStringifiedSlice(d.CategoriesSpecs, common.NewLine)
-}
+}*/
 
-func (d *DFW) AllEffectiveRules() string {
+func (d *DFW) AllEvaluatedRulesDetails() string {
 	inboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
-		func(c *CategorySpec) string { return c.inboundEffectiveRulesStr() },
+		func(c *CategorySpec) string { return c.evaluatedRulesStr(true) },
 		common.NewLine)
 	outboundResStr := common.JoinCustomStrFuncSlice(d.CategoriesSpecs,
-		func(c *CategorySpec) string { return c.outboundEffectiveRulesStr() },
+		func(c *CategorySpec) string { return c.evaluatedRulesStr(false) },
 		common.NewLine)
 
-	inbound := fmt.Sprintf("\nInbound effective rules only:%s%s\n", common.ShortSep, inboundResStr)
-	outbound := fmt.Sprintf("\nOutbound effective rules only:%s%s", common.ShortSep, outboundResStr)
+	inbound := fmt.Sprintf("\nInbound evaluated rules only:%s%s\n", common.ShortSep, inboundResStr)
+	outbound := fmt.Sprintf("\nOutbound evaluated rules only:%s%s\n%s\n", common.ShortSep, outboundResStr, common.ShortSep)
 	return inbound + outbound
 }
 
@@ -82,8 +82,8 @@ func (d *DFW) SetPathsToDisplayNames(m map[string]string) {
 // look for rules shadowed by higher-prio rules (single rule or combination of some rules)
 func (d *DFW) redundantRulesAnalysisPerCategory(allVMs []topology.Endpoint, categoryIndex int) (reportLines [][]string) {
 	category := d.CategoriesSpecs[categoryIndex]
-	inboundRedundant := category.potentialRedundantRules(category.EffectiveRules.Inbound, allVMs)
-	outboundRedundant := category.potentialRedundantRules(category.EffectiveRules.Outbound, allVMs)
+	inboundRedundant := category.potentialRedundantRules(category.GetInboundEffectiveRules(), allVMs)
+	outboundRedundant := category.potentialRedundantRules(category.GetOutboundEffectiveRules(), allVMs)
 
 	for rID, ruleObj := range category.rulesMap {
 		inCovering, okIn := inboundRedundant[rID]
@@ -147,7 +147,7 @@ func (d *DFW) IneffectiveRulesReport(color bool) string {
 	var reportLines = [][]string{}
 	for i := range len(d.CategoriesSpecs) {
 		category := d.CategoriesSpecs[i]
-		for rID, description := range category.IneffectiveRules {
+		for rID, description := range category.ineffectiveRules {
 			slices.Sort(description)
 			line := []string{fmt.Sprintf("%d", rID), strings.Join(slices.Compact(description), common.CommaSpaceSeparator)}
 			reportLines = append(reportLines, line)

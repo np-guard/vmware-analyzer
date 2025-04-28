@@ -7,21 +7,27 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
-	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
 // return a string representation of a single rule
 // groups are interpreted to VM members in this representation
-func (f *FwRule) String() string {
-	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, scope: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.Src.VMs), vmsString(f.Dst.VMs),
-		f.Conn.String(), string(f.Action), f.direction, vmsString(f.Scope.VMs), f.secPolicyName)
-}
 
-func (f *FwRule) effectiveRuleStr() string {
-	return fmt.Sprintf("ruleID: %d, src: %s, dst: %s, conn: %s, action: %s, direction: %s, sec-policy: %s",
-		f.RuleID, vmsString(f.Src.VMs), vmsString(f.Dst.VMs),
-		f.Conn.String(), string(f.Action), f.direction, f.secPolicyName)
+func (f *EvaluatedFWRule) evaluatedRuleStr() string {
+	lines := []string{ // lines for rule str
+		fmt.Sprintf("rule ID: %d", f.RuleObj.RuleID),
+		fmt.Sprintf("Is effective: %t", f.IsEffective),
+		fmt.Sprintf("operates on: %s", common.JoinStringifiedSlice(f.OperatesOn, common.CommaSpaceSeparator)),
+		fmt.Sprintf("direction: %s", f.Direction),
+		fmt.Sprintf("src interpreted endpoints object: \n%s", f.RuleObj.Src.String()),
+		fmt.Sprintf("dst interpreted endpoints object: \n%s", f.RuleObj.Dst.String()),
+		fmt.Sprintf("scope interpreted endpoints object: \n%s", f.RuleObj.Scope.String()),
+		fmt.Sprintf("connection: %s", f.RuleObj.Conn.String()),
+		fmt.Sprintf("action: %s", f.RuleObj.Action),
+		fmt.Sprintf("secPolicyName: %s", f.RuleObj.secPolicyName),
+		fmt.Sprintf("secPolicyCategory: %s", f.RuleObj.secPolicyCategory),
+	}
+
+	return strings.Join(lines, common.NewLine)
 }
 
 func getRulesHeader() []string {
@@ -166,8 +172,4 @@ func (f *FwRule) servicesString() string {
 	serviceEntriesStr = trimmedString(common.JoinStringifiedSlice(f.OrigRuleObj.ServiceEntries, common.CommaSeparator))
 	servicesStr = f.getShortPathsString(f.OrigRuleObj.Services)
 	return common.JoinNonEmpty([]string{serviceEntriesStr, servicesStr}, common.CommaSeparator)
-}
-
-func vmsString(vms []topology.Endpoint) string {
-	return common.JoinStringifiedSlice(vms, common.CommaSeparator)
 }

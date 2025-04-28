@@ -451,7 +451,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	require.Nil(t, err)
-	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
+	abstractModel, err := nsxToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
 	abstractModelStr := strAbstractModel(abstractModel, synTest.options())
 	// write the abstract model rules into a file, for debugging:
@@ -640,7 +640,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
+	abstractModel, err := nsxToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::

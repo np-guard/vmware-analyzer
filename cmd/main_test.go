@@ -62,6 +62,12 @@ const (
 )
 
 var staticTests = []*cliTest{
+
+	// ./bin/nsxanalyzer analyze -r pkg/data/json/ExampleDumbeldore.json  -v
+	/*{
+		name: "debug",
+		args: "generate -r ../pkg/data/json/ExampleHogwartsExternal.json -v",
+	},*/
 	{
 		name:        "unsupported_format_check",
 		args:        "analyze -r ../pkg/data/json/Example1.json -v -o svg -o ex1.svg ",
@@ -84,8 +90,10 @@ var staticTests = []*cliTest{
 		// invalid nsx connections
 		name: "invalid_nsx_conn_1",
 		args: "collect --host https://1.1.1.1 --username username --password password",
-		expectedErr: []string{"remote error: tls: handshake failure",
-			"invalid character" /*indicates that the server did not return a valid JSON response*/},
+		expectedErr: []string{
+			"remote error: tls: handshake failure",
+			"invalid character", // indicates that the server did not return a valid JSON response
+		},
 	},
 	{
 		// invalid nsx connections
