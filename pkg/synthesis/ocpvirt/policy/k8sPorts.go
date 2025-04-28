@@ -1,4 +1,4 @@
-package synthesis
+package policy
 
 import (
 	"slices"

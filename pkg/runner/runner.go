@@ -16,8 +16,9 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/lint"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
+	synth_config "github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt"
 )
 
 // Runner provides API to run NSX collection / analysis / synthesis operations.
@@ -182,18 +183,18 @@ func (r *Runner) runSynthesis() error {
 	for i, hint := range r.disjointHints {
 		hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 	}
-	opts := &synthesis.SynthesisOptions{
+	opts := &synth_config.SynthesisOptions{
 		Hints:           hints,
 		SynthesizeAdmin: r.synthesizeAdmin,
 		Color:           r.color,
 		CreateDNSPolicy: !r.suppressDNSPolicies,
 		FilterVMs:       r.analysisVMsFilter,
 	}
-	k8sResources, err := synthesis.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
+	k8sResources, err := ocpvirt.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {
 		return err
 	}
-	r.generatedK8sPolicies = k8sResources.K8sPolicies()
+	r.generatedK8sPolicies = k8sResources.K8sPoliciesList()
 	r.generatedK8sAdminPolicies = k8sResources.K8sAdminPolicies()
 	if r.synthesisDumpDir == "" {
 		return nil
