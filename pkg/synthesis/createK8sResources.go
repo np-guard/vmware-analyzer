@@ -91,25 +91,6 @@ func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 		for _, label := range collectVMLabels(model, vm) {
 			pod.Labels[toLegalK8SString(label)] = "true"
 		}
-
-		/*const theTrue = "true"
-		for _, group := range model.epToGroups[vm] {
-			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			label = toLegalK8SString(label)
-			pod.Labels[label] = theTrue
-		}
-		for _, tag := range vm.Tags() {
-			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
-			label = toLegalK8SString(label)
-			pod.Labels[label] = theTrue
-		}
-		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
-			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
-				label = toLegalK8SString(label)
-				pod.Labels[label] = theTrue
-			}
-		}*/
 		resources.pods = append(resources.pods, pod)
 	}
 }
