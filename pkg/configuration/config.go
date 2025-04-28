@@ -10,6 +10,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
@@ -24,8 +26,7 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 
 	// in debug/verbose mode -- print the parsed config
 	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
-	logging.Debugf("the dfw processed rules details:\n%s", config.FW.String())
-	logging.Debugf("the dfw effective rules details:\n%s", config.FW.AllEffectiveRules())
+	logging.Debugf("the dfw evaluated rules details:\n%s", config.FW.AllEvaluatedRulesDetails())
 
 	return config, nil
 }
@@ -100,10 +101,15 @@ func (c *Config) GetConfigInfoStr(color bool) string {
 	sb.WriteString("Segments ports:\n")
 	sb.WriteString(c.getSegmentsPortsInfoStr(color))
 
-	// groups
+	// groups per vms
 	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Groups:\n")
+	sb.WriteString("Groups per VMs:\n")
 	sb.WriteString(c.getVMGroupsStr(color))
+
+	// groups definitions
+	sb.WriteString(common.OutputSectionSep)
+	sb.WriteString("Groups definitions:\n")
+	sb.WriteString(c.GetGroupsStr(color))
 
 	// dfw
 	sb.WriteString(common.OutputSectionSep)
@@ -214,14 +220,90 @@ func (c *Config) getRuleBlocksStr(color bool) string {
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
+func (c *Config) GetGroupsStr(color bool) string {
+	// todo: identify here cases in which we were unable to process expr
+
+	// split to various small tables per component type - for readaility
+	var headers = map[string][]string{} // map from copmonent type to table header
+	var tablesLines = map[string][][]string{}
+
+	const (
+		expressionComponent string = "Expression"
+		vmsComponent        string = "VMs"
+		addressesComponent  string = "Addresses"
+		segmentsComponent   string = "Segments"
+		nodesComponent      string = "Transport Nodes"
+		ipGroupsComponent   string = "IP Groups"
+	)
+
+	componentTypes := []string{expressionComponent, vmsComponent, addressesComponent, segmentsComponent, nodesComponent, ipGroupsComponent}
+	for _, component := range componentTypes {
+		headers[component] = []string{"Group Name", component}
+	}
+
+	for _, group := range c.Groups {
+		groupName := *group.DisplayName
+
+		// vms components
+		groupVMNames := common.JoinCustomStrFuncSlice(group.VMMembers,
+			func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName },
+			common.CommaSpaceSeparator)
+		if groupVMNames != "" {
+			tablesLines[vmsComponent] = append(tablesLines[vmsComponent], []string{groupName, groupVMNames})
+		}
+
+		displayNameFunc := func(res nsx.PolicyGroupMemberDetails) string { return *res.DisplayName }
+
+		// address components
+		addresses := common.JoinCustomStrFuncSlice(group.AddressMembers,
+			func(a nsx.IPElement) string { return string(a) },
+			common.CommaSpaceSeparator)
+		if addresses != "" {
+			tablesLines[addressesComponent] = append(tablesLines[addressesComponent], []string{groupName, addresses})
+		}
+
+		// segments components
+		groupSegmentsNames := common.JoinCustomStrFuncSlice(group.Segments, displayNameFunc, common.CommaSpaceSeparator)
+		if groupSegmentsNames != "" {
+			tablesLines[segmentsComponent] = append(tablesLines[segmentsComponent], []string{groupName, groupSegmentsNames})
+		}
+
+		// nodes components
+		transportNodesNames := common.JoinCustomStrFuncSlice(group.TransportNodes, displayNameFunc, common.CommaSpaceSeparator)
+		if transportNodesNames != "" {
+			tablesLines[nodesComponent] = append(tablesLines[nodesComponent], []string{groupName, transportNodesNames})
+		}
+
+		// ip-groups components
+		ipGrpoupsNames := common.JoinCustomStrFuncSlice(group.IPGroups, displayNameFunc, common.CommaSpaceSeparator)
+		if ipGrpoupsNames != "" {
+			tablesLines[ipGroupsComponent] = append(tablesLines[ipGroupsComponent], []string{groupName, ipGrpoupsNames})
+		}
+
+		// expr components
+		groupExprStr := ""
+		if len(group.Expression) > 0 {
+			groupExprStr = group.Expression.String()
+		}
+		if groupExprStr != "" {
+			tablesLines[expressionComponent] = append(tablesLines[expressionComponent], []string{groupName, groupExprStr})
+		}
+	}
+
+	var componentToTableStrFunc = func(c string) string {
+		if len(tablesLines[c]) == 0 {
+			return ""
+		}
+		return common.GenerateTableString(headers[c], tablesLines[c], &common.TableOptions{SortLines: true, Colors: color})
+	}
+
+	return common.JoinCustomStrFuncSlice(componentTypes, componentToTableStrFunc, common.NewLine)
+}
+
 func (c *Config) DefaultDenyRule() *dfw.FwRule {
 	for _, category := range c.FW.CategoriesSpecs {
 		if category.Category == collector.LastCategory() {
-			for _, rule := range category.Rules {
-				if rule.IsDenyAll() {
-					return rule
-				}
-			}
+			return category.SearchDefaultDenyRule()
 		}
 	}
 	return nil

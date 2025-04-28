@@ -23,17 +23,17 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 // has no verdict (no relevant rule + no default defined), thus are expected to be inspected by the next cateorgy
 ) {
 	allowedConns, jumpToAppConns, deniedConns = emptyConnectionsAndRules(), emptyConnectionsAndRules(), emptyConnectionsAndRules()
-	rules := c.EffectiveRules.Inbound // inbound effective rules
+	rules := c.GetInboundEffectiveRules() // inbound effective rules
 	if !isIngress {
-		rules = c.EffectiveRules.Outbound // outbound effective rules
+		rules = c.GetOutboundEffectiveRules() // outbound effective rules
 	}
 	// logging.Debugf("num of rules: %d", len(rules))
 	for _, rule := range rules {
-		if evaluatedRuleCapturesPair(rule, src, dst) {
-			switch rule.Action {
+		if rule.CapturesPair(src, dst) {
+			switch rule.RuleObj.Action {
 			case dfw.ActionAllow:
-				addedAllowedConns := rule.Conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns),
+				addedAllowedConns := rule.RuleObj.Conn.Subtract(deniedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleObj.RuleID, Conn: addedAllowedConns.Subtract(allowedConns.accumulatedConns),
 					Action: dfw.ActionAllow}
 				allowedConns.accumulatedConns = allowedConns.accumulatedConns.Union(addedAllowedConns)
 				if !rulePartition.Conn.IsEmpty() {
@@ -41,8 +41,8 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 				}
 
 			case dfw.ActionDeny:
-				addedDeniedConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns),
+				addedDeniedConns := rule.RuleObj.Conn.Subtract(allowedConns.accumulatedConns).Subtract(jumpToAppConns.accumulatedConns)
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleObj.RuleID, Conn: addedDeniedConns.Subtract(deniedConns.accumulatedConns),
 					Action: dfw.ActionDeny}
 				deniedConns.accumulatedConns = deniedConns.accumulatedConns.Union(addedDeniedConns)
 				if !rulePartition.Conn.IsEmpty() {
@@ -50,8 +50,9 @@ func analyzeCategory(c *dfw.CategorySpec, src, dst topology.Endpoint, isIngress 
 				}
 
 			case dfw.ActionJumpToApp:
-				addedJumpToAppConns := rule.Conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
-				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleID, Conn: addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns),
+				addedJumpToAppConns := rule.RuleObj.Conn.Subtract(allowedConns.accumulatedConns).Subtract(deniedConns.accumulatedConns)
+				rulePartition := &connectivity.RuleAndConn{RuleID: rule.RuleObj.RuleID,
+					Conn:   addedJumpToAppConns.Subtract(jumpToAppConns.accumulatedConns),
 					Action: dfw.ActionJumpToApp}
 				jumpToAppConns.accumulatedConns = jumpToAppConns.accumulatedConns.Union(addedJumpToAppConns)
 				if !rulePartition.Conn.IsEmpty() {
@@ -87,10 +88,4 @@ func (cr *connectionsAndRules) removeHigherPrioConnections(higherPrioConns *nets
 
 	// update accumulatedConns
 	cr.accumulatedConns = cr.accumulatedConns.Subtract(higherPrioConns)
-}
-
-func evaluatedRuleCapturesPair(f *dfw.FwRule, src, dst topology.Endpoint) bool {
-	// in evaluated rule the src/dst vms already consider the original scope rule
-	// and the separation to inound/outbound is done in advance
-	return slices.Contains(f.Src.VMs, src) && slices.Contains(f.Dst.VMs, dst)
 }

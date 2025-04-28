@@ -4,13 +4,12 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group       |Expression |VM
-Dumbledore  |           |Dumbledore2
-Dumbledore1 |           |
-Dumbledore2 |           |Dumbledore2
-Gryffindor  |           |Gryffindor
-Hufflepuff  |           |Hufflepuff
-Slytherin   |           |Slytherin
+Group Name  |VMs
+Dumbledore  |Dumbledore2
+Dumbledore2 |Dumbledore2
+Gryffindor  |Gryffindor
+Hufflepuff  |Hufflepuff
+Slytherin   |Slytherin
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

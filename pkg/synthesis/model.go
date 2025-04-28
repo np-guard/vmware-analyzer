@@ -2,11 +2,10 @@ package synthesis
 
 import (
 	"slices"
-	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
@@ -14,6 +13,7 @@ import (
 
 // AbstractModelSyn is an abstraction from which the synthesis is performed
 type AbstractModelSyn struct {
+	config          *configuration.Config
 	vms             []topology.Endpoint
 	allGroups       []*collector.Group      // todo - should we need it?
 	allRuleIPBlocks []*topology.RuleIPBlock // todo - should we need it?
@@ -102,7 +102,7 @@ type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroups(abstractModel.allGroups, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
+		strGroups(abstractModel.config, options.Color) + strAdminPolicy(abstractModel.policy[0], options) +
 		strAllowOnlyPolicy(abstractModel.policy[0], options.Color)
 }
 
@@ -115,24 +115,6 @@ func strAdminPolicy(policy *symbolicPolicy, options *SynthesisOptions) string {
 		strOrigSymbolicRules(policy.outbound, true, options.Color)
 }
 
-func strGroups(allGroups []*collector.Group, color bool) string {
-	// todo: identify here cases in which we were unable to process expr
-	header := []string{"Group", "Expression", "VM"}
-	lines := make([][]string, len(allGroups))
-	i := 0
-	for _, group := range allGroups {
-		groupExprStr := ""
-		groupVMNames := make([]string, len(group.VMMembers))
-		if len(group.Expression) > 0 {
-			groupExprStr = group.Expression.String()
-		}
-		for j := range group.VMMembers {
-			groupVMNames[j] = *group.VMMembers[j].DisplayName
-		}
-		newLine := []string{*group.DisplayName, groupExprStr, strings.Join(groupVMNames, ", ")}
-		lines[i] = newLine
-		i++
-	}
-	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" +
-		common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+func strGroups(config *configuration.Config, color bool) string {
+	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" + config.GetGroupsStr(color)
 }

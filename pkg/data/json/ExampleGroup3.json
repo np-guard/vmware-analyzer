@@ -28442,44 +28442,66 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin1",
-            "external_id": "Slytherin1"
+            "display_name": "New-VM-1",
+            "external_id": "New-VM-1"
         },
         {
-            "display_name": "Slytherin2",
-            "external_id": "Slytherin2"
+            "display_name": "New-VM-2",
+            "external_id": "New-VM-2"
         },
         {
-            "display_name": "Hufflepuff1",
-            "external_id": "Hufflepuff1"
+            "display_name": "New-VM-3",
+            "external_id": "New-VM-3"
         },
         {
-            "display_name": "Hufflepuff2",
-            "external_id": "Hufflepuff2"
+            "display_name": "New-VM-4",
+            "external_id": "New-VM-4"
         },
         {
-            "display_name": "Gryffindor1",
-            "external_id": "Gryffindor1"
-        },
-        {
-            "display_name": "Gryffindor2",
-            "external_id": "Gryffindor2"
-        },
-        {
-            "display_name": "Dumbledore1",
-            "external_id": "Dumbledore1"
-        },
-        {
-            "display_name": "Dumbledore2",
-            "external_id": "Dumbledore2"
-        },
-        {
-            "display_name": "Aladdin",
-            "external_id": "Aladdin"
+            "display_name": "New Virtual Machine",
+            "external_id": "New Virtual Machine"
         }
     ],
-    "virtual_network_interface": null,
-    "segments": null,
+    "virtual_network_interface": [
+        {
+            "lport_attachment_id": "port_New-VM-1",
+            "owner_vm_id": "New-VM-1"
+        },
+        {
+            "lport_attachment_id": "port_New-VM-2",
+            "owner_vm_id": "New-VM-2"
+        }
+    ],
+    "segments": [
+        {
+            "display_name": "seg1",
+            "path": "seg1",
+            "subnets": [
+                {
+                    "network": "192.168.1.0/24"
+                }
+            ],
+            "unique_id": "seg1",
+            "segment_ports": [
+                {
+                    "attachment": {
+                        "id": "port_New-VM-1"
+                    },
+                    "display_name": "port_New-VM-1",
+                    "parent_path": "seg1",
+                    "unique_id": "port_New-VM-1"
+                },
+                {
+                    "attachment": {
+                        "id": "port_New-VM-2"
+                    },
+                    "display_name": "port_New-VM-2",
+                    "parent_path": "seg1",
+                    "unique_id": "port_New-VM-2"
+                }
+            ]
+        }
+    ],
     "tier0": null,
     "tier1": null,
     "domains": [
@@ -28488,8 +28510,8 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Environment",
-                        "display_name": "AladdinTalks",
+                        "category": "Application",
+                        "display_name": "app-x",
                         "scope": [
                             "ANY"
                         ],
@@ -28498,51 +28520,21 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "Aladdin"
+                                    "research-test-expr-2"
                                 ],
-                                "destinations_excluded": true,
                                 "direction": "IN_OUT",
-                                "display_name": "allow-Aladdin-to-others",
-                                "rule_id": 10218,
+                                "display_name": "allow_smb_incoming",
+                                "rule_id": 1004,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "services": [
-                                    "ANY"
+                                    "/infra/services/SMB"
                                 ],
                                 "source_groups": [
-                                    "Aladdin"
+                                    "path-group"
                                 ]
                             },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "Aladdin"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-others-to-Aladdin",
-                                "rule_id": 10219,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Aladdin"
-                                ],
-                                "sources_excluded": true
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Default-L3-Section",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
                             {
                                 "action": "DROP",
                                 "description": "",
@@ -28569,68 +28561,127 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
+                        "display_name": "foo-app",
+                        "path": "foo-app",
                         "vm_members": [
                             {
-                                "display_name": "Slytherin1",
-                                "id": "Slytherin1"
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
                             },
                             {
-                                "display_name": "Slytherin2",
-                                "id": "Slytherin2"
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
                             }
                         ]
                     },
                     {
-                        "display_name": "Hufflepuff",
-                        "path": "Hufflepuff",
+                        "display_name": "foo-backend",
+                        "path": "foo-backend",
                         "vm_members": [
                             {
-                                "display_name": "Hufflepuff1",
-                                "id": "Hufflepuff1"
-                            },
-                            {
-                                "display_name": "Hufflepuff2",
-                                "id": "Hufflepuff2"
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
                             }
                         ]
                     },
                     {
-                        "display_name": "Gryffindor",
-                        "path": "Gryffindor",
+                        "display_name": "foo-frontend",
+                        "path": "foo-frontend",
                         "vm_members": [
                             {
-                                "display_name": "Gryffindor1",
-                                "id": "Gryffindor1"
-                            },
-                            {
-                                "display_name": "Gryffindor2",
-                                "id": "Gryffindor2"
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
                             }
                         ]
                     },
                     {
-                        "display_name": "Dumbledore",
-                        "path": "Dumbledore",
+                        "display_name": "research-test-expr-2",
+                        "path": "research-test-expr-2",
                         "vm_members": [
                             {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
-                            },
-                            {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
                             }
                         ]
                     },
                     {
-                        "display_name": "Aladdin",
-                        "path": "Aladdin",
+                        "display_name": "research-app",
+                        "path": "research-app",
                         "vm_members": [
                             {
-                                "display_name": "Aladdin",
-                                "id": "Aladdin"
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
+                            },
+                            {
+                                "display_name": "New-VM-2",
+                                "id": "New-VM-2"
+                            },
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            },
+                            {
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "research-seg-1",
+                        "path": "research-seg-1",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
+                            },
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "path-group",
+                        "path": "path-group",
+                        "vm_members": [
+                            {
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
+                            },
+                            {
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
+                            },
+                            {
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
+                            },
+                            {
+                                "display_name": "New-VM-2",
+                                "id": "New-VM-2"
+                            }
+                        ],
+                        "segment_members": [
+                            {
+                                "display_name": "seg1",
+                                "path": "seg1"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "paths": [
+                                    "foo-app",
+                                    "seg1"
+                                ],
+                                "resource_type": "PathExpression"
                             }
                         ]
                     }

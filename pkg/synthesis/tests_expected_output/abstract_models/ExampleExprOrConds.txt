@@ -4,13 +4,22 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group               |Expression                                                                          |VM
-Gryffindor          |((Tag Of VirtualMachine EQUALS Gryffindor))                                         |Gryffindor-DB, Gryffindor-Web, Gryffindor-App
-Gryffindor-Or-no-DB |((Tag Of VirtualMachine EQUALS Gryffindor) OR (Tag Of VirtualMachine NOTEQUALS DB)) |Gryffindor-DB, Gryffindor-Web, Gryffindor-App, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App
-Hufflepuff          |((Tag Of VirtualMachine EQUALS Hufflepuff))                                         |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
-Hufflepuff-Or-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) OR (Tag Of VirtualMachine NOTEQUALS DB)) |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App, Slytherin-Web, Slytherin-App, Gryffindor-Web, Gryffindor-App
-Slytherin           |((Tag Of VirtualMachine EQUALS Slytherin))                                          |Slytherin-DB, Slytherin-Web, Slytherin-App
-Slytherin-Or-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) OR (Tag Of VirtualMachine NOTEQUALS DB))  |Slytherin-DB, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App, Gryffindor-Web, Gryffindor-App
+Group Name          |Expression
+Gryffindor          |((Tag Of VirtualMachine EQUALS Gryffindor))
+Gryffindor-Or-no-DB |((Tag Of VirtualMachine EQUALS Gryffindor) OR (Tag Of VirtualMachine NOTEQUALS DB))
+Hufflepuff          |((Tag Of VirtualMachine EQUALS Hufflepuff))
+Hufflepuff-Or-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) OR (Tag Of VirtualMachine NOTEQUALS DB))
+Slytherin           |((Tag Of VirtualMachine EQUALS Slytherin))
+Slytherin-Or-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) OR (Tag Of VirtualMachine NOTEQUALS DB))
+
+
+Group Name          |VMs
+Gryffindor          |Gryffindor-DB, Gryffindor-Web, Gryffindor-App
+Gryffindor-Or-no-DB |Gryffindor-DB, Gryffindor-Web, Gryffindor-App, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App
+Hufflepuff          |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
+Hufflepuff-Or-no-DB |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App, Slytherin-Web, Slytherin-App, Gryffindor-Web, Gryffindor-App
+Slytherin           |Slytherin-DB, Slytherin-Web, Slytherin-App
+Slytherin-Or-no-DB  |Slytherin-DB, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App, Gryffindor-Web, Gryffindor-App
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

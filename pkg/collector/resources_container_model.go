@@ -48,8 +48,20 @@ func FromJSONString(b []byte) (*ResourcesContainerModel, error) {
 	return resources, err
 }
 
+func (resources *ResourcesContainerModel) FindGroupByPath(path string) *Group {
+	for i := range resources.DomainList {
+		if g := resources.DomainList[i].Resources.GetGroup(path); g != nil {
+			return g
+		}
+	}
+	return nil
+}
+
 func (resources *DomainResources) GetGroup(query string) *Group {
 	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == *gr.Path })
+	if i < 0 {
+		return nil
+	}
 	return &resources.GroupList[i]
 }
 
@@ -98,6 +110,15 @@ func (resources *ResourcesContainerModel) GetVirtualNetworkInterfaceByAddress(ad
 func (resources *ResourcesContainerModel) GetVirtualMachine(id string) *VirtualMachine {
 	i := slices.IndexFunc(resources.VirtualMachineList, func(vm VirtualMachine) bool { return id == *vm.ExternalId })
 	return &resources.VirtualMachineList[i]
+}
+
+func (resources *ResourcesContainerModel) GetVMsByNames(names []string) (res []VirtualMachine) {
+	for i := range resources.VirtualMachineList {
+		if slices.Contains(names, *resources.VirtualMachineList[i].DisplayName) {
+			res = append(res, resources.VirtualMachineList[i])
+		}
+	}
+	return res
 }
 
 func (resources *ResourcesContainerModel) GetTier0(query string) *Tier0 {
@@ -162,6 +183,9 @@ func (resources *ResourcesContainerModel) GetT1sOfTier0(t0 *Tier0) (res []*Tier1
 
 func (resources *ResourcesContainerModel) GetSegment(query string) *Segment {
 	i := slices.IndexFunc(resources.SegmentList, func(t Segment) bool { return query == *t.Path })
+	if i < 0 {
+		return nil
+	}
 	return &resources.SegmentList[i]
 }
 

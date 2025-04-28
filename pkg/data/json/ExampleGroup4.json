@@ -28442,40 +28442,47 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin1",
-            "external_id": "Slytherin1"
+            "display_name": "New-VM-1",
+            "external_id": "New-VM-1",
+            "tags": [
+                {
+                    "tag": "bar"
+                }
+            ]
         },
         {
-            "display_name": "Slytherin2",
-            "external_id": "Slytherin2"
+            "display_name": "New-VM-2",
+            "external_id": "New-VM-2",
+            "tags": [
+                {
+                    "tag": "backend"
+                }
+            ]
         },
         {
-            "display_name": "Hufflepuff1",
-            "external_id": "Hufflepuff1"
+            "display_name": "New-VM-3",
+            "external_id": "New-VM-3",
+            "tags": [
+                {
+                    "tag": "foo"
+                }
+            ]
         },
         {
-            "display_name": "Hufflepuff2",
-            "external_id": "Hufflepuff2"
+            "display_name": "New-VM-4",
+            "external_id": "New-VM-4",
+            "tags": [
+                {
+                    "tag": "foo"
+                },
+                {
+                    "tag": "bar"
+                }
+            ]
         },
         {
-            "display_name": "Gryffindor1",
-            "external_id": "Gryffindor1"
-        },
-        {
-            "display_name": "Gryffindor2",
-            "external_id": "Gryffindor2"
-        },
-        {
-            "display_name": "Dumbledore1",
-            "external_id": "Dumbledore1"
-        },
-        {
-            "display_name": "Dumbledore2",
-            "external_id": "Dumbledore2"
-        },
-        {
-            "display_name": "Aladdin",
-            "external_id": "Aladdin"
+            "display_name": "New Virtual Machine",
+            "external_id": "New Virtual Machine"
         }
     ],
     "virtual_network_interface": null,
@@ -28488,8 +28495,8 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Environment",
-                        "display_name": "AladdinTalks",
+                        "category": "Application",
+                        "display_name": "app-x",
                         "scope": [
                             "ANY"
                         ],
@@ -28498,51 +28505,21 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "Aladdin"
+                                    "research-test-expr-2"
                                 ],
-                                "destinations_excluded": true,
                                 "direction": "IN_OUT",
-                                "display_name": "allow-Aladdin-to-others",
-                                "rule_id": 10218,
+                                "display_name": "allow_smb_incoming",
+                                "rule_id": 1004,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "services": [
-                                    "ANY"
+                                    "/infra/services/SMB"
                                 ],
                                 "source_groups": [
-                                    "Aladdin"
+                                    "nested-expr-group"
                                 ]
                             },
-                            {
-                                "action": "ALLOW",
-                                "description": "",
-                                "destination_groups": [
-                                    "Aladdin"
-                                ],
-                                "direction": "IN_OUT",
-                                "display_name": "allow-others-to-Aladdin",
-                                "rule_id": 10219,
-                                "scope": [
-                                    "ANY"
-                                ],
-                                "services": [
-                                    "ANY"
-                                ],
-                                "source_groups": [
-                                    "Aladdin"
-                                ],
-                                "sources_excluded": true
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Default-L3-Section",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
                             {
                                 "action": "DROP",
                                 "description": "",
@@ -28569,68 +28546,76 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
+                        "display_name": "research-test-expr-2",
+                        "path": "research-test-expr-2",
                         "vm_members": [
                             {
-                                "display_name": "Slytherin1",
-                                "id": "Slytherin1"
-                            },
-                            {
-                                "display_name": "Slytherin2",
-                                "id": "Slytherin2"
+                                "display_name": "New Virtual Machine",
+                                "id": "New Virtual Machine"
                             }
                         ]
                     },
                     {
-                        "display_name": "Hufflepuff",
-                        "path": "Hufflepuff",
+                        "display_name": "nested-expr-group",
+                        "path": "nested-expr-group",
                         "vm_members": [
                             {
-                                "display_name": "Hufflepuff1",
-                                "id": "Hufflepuff1"
+                                "display_name": "New-VM-4",
+                                "id": "New-VM-4"
                             },
                             {
-                                "display_name": "Hufflepuff2",
-                                "id": "Hufflepuff2"
+                                "display_name": "New-VM-2",
+                                "id": "New-VM-2"
+                            }
+                        ],
+                        "expression": [
+                            {
+                                "resource_type": "NestedExpression",
+                                "expressions": [
+                                    {
+                                        "key": "Tag",
+                                        "member_type": "VirtualMachine",
+                                        "operator": "EQUALS",
+                                        "resource_type": "Condition",
+                                        "value": "foo"
+                                    },
+                                    {
+                                        "conjunction_operator": "AND",
+                                        "resource_type": "ConjunctionOperator"
+                                    },
+                                    {
+                                        "key": "Tag",
+                                        "member_type": "VirtualMachine",
+                                        "operator": "EQUALS",
+                                        "resource_type": "Condition",
+                                        "value": "bar"
+                                    }
+                                ]
+                            },
+                            {
+                                "conjunction_operator": "OR",
+                                "resource_type": "ConjunctionOperator"
+                            },
+                            {
+                                "key": "Tag",
+                                "member_type": "VirtualMachine",
+                                "operator": "EQUALS",
+                                "resource_type": "Condition",
+                                "value": "backend"
                             }
                         ]
                     },
                     {
-                        "display_name": "Gryffindor",
-                        "path": "Gryffindor",
+                        "display_name": "no-group-vms-group",
+                        "path": "no-group-vms-group",
                         "vm_members": [
                             {
-                                "display_name": "Gryffindor1",
-                                "id": "Gryffindor1"
+                                "display_name": "New-VM-1",
+                                "id": "New-VM-1"
                             },
                             {
-                                "display_name": "Gryffindor2",
-                                "id": "Gryffindor2"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Dumbledore",
-                        "path": "Dumbledore",
-                        "vm_members": [
-                            {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
-                            },
-                            {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Aladdin",
-                        "path": "Aladdin",
-                        "vm_members": [
-                            {
-                                "display_name": "Aladdin",
-                                "id": "Aladdin"
+                                "display_name": "New-VM-3",
+                                "id": "New-VM-3"
                             }
                         ]
                     }

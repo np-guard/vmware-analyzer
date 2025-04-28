@@ -1,6 +1,8 @@
 package symbolicexpr
 
 import (
+	"fmt"
+
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
@@ -163,9 +165,9 @@ func ConvertFWRuleToSymbolicPaths(isInbound bool, rule *dfw.FwRule, groupToConju
 		rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
 	dstConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Dst.IsExclude, externalRelevantDst,
 		rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
-	if !rule.OrigScope.IsAllGroups { // do not add *any* to Conjunction
+	if !rule.Scope.IsAllGroups { // do not add *any* to Conjunction
 		scopeConjunctions := getConjunctionsSrcOrDst(rule, groupToConjunctions, rule.Scope.IsExclude,
-			false, false, rule.OrigScope.Groups, nil)
+			false, false, rule.Scope.Groups, nil)
 		if isInbound {
 			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
 		} else { // outbound
@@ -210,7 +212,10 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 		res = append(res, ipInternalBlockConjunctions...)
 		res = append(res, getConjunctionForGroups(isExclude, groups, groupToConjunctions, rule.RuleID)...)
 	}
-	return
+	if len(res) == 0 {
+		fmt.Printf("debug")
+	}
+	return res
 }
 
 // divide tautology to internal and external components

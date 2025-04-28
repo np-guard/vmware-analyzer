@@ -50,3 +50,4 @@ PolicyNat
 PolicyNatRule
 RedirectionPolicy
 RedirectionRule
+PolicyGroupMemberDetails

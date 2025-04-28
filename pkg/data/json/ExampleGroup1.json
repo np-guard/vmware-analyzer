@@ -28442,40 +28442,12 @@
     ],
     "virtual_machines": [
         {
-            "display_name": "Slytherin1",
-            "external_id": "Slytherin1"
+            "display_name": "A",
+            "external_id": "A"
         },
         {
-            "display_name": "Slytherin2",
-            "external_id": "Slytherin2"
-        },
-        {
-            "display_name": "Hufflepuff1",
-            "external_id": "Hufflepuff1"
-        },
-        {
-            "display_name": "Hufflepuff2",
-            "external_id": "Hufflepuff2"
-        },
-        {
-            "display_name": "Gryffindor1",
-            "external_id": "Gryffindor1"
-        },
-        {
-            "display_name": "Gryffindor2",
-            "external_id": "Gryffindor2"
-        },
-        {
-            "display_name": "Dumbledore1",
-            "external_id": "Dumbledore1"
-        },
-        {
-            "display_name": "Dumbledore2",
-            "external_id": "Dumbledore2"
-        },
-        {
-            "display_name": "Aladdin",
-            "external_id": "Aladdin"
+            "display_name": "B",
+            "external_id": "B"
         }
     ],
     "virtual_network_interface": null,
@@ -28488,8 +28460,8 @@
             "resources": {
                 "security_policies": [
                     {
-                        "category": "Environment",
-                        "display_name": "AladdinTalks",
+                        "category": "Application",
+                        "display_name": "app-x",
                         "scope": [
                             "ANY"
                         ],
@@ -28498,51 +28470,40 @@
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "Aladdin"
+                                    "backend"
                                 ],
-                                "destinations_excluded": true,
                                 "direction": "IN_OUT",
-                                "display_name": "allow-Aladdin-to-others",
-                                "rule_id": 10218,
+                                "display_name": "allow_smb_incoming",
+                                "rule_id": 1004,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "services": [
-                                    "ANY"
+                                    "/infra/services/SMB"
                                 ],
                                 "source_groups": [
-                                    "Aladdin"
+                                    "frontend"
                                 ]
                             },
                             {
                                 "action": "ALLOW",
                                 "description": "",
                                 "destination_groups": [
-                                    "Aladdin"
+                                    "frontend"
                                 ],
                                 "direction": "IN_OUT",
-                                "display_name": "allow-others-to-Aladdin",
-                                "rule_id": 10219,
+                                "display_name": "allow_external_to_frontend",
+                                "rule_id": 1005,
                                 "scope": [
                                     "ANY"
                                 ],
                                 "services": [
-                                    "ANY"
+                                    "/infra/services/HTTP"
                                 ],
                                 "source_groups": [
-                                    "Aladdin"
-                                ],
-                                "sources_excluded": true
-                            }
-                        ]
-                    },
-                    {
-                        "category": "Application",
-                        "display_name": "Default-L3-Section",
-                        "scope": [
-                            "ANY"
-                        ],
-                        "rules": [
+                                    "external-group"
+                                ]
+                            },
                             {
                                 "action": "DROP",
                                 "description": "",
@@ -28569,68 +28530,47 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Slytherin",
-                        "path": "Slytherin",
+                        "display_name": "backend",
+                        "path": "backend",
                         "vm_members": [
                             {
-                                "display_name": "Slytherin1",
-                                "id": "Slytherin1"
-                            },
-                            {
-                                "display_name": "Slytherin2",
-                                "id": "Slytherin2"
+                                "display_name": "B",
+                                "id": "B"
                             }
                         ]
                     },
                     {
-                        "display_name": "Hufflepuff",
-                        "path": "Hufflepuff",
+                        "display_name": "frontend",
+                        "path": "frontend",
                         "vm_members": [
                             {
-                                "display_name": "Hufflepuff1",
-                                "id": "Hufflepuff1"
-                            },
-                            {
-                                "display_name": "Hufflepuff2",
-                                "id": "Hufflepuff2"
+                                "display_name": "A",
+                                "id": "A"
                             }
                         ]
                     },
                     {
-                        "display_name": "Gryffindor",
-                        "path": "Gryffindor",
-                        "vm_members": [
+                        "display_name": "external-group",
+                        "group_type": [
+                            "IPAddress"
+                        ],
+                        "path": "external-group",
+                        "ips_members": [
+                            "8.8.8.8/32"
+                        ],
+                        "ip_group_members": [
                             {
-                                "display_name": "Gryffindor1",
-                                "id": "Gryffindor1"
-                            },
-                            {
-                                "display_name": "Gryffindor2",
-                                "id": "Gryffindor2"
+                                "display_name": "external-group",
+                                "path": "external-group"
                             }
-                        ]
-                    },
-                    {
-                        "display_name": "Dumbledore",
-                        "path": "Dumbledore",
-                        "vm_members": [
+                        ],
+                        "expression": [
                             {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
-                            },
-                            {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Aladdin",
-                        "path": "Aladdin",
-                        "vm_members": [
-                            {
-                                "display_name": "Aladdin",
-                                "id": "Aladdin"
+                                "ip_addresses": [
+                                    "8.8.8.8/32"
+                                ],
+                                "parent_path": "external-group",
+                                "resource_type": "IPAddressExpression"
                             }
                         ]
                     }
