@@ -239,12 +239,12 @@ type policySelector struct {
 	namespaces []string
 }
 
-func (selector *policySelector) namespaceLabelSelector(admin bool) *meta.LabelSelector {
+func (selector *policySelector) namespaceLabelSelector(isAdmin bool) *meta.LabelSelector {
 	switch {
 	case len(selector.namespaces) > 0:
 		return &meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{
 			{Key: namespaceNameKey, Operator: meta.LabelSelectorOpIn, Values: selector.namespaces}}}
-	case admin:
+	case isAdmin:
 		return &meta.LabelSelector{}
 	default:
 		return nil
