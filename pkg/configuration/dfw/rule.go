@@ -111,7 +111,7 @@ func (f *FwRule) ruleWarning(warnMsg string) {
 // 2. for synthesis: inbound and outbound rules which may not have effect on the current topology
 //////////////////////////////////////////////////////////////////////////////////////////
 
-func (f *FwRule) getEvaluatedRulesAndEffectiveRules(c *CategorySpec) (inbound, outbound *EvaluatedFWRule) {
+func (f *FwRule) getEvaluatedRules(c *CategorySpec) (inbound, outbound *EvaluatedFWRule) {
 	// for synthesis, we do not ignore rules with no VMs in src, dst, since in the future the same src
 	// may have VMs in it. Empty connection, however, is empty regardless of the VMs snapshot
 	if f.Conn.IsEmpty() {
@@ -127,22 +127,18 @@ func (f *FwRule) getEvaluatedRulesAndEffectiveRules(c *CategorySpec) (inbound, o
 		// rules with no VMs in src, dst are not considered effective rules
 		f.ruleWarning("has no effective inbound/outbound component, since its scope component is empty")
 		c.ineffectiveRules[f.RuleID] = append(c.ineffectiveRules[f.RuleID], "empty scope")
-		if inbound != nil {
-			inbound.IsEffective = false
-		}
-		if outbound != nil {
-			outbound.IsEffective = false
-		}
+		// fields IsEffective remain false
 		return inbound, outbound
 	}
 
 	isInboundEffective, isOutboundEffective := f.isRuleEffective(c)
 
-	if inbound != nil {
-		inbound.IsEffective = isInboundEffective
+	// update IsEffective field
+	if isInboundEffective && inbound != nil {
+		inbound.IsEffective = true
 	}
-	if outbound != nil {
-		outbound.IsEffective = isOutboundEffective
+	if isOutboundEffective && outbound != nil {
+		outbound.IsEffective = true
 	}
 
 	return inbound, outbound

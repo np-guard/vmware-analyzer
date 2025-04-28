@@ -60,10 +60,10 @@ func (c *CategorySpec) addRule(src, dst, scope *RuleEndpoints, conn *netset.Tran
 	}
 
 	// get evaluated inbound/outbound rules from the original newRule + effective rules
-	inbound, outbound := newRule.getEvaluatedRulesAndEffectiveRules(c)
+	inbound, outbound := newRule.getEvaluatedRules(c)
 
-	c.EvaluatedRules.addInboundRule(inbound, c.dfwRef, false)
-	c.EvaluatedRules.addOutboundRule(outbound, c.dfwRef, false)
+	c.EvaluatedRules.addInboundOrOutboundRule(true, inbound, c.dfwRef)
+	c.EvaluatedRules.addInboundOrOutboundRule(false, outbound, c.dfwRef)
 }
 
 type EvaluatedFWRule struct {
@@ -96,20 +96,21 @@ type EvalRules struct {
 	OutboundRules []*EvaluatedFWRule
 }
 
-func (e *EvalRules) addInboundRule(r *EvaluatedFWRule, d *DFW, isEffective bool) {
-	if r != nil {
-		e.InboundRules = append(e.InboundRules, r)
-		if isEffective {
-			d.TotalEffectiveIngressRules += 1
-		}
+func (e *EvalRules) addInboundOrOutboundRule(isInbound bool, r *EvaluatedFWRule, d *DFW) {
+	var rules *[]*EvaluatedFWRule
+	var effectiveCounter *int
+	if isInbound {
+		rules = &e.InboundRules
+		effectiveCounter = &d.TotalEffectiveIngressRules
+	} else {
+		rules = &e.OutboundRules
+		effectiveCounter = &d.TotalEffectiveEgressRules
 	}
-}
 
-func (e *EvalRules) addOutboundRule(r *EvaluatedFWRule, d *DFW, isEffective bool) {
 	if r != nil {
-		e.OutboundRules = append(e.OutboundRules, r)
-		if isEffective {
-			d.TotalEffectiveEgressRules += 1
+		*rules = append(*rules, r)
+		if r.IsEffective {
+			*effectiveCounter += 1
 		}
 	}
 }
