@@ -53,8 +53,11 @@ spec:
                 - 0.0.0.0/0
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
     priority: 2
     subject:
@@ -90,8 +93,11 @@ spec:
                 - 0.0.0.0/0
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
     priority: 3
     subject:
@@ -123,8 +129,11 @@ spec:
                 - 0.0.0.0/0
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
     priority: 4
     subject:
@@ -153,8 +162,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
           ports: null
     priority: 5
@@ -187,8 +199,11 @@ spec:
                 - 0.0.0.0/0
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
     priority: 6
     subject:
@@ -214,8 +229,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
           ports: null
     priority: 7

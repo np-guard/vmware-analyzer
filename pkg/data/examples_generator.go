@@ -67,7 +67,10 @@ func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContaine
 		res.VirtualMachineList = append(res.VirtualMachineList, newVMRes)
 	}
 	segmentedVMs := map[string]bool{}
-	for segmentName, ip := range e.SegmentsBlock {
+	segmentNames := slices.Collect(maps.Keys(e.SegmentsBlock))
+	slices.Sort(segmentNames)
+	for _, segmentName := range segmentNames {
+		ip := e.SegmentsBlock[segmentName]
 		segment := collector.Segment{
 			Segment: nsx.Segment{
 				UniqueId:    &segmentName,

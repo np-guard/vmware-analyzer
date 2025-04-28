@@ -13,14 +13,15 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
 )
 
 const k8sResourcesDir = "k8s_resources"
+const apiVersion = "v1"
 
 type k8sResources struct {
 	k8sPolicies
-	pods []*core.Pod
+	pods       []*core.Pod
+	namespaces []*core.Namespace
 }
 
 func (resources *k8sResources) K8sPolicies() []*v1.NetworkPolicy {
@@ -33,7 +34,10 @@ func (resources *k8sResources) K8sAdminPolicies() []*v1alpha1.AdminNetworkPolicy
 
 func createK8sResources(model *AbstractModelSyn, createDNSPolicy bool) *k8sResources {
 	k8sResources := &k8sResources{k8sPolicies: k8sPolicies{externalIP: model.ExternalIP}}
+	k8sResources.namespacesInfo = newNamespacesInfo(model.vms)
+	k8sResources.namespacesInfo.initNamespaces(model)
 	k8sResources.createPolicies(model, createDNSPolicy)
+	k8sResources.namespaces = k8sResources.namespacesInfo.createResources()
 	k8sResources.createPods(model)
 	logging.Debugf("%d k8s network policies,%d admin network policies, and %d pods were generated",
 		len(k8sResources.networkPolicies), len(k8sResources.adminNetworkPolicies), len(k8sResources.pods))
@@ -57,6 +61,12 @@ func (resources *k8sResources) CreateDir(outDir string) error {
 			return err
 		}
 	}
+	if len(resources.namespaces) > 0 {
+		namespacesFileName := path.Join(outDir, "namespaces.yaml")
+		if err := common.WriteYamlUsingJSON(resources.namespaces, namespacesFileName); err != nil {
+			return err
+		}
+	}
 	podsFileName := path.Join(outDir, "pods.yaml")
 	if err := common.WriteYamlUsingJSON(resources.pods, podsFileName); err != nil {
 		return err
@@ -67,32 +77,19 @@ func (resources *k8sResources) CreateDir(outDir string) error {
 // ///////////////////////////////////////////////////////////////////////////////
 func (resources *k8sResources) createPods(model *AbstractModelSyn) {
 	for _, vm := range model.vms {
+		resources.NotFullySupported = resources.NotFullySupported || len(model.vmSegments[vm]) > 1
 		pod := &core.Pod{}
 		pod.Kind = "Pod"
-		pod.APIVersion = "v1"
+		pod.APIVersion = apiVersion
 		pod.Name = toLegalK8SString(vm.Name())
-		pod.Namespace = core.NamespaceDefault
+		pod.Namespace = resources.namespacesInfo.vmNamespace[vm].name
 		if len(model.epToGroups[vm]) == 0 {
 			continue
 		}
 		pod.Labels = map[string]string{}
-		const theTrue = "true"
-		for _, group := range model.epToGroups[vm] {
-			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			label = toLegalK8SString(label)
-			pod.Labels[label] = theTrue
-		}
-		for _, tag := range vm.Tags() {
-			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
-			label = toLegalK8SString(label)
-			pod.Labels[label] = theTrue
-		}
-		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
-			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
-				label = toLegalK8SString(label)
-				pod.Labels[label] = theTrue
-			}
+
+		for _, label := range collectVMLabels(model, vm) {
+			pod.Labels[toLegalK8SString(label)] = "true"
 		}
 		resources.pods = append(resources.pods, pod)
 	}

@@ -33,9 +33,9 @@ metadata:
 spec:
     egress:
         - to:
+            - podSelector: {}
             - ipBlock:
                 cidr: 0.0.0.0/0
-            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__10.0.0.0-24
@@ -115,9 +115,9 @@ metadata:
 spec:
     egress:
         - to:
+            - podSelector: {}
             - ipBlock:
                 cidr: 0.0.0.0/0
-            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__10.0.0.0-16
@@ -573,9 +573,9 @@ metadata:
 spec:
     egress:
         - to:
+            - podSelector: {}
             - ipBlock:
                 cidr: 0.0.0.0/0
-            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: VMs_within_IPs__192.168.0.0-16

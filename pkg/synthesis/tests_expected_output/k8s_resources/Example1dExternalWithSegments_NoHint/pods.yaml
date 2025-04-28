@@ -5,8 +5,9 @@ metadata:
     labels:
         VMs_within_IPs__0.0.1.0-25: "true"
         group__default-group: "true"
+        in_Segment__seg_a_and_b: "true"
     name: A
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     containers: null
 status: {}
@@ -18,8 +19,9 @@ metadata:
     labels:
         VMs_within_IPs__0.0.1.128-25: "true"
         group__default-group: "true"
+        in_Segment__seg_a_and_b: "true"
     name: B
-    namespace: default
+    namespace: seg_a_and_b
 spec:
     containers: null
 status: {}
@@ -31,8 +33,9 @@ metadata:
     labels:
         VMs_within_IPs__0.0.2.0-24: "true"
         group__default-group: "true"
+        in_Segment__seg_c: "true"
     name: C-no-address
-    namespace: default
+    namespace: seg_c
 spec:
     containers: null
 status: {}

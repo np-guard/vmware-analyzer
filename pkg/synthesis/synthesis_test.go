@@ -473,17 +473,17 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
+	// compare k8s resources to expected results:
+	if synTest.hasExpectedResults() {
+		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
+		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	}
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
 	require.Nil(t, err)
 	k8sConnectivityFile := path.Join(synTest.debugDir(), "k8s_connectivity.txt")
 	k8sConnectivityFileCreated, err := k8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
 	require.Nil(t, err)
-	// compare k8s resources to expected results:
-	if synTest.hasExpectedResults() {
-		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
-		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
-	}
 
 	if k8sConnectivityFileCreated && !resources.NotFullySupported {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
@@ -504,8 +504,8 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 
 	k8sConnMap := readK8SConnFile(t, k8sConnectivityFile)
-	k8sGroupedNoExternalMap := removeInternalAddresses(k8sConnMap, config.Topology.AllExternalIPBlock)
-	k8sGroupedMapStr, err := k8sGroupedNoExternalMap.GenConnectivityOutput(synTest.outputParams())
+	k8sGroupedNoNoInternalAddressesMap := removeInternalAddresses(k8sConnMap, config.Topology.AllExternalIPBlock)
+	k8sGroupedMapStr, err := k8sGroupedNoNoInternalAddressesMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
 	require.Nil(t, err)

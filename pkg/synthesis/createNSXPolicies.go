@@ -23,7 +23,6 @@ func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSy
 }
 
 type absToNXS struct {
-	vmLabels   map[topology.Endpoint][]string
 	labelsVMs  map[string][]topology.Endpoint
 	allVMs     []topology.Endpoint
 	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
@@ -36,7 +35,6 @@ type absToNXS struct {
 
 func newAbsToNXS(externalIP *netset.IPBlock) *absToNXS {
 	return &absToNXS{
-		vmLabels:   map[topology.Endpoint][]string{},
 		labelsVMs:  map[string][]topology.Endpoint{},
 		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
 		externalIP: externalIP,
@@ -55,30 +53,66 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 			}
 		}
 	}
-	for _, vm := range a.allVMs {
-		addVMLabel := func(vm topology.Endpoint, label string) {
-			a.vmLabels[vm] = append(a.vmLabels[vm], label)
-			a.labelsVMs[label] = append(a.labelsVMs[label], vm)
-		}
-		for _, tag := range vm.Tags() {
-			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
-			addVMLabel(vm, label)
-		}
-		for _, group := range model.epToGroups[vm] {
-			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			addVMLabel(vm, label)
-		}
-		for _, segment := range model.vmSegments[vm] {
-			label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
-			addVMLabel(vm, label)
-		}
-		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
-			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
-				addVMLabel(vm, label)
-			}
+	a.labelsVMs = collectLabelsVMs(model)
+}
+
+// todo - move these two methods to the right place.
+func collectLabelsVMs(model *AbstractModelSyn) map[string][]topology.Endpoint {
+	labelsVMs := map[string][]topology.Endpoint{}
+	for _, vm := range model.vms {
+		labels := collectVMLabels(model, vm)
+		for _, label := range labels {
+			labelsVMs[label] = append(labelsVMs[label], vm)
 		}
 	}
+	return labelsVMs
+}
+func collectVMLabels(model *AbstractModelSyn, vm topology.Endpoint) []string {
+	labels := []string{}
+
+	for _, tag := range vm.Tags() {
+		label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+		labels = append(labels, label)
+	}
+	for _, group := range model.epToGroups[vm] {
+		label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
+		labels = append(labels, label)
+	}
+	for _, segment := range model.vmSegments[vm] {
+		label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
+		labels = append(labels, label)
+	}
+	for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
+		if !ruleIPBlock.IsAll() {
+			label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
+			labels = append(labels, label)
+			/*=======
+				for _, vm := range a.allVMs {
+					addVMLabel := func(vm topology.Endpoint, label string) {
+						a.vmLabels[vm] = append(a.vmLabels[vm], label)
+						a.labelsVMs[label] = append(a.labelsVMs[label], vm)
+					}
+					for _, tag := range vm.Tags() {
+						label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+						addVMLabel(vm, label)
+					}
+					for _, group := range model.epToGroups[vm] {
+						label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
+						addVMLabel(vm, label)
+					}
+					for _, segment := range model.vmSegments[vm] {
+						label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
+						addVMLabel(vm, label)
+					}
+					for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
+						if !ruleIPBlock.IsAll() {
+							label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
+							addVMLabel(vm, label)
+						}
+			>>>>>>> main*/
+		}
+	}
+	return labels
 }
 
 var fwRuleToDataRuleAction = map[dfw.RuleAction]string{

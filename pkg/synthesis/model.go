@@ -15,6 +15,7 @@ import (
 type AbstractModelSyn struct {
 	config          *configuration.Config
 	vms             []topology.Endpoint
+	segments        []*topology.Segment
 	allGroups       []*collector.Group      // todo - should we need it?
 	allRuleIPBlocks []*topology.RuleIPBlock // todo - should we need it?
 	epToGroups      map[topology.Endpoint][]*collector.Group
@@ -30,9 +31,6 @@ type AbstractModelSyn struct {
 	policy          []*symbolicPolicy // with default deny todo: should be *symbolicPolicy?
 	defaultDenyRule *dfw.FwRule
 }
-
-// Tags map from tag's name to the tag
-type Tags map[string]*collector.Tag
 
 // symbolicRule input to synthesis. Synthesis very likely to non-prioritized only allow policy
 //
@@ -94,11 +92,6 @@ func (policy *symbolicPolicy) sortRules() []*symbolicRule {
 	slices.SortStableFunc(res, symbolicOrigRulesSortFunc)
 	return res
 }
-
-// maps used by AbstractModelSyn
-
-// Segments topology; map from segment name to the segment
-type Segments map[string]*collector.Segment
 
 func strAbstractModel(abstractModel *AbstractModelSyn, options *SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +

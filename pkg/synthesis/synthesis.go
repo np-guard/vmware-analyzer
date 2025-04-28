@@ -58,6 +58,7 @@ func nsxToPolicy(resources *collector.ResourcesContainerModel,
 	abstractModel := &AbstractModelSyn{
 		config:          config,
 		vms:             config.VMs,
+		segments:        config.Topology.Segments,
 		allGroups:       config.Groups,
 		epToGroups:      config.GroupsPerVM,
 		allRuleIPBlocks: slices.Collect(maps.Values(config.Topology.AllRuleIPBlocks)),
