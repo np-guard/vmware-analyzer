@@ -4,11 +4,17 @@ Abstract Model Details
 
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
-Group      |Expression                                  |VM
-Dumbledore |((Tag Of VirtualMachine EQUALS Dumbledore)) |Dumbledore
-Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor)) |Gryffindor
-Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff)) |Hufflepuff
-Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))  |
+Group Name |Expression
+Dumbledore |((Tag Of VirtualMachine EQUALS Dumbledore))
+Gryffindor |((Tag Of VirtualMachine EQUALS Gryffindor))
+Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff))
+Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))
+
+
+Group Name |VMs
+Dumbledore |Dumbledore
+Gryffindor |Gryffindor
+Hufflepuff |Hufflepuff
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

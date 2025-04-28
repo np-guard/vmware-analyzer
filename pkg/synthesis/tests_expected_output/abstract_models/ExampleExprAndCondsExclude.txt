@@ -1,0 +1,36 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name           |Expression
+Gryffindor           |((Tag Of VirtualMachine EQUALS Gryffindor))
+Gryffindor-And-no-DB |((Tag Of VirtualMachine EQUALS Gryffindor) AND (Tag Of VirtualMachine NOTEQUALS DB))
+Hufflepuff           |((Tag Of VirtualMachine EQUALS Hufflepuff))
+Hufflepuff-And-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) AND (Tag Of VirtualMachine NOTEQUALS DB))
+Slytherin            |((Tag Of VirtualMachine EQUALS Slytherin))
+Slytherin-And-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) AND (Tag Of VirtualMachine NOTEQUALS DB))
+
+
+Group Name           |VMs
+Gryffindor           |Gryffindor-DB, Gryffindor-Web, Gryffindor-App
+Gryffindor-And-no-DB |Gryffindor-Web, Gryffindor-App
+Hufflepuff           |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
+Hufflepuff-And-no-DB |Hufflepuff-Web, Hufflepuff-App
+Slytherin            |Slytherin-DB, Slytherin-Web, Slytherin-App
+Slytherin-And-no-DB  |Slytherin-Web, Slytherin-App
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src |Dst                              |Connection
+0                            |9198    |(*) |(tag = Slytherin and tag != DB)  |All Connections
+1                            |9200    |(*) |(tag = Gryffindor and tag != DB) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                |Dst                             |Connection
+0                            |9199    |(tag = Gryffindor) |(tag = Slytherin and tag != DB) |All Connections
+1                            |9201    |(*)                |(tag != Hufflepuff)             |All Connections
+1                            |9201    |(*)                |(tag = DB)                      |All Connections
+

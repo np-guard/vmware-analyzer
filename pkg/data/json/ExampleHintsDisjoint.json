@@ -28482,8 +28482,9 @@
                                 "action": "DROP",
                                 "description": "",
                                 "destination_groups": [
-                                    "Slytherin"
+                                    "Not Slytherin"
                                 ],
+                                "destinations_excluded": true,
                                 "direction": "IN_OUT",
                                 "display_name": "Dumb1-Not-Sly",
                                 "rule_id": 9198,
@@ -28589,26 +28590,6 @@
                 "redirection_policies": null,
                 "groups": [
                     {
-                        "display_name": "Dumbledore1",
-                        "path": "Dumbledore1",
-                        "vm_members": [
-                            {
-                                "display_name": "Dumbledore1",
-                                "id": "Dumbledore1"
-                            }
-                        ]
-                    },
-                    {
-                        "display_name": "Dumbledore2",
-                        "path": "Dumbledore2",
-                        "vm_members": [
-                            {
-                                "display_name": "Dumbledore2",
-                                "id": "Dumbledore2"
-                            }
-                        ]
-                    },
-                    {
                         "display_name": "Slytherin",
                         "path": "Slytherin",
                         "vm_members": [
@@ -28635,6 +28616,48 @@
                             {
                                 "display_name": "Gryffindor",
                                 "id": "Gryffindor"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Dumbledore1",
+                        "path": "Dumbledore1",
+                        "vm_members": [
+                            {
+                                "display_name": "Dumbledore1",
+                                "id": "Dumbledore1"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Dumbledore2",
+                        "path": "Dumbledore2",
+                        "vm_members": [
+                            {
+                                "display_name": "Dumbledore2",
+                                "id": "Dumbledore2"
+                            }
+                        ]
+                    },
+                    {
+                        "display_name": "Not Slytherin",
+                        "path": "Not Slytherin",
+                        "vm_members": [
+                            {
+                                "display_name": "Hufflepuff",
+                                "id": "Hufflepuff"
+                            },
+                            {
+                                "display_name": "Gryffindor",
+                                "id": "Gryffindor"
+                            },
+                            {
+                                "display_name": "Dumbledore1",
+                                "id": "Dumbledore1"
+                            },
+                            {
+                                "display_name": "Dumbledore2",
+                                "id": "Dumbledore2"
                             }
                         ]
                     }

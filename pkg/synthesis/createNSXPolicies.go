@@ -53,6 +53,7 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 			}
 		}
 	}
+	//<<<<<<< HEAD
 	a.labelsVMs = collectLabelsVMs(model)
 }
 
@@ -79,13 +80,37 @@ func collectVMLabels(model *AbstractModelSyn, vm topology.Endpoint) []string {
 		labels = append(labels, label)
 	}
 	for _, segment := range model.vmSegments[vm] {
-		label, _ := symbolicexpr.NewSegmentTerm(segment).AsSelector()
+		label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
 		labels = append(labels, label)
 	}
 	for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
 		if !ruleIPBlock.IsAll() {
-			label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock).AsSelector()
+			label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
 			labels = append(labels, label)
+			/*=======
+				for _, vm := range a.allVMs {
+					addVMLabel := func(vm topology.Endpoint, label string) {
+						a.vmLabels[vm] = append(a.vmLabels[vm], label)
+						a.labelsVMs[label] = append(a.labelsVMs[label], vm)
+					}
+					for _, tag := range vm.Tags() {
+						label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+						addVMLabel(vm, label)
+					}
+					for _, group := range model.epToGroups[vm] {
+						label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
+						addVMLabel(vm, label)
+					}
+					for _, segment := range model.vmSegments[vm] {
+						label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
+						addVMLabel(vm, label)
+					}
+					for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
+						if !ruleIPBlock.IsAll() {
+							label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
+							addVMLabel(vm, label)
+						}
+			>>>>>>> main*/
 		}
 	}
 	return labels

@@ -25,7 +25,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
+        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group = Not Slytherin) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
     name: policy-1
@@ -35,8 +35,8 @@ spec:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: group__Slytherin
-                      operator: DoesNotExist
+                    - key: group__Not-NLCSlytherin
+                      operator: Exists
     podSelector:
         matchExpressions:
             - key: group__Dumbledore1
@@ -50,7 +50,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
+        description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
     name: policy-2
@@ -60,8 +60,8 @@ spec:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: group__Slytherin
-                      operator: DoesNotExist
+                    - key: group__Not-NLCSlytherin
+                      operator: Exists
                     - key: group__Gryffindor
                       operator: DoesNotExist
     podSelector:
@@ -75,7 +75,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group != Slytherin) conn: All Connections'
+        description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group = Not Slytherin) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
     name: policy-3
@@ -91,8 +91,8 @@ spec:
                       operator: DoesNotExist
     podSelector:
         matchExpressions:
-            - key: group__Slytherin
-              operator: DoesNotExist
+            - key: group__Not-NLCSlytherin
+              operator: Exists
     policyTypes:
         - Ingress
 ---
@@ -100,7 +100,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore1) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
+        description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
     name: policy-4
@@ -114,8 +114,8 @@ spec:
                       operator: Exists
     podSelector:
         matchExpressions:
-            - key: group__Slytherin
-              operator: DoesNotExist
+            - key: group__Not-NLCSlytherin
+              operator: Exists
             - key: group__Gryffindor
               operator: DoesNotExist
     policyTypes:
@@ -150,7 +150,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore2) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
+        description: 'src: (group = Dumbledore2) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
     name: policy-6
@@ -160,8 +160,8 @@ spec:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: group__Slytherin
-                      operator: DoesNotExist
+                    - key: group__Not-NLCSlytherin
+                      operator: Exists
                     - key: group__Gryffindor
                       operator: DoesNotExist
     podSelector:
@@ -200,7 +200,7 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Dumbledore2) dst: (group != Slytherin and group != Gryffindor) conn: All Connections'
+        description: 'src: (group = Dumbledore2) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
     name: policy-8
@@ -214,8 +214,8 @@ spec:
                       operator: Exists
     podSelector:
         matchExpressions:
-            - key: group__Slytherin
-              operator: DoesNotExist
+            - key: group__Not-NLCSlytherin
+              operator: Exists
             - key: group__Gryffindor
               operator: DoesNotExist
     policyTypes:

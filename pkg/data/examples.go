@@ -15,12 +15,13 @@ const (
 )
 
 const (
-	sly  = "Slytherin"
-	huf  = "Hufflepuff"
-	gry  = "Gryffindor"
-	dum  = "Dumbledore"
-	Dum1 = "Dumbledore1"
-	Dum2 = "Dumbledore2"
+	sly    = "Slytherin"
+	huf    = "Hufflepuff"
+	gry    = "Gryffindor"
+	dum    = "Dumbledore"
+	Dum1   = "Dumbledore1"
+	Dum2   = "Dumbledore2"
+	notSly = "Not Slytherin"
 
 	house = "House"
 	funct = "Function"
@@ -1201,7 +1202,7 @@ var ExampleTwoDeniesSimple = registerExample(&Example{
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, Dum1, Dum2}}
+var disjointHouses2Dum = [][]string{{sly, huf, gry, dum, Dum1, Dum2}, {sly, notSly}}
 
 // ExampleDenyPassSimple one pass and two denies, span over two categories
 // all can talk to all but Slytherin and Hufflepuff (or to Gryffindor and Dumbledore)
@@ -1281,11 +1282,12 @@ var ExampleHintsDisjoint = registerExample(&Example{
 	Name: "ExampleHintsDisjoint",
 	VMs:  []string{sly, huf, gry, Dum1, Dum2},
 	GroupsByVMs: map[string][]string{
-		sly:  {sly},
-		huf:  {huf},
-		gry:  {gry},
-		Dum1: {Dum1},
-		Dum2: {Dum2},
+		sly:    {sly},
+		huf:    {huf},
+		gry:    {gry},
+		Dum1:   {Dum1},
+		Dum2:   {Dum2},
+		notSly: {huf, gry, Dum1, Dum2},
 	},
 	Policies: []Category{
 		{
@@ -1293,12 +1295,13 @@ var ExampleHintsDisjoint = registerExample(&Example{
 			CategoryType: application,
 			Rules: []Rule{
 				{
-					Name:     "Dumb1-Not-Sly",
-					ID:       newRuleID,
-					Source:   Dum1,
-					Dest:     sly,
-					Services: []string{AnyStr},
-					Action:   Drop,
+					Name:                 "Dumb1-Not-Sly",
+					ID:                   newRuleID,
+					Source:               Dum1,
+					Dest:                 notSly,
+					DestinationsExcluded: true,
+					Services:             []string{AnyStr},
+					Action:               Drop,
 				},
 				{
 					Name:     "Dumb2-Not-Gryf",
@@ -1704,10 +1707,10 @@ var ExampleExprSingleScope = registerExample(&Example{
 	VMs:     []string{huf, gry, dum},
 	VMsTags: map[string][]nsx.Tag{huf: {{Tag: huf}}, gry: {{Tag: gry}}, dum: {{Tag: dum}}},
 	GroupsByExpr: map[string]ExampleExpr{
-		sly: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: sly}}},
-		gry: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: gry}}},
-		huf: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: huf}}},
-		dum: {Cond1: ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
+		sly: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: sly}}},
+		gry: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: gry}}},
+		huf: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: huf}}},
+		dum: {Cond1: &ExampleCond{Tag: nsx.Tag{Tag: dum}}}},
 	Policies: []Category{
 		{
 			Name:         "From-Dumbledore-connection",
@@ -1821,12 +1824,12 @@ var vmsHousesTags = map[string][]nsx.Tag{slyDB: {{Scope: house, Tag: sly}, {Scop
 	gryApp: {{Scope: house, Tag: gry}, {Scope: funct, Tag: app}}}
 
 var twoScopeGroupsByExpr = map[string]ExampleExpr{
-	sly: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-	gry: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-	huf: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
-	db:  {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
-	web: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
-	app: {Cond1: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
+	sly: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+	gry: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+	huf: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+	db:  {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}}},
+	web: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: web}}},
+	app: {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: app}}}}
 
 var ExampleExprTwoScopes = registerExample(&Example{
 	Name: "ExampleExprTwoScopes",
@@ -1861,7 +1864,7 @@ var ExampleExprAndConds = registerExample(&Example{
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
 	GroupsByExpr:       getAndOrOrExpr(And),
-	Policies:           getAndOrOrPolicies(And),
+	Policies:           getAndOrOrPolicies(And, false),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
@@ -1873,7 +1876,29 @@ var ExampleExprOrConds = registerExample(&Example{
 	VMs:                vmsHouses,
 	VMsTags:            vmsHousesTags,
 	GroupsByExpr:       getAndOrOrExpr(Or),
-	Policies:           getAndOrOrPolicies(Or),
+	Policies:           getAndOrOrPolicies(Or, false),
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
+// same examples with exclude - on expr
+
+var ExampleExprAndCondsExclude = registerExample(&Example{
+	Name:               "ExampleExprAndCondsExclude",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       getAndOrOrExpr(And),
+	Policies:           getAndOrOrPolicies(And, true),
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var ExampleExprOrCondsExclude = registerExample(&Example{
+	Name:               "ExampleExprOrCondsExclude",
+	VMs:                vmsHouses,
+	VMsTags:            vmsHousesTags,
+	GroupsByExpr:       getAndOrOrExpr(Or),
+	Policies:           getAndOrOrPolicies(Or, true),
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
@@ -1890,16 +1915,16 @@ const (
 
 func getAndOrOrExpr(op ExampleOp) map[string]ExampleExpr {
 	slyCondDB, hufCondDB, gryCondDB := getOrOrAndGroupNames(op)
-	slyAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
-		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
-	hufAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
-		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
-	gryAndOrDBExpr := ExampleExpr{Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
-		Cond2: ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	slyAndOrDBExpr := ExampleExpr{Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}, Op: op,
+		Cond2: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	hufAndOrDBExpr := ExampleExpr{Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}, Op: op,
+		Cond2: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
+	gryAndOrDBExpr := ExampleExpr{Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}, Op: op,
+		Cond2: &ExampleCond{Tag: nsx.Tag{Scope: funct, Tag: db}, NotEqual: true}}
 	return map[string]ExampleExpr{
-		sly:       {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
-		gry:       {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
-		huf:       {Cond1: ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
+		sly:       {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: sly}}},
+		gry:       {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: gry}}},
+		huf:       {Cond1: &ExampleCond{Tag: nsx.Tag{Scope: house, Tag: huf}}},
 		slyCondDB: slyAndOrDBExpr,
 		hufCondDB: hufAndOrDBExpr,
 		gryCondDB: gryAndOrDBExpr,
@@ -1918,7 +1943,7 @@ func getOrOrAndGroupNames(op ExampleOp) (slyDB, hufDB, gryDB string) {
 	return
 }
 
-func getAndOrOrPolicies(op ExampleOp) []Category {
+func getAndOrOrPolicies(op ExampleOp, withExclude bool) []Category {
 	slyCondDB, hufCondDB, gryCondDB := getOrOrAndGroupNames(op)
 	return []Category{
 		{
@@ -1957,12 +1982,13 @@ func getAndOrOrPolicies(op ExampleOp) []Category {
 				{
 					Name: "to-Hufflepuff-out",
 					//nolint:all // this is the required id
-					ID:        newRuleID + 3,
-					Source:    AnyStr,
-					Dest:      hufCondDB,
-					Services:  []string{AnyStr},
-					Action:    Allow,
-					Direction: string(nsx.RuleDirectionOUT),
+					ID:                   newRuleID + 3,
+					Source:               AnyStr,
+					Dest:                 hufCondDB,
+					DestinationsExcluded: withExclude,
+					Services:             []string{AnyStr},
+					Action:               Allow,
+					Direction:            string(nsx.RuleDirectionOUT),
 				},
 				{
 					Name: "default-deny-env",
@@ -2097,6 +2123,75 @@ var ExampleHogwartsSimplerNonSymInOut = registerExample(&Example{
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
+var ExampleHogwartsExcludeSimple = registerExample(&Example{
+	Name: "ExampleHogwartsExcludeSimple",
+	VMs: []string{SlyWeb, slyApp, slyDB,
+		GryWeb, gryApp, gryDB,
+		HufWeb, hufApp, hufDB},
+	GroupsByVMs: hogwartsBidimensionalGroups,
+	Policies: []Category{
+		{
+			Name:         "allow-inbound",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:      "allow-all-in",
+					ID:        10218,
+					Source:    AnyStr,
+					Dest:      AnyStr,
+					Action:    Allow,
+					Conn:      netset.AllTransports(),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         "allow-out",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:                 "allow-Slytherin-to-nonSlytherin-out",
+					ID:                   10220,
+					Source:               sly,
+					Dest:                 sly,
+					DestinationsExcluded: true,
+					Action:               Allow,
+					Conn:                 netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction:            string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:                 "allow-Gryffindor-to-nonGryffindor-out",
+					ID:                   10221,
+					Source:               gry,
+					Dest:                 gry,
+					DestinationsExcluded: true,
+					Action:               Allow,
+					Conn:                 netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction:            string(nsx.RuleDirectionOUT),
+				},
+				{
+					Name:                 "allow-Hufflepuff-to-nonHufflepuff-out",
+					ID:                   10222,
+					Source:               huf,
+					Dest:                 huf,
+					DestinationsExcluded: true,
+					Action:               Allow,
+					Conn:                 netset.AllUDPTransport().Union(netset.AllTCPTransport()),
+					Direction:            string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var ExampleHogwartsExternal = registerExample(&Example{
@@ -2211,9 +2306,10 @@ var ExampleHogwartsExternal = registerExample(&Example{
 					Direction: string(nsx.RuleDirectionOUT),
 				},
 				{
-					Name:      "to-Dumb",
-					ID:        10406,
-					Source:    "122.0.0.0/8",
+					Name:   "to-Dumb",
+					ID:     10406,
+					Source: "122.0.0.0/8",
+					// SourcesExcluded: true, // todo: not working!!
 					Dest:      dum,
 					Services:  []string{AnyStr},
 					Action:    Allow,

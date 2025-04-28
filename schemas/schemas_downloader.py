@@ -81,5 +81,5 @@ if __name__ == "__main__":
     with open(sys.argv[1]) as schemas_file:
         for schema in schemas_file:
             schema = schema.strip()
-            url = f'https://dp-downloads.broadcom.com/api-content/apis/API_NTDCRA_001/4.2/html/api_includes/schemas_{schema}.html'
+            url = f'https://developer.broadcom.com/xapis/nsx-t-data-center-rest-api/latest/schemas_{schema}.html'
             process_schema_from_url(url)

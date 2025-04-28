@@ -28496,6 +28496,7 @@
                         "rules": [
                             {
                                 "action": "ALLOW",
+                                "description": "",
                                 "destination_groups": [
                                     "Aladdin"
                                 ],
@@ -28515,6 +28516,7 @@
                             },
                             {
                                 "action": "ALLOW",
+                                "description": "",
                                 "destination_groups": [
                                     "Aladdin"
                                 ],
@@ -28543,6 +28545,7 @@
                         "rules": [
                             {
                                 "action": "DROP",
+                                "description": "",
                                 "destination_groups": [
                                     "ANY"
                                 ],
@@ -28625,10 +28628,6 @@
                         "display_name": "Aladdin",
                         "path": "Aladdin",
                         "vm_members": [
-                            {
-                                "display_name": "Aladdin",
-                                "id": "Aladdin"
-                            },
                             {
                                 "display_name": "Aladdin",
                                 "id": "Aladdin"

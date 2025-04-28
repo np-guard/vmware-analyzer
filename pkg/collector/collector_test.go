@@ -23,6 +23,23 @@ const (
 	outDir = "out/"
 )
 
+func TestGroupCollection(t *testing.T) {
+	server, err := GetNSXServerDate("", "", "", true)
+	if err != nil {
+		// do not fail on env without access to nsx host
+		fmt.Println(err.Error())
+		return
+	}
+	group := &Group{}
+	query := "policy/api/v1/infra/domains/default/groups/ex12-expr-with-2-conditions"
+	err = collectResource(server, query, group)
+	require.Nil(t, err)
+	s, err := common.MarshalJSON(group)
+	require.Nil(t, err)
+	fmt.Printf("%s\n", s)
+	fmt.Println("done")
+}
+
 //nolint:gocyclo // one function with lots of checks
 func TestCollectResources(t *testing.T) {
 	args := struct {

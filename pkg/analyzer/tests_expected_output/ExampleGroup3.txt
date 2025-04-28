@@ -1,0 +1,7 @@
+Analyzed connectivity:
+Source   |Destination         |Permitted connections
+New-VM-1 |New Virtual Machine |TCP dst-ports: 445
+New-VM-2 |New Virtual Machine |TCP dst-ports: 445
+New-VM-3 |New Virtual Machine |TCP dst-ports: 445
+New-VM-4 |New Virtual Machine |TCP dst-ports: 445
+

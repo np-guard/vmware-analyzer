@@ -8,8 +8,11 @@ package collector
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 
-	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 const (
@@ -25,9 +28,8 @@ const (
 	virtualInterfaceQuery       = "api/v1/fabric/vifs"
 	groupsQuery                 = "policy/api/v1/infra/domains/%s/groups"
 	groupQuery                  = "policy/api/v1/infra/domains/%s/groups/%s"
-	groupMembersVMQuery         = "policy/api/v1/infra/domains/%s/groups/%s/members/virtual-machines"
-	groupMembersVIFQuery        = "policy/api/v1/infra/domains/%s/groups/%s/members/vifs"
-	groupMembersIPAddressQuery  = "policy/api/v1/infra/domains/%s/groups/%s/members/ip-addresses"
+	groupMemberTypesQuery       = "policy/api/v1/infra/domains/%s/groups/%s/member-types"
+	groupMembersQuery           = "policy/api/v1/infra/domains/%s/groups/%s/members/%s"
 	securityPoliciesQuery       = "policy/api/v1/infra/domains/%s/security-policies"
 	securityPolicyRulesQuery    = "policy/api/v1/infra/domains/%s/security-policies/%s"
 	securityPolicyRuleQuery     = "policy/api/v1/infra/domains/%s/security-policies/%s/rules/%s"
@@ -41,6 +43,11 @@ const (
 
 	defaultForwardingUpTimer = 5
 )
+
+var supportedMembersTypes = []string{
+	"Segment", "SegmentPort",
+	"VirtualMachine", "VirtualNetworkInterface",
+	"IPAddress", "TransportNode", "Group"}
 
 type ServerData struct {
 	host, user, password string
@@ -129,26 +136,46 @@ func CollectResources(server ServerData) (*ResourcesContainerModel, error) {
 			return nil, err
 		}
 		for i := range domainResources.GroupList {
-			err = collectResource(server, fmt.Sprintf(groupQuery, domainID, *domainResources.GroupList[i].Id), &domainResources.GroupList[i])
+			group := &domainResources.GroupList[i]
+			err = collectResource(server, fmt.Sprintf(groupQuery, domainID, *domainResources.GroupList[i].Id), group)
 			if err != nil {
 				return nil, err
 			}
-			err = collectResultList(server,
-				fmt.Sprintf(groupMembersVMQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].VMMembers)
-			if err != nil {
+			var memberTypes []string
+			if err := collectResultList(server, fmt.Sprintf(groupMemberTypesQuery, domainID, *domainResources.GroupList[i].Id),
+				&memberTypes); err != nil {
 				return nil, err
 			}
-			err = collectResultList(server,
-				fmt.Sprintf(groupMembersVIFQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].VIFMembers)
-			if err != nil {
+			nonSuppoertedTypes := slices.DeleteFunc(memberTypes, func(t string) bool { return slices.Contains(supportedMembersTypes, t) })
+			if len(nonSuppoertedTypes) > 0 {
+				logging.Warnf("collecting [%s] for group %s are not supported", strings.Join(nonSuppoertedTypes, ","), *group.DisplayName)
+			}
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"virtual-machines"), &group.VMMembers); err != nil {
 				return nil, err
 			}
-			err = collectResultList(server,
-				fmt.Sprintf(groupMembersIPAddressQuery, domainID, *domainResources.GroupList[i].Id),
-				&domainResources.GroupList[i].AddressMembers)
-			if err != nil {
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"vifs"), &group.VIFMembers); err != nil {
+				return nil, err
+			}
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"ip-addresses"), &group.AddressMembers); err != nil {
+				return nil, err
+			}
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"segments"), &group.Segments); err != nil {
+				return nil, err
+			}
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"segment-ports"), &group.SegmentPorts); err != nil {
+				return nil, err
+			}
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"ip-groups"), &group.IPGroups); err != nil {
+				return nil, err
+			}
+			if err := collectResultList(server, fmt.Sprintf(groupMembersQuery, domainID, *domainResources.GroupList[i].Id,
+				"transport-nodes"), &group.TransportNodes); err != nil {
 				return nil, err
 			}
 		}
@@ -296,7 +323,7 @@ func FixResourcesForJSON(res *ResourcesContainerModel) {
 
 // Tag a tag used by VMs for labeling in NSX
 type Tag struct {
-	tagOrig resources.Tag
+	tagOrig nsx.Tag
 }
 
 func (tag *Tag) Name() string {

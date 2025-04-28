@@ -1,0 +1,27 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name |VMs
+App        |Slytherin-App, Gryffindor-App, Hufflepuff-App
+DB         |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB
+Dumbledore |Dumbledore1, Dumbledore2
+Gryffindor |Gryffindor-Web, Gryffindor-App, Gryffindor-DB
+Hufflepuff |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
+Slytherin  |Slytherin-Web, Slytherin-App, Slytherin-DB
+Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src |Dst |Connection
+0                            |10218   |(*) |(*) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                  |Dst                   |Connection
+0                            |10220   |(group = Slytherin)  |(group != Slytherin)  |TCP,UDP
+1                            |10221   |(group = Gryffindor) |(group != Gryffindor) |TCP,UDP
+2                            |10222   |(group = Hufflepuff) |(group != Hufflepuff) |TCP,UDP
+

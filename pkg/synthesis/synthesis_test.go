@@ -16,7 +16,7 @@ import (
 	"github.com/np-guard/models/pkg/netp"
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
+	"github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/analyzer/connectivity"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
@@ -162,6 +162,12 @@ var groupsByVmsTests = []synthesisTest{
 		synthesizeAdmin: true,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleHogwartsExcludeSimple",
+		exData:          data.ExampleHogwartsExcludeSimple,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
 }
 
 var vmsByIpsTests = []synthesisTest{
@@ -277,6 +283,16 @@ var groupsByExprTests = []synthesisTest{
 		exData:          data.ExampleExprOrConds,
 		noHint:          false,
 		synthesizeAdmin: true,
+	},
+	{
+		name:   "ExampleExprOrCondsExclude",
+		exData: data.ExampleExprOrCondsExclude,
+		noHint: false,
+	},
+	{
+		name:   "ExampleExprAndCondsExclude",
+		exData: data.ExampleExprAndCondsExclude,
+		noHint: false,
 	},
 }
 var liveNsxTest = synthesisTest{
@@ -435,7 +451,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	require.Nil(t, err)
-	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
+	abstractModel, err := nsxToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
 	abstractModelStr := strAbstractModel(abstractModel, synTest.options())
 	// write the abstract model rules into a file, for debugging:
@@ -612,10 +628,10 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// getting the vmware connectivity
-	_, connMap, connectivity, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	_, connMap, connectivityRes, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write to file, for debugging:
-	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivity)
+	err = common.WriteToFile(path.Join(debugDir, "vmware_connectivity.txt"), connectivityRes)
 	require.Nil(t, err)
 	connGroupedMap := connMap.GroupExternalEP()
 	connGroupedMapStr, err := connGroupedMap.GenConnectivityOutput(synTest.outputParams())
@@ -624,7 +640,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := NSXToPolicy(rc, nil, synTest.options())
+	abstractModel, err := nsxToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
 	policies, groups := toNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::

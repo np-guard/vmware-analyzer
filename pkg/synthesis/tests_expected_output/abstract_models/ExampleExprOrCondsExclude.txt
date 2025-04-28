@@ -1,0 +1,37 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name          |Expression
+Gryffindor          |((Tag Of VirtualMachine EQUALS Gryffindor))
+Gryffindor-Or-no-DB |((Tag Of VirtualMachine EQUALS Gryffindor) OR (Tag Of VirtualMachine NOTEQUALS DB))
+Hufflepuff          |((Tag Of VirtualMachine EQUALS Hufflepuff))
+Hufflepuff-Or-no-DB |((Tag Of VirtualMachine EQUALS Hufflepuff) OR (Tag Of VirtualMachine NOTEQUALS DB))
+Slytherin           |((Tag Of VirtualMachine EQUALS Slytherin))
+Slytherin-Or-no-DB  |((Tag Of VirtualMachine EQUALS Slytherin) OR (Tag Of VirtualMachine NOTEQUALS DB))
+
+
+Group Name          |VMs
+Gryffindor          |Gryffindor-DB, Gryffindor-Web, Gryffindor-App
+Gryffindor-Or-no-DB |Gryffindor-DB, Gryffindor-Web, Gryffindor-App, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App
+Hufflepuff          |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
+Hufflepuff-Or-no-DB |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App, Slytherin-Web, Slytherin-App, Gryffindor-Web, Gryffindor-App
+Slytherin           |Slytherin-DB, Slytherin-Web, Slytherin-App
+Slytherin-Or-no-DB  |Slytherin-DB, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App, Gryffindor-Web, Gryffindor-App
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src |Dst                |Connection
+0                            |9198    |(*) |(tag != DB)        |All Connections
+0                            |9198    |(*) |(tag = Slytherin)  |All Connections
+1                            |9200    |(*) |(tag = Gryffindor) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                |Dst                              |Connection
+0                            |9199    |(tag = Gryffindor) |(tag != DB)                      |All Connections
+0                            |9199    |(tag = Gryffindor) |(tag = Slytherin)                |All Connections
+1                            |9201    |(*)                |(tag != Hufflepuff and tag = DB) |All Connections
+

@@ -1,6 +1,7 @@
 package topology
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
@@ -12,6 +13,11 @@ type IPBlock struct {
 	Block      *netset.IPBlock
 	OriginalIP string
 }
+
+func (ipb *IPBlock) String() string {
+	return fmt.Sprintf("block: %s , origIP: %s", ipb.Block.String(), ipb.OriginalIP)
+}
+
 type RuleIPBlock struct {
 	IPBlock
 	ExternalRange *netset.IPBlock
@@ -23,6 +29,17 @@ type RuleIPBlock struct {
 
 func NewRuleIPBlock(ip string, block *netset.IPBlock) *RuleIPBlock {
 	return &RuleIPBlock{IPBlock: IPBlock{Block: block, OriginalIP: ip}}
+}
+
+func (block *RuleIPBlock) String() string {
+	ipblockStr := block.IPBlock.String()
+	externalRangeStr := fmt.Sprintf("external range: %s", block.ExternalRange.String())
+	vms := fmt.Sprintf("vms: %s", common.JoinStringifiedSlice(block.VMs, common.CommaSeparator))
+	extIPs := fmt.Sprintf("ExternalIPs: %s", common.JoinStringifiedSlice(block.ExternalIPs, common.CommaSeparator))
+	segments := fmt.Sprintf("Segments: %s", common.JoinStringifiedSlice(block.Segments, common.CommaSeparator))
+	segmentsVMs := fmt.Sprintf("SegmentsVMs: %s", common.JoinStringifiedSlice(block.SegmentsVMs, common.CommaSeparator))
+
+	return strings.Join([]string{ipblockStr, externalRangeStr, vms, extIPs, segments, segmentsVMs}, common.NewLine)
 }
 
 func (block *RuleIPBlock) IsAll() bool {
@@ -50,6 +67,10 @@ type Segment struct {
 	IPBlock
 	Name string
 	VMs  []Endpoint
+}
+
+func (s *Segment) String() string {
+	return "(segment)" + s.Name
 }
 
 func NewSegment(name string, block *netset.IPBlock, subnetsNetworks []string) *Segment {

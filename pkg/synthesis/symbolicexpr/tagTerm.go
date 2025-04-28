@@ -61,7 +61,7 @@ func (tagAtomicTerm) IsSegment() bool {
 //////////////////////////////////////////////////////////
 
 // return the tag corresponding to a given condition
-func getTagTermsForCondition(cond *collector.Condition, group string) *tagAtomicTerm {
+func getTagTermsForCondition(isExcluded bool, cond *collector.Condition, group string) *tagAtomicTerm {
 	// assumption: cond is of a tag over VMs
 	if cond.MemberType == nil || *cond.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Key == nil || *cond.Key != resources.ConditionKeyTag ||
@@ -73,16 +73,21 @@ func getTagTermsForCondition(cond *collector.Condition, group string) *tagAtomic
 	if *cond.Operator == resources.ConditionOperatorNOTEQUALS {
 		neg = true
 	}
+	if isExcluded {
+		neg = !neg
+	}
 	return &tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 }
 
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
+// if isExcluded: returns "or" for "and" and vice versa (de-morgan)
 // returns nil if neither
-func getConjunctionOperator(elem collector.ExpressionElement,
+func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	group string) *resources.ConjunctionOperatorConjunctionOperator {
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
 		debugMsg(group, fmt.Sprintf("contains an operator of type %T which is not a legal NSX operator", elem))
+		return nil
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
 	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
@@ -90,25 +95,35 @@ func getConjunctionOperator(elem collector.ExpressionElement,
 		debugMsg(group, fmt.Sprintf("contains an operator %s which is not supported (yet)", conj.String()))
 		return nil
 	}
-	conjunctionOperatorConjunctionOperator := conj.ConjunctionOperator.ConjunctionOperator
-	return conjunctionOperatorConjunctionOperator
+	var retOp = *conj.ConjunctionOperator.ConjunctionOperator
+	if isExcluded { // De-Morgan
+		if *conj.ConjunctionOperator.ConjunctionOperator == resources.ConjunctionOperatorConjunctionOperatorAND {
+			retOp = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
+		} else {
+			retOp = resources.ConjunctionOperatorConjunctionOperatorAND // Or -> And
+		}
+	}
+	return &retOp
 }
 
 // GetTagConjunctionForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
-func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conjunction {
+func GetTagConjunctionForExpr(isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	exprVal := *expr
-	condTag1 := getTagTermExprElement(exprVal[0], group)
+	condTag1 := getTagTermExprElement(isExcluded, exprVal[0], group)
 	if condTag1 == nil {
 		return nil
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
+		if isExcluded {
+			return []*Conjunction{{condTag1.negate()}}
+		}
 		return []*Conjunction{{condTag1}}
 	} else if len(*expr) == nonTrivialExprLength {
-		orOrAnd := getConjunctionOperator(exprVal[1], group)
-		condTag2 := getTagTermExprElement(exprVal[2], group)
+		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
+		condTag2 := getTagTermExprElement(isExcluded, exprVal[2], group)
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
@@ -122,13 +137,13 @@ func GetTagConjunctionForExpr(expr *collector.Expression, group string) []*Conju
 	return nil
 }
 
-func getTagTermExprElement(elem collector.ExpressionElement, group string) *tagAtomicTerm {
+func getTagTermExprElement(isExcluded bool, elem collector.ExpressionElement, group string) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
 	}
-	return getTagTermsForCondition(cond, group)
+	return getTagTermsForCondition(isExcluded, cond, group)
 }
 
 func debugMsg(group, text string) {

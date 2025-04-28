@@ -244,7 +244,7 @@ See documentation [here](docs/nsx_support.md).
 
 ## Build the project
 
-Make sure you have golang 1.23+ on your platform
+Make sure you have golang 1.24+ on your platform
 
 ```commandline
 git clone git@github.com:np-guard/vmware-analyzer.git

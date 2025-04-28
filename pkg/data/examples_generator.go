@@ -18,14 +18,25 @@ import (
 // Example is in s single domain
 type Example struct {
 	// nsx config spec fields below
-	VMs           []string
-	VMsTags       map[string][]nsx.Tag
-	VMsAddress    map[string]string
-	GroupsByVMs   map[string][]string
+
+	// vms details
+	VMs        []string
+	VMsTags    map[string][]nsx.Tag
+	VMsAddress map[string]string
+
+	// segments details
 	SegmentsByVMs map[string][]string
 	SegmentsBlock map[string]string
-	GroupsByExpr  map[string]ExampleExpr // map from group name to its expr
-	Policies      []Category
+
+	// groups details
+	GroupsByVMs         map[string][]string        // map from group name to its VMs
+	GroupsByExpr        map[string]ExampleExpr     // map from group name to its expr
+	GroupsOfIPAddresses map[string][]nsx.IPElement // map from group name to its ip addresses members
+	GroupByPathExpr     map[string][]string        // map from group name to list of paths in the path expr
+	GroupByNestedExpr   map[string]ExampleExpr     // map from group name to nexted expr def
+
+	// dfw details
+	Policies []Category
 
 	// additional info about example, relevant for synthesis
 	DisjointGroupsTags [][]string
@@ -37,7 +48,7 @@ type Example struct {
 // ExamplesGeneration - main function to generate ResourcesContainerModel from specified Example object.
 // It also stores the generated example in the path pkg/data/json .
 //
-//nolint:funlen // just a long function
+//nolint:funlen,gocyclo // just a long function
 func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContainerModel, error) {
 	res := &collector.ResourcesContainerModel{}
 	// add vms
@@ -116,35 +127,45 @@ func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContaine
 	res.DomainList = append(res.DomainList, domainRsc)
 
 	// add groups
-	// defined by VMs
-	groupList := []collector.Group{}
-
-	addGroup := func(group string, members []string) {
-		newGroup := newGroupByExample(group)
-		newGroup.VMMembers = addVMsToGroup(members)
-		groupList = append(groupList, newGroup)
-	}
+	// groups defined by VMs
 	groupedVMs := []string{}
-	for group, members := range e.GroupsByVMs {
-		addGroup(group, members)
+
+	for groupName, members := range e.GroupsByVMs {
+		group := createGroupFromVMMembers(groupName, members)
+		res.DomainList[0].Resources.GroupList = append(res.DomainList[0].Resources.GroupList, *group)
 		groupedVMs = append(groupedVMs, members...)
 	}
 	// groups defined by expr and VMs
-	for group, expr := range e.GroupsByExpr {
-		newGroup := newGroupByExample(group)
-		groupExpr := expr.exampleExprToExpr()
-		newGroup.Expression = *groupExpr
-		realizedVmsList := vmsOfExpr(&res.VirtualMachineList, &newGroup.Expression)
-		newGroup.VMMembers = realizedVmsList
-		vmNames := common.CustomStrSliceToStrings(newGroup.VMMembers, func(vm collector.RealizedVirtualMachine) string { return *vm.DisplayName })
-		groupedVMs = append(groupedVMs, vmNames...)
-		groupList = append(groupList, newGroup)
+	for groupName, expr := range e.GroupsByExpr {
+		group := createGroupFromExpr(groupName, &expr, res.VirtualMachineList)
+		res.DomainList[0].Resources.GroupList = append(res.DomainList[0].Resources.GroupList, *group)
+		groupedVMs = append(groupedVMs, common.StringifiedSliceToStrings(group.VMMembers)...)
 	}
+	// groups of type IPAddress
+	for groupName, addresses := range e.GroupsOfIPAddresses {
+		group := createGroupOfIPAddresses(groupName, addresses)
+		res.DomainList[0].Resources.GroupList = append(res.DomainList[0].Resources.GroupList, *group)
+		groupedVMs = append(groupedVMs, common.StringifiedSliceToStrings(group.VMMembers)...)
+	}
+	// groups defined by nested expr
+	for groupName, expr := range e.GroupByNestedExpr {
+		group := createGroupFromExpr(groupName, &expr, res.VirtualMachineList)
+		res.DomainList[0].Resources.GroupList = append(res.DomainList[0].Resources.GroupList, *group)
+		groupedVMs = append(groupedVMs, common.StringifiedSliceToStrings(group.VMMembers)...)
+	}
+
+	// groups defined by path expr
+	for groupName, paths := range e.GroupByPathExpr {
+		group := createGroupByPathExpr(groupName, paths, res, e.SegmentsByVMs)
+		res.DomainList[0].Resources.GroupList = append(res.DomainList[0].Resources.GroupList, *group)
+		groupedVMs = append(groupedVMs, common.StringifiedSliceToStrings(group.VMMembers)...)
+	}
+
 	nonGroupedVMs := slices.DeleteFunc(slices.Clone(e.VMs), func(vm string) bool { return slices.Contains(groupedVMs, vm) })
 	if len(nonGroupedVMs) > 0 {
-		addGroup("no-group-vms-group", nonGroupedVMs)
+		group := createGroupFromVMMembers("no-group-vms-group", nonGroupedVMs)
+		res.DomainList[0].Resources.GroupList = append(res.DomainList[0].Resources.GroupList, *group)
 	}
-	res.DomainList[0].Resources.GroupList = groupList
 
 	// add dfw
 	res.DomainList[0].Resources.SecurityPolicyList = ToPoliciesList(e.Policies)
@@ -175,22 +196,16 @@ func (e *Example) storeAsJSON(override bool, rc *collector.ResourcesContainerMod
 	return common.WriteToFile(jsonPath, rcJSON)
 }
 
-func addVMsToGroup(members []string) []collector.RealizedVirtualMachine {
-	res := make([]collector.RealizedVirtualMachine, len(members))
-	for i, member := range members {
-		vmMember := collector.RealizedVirtualMachine{}
-		vmMember.DisplayName = &member
-		vmMember.Id = &member
-		res[i] = vmMember
+func createRealizedVirtualMachines(members []string) (res []collector.RealizedVirtualMachine) {
+	for _, member := range members {
+		res = append(res, collector.RealizedVirtualMachineFromBaseElem(
+			&nsx.RealizedVirtualMachine{
+				DisplayName: &member,
+				Id:          &member,
+			},
+		))
 	}
 	return res
-}
-
-func newGroupByExample(name string) collector.Group {
-	newGroup := collector.Group{}
-	newGroup.DisplayName = &name
-	newGroup.Path = &name
-	return newGroup
 }
 
 func ToPoliciesList(policies []Category) []collector.SecurityPolicy {
@@ -238,12 +253,29 @@ type ExampleCond struct {
 	NotEqual bool // equal (false) or not equal (true)
 }
 
+type ExampleNestedExpr struct {
+	expr ExampleExpr
+}
+
+type ConditionIntf interface {
+	toCollectorObject() collector.ExpressionElement
+}
+
+func (ne *ExampleNestedExpr) toCollectorObject() collector.ExpressionElement {
+	res := &collector.NestedExpression{}
+	exprs := ne.expr.exampleExprToExpr()
+	res.Expressions = *exprs
+	rt := nsx.NestedExpressionResourceTypeNestedExpression
+	res.ResourceType = &rt
+	return res
+}
+
 // ExampleExpr equiv to example_expr described above
 // if op is nop then only cond1 is considered and exampleExpr is actually exampleCond; Cond2 is empty in that case
 type ExampleExpr struct {
-	Cond1 ExampleCond
+	Cond1 ConditionIntf
 	Op    ExampleOp
-	Cond2 ExampleCond
+	Cond2 ConditionIntf
 }
 
 var dataPkgPath = filepath.Join(projectpath.Root, "pkg", "data")
@@ -260,26 +292,6 @@ func (e *Example) CopyTopology() *Example {
 	return res
 }
 
-/*
-Policies: []category{
-		{
-			name:         "app-x",
-			categoryType: "Application",
-			rules: []rule{
-				{
-					name:     "allow_smb_incoming",
-					id:       1004,
-					source:   "frontend",
-					dest:     "backend",
-					services: []string{"/infra/services/SMB"},
-					action:   Allow,
-				},
-				defaultDenyRule(denyRuleIDApp),
-			},
-		},
-	},
-*/
-
 func (e *Example) InitEmptyEnvAppCategories() {
 	e.Policies = []Category{
 		{
@@ -295,27 +307,7 @@ func (e *Example) InitEmptyEnvAppCategories() {
 
 const nonTrivialExprSize = 3
 
-func (exp *ExampleExpr) exampleExprToExpr() *collector.Expression {
-	cond1 := exp.Cond1.exampleCondToCond()
-	if exp.Op == Nop {
-		res := collector.Expression{cond1}
-		return &res
-	}
-	res := make(collector.Expression, nonTrivialExprSize)
-	res[0] = cond1
-	expOp := collector.ConjunctionOperator{ConjunctionOperator: nsx.ConjunctionOperator{
-		ResourceType: common.PointerTo(nsx.ConjunctionOperatorResourceTypeConjunctionOperator)}}
-	conjOp := nsx.ConjunctionOperatorConjunctionOperatorAND
-	if exp.Op == Or {
-		conjOp = nsx.ConjunctionOperatorConjunctionOperatorOR
-	}
-	expOp.ConjunctionOperator.ConjunctionOperator = &conjOp
-	res[1] = &expOp
-	res[2] = exp.Cond2.exampleCondToCond()
-	return &res
-}
-
-func (cond *ExampleCond) exampleCondToCond() *collector.Condition {
+func (cond *ExampleCond) toCollectorObject() collector.ExpressionElement {
 	condKey := nsx.ConditionKeyTag
 	memberType := nsx.ConditionMemberTypeVirtualMachine
 	operator := nsx.ConditionOperatorEQUALS
@@ -468,18 +460,6 @@ func calcServiceAndEntries(services []string, conn *netset.TransportSet) ([]stri
 	return services, entries
 }
 
-/*
-const RuleDirectionIN RuleDirection = "IN"
-const RuleDirectionINOUT RuleDirection = "IN_OUT"
-const RuleDirectionOUT RuleDirection = "OUT"
-
-var enumValues_RuleDirection = []interface{}{
-	"IN",
-	"OUT",
-	"IN_OUT",
-}
-*/
-
 func (r *Rule) directionStr() nsx.RuleDirection {
 	switch r.Direction {
 	case string(nsx.RuleDirectionIN):
@@ -509,84 +489,4 @@ func getServices() []collector.Service {
 		return nil
 	}
 	return rc.ServiceList
-}
-
-// todo: should be generalized and moved elsewhere?
-func getVMsOfTagOrNotTag(vmList *[]collector.VirtualMachine, tag string, resTagNotExist bool) []collector.VirtualMachine {
-	res := []collector.VirtualMachine{}
-	for i := range *vmList {
-		tagExist := tagInTags((*vmList)[i].Tags, tag)
-		if !tagExist && resTagNotExist {
-			res = append(res, (*vmList)[i])
-		} else if tagExist && !resTagNotExist {
-			res = append(res, (*vmList)[i])
-		}
-	}
-	return res
-}
-
-func tagInTags(vmTags []nsx.Tag, tag string) bool {
-	for _, tagOfVM := range vmTags {
-		if tag == tagOfVM.Tag {
-			return true
-		}
-	}
-	return false
-}
-
-func vmsOfCondition(vmList *[]collector.VirtualMachine, cond *collector.Condition) []collector.VirtualMachine {
-	var resTagNotExist bool
-	if *cond.Operator == nsx.ConditionOperatorNOTEQUALS {
-		resTagNotExist = true
-	}
-	return getVMsOfTagOrNotTag(vmList, *cond.Value, resTagNotExist)
-}
-
-func vmsOfExpr(vmList *[]collector.VirtualMachine, exp *collector.Expression) []collector.RealizedVirtualMachine {
-	cond1 := (*exp)[0].(*collector.Condition)
-	vmsCond1 := vmsOfCondition(vmList, cond1)
-	if len(*exp) == 1 {
-		return virtualToRealizedVirtual(vmsCond1)
-	}
-	// len(*exp) is 3
-	cond2 := (*exp)[2].(*collector.Condition)
-	vmsCond2 := vmsOfCondition(vmList, cond2)
-	res := []collector.VirtualMachine{}
-	conj := (*exp)[1].(*collector.ConjunctionOperator)
-	if *conj.ConjunctionOperator.ConjunctionOperator == nsx.ConjunctionOperatorConjunctionOperatorOR {
-		// union of vmsCond1 and vmsCond2
-		res = append(res, vmsCond1...)
-		for i := range vmsCond2 {
-			if !vmInList(&res, &vmsCond2[i]) {
-				res = append(res, vmsCond2[i])
-			}
-		}
-	} else { // intersection
-		for i := range vmsCond1 {
-			if vmInList(&vmsCond2, &vmsCond1[i]) {
-				res = append(res, vmsCond1[i])
-			}
-		}
-	}
-	return virtualToRealizedVirtual(res)
-}
-
-func vmInList(vmList *[]collector.VirtualMachine, vm *collector.VirtualMachine) bool {
-	for i := range *vmList {
-		if (*vmList)[i].Name() == vm.Name() {
-			return true
-		}
-	}
-	return false
-}
-
-func virtualToRealizedVirtual(origList []collector.VirtualMachine) []collector.RealizedVirtualMachine {
-	res := make([]collector.RealizedVirtualMachine, len(origList))
-	for i := range origList {
-		realizedVM := collector.RealizedVirtualMachine{}
-		realizedVM.DisplayName = origList[i].DisplayName
-		realizedVM.Id = origList[i].ExternalId
-		res[i] = realizedVM
-	}
-	return res
 }
