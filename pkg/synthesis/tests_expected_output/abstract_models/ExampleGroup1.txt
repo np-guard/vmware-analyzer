@@ -1,0 +1,35 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name     |Expression
+external-group |(8.8.8.8/32)
+
+
+Group Name |VMs
+backend    |B
+frontend   |A
+
+
+Group Name     |Addresses
+external-group |8.8.8.8/32
+
+
+Group Name     |IP Groups
+external-group |external-group
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                      |Dst                |Connection
+0                            |1004    |(group = frontend)       |(group = backend)  |TCP dst-ports: 445
+1                            |1005    |(IP addr in 8.8.8.8/32)  |(group = frontend) |TCP dst-ports: 80
+1                            |1005    |(group = external-group) |(group = frontend) |TCP dst-ports: 80
+
+outbound rules
+Original allow rule priority |Rule id |Src                      |Dst                |Connection
+0                            |1004    |(group = frontend)       |(group = backend)  |TCP dst-ports: 445
+1                            |1005    |(group = external-group) |(group = frontend) |TCP dst-ports: 80
+
