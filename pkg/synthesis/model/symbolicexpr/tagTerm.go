@@ -106,38 +106,7 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-// GetTagConjunctionForExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
-// either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
-// gets here only if expression is non-nil and of length > 1
-func GetTagConjunctionForExpr(isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
-	const nonTrivialExprLength = 3
-	exprVal := *expr
-	condTag1 := getTagTermExprElement(isExcluded, exprVal[0], group)
-	if condTag1 == nil {
-		return nil
-	}
-	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
-		if isExcluded {
-			return []*Conjunction{{condTag1.negate()}}
-		}
-		return []*Conjunction{{condTag1}}
-	} else if len(*expr) == nonTrivialExprLength {
-		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getTagTermExprElement(isExcluded, exprVal[2], group)
-		if orOrAnd == nil || condTag2 == nil {
-			return nil
-		}
-		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
-			return []*Conjunction{{condTag1, condTag2}} // And: single Conjunction
-		}
-		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
-	}
-	// len not 1 neither 3
-	debugMsg(group, "is not supported")
-	return nil
-}
-
-func getTagTermExprElement(isExcluded bool, elem collector.ExpressionElement, group string) *tagAtomicTerm {
+func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, group string) *tagAtomicTerm {
 	cond, ok := elem.(*collector.Condition)
 	if !ok {
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))

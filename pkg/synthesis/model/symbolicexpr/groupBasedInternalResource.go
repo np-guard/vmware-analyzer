@@ -5,6 +5,7 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -35,7 +36,7 @@ func getConjunctionForGroups(isExclude bool, groups []*collector.Group, groupToC
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			tagConj := GetTagConjunctionForExpr(isExclude, &group.Expression, group.Name())
+			tagConj := GetConjunctionFromExpr(isExclude, &group.Expression, group.Name())
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
@@ -48,4 +49,35 @@ func getConjunctionForGroups(isExclude bool, groups []*collector.Group, groupToC
 		res = append(res, groupConj...)
 	}
 	return res
+}
+
+// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
+// either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
+// gets here only if expression is non-nil and of length > 1
+func GetConjunctionFromExpr(isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
+	const nonTrivialExprLength = 3
+	exprVal := *expr
+	condTag1 := getTermForExprElement(isExcluded, exprVal[0], group)
+	if condTag1 == nil {
+		return nil
+	}
+	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
+		if isExcluded {
+			return []*Conjunction{{condTag1.negate()}}
+		}
+		return []*Conjunction{{condTag1}}
+	} else if len(*expr) == nonTrivialExprLength {
+		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
+		condTag2 := getTermForExprElement(isExcluded, exprVal[2], group)
+		if orOrAnd == nil || condTag2 == nil {
+			return nil
+		}
+		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
+			return []*Conjunction{{condTag1, condTag2}} // And: single Conjunction
+		}
+		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
+	}
+	// len not 1 neither 3
+	debugMsg(group, "is not supported")
+	return nil
 }
