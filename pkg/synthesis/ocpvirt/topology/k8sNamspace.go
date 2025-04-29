@@ -17,45 +17,62 @@ type Namespace struct {
 	Name string
 }
 
+func (n *Namespace) createResource() *core.Namespace {
+	resource := &core.Namespace{}
+	resource.Kind = "Namespace"
+	resource.APIVersion = apiVersion
+	resource.Name = utils.ToLegalK8SString(n.Name)
+	resource.Namespace = resource.Name
+	resource.Labels = map[string]string{}
+	return resource
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+
 type NamespacesInfo struct {
-	Namespaces  []*Namespace
-	VMNamespace map[topology.Endpoint]*Namespace
-	labelVMs    map[string][]topology.Endpoint
+	// input objects
+	vmNamespace map[topology.Endpoint]*Namespace
 	vms         []topology.Endpoint
+	labelVMs    map[string][]topology.Endpoint
+
+	// the namespaces to generate
+	Namespaces []*Namespace
 }
 
 func NewNamespacesInfo(vms []topology.Endpoint) *NamespacesInfo {
 	return &NamespacesInfo{
-		VMNamespace: map[topology.Endpoint]*Namespace{},
 		vms:         vms,
+		vmNamespace: map[topology.Endpoint]*Namespace{},
+		labelVMs:    map[string][]topology.Endpoint{},
 	}
 }
 
-func (namespacesInfo *NamespacesInfo) InitNamespaces(synthModel *model.AbstractModelSyn) {
-	namespacesInfo.labelVMs = utils.CollectLabelsVMs(synthModel)
+func (ni *NamespacesInfo) InitNamespaces(synthModel *model.AbstractModelSyn) {
+	ni.labelVMs = utils.CollectLabelsVMs(synthModel)
+
 	// create the namespaces:
 	for _, segment := range synthModel.Segments {
 		namespace := &Namespace{Name: segment.Name}
 		for _, vm := range segment.VMs {
-			namespacesInfo.VMNamespace[vm] = namespace
+			ni.vmNamespace[vm] = namespace
 		}
-		namespacesInfo.Namespaces = append(namespacesInfo.Namespaces, namespace)
+		ni.Namespaces = append(ni.Namespaces, namespace)
 	}
 	// for VMs w/o segments - add the default namespace
-	if len(namespacesInfo.vms) == 0 || len(namespacesInfo.vms) > len(namespacesInfo.VMNamespace) {
+	if len(ni.vms) == 0 || len(ni.vms) > len(ni.vmNamespace) {
 		defaultNamespace := &Namespace{Name: meta.NamespaceDefault}
-		for _, vm := range namespacesInfo.vms {
-			if _, ok := namespacesInfo.VMNamespace[vm]; !ok {
-				namespacesInfo.VMNamespace[vm] = defaultNamespace
+		for _, vm := range ni.vms {
+			if _, ok := ni.vmNamespace[vm]; !ok {
+				ni.vmNamespace[vm] = defaultNamespace
 			}
 		}
-		namespacesInfo.Namespaces = append(namespacesInfo.Namespaces, defaultNamespace)
+		ni.Namespaces = append(ni.Namespaces, defaultNamespace)
 	}
 }
 
-func (namespacesInfo *NamespacesInfo) CreateNamespaces() []*core.Namespace {
+func (ni *NamespacesInfo) CreateNamespaces() []*core.Namespace {
 	res := []*core.Namespace{}
-	for _, namespace := range namespacesInfo.Namespaces {
+	for _, namespace := range ni.Namespaces {
 		if namespace.Name != meta.NamespaceDefault {
 			res = append(res, namespace.createResource())
 		}
@@ -65,43 +82,33 @@ func (namespacesInfo *NamespacesInfo) CreateNamespaces() []*core.Namespace {
 
 const apiVersion = "v1"
 
-func (namespaceInfo *Namespace) createResource() *core.Namespace {
-	resource := &core.Namespace{}
-	resource.Kind = "Namespace"
-	resource.APIVersion = apiVersion
-	resource.Name = utils.ToLegalK8SString(namespaceInfo.Name)
-	resource.Namespace = resource.Name
-	resource.Labels = map[string]string{}
-	return resource
-}
-
 // getConjunctionNamespaces() obtain the namspaces of a Conjunction
 // since the Conjunction is abstract, we:
 // 1. obtain the list of VMs using the atom labels
 // 2. find the namespaces of the VM
-func (namespacesInfo *NamespacesInfo) GetConjunctionNamespaces(con symbolicexpr.Conjunction) []*Namespace {
+func (ni *NamespacesInfo) GetConjunctionNamespaces(con symbolicexpr.Conjunction) []*Namespace {
 	res := []*Namespace{}
 	for _, a := range con {
 		switch {
 		case a.IsTautology(), a.IsAllGroups():
-			return namespacesInfo.Namespaces
+			return ni.Namespaces
 		case a.IsAllExternal(), a.GetExternalBlock() != nil:
 			continue
 		default:
 			label, neg := a.AsSelector()
-			vms := namespacesInfo.labelVMs[label]
+			vms := ni.labelVMs[label]
 			if neg {
-				vms = slices.DeleteFunc(slices.Clone(namespacesInfo.vms), func(vm topology.Endpoint) bool { return slices.Contains(vms, vm) })
+				vms = slices.DeleteFunc(slices.Clone(ni.vms), func(vm topology.Endpoint) bool { return slices.Contains(vms, vm) })
 			}
 			for _, vm := range vms {
-				res = append(res, namespacesInfo.VMNamespace[vm])
+				res = append(res, ni.vmNamespace[vm])
 			}
 		}
 	}
 	res = common.SliceCompact(res)
 	// sort it by order of the namespacesInfo.namespaces
 	slices.SortFunc(res, func(n1, n2 *Namespace) int {
-		return slices.Index(namespacesInfo.Namespaces, n1) - slices.Index(namespacesInfo.Namespaces, n2)
+		return slices.Index(ni.Namespaces, n1) - slices.Index(ni.Namespaces, n2)
 	})
 	return res
 }

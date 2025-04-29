@@ -36,7 +36,7 @@ type resourcesGenerator struct {
 	NotFullySupported bool
 }
 
-func NewResourcesGenerator(synthModel *model.AbstractModelSyn, createDNSPolicy bool) *resourcesGenerator {
+func newResourcesGenerator(synthModel *model.AbstractModelSyn, createDNSPolicy bool) *resourcesGenerator {
 	return &resourcesGenerator{
 		synthModel:      synthModel,
 		createDNSPolicy: createDNSPolicy,
@@ -46,8 +46,8 @@ func NewResourcesGenerator(synthModel *model.AbstractModelSyn, createDNSPolicy b
 	}
 }
 
-// Generate performs all resources generation - network topology and policy resources
-func (r *resourcesGenerator) Generate() {
+// generate performs all resources generation - network topology and policy resources
+func (r *resourcesGenerator) generate() {
 	r.topologyGen.Generate()
 	r.policyGen.Generate(r.topologyGen.NamespacesInfo)
 

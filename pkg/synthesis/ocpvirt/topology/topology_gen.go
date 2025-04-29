@@ -40,7 +40,7 @@ func (nt *NetworkTopologyGenerator) createPods() (res []*core.Pod) {
 		pod.Kind = "Pod"
 		pod.APIVersion = "v1"
 		pod.Name = utils.ToLegalK8SString(vm.Name())
-		pod.Namespace = nt.NamespacesInfo.VMNamespace[vm].Name
+		pod.Namespace = nt.NamespacesInfo.vmNamespace[vm].Name
 		if len(nt.synthModel.EndpointsToGroups[vm]) == 0 {
 			continue
 		}

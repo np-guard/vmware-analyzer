@@ -27,6 +27,8 @@ func ToLegalK8SString(s string) string {
 }
 
 // todo - move these two methods to the right place.
+
+// CollectLabelsVMs returns a map from label key to the list of VMs that should have this label
 func CollectLabelsVMs(synthModel *model.AbstractModelSyn) map[string][]topology.Endpoint {
 	labelsVMs := map[string][]topology.Endpoint{}
 	for _, vm := range synthModel.VMs {
@@ -37,21 +39,27 @@ func CollectLabelsVMs(synthModel *model.AbstractModelSyn) map[string][]topology.
 	}
 	return labelsVMs
 }
+
+// CollectVMLabels returns the set of labels keys that should be added to the input VM
 func CollectVMLabels(synthModel *model.AbstractModelSyn, vm topology.Endpoint) []string {
 	labels := []string{}
 
+	// add lable per vm's tag
 	for _, tag := range vm.Tags() {
 		label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
 		labels = append(labels, label)
 	}
+	// add label per vm's group
 	for _, group := range synthModel.EndpointsToGroups[vm] {
 		label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
 		labels = append(labels, label)
 	}
+	// add label per vm's segment
 	for _, segment := range synthModel.VMsSegments[vm] {
 		label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
 		labels = append(labels, label)
 	}
+	// add label per ip-block association
 	for _, ruleIPBlock := range synthModel.RuleBlockPerEndpoint[vm] {
 		if !ruleIPBlock.IsAll() {
 			label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
@@ -60,6 +68,8 @@ func CollectVMLabels(synthModel *model.AbstractModelSyn, vm topology.Endpoint) [
 	}
 	return labels
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////
 
 const K8sResourcesDir = "k8s_resources"
 

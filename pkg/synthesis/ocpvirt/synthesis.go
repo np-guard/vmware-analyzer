@@ -24,13 +24,14 @@ func NSXToK8sSynthesis(
 		return nil, err
 	}
 	// second stage: generate concrete ocp-virt resources from abstract model
-	rg := NewResourcesGenerator(abstractModel, options.CreateDNSPolicy)
-	rg.Generate()
+	rg := newResourcesGenerator(abstractModel, options.CreateDNSPolicy)
+	rg.generate()
 
 	// return generated resources
 	return rg, nil
 }
 
+// todo: move tests and un-export this function
 func NsxToPolicy(resources *collector.ResourcesContainerModel,
 	nsxConfig *configuration.Config,
 	options *config.SynthesisOptions) (*model.AbstractModelSyn, error) {
