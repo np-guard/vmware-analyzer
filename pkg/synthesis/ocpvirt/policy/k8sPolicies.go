@@ -19,46 +19,57 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
-var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
-	dfw.ActionAllow:     admin.AdminNetworkPolicyRuleActionAllow,
-	dfw.ActionDeny:      admin.AdminNetworkPolicyRuleActionDeny,
-	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
-}
-var inboundToDirection = map[bool]networking.PolicyType{
-	false: networking.PolicyTypeEgress,
-	true:  networking.PolicyTypeIngress,
-}
+type PolicyGenerator struct {
+	NamespacesInfo    *topology.NamespacesInfo
+	NotFullySupported bool
+	ExternalIP        *netset.IPBlock
+	synthModel        *model.AbstractModelSyn
+	createDNSPolicy   bool
 
-const dnsPort = 53
-const dnsLabelKey = "k8s-app"
-const dnsLabelVal = "kube-dns"
-const noNSXRuleID = "none"
-
-type K8sPolicies struct {
+	// generated resources
 	NetworkPolicies      []*networking.NetworkPolicy
 	AdminNetworkPolicies []*admin.AdminNetworkPolicy
-	NamespacesInfo       *topology.NamespacesInfo
-	NotFullySupported    bool
-	ExternalIP           *netset.IPBlock
 }
 
-func (policies *K8sPolicies) CreatePolicies(synthModel *model.AbstractModelSyn, createDNSPolicy bool) {
-	if createDNSPolicy {
-		if synthModel.SynthesizeAdmin {
-			policies.addDNSAllowAdminNetworkPolicy()
+func NewPolicyGenerator(synthModel *model.AbstractModelSyn, createDNSPolicy bool) *PolicyGenerator {
+	return &PolicyGenerator{
+		synthModel:      synthModel,
+		ExternalIP:      synthModel.ExternalIP,
+		createDNSPolicy: createDNSPolicy,
+	}
+}
+
+func (np *PolicyGenerator) Generate(ni *topology.NamespacesInfo) {
+	np.NamespacesInfo = ni
+
+	if np.createDNSPolicy {
+		if np.synthModel.SynthesizeAdmin {
+			np.addDNSAllowAdminNetworkPolicy()
 		} else {
-			policies.addDNSAllowNetworkPolicy()
+			np.addDNSAllowNetworkPolicy()
 		}
 	}
-	for _, p := range synthModel.Policy {
+	for _, p := range np.synthModel.Policy {
 		for _, rule := range p.SortRules() {
-			policies.symbolicRulesToPolicies(synthModel, rule, p.IsInbound(rule))
+			np.symbolicRulesToPolicies(np.synthModel, rule, p.IsInbound(rule))
 		}
 	}
-	policies.addDefaultDenyNetworkPolicy(synthModel.DefaultDenyRule)
+	np.addDefaultDenyNetworkPolicy(np.synthModel.DefaultDenyRule)
 }
 
-func (policies *K8sPolicies) symbolicRulesToPolicies(synthModel *model.AbstractModelSyn, rule *model.SymbolicRule, inbound bool) {
+func (np *PolicyGenerator) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
+	ruleID := noNSXRuleID
+	if defaultRule != nil {
+		ruleID = defaultRule.RuleIDStr()
+	}
+	for _, namespace := range np.NamespacesInfo.Namespaces {
+		pol := newNetworkPolicy("default-deny", namespace.Name, "Default Deny Network Policy", ruleID)
+		np.NetworkPolicies = append(np.NetworkPolicies, pol)
+		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
+	}
+}
+
+func (np *PolicyGenerator) symbolicRulesToPolicies(synthModel *model.AbstractModelSyn, rule *model.SymbolicRule, inbound bool) {
 	isAdmin := synthModel.SynthesizeAdmin && rule.OrigRuleCategory < collector.MinNonAdminCategory()
 	paths := &rule.OptimizedAllowOnlyPaths
 	if isAdmin {
@@ -66,7 +77,7 @@ func (policies *K8sPolicies) symbolicRulesToPolicies(synthModel *model.AbstractM
 	}
 	for _, p := range *paths {
 		if !p.Conn.TCPUDPSet().IsEmpty() {
-			policies.addNewPolicy(p, inbound, isAdmin, rule.OrigRule.Action, rule.OrigRule.RuleIDStr())
+			np.addNewPolicy(p, inbound, isAdmin, rule.OrigRule.Action, rule.OrigRule.RuleIDStr())
 		} else {
 			logging.Debugf("did not create the following k8s %s policy for rule %d, since connection %s is not supported: %s",
 				inboundToDirection[inbound], rule.OrigRule.RuleID, p.Conn.String(), p.String())
@@ -74,31 +85,30 @@ func (policies *K8sPolicies) symbolicRulesToPolicies(synthModel *model.AbstractM
 	}
 }
 
-func (policies *K8sPolicies) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
-	srcSelector := policies.createSelector(p.Src)
-	dstSelector := policies.createSelector(p.Dst)
+func (np *PolicyGenerator) addNewPolicy(p *symbolicexpr.SymbolicPath, inbound, isAdmin bool, action dfw.RuleAction, nsxRuleID string) {
+	srcSelector := np.createSelector(p.Src)
+	dstSelector := np.createSelector(p.Dst)
 	if isAdmin && inbound && !srcSelector.isTautology() && len(srcSelector.cidrs) > 0 {
 		logging.Warnf("Ignoring policy:\n%s\nadmin network policy peer with IPs for Ingress are not supported", p.String())
-		policies.NotFullySupported = true
+		np.NotFullySupported = true
 		return
 	}
 	if isAdmin {
 		ports := connToAdminPolicyPort(p.Conn)
-		policies.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
+		np.addAdminNetworkPolicy(srcSelector, dstSelector, ports, inbound,
 			abstractToAdminRuleAction[action], fmt.Sprintf("(%s: (%s)", action, p.String()), nsxRuleID)
 	} else {
 		ports := connToPolicyPort(p.Conn)
-		policies.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
+		np.addNetworkPolicy(srcSelector, dstSelector, ports, inbound, p.String(), nsxRuleID)
 	}
 }
 
-// //////////////////////////////////////////////////////////////////////////////////////////
-func (policies *K8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySelector,
+func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector policySelector,
 	ports []networking.NetworkPolicyPort, inbound bool,
 	description, nsxRuleID string) {
 	newPolicy := func(namespace string) *networking.NetworkPolicy {
-		pol := newNetworkPolicy(fmt.Sprintf("policy-%d", len(policies.NetworkPolicies)), namespace, description, nsxRuleID)
-		policies.NetworkPolicies = append(policies.NetworkPolicies, pol)
+		pol := newNetworkPolicy(fmt.Sprintf("policy-%d", len(np.NetworkPolicies)), namespace, description, nsxRuleID)
+		np.NetworkPolicies = append(np.NetworkPolicies, pol)
 		return pol
 	}
 	oneSameNamespace := len(srcSelector.namespaces) == 1 &&
@@ -131,22 +141,16 @@ func (policies *K8sPolicies) addNetworkPolicy(srcSelector, dstSelector policySel
 	}
 }
 
-func (policies *K8sPolicies) addDefaultDenyNetworkPolicy(defaultRule *dfw.FwRule) {
-	ruleID := noNSXRuleID
-	if defaultRule != nil {
-		ruleID = defaultRule.RuleIDStr()
-	}
-	for _, namespace := range policies.NamespacesInfo.Namespaces {
-		pol := newNetworkPolicy("default-deny", namespace.Name, "Default Deny Network Policy", ruleID)
-		policies.NetworkPolicies = append(policies.NetworkPolicies, pol)
-		pol.Spec.PolicyTypes = []networking.PolicyType{networking.PolicyTypeIngress, networking.PolicyTypeEgress}
-	}
+func (np *PolicyGenerator) addAdminNetworkPolicy(srcSelector, dstSelector policySelector,
+	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
+	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(np.AdminNetworkPolicies)), description, nsxRuleID)
+	np.setAdminNetworkPolicy(pol, ports, inbound, action, srcSelector, dstSelector)
 }
 
-func (policies *K8sPolicies) addDNSAllowNetworkPolicy() {
-	for _, namespace := range policies.NamespacesInfo.Namespaces {
+func (np *PolicyGenerator) addDNSAllowNetworkPolicy() {
+	for _, namespace := range np.NamespacesInfo.Namespaces {
 		pol := newNetworkPolicy("dns-policy", namespace.Name, "Network Policy To Allow Access To DNS Server", noNSXRuleID)
-		policies.NetworkPolicies = append(policies.NetworkPolicies, pol)
+		np.NetworkPolicies = append(np.NetworkPolicies, pol)
 		pol.Spec.PodSelector = meta.LabelSelector{}
 		to := []networking.NetworkPolicyPeer{{
 			PodSelector:       &meta.LabelSelector{MatchLabels: map[string]string{dnsLabelKey: dnsLabelVal}},
@@ -157,22 +161,28 @@ func (policies *K8sPolicies) addDNSAllowNetworkPolicy() {
 	}
 }
 
-// //////////////////////////////////////////////////////////////////////////////////////////
-var namespaceNameKey = path.Join("kubernetes.io", meta.ObjectNameField)
-
-func (policies *K8sPolicies) addAdminNetworkPolicy(srcSelector, dstSelector policySelector,
-	ports []admin.AdminNetworkPolicyPort, inbound bool, action admin.AdminNetworkPolicyRuleAction, description, nsxRuleID string) {
-	pol := newAdminNetworkPolicy(fmt.Sprintf("admin-policy-%d", len(policies.AdminNetworkPolicies)), description, nsxRuleID)
-	policies.setAdminNetworkPolicy(pol, ports, inbound, action, srcSelector, dstSelector)
+func (np *PolicyGenerator) addDNSAllowAdminNetworkPolicy() {
+	dnsSelector := np.createSelector(nil)
+	dnsSelector.pods = &meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{
+		Key:      dnsLabelKey,
+		Operator: meta.LabelSelectorOpIn,
+		Values:   []string{dnsLabelVal}},
+	}}
+	allSelector := np.createSelector(nil)
+	ports := connToAdminPolicyPort(dnsPortConn)
+	egressPol := newAdminNetworkPolicy("egress-dns-policy",
+		"Admin Network Policy To Allow Egress Access To DNS Server",
+		noNSXRuleID)
+	np.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
 }
 
-func (policies *K8sPolicies) setAdminNetworkPolicy(
+func (np *PolicyGenerator) setAdminNetworkPolicy(
 	pol *admin.AdminNetworkPolicy, ports []admin.AdminNetworkPolicyPort,
 	inbound bool, action admin.AdminNetworkPolicyRuleAction,
 	srcSelector, dstSelector policySelector) {
-	policies.AdminNetworkPolicies = append(policies.AdminNetworkPolicies, pol)
+	np.AdminNetworkPolicies = append(np.AdminNetworkPolicies, pol)
 	//nolint:gosec // priority should fit int32:
-	pol.Spec.Priority = int32(len(policies.AdminNetworkPolicies))
+	pol.Spec.Priority = int32(len(np.AdminNetworkPolicies))
 	if inbound {
 		from := srcSelector.toAdminPolicyIngressPeers()
 		rules := []admin.AdminNetworkPolicyIngressRule{{From: from, Action: action, Ports: common.PointerTo(ports)}}
@@ -186,22 +196,50 @@ func (policies *K8sPolicies) setAdminNetworkPolicy(
 	}
 }
 
-func (policies *K8sPolicies) addDNSAllowAdminNetworkPolicy() {
-	dnsSelector := policies.createSelector(nil)
-	dnsSelector.pods = &meta.LabelSelector{MatchExpressions: []meta.LabelSelectorRequirement{{
-		Key:      dnsLabelKey,
-		Operator: meta.LabelSelectorOpIn,
-		Values:   []string{dnsLabelVal}},
-	}}
-	allSelector := policies.createSelector(nil)
-	ports := connToAdminPolicyPort(dnsPortConn)
-	egressPol := newAdminNetworkPolicy("egress-dns-policy",
-		"Admin Network Policy To Allow Egress Access To DNS Server",
-		noNSXRuleID)
-	policies.setAdminNetworkPolicy(egressPol, ports, false, admin.AdminNetworkPolicyRuleActionAllow, allSelector, dnsSelector)
+func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) policySelector {
+	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
+
+	res := policySelector{pods: &meta.LabelSelector{}}
+	res.namespaces = common.CustomStrSliceToStrings(np.NamespacesInfo.GetConjunctionNamespaces(con),
+		func(namespace *topology.Namespace) string { return namespace.Name })
+	for _, a := range con {
+		switch {
+		case a.IsTautology():
+			res.cidrs = []string{netset.CidrAll}
+		case a.IsAllGroups():
+			// leaving it empty - will match all labels
+			// todo: should be fixed when supporting namespaces
+		case a.IsAllExternal():
+			res.cidrs = np.ExternalIP.ToCidrList()
+		case a.GetExternalBlock() != nil:
+			res.cidrs = a.GetExternalBlock().ToCidrList()
+		default:
+			label, notIn := a.AsSelector()
+			label = utils.ToLegalK8SString(label)
+			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
+			res.pods.MatchExpressions = append(res.pods.MatchExpressions, req)
+		}
+	}
+	return res
 }
 
-// //////////////////////////////////////////////////////////////////////////////////////////
+var abstractToAdminRuleAction = map[dfw.RuleAction]admin.AdminNetworkPolicyRuleAction{
+	dfw.ActionAllow:     admin.AdminNetworkPolicyRuleActionAllow,
+	dfw.ActionDeny:      admin.AdminNetworkPolicyRuleActionDeny,
+	dfw.ActionJumpToApp: admin.AdminNetworkPolicyRuleActionPass,
+}
+var inboundToDirection = map[bool]networking.PolicyType{
+	false: networking.PolicyTypeEgress,
+	true:  networking.PolicyTypeIngress,
+}
+
+const dnsPort = 53
+const dnsLabelKey = "k8s-app"
+const dnsLabelVal = "kube-dns"
+const noNSXRuleID = "none"
+
+var namespaceNameKey = path.Join("kubernetes.io", meta.ObjectNameField)
+
 const annotationDescription = "description"
 const annotationUID = "nsx-id"
 
@@ -259,33 +297,6 @@ func (selector *policySelector) isTautology() bool {
 
 func (selector *policySelector) convertAllCidrToAllPodsSelector() {
 	selector.cidrs = []string{}
-}
-
-func (policies *K8sPolicies) createSelector(con symbolicexpr.Conjunction) policySelector {
-	boolToOperator := map[bool]meta.LabelSelectorOperator{false: meta.LabelSelectorOpExists, true: meta.LabelSelectorOpDoesNotExist}
-
-	res := policySelector{pods: &meta.LabelSelector{}}
-	res.namespaces = common.CustomStrSliceToStrings(policies.NamespacesInfo.GetConjunctionNamespaces(con),
-		func(namespace *topology.Namespace) string { return namespace.Name })
-	for _, a := range con {
-		switch {
-		case a.IsTautology():
-			res.cidrs = []string{netset.CidrAll}
-		case a.IsAllGroups():
-			// leaving it empty - will match all labels
-			// todo: should be fixed when supporting namespaces
-		case a.IsAllExternal():
-			res.cidrs = policies.ExternalIP.ToCidrList()
-		case a.GetExternalBlock() != nil:
-			res.cidrs = a.GetExternalBlock().ToCidrList()
-		default:
-			label, notIn := a.AsSelector()
-			label = utils.ToLegalK8SString(label)
-			req := meta.LabelSelectorRequirement{Key: label, Operator: boolToOperator[notIn]}
-			res.pods.MatchExpressions = append(res.pods.MatchExpressions, req)
-		}
-	}
-	return res
 }
 
 func (selector *policySelector) toPolicyPeers() []networking.NetworkPolicyPeer {

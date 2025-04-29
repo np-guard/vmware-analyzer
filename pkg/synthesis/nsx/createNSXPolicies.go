@@ -14,6 +14,8 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
+// this file contains main API for synthesis to NSX policies from abstract model (for testing purposes)
+
 const firstRuleID = 3984
 const firstGroupID = 4826
 

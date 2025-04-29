@@ -53,7 +53,7 @@ func (namespacesInfo *NamespacesInfo) InitNamespaces(synthModel *model.AbstractM
 	}
 }
 
-func (namespacesInfo *NamespacesInfo) CreateResources() []*core.Namespace {
+func (namespacesInfo *NamespacesInfo) CreateNamespaces() []*core.Namespace {
 	res := []*core.Namespace{}
 	for _, namespace := range namespacesInfo.Namespaces {
 		if namespace.Name != meta.NamespaceDefault {
@@ -63,10 +63,12 @@ func (namespacesInfo *NamespacesInfo) CreateResources() []*core.Namespace {
 	return res
 }
 
+const apiVersion = "v1"
+
 func (namespaceInfo *Namespace) createResource() *core.Namespace {
 	resource := &core.Namespace{}
 	resource.Kind = "Namespace"
-	resource.APIVersion = "v1"
+	resource.APIVersion = apiVersion
 	resource.Name = utils.ToLegalK8SString(namespaceInfo.Name)
 	resource.Namespace = resource.Name
 	resource.Labels = map[string]string{}

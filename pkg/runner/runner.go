@@ -194,8 +194,8 @@ func (r *Runner) runSynthesis() error {
 	if err != nil {
 		return err
 	}
-	r.generatedK8sPolicies = k8sResources.K8sPoliciesList()
-	r.generatedK8sAdminPolicies = k8sResources.K8sAdminPolicies()
+	r.generatedK8sPolicies = k8sResources.NetworkPolicies
+	r.generatedK8sAdminPolicies = k8sResources.AdminNetworkPolicies
 	if r.synthesisDumpDir == "" {
 		return nil
 	}

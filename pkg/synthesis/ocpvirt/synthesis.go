@@ -11,16 +11,24 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
 )
 
+// this file contains the main API to ocpvirt synthesis from NSX configuration
+
 func NSXToK8sSynthesis(
 	resources *collector.ResourcesContainerModel,
 	nsxConfig *configuration.Config,
 	options *config.SynthesisOptions,
-) (*k8sResources, error) {
+) (*resourcesGenerator, error) {
+	// first stage: convert nsx config to abstract model
 	abstractModel, err := NsxToPolicy(resources, nsxConfig, options)
 	if err != nil {
 		return nil, err
 	}
-	return createK8sResources(abstractModel, options.CreateDNSPolicy), nil
+	// second stage: generate concrete ocp-virt resources from abstract model
+	rg := NewResourcesGenerator(abstractModel, options.CreateDNSPolicy)
+	rg.Generate()
+
+	// return generated resources
+	return rg, nil
 }
 
 func NsxToPolicy(resources *collector.ResourcesContainerModel,
