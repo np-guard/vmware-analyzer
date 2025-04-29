@@ -51,36 +51,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = A-by-IP) dst: (group = backend) conn: TCP dst-ports: 445'
-        nsx-id: "1004"
-    creationTimestamp: null
-    name: policy-2
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 445
-              protocol: TCP
-          to:
-            - podSelector:
-                matchExpressions:
-                    - key: group__backend
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__A-by-IP
-              operator: Exists
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (VMs within IPs 192.168.10.5) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     ingress:
@@ -88,32 +62,6 @@ spec:
             - podSelector:
                 matchExpressions:
                     - key: VMs_within_IPs__192.168.10.5
-                      operator: Exists
-          ports:
-            - port: 445
-              protocol: TCP
-    podSelector:
-        matchExpressions:
-            - key: group__backend
-              operator: Exists
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = A-by-IP) dst: (group = backend) conn: TCP dst-ports: 445'
-        nsx-id: "1004"
-    creationTimestamp: null
-    name: policy-4
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: group__A-by-IP
                       operator: Exists
           ports:
             - port: 445

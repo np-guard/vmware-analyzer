@@ -1,11 +1,10 @@
 category: Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 symbolic inbound rules:
-Priority |Rule Id |Action |Src                      |Dst                |Connection
-0        |1004    |allow  |(group = frontend)       |(group = backend)  |TCP dst-ports: 445
-1        |1005    |allow  |(IP addr in 8.8.8.8/32)  |(group = frontend) |TCP dst-ports: 80
-1        |1005    |allow  |(group = external-group) |(group = frontend) |TCP dst-ports: 80
-2        |1003    |deny   |(*)                      |(*)                |All Connections
+Priority |Rule Id |Action |Src                     |Dst                |Connection
+0        |1004    |allow  |(group = frontend)      |(group = backend)  |TCP dst-ports: 445
+1        |1005    |allow  |(IP addr in 8.8.8.8/32) |(group = frontend) |TCP dst-ports: 80
+2        |1003    |deny   |(*)                     |(*)                |All Connections
 
 
 symbolic outbound rules:

@@ -195,21 +195,26 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
 		getConjunctionForIPBlock(ruleBlocks, isExclude, isExternalRelevant)
-	res = append(res, ipExternalBlockConjunctions...)
 	// todo add tests for all switch cases https://github.com/np-guard/vmware-analyzer/issues/402
+	// group is defined either by ip blocks or in other manners (tags, specific vms)
+	// group defined by IP blocks
+	if isTautology || len(ipExternalBlockConjunctions) > 0 || len(ipInternalBlockConjunctions) > 0 {
+		switch {
+		case isExclude && isTautology:
+			return []*Conjunction{}
+		case !isExclude && isTautology:
+			return ipExternalBlockConjunctions
+		default:
+			return append(ipExternalBlockConjunctions, ipInternalBlockConjunctions...)
+		}
+	}
+	// group not defined by IP blocks
 	switch {
-	case isExclude && isTautology && isAllGroups:
+	case isExclude && isAllGroups:
 		return []*Conjunction{}
-	case (isTautology && !isExclude) || (isAllGroups && isExclude):
-		// if 0.0.0.0/0 then this is the only relevant input; if exclude isAllGroup then only ipBlocks rule is relevant
-		return res
-	case isTautology && isExclude:
-		// if IPBlocks is exclude 0.0.0.0/0 then the ipBlock rule is not relevant
-		res = append(res, getConjunctionForGroups(isExclude, groups, groupToConjunctions, rule.RuleID)...)
 	case isAllGroups && !isExclude:
 		res = append(res, &Conjunction{allGroup{}}) // if "Any" group then this is the only relevant internal resource
 	default:
-		res = append(res, ipInternalBlockConjunctions...)
 		res = append(res, getConjunctionForGroups(isExclude, groups, groupToConjunctions, rule.RuleID)...)
 	}
 	if len(res) == 0 {
