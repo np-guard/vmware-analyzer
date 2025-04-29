@@ -107,12 +107,19 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 }
 
 func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, group string) *tagAtomicTerm {
-	cond, ok := elem.(*collector.Condition)
-	if !ok {
+	cond, okCond := elem.(*collector.Condition)
+	path, okPath := elem.(*collector.PathExpression)
+	switch {
+	case okCond:
+		return getTagTermsForCondition(isExcluded, cond, group)
+	case okPath:
+		fmt.Printf("path is %+v\n", path)
+		return nil // todo tmp  add function that get Terms
+	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
 	}
-	return getTagTermsForCondition(isExcluded, cond, group)
+
 }
 
 func debugMsg(group, text string) {

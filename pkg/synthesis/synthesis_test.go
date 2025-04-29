@@ -300,6 +300,16 @@ var groupsByExprTests = []synthesisTest{
 		noHint: false,
 	},
 }
+
+var groupsOfNonVMsTests = []synthesisTest{
+	{
+		name:            "ExampleGroup3",
+		exData:          data.ExampleGroup3,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+}
+
 var liveNsxTest = synthesisTest{
 	name:            "fromCollection",
 	exData:          nil,
@@ -313,7 +323,8 @@ var resourceFileTest = synthesisTest{
 	noHint:          true,
 }
 
-var allSyntheticTests = append(groupsByVmsTests, append(groupsByExprTests, vmsByIpsTests...)...)
+var allSyntheticTests = append(groupsByVmsTests, append(groupsByExprTests,
+	append(vmsByIpsTests, groupsOfNonVMsTests...)...)...)
 var allTests = append(allSyntheticTests, []synthesisTest{liveNsxTest, resourceFileTest}...)
 
 // //////////////////////////////////////////////////////////////////////
