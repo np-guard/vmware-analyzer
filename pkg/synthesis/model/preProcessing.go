@@ -1,4 +1,4 @@
-package synthesis
+package model
 
 import (
 	"fmt"
@@ -6,25 +6,25 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
 
 /////////////////////////////////////////////////////////////////////////////////////
 // preprocessing related functionality
 /////////////////////////////////////////////////////////////////////////////////////
 
-// preProcessing: convert policy from spec to symbolicPolicy struct
-func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*symbolicPolicy) {
-	categoryToPolicy = map[collector.DfwCategory]*symbolicPolicy{}
+// PreProcessing: convert policy from spec to symbolicPolicy struct
+func PreProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy) {
+	categoryToPolicy = map[collector.DfwCategory]*SymbolicPolicy{}
 	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
 	for _, category := range categoriesSpecs {
-		categoryPolicy := symbolicPolicy{}
+		categoryPolicy := SymbolicPolicy{}
 		if len(category.EvaluatedRules.OutboundRules)+len(category.EvaluatedRules.InboundRules) == 0 {
 			continue
 		}
-		categoryPolicy.inbound = append(categoryPolicy.inbound, convertRulesToSymbolicPaths(true,
+		categoryPolicy.Inbound = append(categoryPolicy.Inbound, convertRulesToSymbolicPaths(true,
 			category.EvaluatedRules.InboundRules, category.Category, groupToConjunctions)...)
-		categoryPolicy.outbound = append(categoryPolicy.outbound, convertRulesToSymbolicPaths(false,
+		categoryPolicy.Outbound = append(categoryPolicy.Outbound, convertRulesToSymbolicPaths(false,
 			category.EvaluatedRules.OutboundRules, category.Category, groupToConjunctions)...)
 
 		categoryToPolicy[category.Category] = &categoryPolicy
@@ -33,32 +33,32 @@ func preProcessing(categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[co
 }
 
 func convertRulesToSymbolicPaths(isInbound bool, rules []*dfw.EvaluatedFWRule, category collector.DfwCategory,
-	groupToConjunctions map[string][]*symbolicexpr.Conjunction) []*symbolicRule {
-	res := make([]*symbolicRule, len(rules))
+	groupToConjunctions map[string][]*symbolicexpr.Conjunction) []*SymbolicRule {
+	res := make([]*SymbolicRule, len(rules))
 	for i, rule := range rules {
 		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(isInbound, rule.RuleObj, groupToConjunctions)
-		res[i] = &symbolicRule{origRule: rule.RuleObj, origRuleCategory: category, origSymbolicPaths: ruleSymbolicPaths}
+		res[i] = &SymbolicRule{OrigRule: rule.RuleObj, OrigRuleCategory: category, OrigSymbolicPaths: ruleSymbolicPaths}
 	}
 	return res
 }
 
-func (policy symbolicPolicy) strOrigSymbolicPolicy(printOnlyAdmin, color bool) string {
+func (policy SymbolicPolicy) strOrigSymbolicPolicy(printOnlyAdmin, color bool) string {
 	return fmt.Sprintf("symbolic inbound rules:\n%v\nsymbolic outbound rules:\n%v",
-		strOrigSymbolicRules(policy.inbound, printOnlyAdmin, color),
-		strOrigSymbolicRules(policy.outbound, printOnlyAdmin, color))
+		strOrigSymbolicRules(policy.Inbound, printOnlyAdmin, color),
+		strOrigSymbolicRules(policy.Outbound, printOnlyAdmin, color))
 }
 
-func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) string {
+func strOrigSymbolicRules(rules []*SymbolicRule, printOnlyAdmin, color bool) string {
 	header := []string{"Priority", "Rule Id", "Action", "Src", "Dst", "Connection"}
 	lines := [][]string{}
 	const formatV = "%v"
 	for i, rule := range rules {
-		for _, path := range *rule.origSymbolicPaths {
-			if printOnlyAdmin && rule.origRuleCategory >= collector.MinNonAdminCategory() {
+		for _, path := range *rule.OrigSymbolicPaths {
+			if printOnlyAdmin && rule.OrigRuleCategory >= collector.MinNonAdminCategory() {
 				continue
 			}
-			newLine := []string{fmt.Sprintf(formatV, i), rule.origRule.RuleIDStr(),
-				fmt.Sprintf(formatV, rule.origRule.Action)}
+			newLine := []string{fmt.Sprintf(formatV, i), rule.OrigRule.RuleIDStr(),
+				fmt.Sprintf(formatV, rule.OrigRule.Action)}
 			newLine = append(newLine, path.TableString()...)
 			lines = append(lines, newLine)
 		}
@@ -69,8 +69,8 @@ func strOrigSymbolicRules(rules []*symbolicRule, printOnlyAdmin, color bool) str
 // prints pre-processing symbolic rules by ordered category;
 // with an option to print only the subset that will be synthesized to admin rules
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
-func printPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
-	categoryToPolicy map[collector.DfwCategory]*symbolicPolicy, color bool) string {
+func PrintPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
+	categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy, color bool) string {
 	var categoryToStr = func(c *dfw.CategorySpec) string {
 		policy := categoryToPolicy[c.Category]
 		if policy == nil {

@@ -51,8 +51,11 @@ spec:
           to:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Gryffindor
@@ -84,8 +87,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Gryffindor
@@ -122,8 +128,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Hufflepuff
@@ -161,8 +170,11 @@ spec:
           to:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Slytherin
@@ -194,8 +206,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Slytherin
@@ -229,8 +244,11 @@ spec:
           to:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Gryffindor
@@ -262,8 +280,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector:
                     matchExpressions:
                         - key: group__Dumbledore
@@ -297,8 +318,11 @@ spec:
           to:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
     priority: 9
     subject:
@@ -324,8 +348,11 @@ spec:
           from:
             - pods:
                 namespaceSelector:
-                    matchLabels:
-                        kubernetes.io/metadata.name: default
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
                 podSelector: {}
           ports: null
     priority: 10

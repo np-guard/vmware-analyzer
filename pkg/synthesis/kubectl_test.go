@@ -21,6 +21,8 @@ import (
 	analyzer "github.com/np-guard/vmware-analyzer/pkg/analyzer"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
 // This test is creating pods and policies and check the connections, using kubectl API.
@@ -40,24 +42,24 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
 	err := logging.Tee(path.Join(kubeDir, "runK8STraceFlow.log"))
 	require.Nil(t, err)
-	k8sDir := path.Join(kubeDir, k8sResourcesDir)
+	k8sDir := path.Join(kubeDir, utils.K8sResourcesDir)
 	setEnvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
 	cleanEnvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
 	// create K8S k8sResources
-	k8sResources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
+	k8sResources, err := ocpvirt.NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
 	// adjust k8sResources for the tests:
-	fixPodsResources(synTest.name, k8sResources.pods)
-	fixPoliciesResources(k8sResources.networkPolicies)
-	fixAdminPoliciesResources(k8sResources.adminNetworkPolicies)
+	fixPodsResources(synTest.name, k8sResources.Pods)
+	fixPoliciesResources(k8sResources.NetworkPolicies)
+	fixAdminPoliciesResources(k8sResources.AdminNetworkPolicies)
 	require.Nil(t, k8sResources.CreateDir(kubeDir))
 	// run netpol-analyzer, for debugging:
-	_, err = k8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt")
+	_, err = utils.K8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)
 
 	// create the kubectl bash files:
-	require.Nil(t, createSetEnvironmentFile(k8sDir, setEnvironmentFile, k8sResources.pods))
-	require.Nil(t, createCleanEnvironmentFile(cleanEnvironmentFile, k8sResources.pods))
+	require.Nil(t, createSetEnvironmentFile(k8sDir, setEnvironmentFile, k8sResources.Pods))
+	require.Nil(t, createCleanEnvironmentFile(cleanEnvironmentFile, k8sResources.Pods))
 
 	// create environment:
 	logging.Debugf("creating environment from file %s", setEnvironmentFile)

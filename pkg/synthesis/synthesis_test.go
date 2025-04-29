@@ -23,7 +23,12 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/nsx"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
 const (
@@ -76,8 +81,8 @@ func (synTest *synthesisTest) debugDir() string {
 func (synTest *synthesisTest) hasExpectedResults() bool {
 	return synTest.exData != nil
 }
-func (synTest *synthesisTest) options() *SynthesisOptions {
-	return &SynthesisOptions{
+func (synTest *synthesisTest) options() *config.SynthesisOptions {
+	return &config.SynthesisOptions{
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
@@ -427,16 +432,16 @@ func subTestsRunByTestName(t *testing.T, f testMethod) {
 func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runPreprocessing.log"))
 	require.Nil(t, err)
-	// get the config:
-	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
+	// get the nsxConfig:
+	nsxConfig, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
-	configStr := config.GetConfigInfoStr(false)
+	configStr := nsxConfig.GetConfigInfoStr(false)
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
-	categoryToPolicy := preProcessing(config.FW.CategoriesSpecs)
-	preProcessOutput := printPreProcessingSymbolicPolicy(config.FW.CategoriesSpecs, categoryToPolicy, false)
+	categoryToPolicy := model.PreProcessing(nsxConfig.FW.CategoriesSpecs)
+	preProcessOutput := model.PrintPreProcessingSymbolicPolicy(nsxConfig.FW.CategoriesSpecs, categoryToPolicy, false)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "pre_process.txt"), preProcessOutput)
@@ -451,9 +456,9 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	require.Nil(t, err)
-	abstractModel, err := nsxToPolicy(rc, nil, synTest.options())
+	abstractModel, err := ocpvirt.NsxToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	abstractModelStr := strAbstractModel(abstractModel, synTest.options())
+	abstractModelStr := model.StrAbstractModel(abstractModel, synTest.options())
 	// write the abstract model rules into a file, for debugging:
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "abstract_model.txt"), abstractModelStr)
 	require.Nil(t, err)
@@ -467,23 +472,23 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	require.Nil(t, err)
-	k8sDir := path.Join(synTest.outDir(), k8sResourcesDir)
+	k8sDir := path.Join(synTest.outDir(), utils.K8sResourcesDir)
 	// create K8S resources:
-	resources, err := NSXToK8sSynthesis(rc, nil, synTest.options())
+	resources, err := ocpvirt.NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
 	err = resources.CreateDir(synTest.outDir())
 	require.Nil(t, err)
+	// compare k8s resources to expected results:
+	if synTest.hasExpectedResults() {
+		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), utils.K8sResourcesDir, synTest.id())
+		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
+	}
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
 	err = os.MkdirAll(synTest.debugDir(), os.ModePerm)
 	require.Nil(t, err)
 	k8sConnectivityFile := path.Join(synTest.debugDir(), "k8s_connectivity.txt")
-	k8sConnectivityFileCreated, err := k8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
+	k8sConnectivityFileCreated, err := utils.K8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
 	require.Nil(t, err)
-	// compare k8s resources to expected results:
-	if synTest.hasExpectedResults() {
-		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), k8sResourcesDir, synTest.id())
-		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
-	}
 
 	if k8sConnectivityFileCreated && !resources.NotFullySupported {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
@@ -494,7 +499,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 
 func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel, k8sConnectivityFile string) {
 	// get analyzed connectivity:
-	config, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
+	nsxConfig, connMap, _, err := analyzer.NSXConnectivityFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	noIcmpGroupedExternalToAllMap := removeICMP(connMap)
 	debugDir := synTest.debugDir()
@@ -504,8 +509,8 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	require.Nil(t, err)
 
 	k8sConnMap := readK8SConnFile(t, k8sConnectivityFile)
-	k8sGroupedNoExternalMap := removeInternalAddresses(k8sConnMap, config.Topology.AllExternalIPBlock)
-	k8sGroupedMapStr, err := k8sGroupedNoExternalMap.GenConnectivityOutput(synTest.outputParams())
+	k8sGroupedNoNoInternalAddressesMap := removeInternalAddresses(k8sConnMap, nsxConfig.Topology.AllExternalIPBlock)
+	k8sGroupedMapStr, err := k8sGroupedNoNoInternalAddressesMap.GenConnectivityOutput(synTest.outputParams())
 	require.Nil(t, err)
 	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
 	require.Nil(t, err)
@@ -528,7 +533,7 @@ func removeICMP(connMap connectivity.ConnMap) connectivity.ConnMap {
 	noIcmpGroupedMap := noIcmpMap.GroupExternalEP()
 	adjustEP := func(ep topology.Endpoint) topology.Endpoint {
 		if !ep.IsExternal() {
-			return topology.NewVM(toLegalK8SString(ep.Name()), ep.ID())
+			return topology.NewVM(utils.ToLegalK8SString(ep.Name()), ep.ID())
 		}
 		return ep
 	}
@@ -640,9 +645,9 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := nsxToPolicy(rc, nil, synTest.options())
+	abstractModel, err := ocpvirt.NsxToPolicy(rc, nil, synTest.options())
 	require.Nil(t, err)
-	policies, groups := toNSXPolicies(rc, abstractModel)
+	policies, groups := nsx.ToNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
@@ -651,11 +656,11 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	err = common.WriteToFile(path.Join(debugDir, "generated_nsx_resources.json"), jsonOut)
 	require.Nil(t, err)
 
-	// get the config from generated_rc:
-	config, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
+	// get the nsxConfig from generated_rc:
+	nsxConfig, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
-	configStr := config.GetConfigInfoStr(false)
+	configStr := nsxConfig.GetConfigInfoStr(false)
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "generated_nsx_config.txt"), configStr)
 	require.Nil(t, err)
 

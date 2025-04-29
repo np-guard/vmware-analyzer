@@ -1,4 +1,4 @@
-package synthesis
+package nsx
 
 import (
 	"fmt"
@@ -9,21 +9,25 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
+
+// this file contains main API for synthesis to NSX policies from abstract model (for testing purposes)
 
 const firstRuleID = 3984
 const firstGroupID = 4826
 
-func toNSXPolicies(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) ([]collector.SecurityPolicy, []collector.Group) {
-	a := newAbsToNXS(model.ExternalIP)
-	a.getVMsInfo(rc, model)
-	a.convertPolicies(model.policy, model.synthesizeAdmin)
+func ToNSXPolicies(rc *collector.ResourcesContainerModel, synthModel *model.AbstractModelSyn) (
+	[]collector.SecurityPolicy, []collector.Group) {
+	a := newAbsToNXS(synthModel.ExternalIP)
+	a.getVMsInfo(rc, synthModel)
+	a.convertPolicies(synthModel.Policy, synthModel.SynthesizeAdmin)
 	return data.ToPoliciesList(a.categories), a.groups
 }
 
 type absToNXS struct {
-	vmLabels   map[topology.Endpoint][]string
 	labelsVMs  map[string][]topology.Endpoint
 	allVMs     []topology.Endpoint
 	vmResource map[topology.Endpoint]collector.RealizedVirtualMachine
@@ -36,14 +40,13 @@ type absToNXS struct {
 
 func newAbsToNXS(externalIP *netset.IPBlock) *absToNXS {
 	return &absToNXS{
-		vmLabels:   map[topology.Endpoint][]string{},
 		labelsVMs:  map[string][]topology.Endpoint{},
 		vmResource: map[topology.Endpoint]collector.RealizedVirtualMachine{},
 		externalIP: externalIP,
 	}
 }
-func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *AbstractModelSyn) {
-	a.allVMs = model.vms
+func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, synthModel *model.AbstractModelSyn) {
+	a.allVMs = synthModel.VMs
 	for i := range rc.DomainList {
 		for iGroup := range rc.DomainList[i].Resources.GroupList {
 			for iVM := range rc.DomainList[i].Resources.GroupList[iGroup].VMMembers {
@@ -55,30 +58,7 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, model *Abst
 			}
 		}
 	}
-	for _, vm := range a.allVMs {
-		addVMLabel := func(vm topology.Endpoint, label string) {
-			a.vmLabels[vm] = append(a.vmLabels[vm], label)
-			a.labelsVMs[label] = append(a.labelsVMs[label], vm)
-		}
-		for _, tag := range vm.Tags() {
-			label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
-			addVMLabel(vm, label)
-		}
-		for _, group := range model.epToGroups[vm] {
-			label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
-			addVMLabel(vm, label)
-		}
-		for _, segment := range model.vmSegments[vm] {
-			label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
-			addVMLabel(vm, label)
-		}
-		for _, ruleIPBlock := range model.ruleBlockPerEP[vm] {
-			if !ruleIPBlock.IsAll() {
-				label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
-				addVMLabel(vm, label)
-			}
-		}
-	}
+	a.labelsVMs = utils.CollectLabelsVMs(synthModel)
 }
 
 var fwRuleToDataRuleAction = map[dfw.RuleAction]string{
@@ -87,17 +67,17 @@ var fwRuleToDataRuleAction = map[dfw.RuleAction]string{
 	dfw.ActionJumpToApp: data.JumpToApp,
 }
 
-func (a *absToNXS) convertPolicies(policy []*symbolicPolicy, synthesizeAdmin bool) {
+func (a *absToNXS) convertPolicies(policy []*model.SymbolicPolicy, synthesizeAdmin bool) {
 	for _, p := range policy {
-		rulesToDirection := map[*[]*symbolicRule]string{&p.outbound: "OUT", &p.inbound: "IN"}
+		rulesToDirection := map[*[]*model.SymbolicRule]string{&p.Outbound: "OUT", &p.Inbound: "IN"}
 		for rules, dir := range rulesToDirection {
 			for _, rule := range *rules {
-				if synthesizeAdmin && rule.origRuleCategory < collector.MinNonAdminCategory() {
-					for _, p := range *rule.origSymbolicPaths {
-						a.pathToRule(p, dir, fwRuleToDataRuleAction[rule.origRule.Action], rule.origRuleCategory.String())
+				if synthesizeAdmin && rule.OrigRuleCategory < collector.MinNonAdminCategory() {
+					for _, p := range *rule.OrigSymbolicPaths {
+						a.pathToRule(p, dir, fwRuleToDataRuleAction[rule.OrigRule.Action], rule.OrigRuleCategory.String())
 					}
 				} else {
-					for _, p := range rule.optimizedAllowOnlyPaths {
+					for _, p := range rule.OptimizedAllowOnlyPaths {
 						a.pathToRule(p, dir, data.Allow, collector.LastCategory().String())
 					}
 				}
