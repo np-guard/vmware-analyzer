@@ -55,7 +55,7 @@ func getConjunctionForGroups(isExclude bool, groups []*collector.Group, groupToC
 //////////////////////////////////////////////////////////
 
 // return the tag corresponding to a given condition
-func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) atomic {
+func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) []atomic {
 	// assumption: cond is of a tag over VMs
 	if cond.MemberType == nil || *cond.MemberType != resources.ConditionMemberTypeVirtualMachine ||
 		cond.Key == nil || *cond.Key != resources.ConditionKeyTag ||
@@ -72,7 +72,7 @@ func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group st
 	}
 	tagAtomicTerm := tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 	var atomicRes atomic = tagAtomicTerm
-	return atomicRes
+	return []atomic{atomicRes}
 }
 
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
@@ -102,7 +102,7 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, group string) atomic {
+func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, group string) []atomic {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
@@ -134,7 +134,7 @@ func GetConjunctionFromExpr(isExcluded bool, expr *collector.Expression, group s
 		return nil
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
-		return []*Conjunction{{condTag1}}
+		return orAtomicToConjunction(condTag1)
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
 		condTag2 := getTermForExprElement(isExcluded, exprVal[2], group)
@@ -142,13 +142,32 @@ func GetConjunctionFromExpr(isExcluded bool, expr *collector.Expression, group s
 			return nil
 		}
 		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
-			return []*Conjunction{{condTag1, condTag2}} // And: single Conjunction
+			return andAtomicToConjunction(condTag1, condTag2)
 		}
-		return []*Conjunction{{condTag1}, {condTag2}} // Or: two Conjunctions
+		return orAtomicToConjunction(append(condTag1, condTag2...))
 	}
 	// len not 1 neither 3
 	debugMsg(group, "is not supported")
 	return nil
+}
+
+func orAtomicToConjunction(atomics []atomic) []*Conjunction {
+	res := make([]*Conjunction, len(atomics))
+	for i, thisAtomic := range atomics {
+		res[i] = &Conjunction{thisAtomic}
+	}
+	return res
+}
+
+// ANDing a cartesian products of two []atomic
+func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
+	res := []*Conjunction{}
+	for _, atomic1 := range atomics1 {
+		for _, atomic2 := range atomics2 {
+			res = append(res, &Conjunction{atomic1, atomic2})
+		}
+	}
+	return res
 }
 
 // return the tag corresponding to a given condition
