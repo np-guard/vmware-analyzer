@@ -5,9 +5,7 @@ package symbolicexpr
 import (
 	"fmt"
 
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
 const tagConst = "tag"
@@ -55,73 +53,4 @@ func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
 
 func (tagAtomicTerm) IsSegment() bool {
 	return false
-}
-
-// evaluates symbolic Conjunctions from a given Expression
-//////////////////////////////////////////////////////////
-
-// return the tag corresponding to a given condition
-func getTagTermsForCondition(isExcluded bool, cond *collector.Condition, group string) *tagAtomicTerm {
-	// assumption: cond is of a tag over VMs
-	if cond.MemberType == nil || *cond.MemberType != resources.ConditionMemberTypeVirtualMachine ||
-		cond.Key == nil || *cond.Key != resources.ConditionKeyTag ||
-		cond.Operator == nil {
-		debugMsg(group, fmt.Sprintf("contains an NSX condition %s which is not supported", cond.String()))
-		return nil
-	}
-	var neg bool
-	if *cond.Operator == resources.ConditionOperatorNOTEQUALS {
-		neg = true
-	}
-	if isExcluded {
-		neg = !neg
-	}
-	return &tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
-}
-
-// returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
-// if isExcluded: returns "or" for "and" and vice versa (de-morgan)
-// returns nil if neither
-func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
-	group string) *resources.ConjunctionOperatorConjunctionOperator {
-	conj, ok := elem.(*collector.ConjunctionOperator)
-	if !ok {
-		debugMsg(group, fmt.Sprintf("contains an operator of type %T which is not a legal NSX operator", elem))
-		return nil
-	}
-	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
-	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
-		*conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorOR {
-		debugMsg(group, fmt.Sprintf("contains an operator %s which is not supported (yet)", conj.String()))
-		return nil
-	}
-	var retOp = *conj.ConjunctionOperator.ConjunctionOperator
-	if isExcluded { // De-Morgan
-		if *conj.ConjunctionOperator.ConjunctionOperator == resources.ConjunctionOperatorConjunctionOperatorAND {
-			retOp = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
-		} else {
-			retOp = resources.ConjunctionOperatorConjunctionOperatorAND // Or -> And
-		}
-	}
-	return &retOp
-}
-
-func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, group string) *tagAtomicTerm {
-	cond, okCond := elem.(*collector.Condition)
-	path, okPath := elem.(*collector.PathExpression)
-	switch {
-	case okCond:
-		return getTagTermsForCondition(isExcluded, cond, group)
-	case okPath:
-		fmt.Printf("path is %+v\n", path)
-		return nil // todo tmp  add function that get Terms
-	default:
-		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
-		return nil
-	}
-
-}
-
-func debugMsg(group, text string) {
-	logging.Debugf("group's %s defining expression %s ", group, text)
 }
