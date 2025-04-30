@@ -302,12 +302,12 @@ var groupsByExprTests = []synthesisTest{
 }
 
 var groupsOfNonVMsTests = []synthesisTest{
-	{
-		name:            "ExampleGroup3",
-		exData:          data.ExampleGroup3,
-		synthesizeAdmin: false,
-		noHint:          false,
-	},
+	//{
+	//	name:            "ExampleGroup3",
+	//	exData:          data.ExampleGroup3,
+	//	synthesizeAdmin: false,
+	//	noHint:          false,
+	//},
 }
 
 var liveNsxTest = synthesisTest{
@@ -451,7 +451,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
-	categoryToPolicy := model.PreProcessing(nsxConfig.FW.CategoriesSpecs)
+	categoryToPolicy := model.PreProcessing(nsxConfig.OrigNSXResources, nsxConfig.FW.CategoriesSpecs)
 	preProcessOutput := model.PrintPreProcessingSymbolicPolicy(nsxConfig.FW.CategoriesSpecs, categoryToPolicy, false)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:

@@ -16,8 +16,8 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 
 // Evaluates group and translates it into []*Conjunction
 // If group has no expr or evaluation expr fails then uses the group names in  Conjunction
-func getConjunctionForGroups(isExclude bool, groups []*collector.Group, groupToConjunctions map[string][]*Conjunction,
-	ruleID int) []*Conjunction {
+func getConjunctionForGroups(containerModel *collector.ResourcesContainerModel, isExclude bool, groups []*collector.Group,
+	groupToConjunctions map[string][]*Conjunction, ruleID int) []*Conjunction {
 	res := []*Conjunction{}
 	for _, group := range groups {
 		key := group.Name()
@@ -36,7 +36,7 @@ func getConjunctionForGroups(isExclude bool, groups []*collector.Group, groupToC
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			tagConj := GetConjunctionFromExpr(isExclude, &group.Expression, group.Name())
+			tagConj := GetConjunctionFromExpr(containerModel, isExclude, &group.Expression, group.Name())
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
@@ -102,7 +102,8 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, group string) []atomic {
+func getTermForExprElement(containerModel *collector.ResourcesContainerModel,
+	isExcluded bool, elem collector.ExpressionElement, group string) []atomic {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
@@ -110,7 +111,7 @@ func getTermForExprElement(isExcluded bool, elem collector.ExpressionElement, gr
 		return getAtomicsForCondition(isExcluded, cond, group)
 	case okPath:
 		//return getAtomicsForPath(isExcluded, path, group)
-		getAtomicsForPath(isExcluded, path, group)
+		getAtomicsForPath(containerModel, isExcluded, path, group)
 		return nil // todo tmp
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
@@ -126,10 +127,11 @@ func debugMsg(group, text string) {
 // GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
-func GetConjunctionFromExpr(isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
+func GetConjunctionFromExpr(containerModel *collector.ResourcesContainerModel,
+	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	exprVal := *expr
-	condTag1 := getTermForExprElement(isExcluded, exprVal[0], group)
+	condTag1 := getTermForExprElement(containerModel, isExcluded, exprVal[0], group)
 	if condTag1 == nil {
 		return nil
 	}
@@ -137,7 +139,7 @@ func GetConjunctionFromExpr(isExcluded bool, expr *collector.Expression, group s
 		return orAtomicToConjunction(condTag1)
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getTermForExprElement(isExcluded, exprVal[2], group)
+		condTag2 := getTermForExprElement(containerModel, isExcluded, exprVal[2], group)
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
@@ -171,7 +173,8 @@ func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
 }
 
 // return the tag corresponding to a given condition
-func getAtomicsForPath(isExcluded bool, pathExpr *collector.PathExpression, group string) []Atomics {
+func getAtomicsForPath(containerModel *collector.ResourcesContainerModel,
+	isExcluded bool, pathExpr *collector.PathExpression, group string) []Atomics {
 	res := []Atomics{}
 	fmt.Println("pathExpr is", pathExpr)
 	return res
