@@ -2,6 +2,7 @@ package symbolicexpr
 
 import (
 	"fmt"
+
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
@@ -115,7 +116,6 @@ func getTermForExprElement(containerModel *collector.ResourcesContainerModel,
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
 	}
-
 }
 
 func debugMsg(group, text string) {
