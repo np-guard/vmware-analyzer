@@ -41,7 +41,7 @@ type Config struct {
 	Groups           []*collector.Group                       // list of all groups (also these with no Vms)
 	GroupsPerVM      map[topology.Endpoint][]*collector.Group // map from vm to its groups
 	configSummary    *configInfo
-	origNSXResources *collector.ResourcesContainerModel
+	OrigNSXResources *collector.ResourcesContainerModel
 	Topology         *nsxTopology
 }
 

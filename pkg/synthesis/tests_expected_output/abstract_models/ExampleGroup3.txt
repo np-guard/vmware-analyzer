@@ -1,0 +1,35 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name |Expression
+path-group |(foo-app, seg1)
+
+
+Group Name           |VMs
+foo-app              |New-VM-3, New-VM-4
+foo-backend          |New-VM-4
+foo-frontend         |New-VM-3
+path-group           |New-VM-3, New-VM-4, New-VM-1, New-VM-2
+research-app         |New-VM-1, New-VM-2, New-VM-3, New-VM-4, New Virtual Machine
+research-seg-1       |New-VM-1, New-VM-3, New-VM-4
+research-test-expr-2 |New Virtual Machine
+
+
+Group Name |Segments
+path-group |seg1
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src               |Dst                            |Connection
+0                            |1004    |(group = foo-app) |(group = research-test-expr-2) |TCP dst-ports: 445
+0                            |1004    |(segment seg1)    |(group = research-test-expr-2) |TCP dst-ports: 445
+
+outbound rules
+Original allow rule priority |Rule id |Src               |Dst                            |Connection
+0                            |1004    |(group = foo-app) |(group = research-test-expr-2) |TCP dst-ports: 445
+0                            |1004    |(segment seg1)    |(group = research-test-expr-2) |TCP dst-ports: 445
+

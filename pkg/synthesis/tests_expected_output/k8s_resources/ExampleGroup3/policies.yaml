@@ -1,0 +1,191 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy
+    namespace: seg1
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-app) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__foo-app
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg1) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-3
+    namespace: seg1
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: in_Segment__seg1
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-app) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-4
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__foo-app
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (segment seg1) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-5
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg1
+              podSelector:
+                matchExpressions:
+                    - key: in_Segment__seg1
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: seg1
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
