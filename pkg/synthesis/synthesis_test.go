@@ -302,12 +302,12 @@ var groupsByExprTests = []synthesisTest{
 }
 
 var groupsOfNonVMsTests = []synthesisTest{
-	//{
-	//	name:            "ExampleGroup3",
-	//	exData:          data.ExampleGroup3,
-	//	synthesizeAdmin: false,
-	//	noHint:          false,
-	//},
+	{
+		name:            "ExampleGroup3",
+		exData:          data.ExampleGroup3,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
 }
 
 var liveNsxTest = synthesisTest{
