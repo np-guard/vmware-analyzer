@@ -2,9 +2,9 @@ package symbolicexpr
 
 import (
 	"fmt"
-
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
@@ -75,7 +75,7 @@ func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group st
 	return []atomic{atomicRes}
 }
 
-// returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nesterd "Or" or "And"
+// returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nested "Or" or "And"
 // if isExcluded: returns "or" for "and" and vice versa (de-morgan)
 // returns nil if neither
 func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
@@ -174,8 +174,23 @@ func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
 
 // return the tag corresponding to a given condition
 func getAtomicsForPath(containerModel *collector.ResourcesContainerModel,
-	isExcluded bool, pathExpr *collector.PathExpression, group string) []Atomics {
-	res := []Atomics{}
-	fmt.Println("pathExpr is", pathExpr)
+	isExcluded bool, pathExpr *collector.PathExpression, group string) []atomic {
+	res := []atomic{}
+	for _, path := range pathExpr.Paths {
+		groupOfPath := containerModel.FindGroupByPath(path)
+		segmentOfPath := containerModel.GetSegment(path)
+		switch {
+		case groupOfPath != nil:
+			res = append(res, groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
+		case segmentOfPath != nil:
+			segment, err := configuration.ProcessSegment(segmentOfPath)
+			if err != nil {
+				debugMsg(group, err.Error())
+			}
+			res = append(res, SegmentTerm{segment: segment, atomicTerm: atomicTerm{neg: isExcluded}})
+		default:
+			debugMsg(group, fmt.Sprintf("includes a path %v which is not the current supported group or segment", path))
+		}
+	}
 	return res
 }
