@@ -194,7 +194,7 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]*Conjunction, isExclude, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
-		getConjunctionForIPBlock(ruleBlocks, isExclude, isExternalRelevant)
+		getConjunctionForIPBlock(ruleBlocks, isExclude)
 	// todo add tests for all switch cases https://github.com/np-guard/vmware-analyzer/issues/402
 	// group is defined either by ip blocks or in other manners (tags, specific vms)
 	// group defined by IP blocks
@@ -202,10 +202,13 @@ func getConjunctionsSrcOrDst(rule *dfw.FwRule, groupToConjunctions map[string][]
 		switch {
 		case isExclude && isTautology:
 			return []*Conjunction{}
-		case !isExclude && isTautology:
+		case !isExclude && isTautology: // block is 0.0.0.0; relevant in any case (also if !isExternalRelevant)
 			return ipExternalBlockConjunctions
 		default:
-			return append(ipExternalBlockConjunctions, ipInternalBlockConjunctions...)
+			if isExternalRelevant {
+				return append(ipExternalBlockConjunctions, ipInternalBlockConjunctions...)
+			}
+			return ipInternalBlockConjunctions
 		}
 	}
 	// group not defined by IP blocks

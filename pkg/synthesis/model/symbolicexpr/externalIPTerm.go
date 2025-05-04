@@ -124,15 +124,14 @@ func (externalIPTerm) IsAllExternal() bool {
 // 2. External IP addr - these are further translated into externalIPTerm
 // 3. Segments - these are further translated in segmentTerm
 // 4. Internal IP addr - in case not all VMs are covered by segments, the *entire* IP is handled as internalIPTerm
-func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExclude,
-	isExternalRelevant bool) (externalIPBlocksConjunctions,
+func getConjunctionForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExclude bool) (externalIPBlocksConjunctions,
 	internalIPBlocksConjunctions []*Conjunction, isTautology bool) {
 	externalIPBlocksConjunctions = []*Conjunction{}
 	for _, ruleIPBlock := range ruleIPBlocks {
 		if ruleIPBlock.IsAll() {
 			return []*Conjunction{{&tautology{}}}, nil, true
 		}
-		if isExternalRelevant && ruleIPBlock.HasExternal() {
+		if ruleIPBlock.HasExternal() {
 			externalIPBlock := &topology.IPBlock{Block: ruleIPBlock.ExternalRange, OriginalIP: ruleIPBlock.OriginalIP}
 			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions,
 				&Conjunction{&externalIPTerm{atomicTerm: atomicTerm{neg: isExclude}, IPBlock: externalIPBlock}})
