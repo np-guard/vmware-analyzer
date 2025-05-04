@@ -110,9 +110,7 @@ func getTermForExprElement(containerModel *collector.ResourcesContainerModel,
 	case okCond:
 		return getAtomicsForCondition(isExcluded, cond, group)
 	case okPath:
-		//return getAtomicsForPath(isExcluded, path, group)
-		getAtomicsForPath(containerModel, isExcluded, path, group)
-		return nil // todo tmp
+		return getAtomicsForPath(containerModel, isExcluded, path, group)
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
