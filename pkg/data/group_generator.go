@@ -33,8 +33,7 @@ func createGroupOfIPAddresses(groupName string, addresses []nsx.IPElement) *coll
 	ipAddrsExpr := &collector.IPAddressExpression{}
 	ipAddrsExpr.ParentPath = newGroup.Path
 	ipAddrsExpr.IpAddresses = addresses
-	resourceType := nsx.IPAddressExpressionResourceTypeIPAddressExpression
-	ipAddrsExpr.ResourceType = &resourceType
+	ipAddrsExpr.ResourceType = common.PointerTo(nsx.IPAddressExpressionResourceTypeIPAddressExpression)
 	newGroup.Expression = append(newGroup.Expression, ipAddrsExpr)
 
 	return newGroup
@@ -73,8 +72,7 @@ func createGroupByPathExpr(groupName string, paths []string, rc *collector.Resou
 	// add the path expr
 	pathExpr := &collector.PathExpression{}
 	pathExpr.Paths = paths
-	rt := nsx.PathExpressionResourceTypePathExpression
-	pathExpr.ResourceType = &rt
+	pathExpr.ResourceType = common.PointerTo(nsx.PathExpressionResourceTypePathExpression)
 	newGroup.Expression = append(newGroup.Expression, pathExpr)
 	return newGroup
 }

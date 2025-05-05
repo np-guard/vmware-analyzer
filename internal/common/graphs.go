@@ -14,19 +14,24 @@ import (
 	"slices"
 )
 
-const (
-	TextFormat = "txt"
-	DotFormat  = "dot"
-	JSONFormat = "json"
-	SvgFormat  = "svg"
-)
-
 type node interface {
 	Name() string
 	Kind() string
 }
 type label interface {
 	String() string
+}
+
+type labelImpl struct {
+	value string
+}
+
+func (l *labelImpl) String() string {
+	return l.value
+}
+
+func LabelFromString(value string) label {
+	return &labelImpl{value: value}
 }
 
 // Graph interface is implemented by:
@@ -39,25 +44,25 @@ type Graph interface {
 	JSONString() (string, error)
 }
 
-func OutputGraph(g Graph, fileName, format string) (res string, err error) {
+func OutputGraph(g Graph, fileName string, format OutFormat) (res string, err error) {
 	switch format {
 	case JSONFormat:
 		res, err = g.JSONString()
 	case TextFormat:
 		res = g.String()
-	case DotFormat, SvgFormat:
+	case DotFormat, SVGFormat:
 		res = g.String()
 	}
 	if err != nil {
 		return "", err
 	}
-	if format == SvgFormat {
+	if format == SVGFormat {
 		dotFile := fileName + ".tmp.dot"
 		err = WriteToFile(dotFile, res)
 		if err != nil {
 			return "", err
 		}
-		bts, err := exec.Command("dot", "-T"+format, dotFile).Output() //nolint:gosec // running the dot command
+		bts, err := exec.Command("dot", "-T"+format.String(), dotFile).Output() //nolint:gosec // running the dot command
 		if err != nil {
 			return "", err
 		}
@@ -97,6 +102,9 @@ func (e *edge) tableStringComponents() []string {
 	labelStr := ""
 	if e.label != nil {
 		labelStr = e.label.String()
+	}
+	if e.src == nil || e.dst == nil {
+		return []string{}
 	}
 	return []string{e.src.Name(), e.dst.Name(), labelStr}
 }

@@ -1,0 +1,244 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm1
+    namespace: seg_1
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                VMs_within_IPs__10.0.0.0-20: "true"
+                VMs_within_IPs__10.0.0.0-24: "true"
+                VMs_within_IPs__10.0.0.0-30: "true"
+                group__default-group: "true"
+                in_Segment__seg_1: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm2
+    namespace: seg_2-3
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                VMs_within_IPs__10.0.0.0-20: "true"
+                VMs_within_IPs__10.0.0.0-24: "true"
+                group__default-group: "true"
+                in_Segment__seg_2-3: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm3
+    namespace: seg_2-3
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                VMs_within_IPs__10.0.0.0-20: "true"
+                VMs_within_IPs__10.0.0.0-24: "true"
+                group__default-group: "true"
+                in_Segment__seg_2-3: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm4
+    namespace: seg_4-5
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                VMs_within_IPs__10.0.0.0-20: "true"
+                group__default-group: "true"
+                in_Segment__seg_4-5: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm5
+    namespace: seg_4-5
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                VMs_within_IPs__10.0.0.0-20: "true"
+                group__default-group: "true"
+                in_Segment__seg_4-5: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm6
+    namespace: seg-6-7
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                group__default-group: "true"
+                in_Segment__seg-6-7: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm7
+    namespace: seg-6-7
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__10.0.0.0-16: "true"
+                group__default-group: "true"
+                in_Segment__seg-6-7: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm8
+    namespace: seg-8
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__172.16.10.10-16: "true"
+                group__default-group: "true"
+                in_Segment__seg-8: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm9
+    namespace: seg-9-10
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__192.168.0.0-16: "true"
+                group__default-group: "true"
+                in_Segment__seg-9-10: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm10
+    namespace: seg-9-10
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__192.168.0.0-16: "true"
+                group__default-group: "true"
+                in_Segment__seg-9-10: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm-no-address1
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__real-group: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: vm-no-address2
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__real-group: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}

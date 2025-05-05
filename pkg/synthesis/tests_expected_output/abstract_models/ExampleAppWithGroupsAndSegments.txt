@@ -1,0 +1,33 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name           |VMs
+bar-app              |New-VM-1, New-VM-2, New Virtual Machine
+foo-app              |New-VM-3, New-VM-4
+foo-backend          |New-VM-4
+foo-frontend         |New-VM-3
+research-app         |New-VM-1, New-VM-2, New-VM-3, New-VM-4, New Virtual Machine
+research-seg-1       |New-VM-1, New-VM-3, New-VM-4
+research-test-expr-2 |New-VM-1
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                                                 |Dst                                         |Connection
+0                            |1027    |(group = foo-frontend)                              |(group = foo-backend)                       |TCP dst-ports: 80
+1                            |1025    |(group = research-test-expr-2 and group != foo-app) |(group = foo-frontend)                      |TCP dst-ports: 445
+1                            |1025    |(group = research-test-expr-2)                      |(group = foo-frontend and group != foo-app) |TCP dst-ports: 445
+2                            |1024    |(group = bar-app and group != foo-app)              |(group = bar-app)                           |TCP dst-ports: 443
+2                            |1024    |(group = bar-app)                                   |(group = bar-app and group != foo-app)      |TCP dst-ports: 443
+
+outbound rules
+Original allow rule priority |Rule id |Src                                                 |Dst                                         |Connection
+0                            |1027    |(group = foo-frontend)                              |(group = foo-backend)                       |TCP dst-ports: 80
+1                            |1025    |(group = research-test-expr-2 and group != foo-app) |(group = foo-frontend)                      |TCP dst-ports: 445
+1                            |1025    |(group = research-test-expr-2)                      |(group = foo-frontend and group != foo-app) |TCP dst-ports: 445
+2                            |1024    |(group = bar-app and group != foo-app)              |(group = bar-app)                           |TCP dst-ports: 443
+2                            |1024    |(group = bar-app)                                   |(group = bar-app and group != foo-app)      |TCP dst-ports: 443
+
