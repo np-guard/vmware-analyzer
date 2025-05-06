@@ -133,7 +133,7 @@ var staticTests = []*cliTest{
 	},
 	{
 		name: "synthesize-only",
-		args: "generate --resource-input-file ../pkg/data/json/Example1.json --synthesis-dump-dir examples/output/synthesis" +
+		args: "generate --resource-input-file ../pkg/data/json/Example1.json -d examples/output/synthesis" +
 			" --disjoint-hint backend,frontend --disjoint-hint frontend,backend --synth-create-dns-policy=false",
 		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
 	},
@@ -226,7 +226,7 @@ var nsxEnvTests = []*cliTest{
 	{
 		name: "collect-and-synthesis",
 		args: "generate --resource-dump-file examples/output/collected-resources.json" +
-			" --synthesis-dump-dir examples/output/collected-synthesis --synthesize-admin-policies",
+			" --synthesis-dir examples/output/collected-synthesis --synthesize-admin-policies",
 		possibleErr:     common.ErrMissingRquiredArg,
 		expectedOutFile: []string{"examples/output/collected-resources.json", "examples/output/collected-synthesis/k8s_resources/policies.yaml"},
 	},

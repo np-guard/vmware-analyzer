@@ -1,0 +1,11 @@
+Analyzed connectivity:
+Source              |Destination         |Permitted connections
+New Virtual Machine |New-VM-1            |TCP dst-ports: 443
+New Virtual Machine |New-VM-2            |TCP dst-ports: 443
+New-VM-1            |New Virtual Machine |TCP dst-ports: 443
+New-VM-1            |New-VM-2            |TCP dst-ports: 443
+New-VM-1            |New-VM-3            |TCP dst-ports: 445
+New-VM-2            |New Virtual Machine |TCP dst-ports: 443
+New-VM-2            |New-VM-1            |TCP dst-ports: 443
+New-VM-3            |New-VM-4            |TCP dst-ports: 80
+

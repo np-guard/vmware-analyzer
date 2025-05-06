@@ -2,40 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group = Not Slytherin) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
-    name: policy-1
+    name: policy-0
     namespace: default
 spec:
     egress:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: group__Not-NLCSlytherin
+                    - key: group__NotSlytherin
                       operator: Exists
     podSelector:
         matchExpressions:
@@ -53,14 +30,14 @@ metadata:
         description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
-    name: policy-2
+    name: policy-1
     namespace: default
 spec:
     egress:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: group__Not-NLCSlytherin
+                    - key: group__NotSlytherin
                       operator: Exists
                     - key: group__Gryffindor
                       operator: DoesNotExist
@@ -76,6 +53,31 @@ kind: NetworkPolicy
 metadata:
     annotations:
         description: 'src: (group = Dumbledore1 and group != Dumbledore2) dst: (group = Not Slytherin) conn: All Connections'
+        nsx-id: "9200"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: group__Dumbledore1
+                      operator: Exists
+                    - key: group__Dumbledore2
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__NotSlytherin
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9200"
     creationTimestamp: null
     name: policy-3
@@ -87,34 +89,9 @@ spec:
                 matchExpressions:
                     - key: group__Dumbledore1
                       operator: Exists
-                    - key: group__Dumbledore2
-                      operator: DoesNotExist
     podSelector:
         matchExpressions:
-            - key: group__Not-NLCSlytherin
-              operator: Exists
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
-        nsx-id: "9200"
-    creationTimestamp: null
-    name: policy-4
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - podSelector:
-                matchExpressions:
-                    - key: group__Dumbledore1
-                      operator: Exists
-    podSelector:
-        matchExpressions:
-            - key: group__Not-NLCSlytherin
+            - key: group__NotSlytherin
               operator: Exists
             - key: group__Gryffindor
               operator: DoesNotExist
@@ -128,7 +105,7 @@ metadata:
         description: 'src: (group = Dumbledore2 and group != Dumbledore1) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
-    name: policy-5
+    name: policy-4
     namespace: default
 spec:
     egress:
@@ -153,14 +130,14 @@ metadata:
         description: 'src: (group = Dumbledore2) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
-    name: policy-6
+    name: policy-5
     namespace: default
 spec:
     egress:
         - to:
             - podSelector:
                 matchExpressions:
-                    - key: group__Not-NLCSlytherin
+                    - key: group__NotSlytherin
                       operator: Exists
                     - key: group__Gryffindor
                       operator: DoesNotExist
@@ -178,7 +155,7 @@ metadata:
         description: 'src: (group = Dumbledore2 and group != Dumbledore1) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
-    name: policy-7
+    name: policy-6
     namespace: default
 spec:
     ingress:
@@ -203,7 +180,7 @@ metadata:
         description: 'src: (group = Dumbledore2) dst: (group = Not Slytherin and group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
-    name: policy-8
+    name: policy-7
     namespace: default
 spec:
     ingress:
@@ -214,7 +191,7 @@ spec:
                       operator: Exists
     podSelector:
         matchExpressions:
-            - key: group__Not-NLCSlytherin
+            - key: group__NotSlytherin
               operator: Exists
             - key: group__Gryffindor
               operator: DoesNotExist
@@ -234,4 +211,27 @@ spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

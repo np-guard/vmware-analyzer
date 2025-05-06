@@ -78,7 +78,7 @@ expression, the synthesis will reference a label corresponding to the group.
 
 ## Output
 ### Synthesized k8s resource
-`k8s_resources` folder under the folder specified in `synthesis-dump-dir` contains the following files:
+`k8s_resources` folder under the folder specified in `synthesis-dir` contains the following files:
 * **pods.yaml** the list pods (as placeholder for VMs resources for now) with the relevant labels of each pod.
 The labels are added based on original VMs' tags and groups in NSX env. 
 * **policies.yaml** the k8s policies

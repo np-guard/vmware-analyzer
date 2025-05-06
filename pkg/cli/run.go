@@ -11,7 +11,7 @@ const (
 
 func runCommand(args *inArgs, cmd string) error {
 	runnerObj, err := runner.NewRunnerWithOptionsList(
-		runner.WithOutputFormat(args.outputFormat.String()),
+		runner.WithOutputFormat(args.outputFormat),
 		runner.WithOutputColor(args.color),
 		runner.WithHighVerbosity(args.verbose),
 		runner.WithQuietVerbosity(args.quiet),
@@ -26,7 +26,7 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithAnalysisOutputFile(args.outputFile),
 		runner.WithAnalysisExplain(args.explain),
 		runner.WithAnalysisVMsFilter(args.outputFilter),
-		runner.WithSynthesisDumpDir(args.synthesisDumpDir),
+		runner.WithSynthesisDir(args.synthesisDir),
 		runner.WithSynthAdminPolicies(args.synthesizeAdmin),
 		runner.WithSynthesisHints(args.disjointHints),
 		runner.WithSynthDNSPolicies(args.createDNSPolicy),
@@ -34,6 +34,8 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithSkipAnalysis(cmd != cmdAnalyze),
 		runner.WithSynth(cmd == cmdGenerate),
 		runner.WithLint(cmd == cmdLint),
+		runner.WithSegmentsMapping(args.segmentsMapping),
+		runner.WithEndpointsMapping(args.endpointsMapping),
 	)
 	if err != nil {
 		return err

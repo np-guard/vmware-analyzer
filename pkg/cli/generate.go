@@ -1,6 +1,10 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
+)
 
 func newCommandGenerate() *cobra.Command {
 	c := &cobra.Command{
@@ -11,14 +15,15 @@ func newCommandGenerate() *cobra.Command {
 	nsxanalyzer generate -r config.json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			return runCommand(args, cmdGenerate)
-			// return nil
 		},
 	}
 
-	c.PersistentFlags().StringVar(&args.synthesisDumpDir, synthesisDumpDirFlag, "", synthesisDumpDirHelp)
+	c.PersistentFlags().StringVarP(&args.synthesisDir, synthesisDirFlag, "d", "", synthesisDirHelp)
 	c.PersistentFlags().BoolVar(&args.synthesizeAdmin, synthesizeAdminPoliciesFlag, false, synthesizeAdminPoliciesHelp)
 	c.PersistentFlags().BoolVar(&args.createDNSPolicy, createDNSPolicyFlag, true, createDNSPolicyHelp)
 	c.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 	c.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
+	c.PersistentFlags().Var(&args.endpointsMapping, endpointsMappingFlag, endpointsMappingFlagHelp+common.AllEndpointsStr)
+	c.PersistentFlags().Var(&args.segmentsMapping, segmentsMappingFlag, segmentsMappingFlagHelp+common.AllSegmentOptionsStr)
 	return c
 }

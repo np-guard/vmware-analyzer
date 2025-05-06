@@ -28,6 +28,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/nsx"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/resources"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
@@ -82,12 +83,18 @@ func (synTest *synthesisTest) hasExpectedResults() bool {
 	return synTest.exData != nil
 }
 func (synTest *synthesisTest) options() *config.SynthesisOptions {
-	return &config.SynthesisOptions{
+	res := &config.SynthesisOptions{
 		Hints:           synTest.hints(),
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
 		FilterVMs:       synTest.filter,
+		// default enum flags values:
+		//EndpointsMapping: common.EndpointsBoth,
+		//SegmentsMapping:  common.SegmentsToUDNs,
 	}
+	res.EndpointsMapping.SetDefault()
+	res.SegmentsMapping.SetDefault()
+	return res
 }
 func (synTest *synthesisTest) outputParams() common.OutputParameters {
 	return common.OutputParameters{Format: "txt", VMs: synTest.filter}
@@ -170,6 +177,12 @@ var groupsByVmsTests = []synthesisTest{
 	{
 		name:            "ExampleHogwartsExcludeSimple",
 		exData:          data.ExampleHogwartsExcludeSimple,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleAppWithGroupsAndSegments",
+		exData:          data.ExampleAppWithGroupsAndSegments,
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
@@ -456,7 +469,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runConvertToAbstract.log"))
 	require.Nil(t, err)
-	abstractModel, err := ocpvirt.NsxToPolicy(rc, nil, synTest.options())
+	abstractModel, err := model.NSXConfigToAbstractModel(rc, nil, synTest.options())
 	require.Nil(t, err)
 	abstractModelStr := model.StrAbstractModel(abstractModel, synTest.options())
 	// write the abstract model rules into a file, for debugging:
@@ -472,15 +485,15 @@ func runConvertToAbstract(synTest *synthesisTest, t *testing.T, rc *collector.Re
 func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.ResourcesContainerModel) {
 	err := logging.Tee(path.Join(synTest.debugDir(), "runK8SSynthesis.log"))
 	require.Nil(t, err)
-	k8sDir := path.Join(synTest.outDir(), utils.K8sResourcesDir)
-	// create K8S resources:
-	resources, err := ocpvirt.NSXToK8sSynthesis(rc, nil, synTest.options())
+	k8sDir := path.Join(synTest.outDir(), resources.K8sResourcesDir)
+	// create K8S allResources:
+	allResources, err := ocpvirt.NSXToK8sSynthesis(rc, nil, synTest.options())
 	require.Nil(t, err)
-	err = resources.CreateDir(synTest.outDir())
+	err = allResources.WriteResourcesToDir(synTest.outDir())
 	require.Nil(t, err)
 	// compare k8s resources to expected results:
 	if synTest.hasExpectedResults() {
-		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), utils.K8sResourcesDir, synTest.id())
+		expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), resources.K8sResourcesDir, synTest.id())
 		compareOrRegenerateOutputDirPerTest(t, k8sDir, expectedOutputDir, synTest.name)
 	}
 	// run netpol-analyzer, the connectivity is kept into a file, for debugging:
@@ -490,7 +503,7 @@ func runK8SSynthesis(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	k8sConnectivityFileCreated, err := utils.K8sAnalyzer(k8sDir, k8sConnectivityFile, "txt")
 	require.Nil(t, err)
 
-	if k8sConnectivityFileCreated && !resources.NotFullySupported {
+	if k8sConnectivityFileCreated && !allResources.NotFullySupported {
 		compareToNetpol(synTest, t, rc, k8sConnectivityFile)
 	} else {
 		logging.Debugf("test %s: skip comparing netpol analyzer connectivity with vmware connectivity", synTest.name)
@@ -645,9 +658,9 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	require.Nil(t, err)
 
 	// create abstract model convert it to a new equiv NSX resources:
-	abstractModel, err := ocpvirt.NsxToPolicy(rc, nil, synTest.options())
+	abstractModel, err := model.NSXConfigToAbstractModel(rc, nil, synTest.options())
 	require.Nil(t, err)
-	policies, groups := nsx.ToNSXPolicies(rc, abstractModel)
+	policies, groups := nsx.AbstractToNSXPolicies(rc, abstractModel)
 	// merge the generate resources into the orig resources. store in into JSON config in a file, for debugging::
 	rc.DomainList[0].Resources.SecurityPolicyList = policies                                       // override policies
 	rc.DomainList[0].Resources.GroupList = append(rc.DomainList[0].Resources.GroupList, groups...) // update groups
@@ -703,16 +716,20 @@ const (
 )
 
 // to generate output results change runTestMode:
-const runTestMode = OutputComparison
+var runTestMode = OutputComparison
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
 	require.Nil(t, err)
+	// if the --update flag is on (then generate/ override the expected output file with the actualOutput)
+	if *common.Update {
+		runTestMode = OutputGeneration
+	}
 	switch runTestMode {
 	case OutputComparison:
 		expectedFiles, err := os.ReadDir(expectedDir)
 		require.Nil(t, err)
-		require.Equal(t, len(actualFiles), len(expectedFiles),
+		require.Equal(t, len(expectedFiles), len(actualFiles),
 			fmt.Sprintf("number of output files of test %v not as expected", testName))
 		for _, file := range actualFiles {
 			expectedOutput, err := os.ReadFile(filepath.Join(expectedDir, file.Name()))

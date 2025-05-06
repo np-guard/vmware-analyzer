@@ -14,7 +14,7 @@ func (c ConnMap) GenConnectivityOutput(params common.OutputParameters) (res stri
 		g = common.NewEdgesGraph("", []string{}, false)
 	case common.TextFormat:
 		g = common.NewEdgesGraph(common.AnalyzedConnectivityHeader, []string{"Source", "Destination", "Permitted connections"}, params.Color)
-	case common.DotFormat, common.SvgFormat:
+	case common.DotFormat, common.SVGFormat:
 		g = common.NewDotGraph(false)
 	default:
 		return "", fmt.Errorf("unsupported format %s", params.Format)

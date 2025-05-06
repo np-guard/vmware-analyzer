@@ -1,55 +1,53 @@
 package topology
 
 import (
-	core "k8s.io/api/core/v1"
-
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/resources"
 )
 
+// NetworkTopologyGenerator implements the functionality to generate network topology resources
+// from the input abstract model and nsx config
 type NetworkTopologyGenerator struct {
+	// input abstract model
 	synthModel *model.AbstractModelSyn
+	options    *config.SynthesisOptions
 
-	NamespacesInfo    *NamespacesInfo
+	// objects for generation process
+	NamespacesInfo *NamespacesInfo
+	// output indicators
 	NotFullySupported bool
 
 	// generated resources
-	Pods       []*core.Pod
-	Namespaces []*core.Namespace
-
-	// todo: Add generation of UDNs and VMs resources
+	resources.Generated
 }
 
-func NewNetworkTopologyGenerator(synthModel *model.AbstractModelSyn) *NetworkTopologyGenerator {
+func NewNetworkTopologyGenerator(synthModel *model.AbstractModelSyn, options *config.SynthesisOptions) *NetworkTopologyGenerator {
 	return &NetworkTopologyGenerator{
 		synthModel:     synthModel,
-		NamespacesInfo: NewNamespacesInfo(synthModel.VMs),
+		options:        options,
+		NamespacesInfo: newNamespacesInfo(synthModel),
 	}
 }
 
 func (nt *NetworkTopologyGenerator) Generate() {
-	nt.NamespacesInfo.InitNamespaces(nt.synthModel)
-	nt.Namespaces = nt.NamespacesInfo.CreateNamespaces()
-	nt.Pods = nt.createPods()
-}
-
-func (nt *NetworkTopologyGenerator) createPods() (res []*core.Pod) {
-	for _, vm := range nt.synthModel.VMs {
-		nt.NotFullySupported = nt.NotFullySupported || len(nt.synthModel.VMsSegments[vm]) > 1
-		pod := &core.Pod{}
-		pod.Kind = "Pod"
-		pod.APIVersion = "v1"
-		pod.Name = utils.ToLegalK8SString(vm.Name())
-		pod.Namespace = nt.NamespacesInfo.vmNamespace[vm].Name
-		if len(nt.synthModel.EndpointsToGroups[vm]) == 0 {
-			continue
-		}
-		pod.Labels = map[string]string{}
-
-		for _, label := range utils.CollectVMLabels(nt.synthModel, vm) {
-			pod.Labels[utils.ToLegalK8SString(label)] = "true"
-		}
-		res = append(res, pod)
+	// udn-based micro-segmentation
+	// namespace generation
+	nt.Namespaces = nt.NamespacesInfo.createNamespaces()
+	// udn generation
+	if nt.options.SegmentsMapping == common.SegmentsToUDNs {
+		nt.UDNs = nt.NamespacesInfo.createUDNs()
 	}
-	return res
+
+	// endpoints generation
+	switch nt.options.EndpointsMapping {
+	case common.EndpointsVMs:
+		nt.VMs = nt.createVMs()
+	case common.EndpointsPods:
+		nt.Pods = nt.createPods()
+	case common.EndpointsBoth:
+		nt.VMs = nt.createVMs()
+		nt.Pods = nt.createPods()
+	}
 }

@@ -2,8 +2,10 @@ apiVersion: v1
 kind: Namespace
 metadata:
     creationTimestamp: null
+    labels:
+        k8s.ovn.org/primary-user-defined-network: ""
+        kubernetes.io/metadata.name: seg_a_and_b
     name: seg_a_and_b
-    namespace: seg_a_and_b
 spec: {}
 status: {}
 ---
@@ -11,7 +13,9 @@ apiVersion: v1
 kind: Namespace
 metadata:
     creationTimestamp: null
+    labels:
+        k8s.ovn.org/primary-user-defined-network: ""
+        kubernetes.io/metadata.name: seg_c
     name: seg_c
-    namespace: seg_c
 spec: {}
 status: {}
