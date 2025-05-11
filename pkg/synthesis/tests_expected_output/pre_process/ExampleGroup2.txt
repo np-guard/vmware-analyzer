@@ -1,0 +1,13 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src                           |Dst               |Connection
+0        |1004    |allow  |(VMs within IPs 192.168.10.5) |(group = backend) |TCP dst-ports: 445
+1        |1003    |deny   |(*)                           |(*)               |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src                           |Dst               |Connection
+0        |1004    |allow  |(VMs within IPs 192.168.10.5) |(group = backend) |TCP dst-ports: 445
+1        |1003    |deny   |(*)                           |(*)               |All Connections
+
