@@ -62,7 +62,7 @@ func (p *nsxConfigParser) getSegments() (err error) {
 		if len(segResource.SegmentPorts) == 0 && len(segResource.Subnets) == 0 {
 			continue
 		}
-		segment, err := ProcessSegment(segResource)
+		segment, err := GetCollectorFromTopologySegment(segResource)
 		if err != nil {
 			return err
 		}
@@ -82,8 +82,8 @@ func (p *nsxConfigParser) getSegments() (err error) {
 	return nil
 }
 
-// ProcessSegment translates collector's segment's to topology's segment
-func ProcessSegment(collectorSegment *collector.Segment) (*topology.Segment, error) {
+// GetCollectorFromTopologySegment translates collector's segment's to topology's segment
+func GetCollectorFromTopologySegment(collectorSegment *collector.Segment) (*topology.Segment, error) {
 	subnetsNetworks := common.CustomStrSliceToStrings(collectorSegment.Subnets,
 		func(subnet nsx.SegmentSubnet) string { return *subnet.Network })
 	block, err := netset.IPBlockFromCidrList(subnetsNetworks)

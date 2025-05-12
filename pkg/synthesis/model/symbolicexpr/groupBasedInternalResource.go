@@ -62,7 +62,7 @@ func getAtomicsForPath(containerModel *collector.ResourcesContainerModel,
 		case groupOfPath != nil:
 			res = append(res, groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
 		case segmentOfPath != nil:
-			segment, err := configuration.ProcessSegment(segmentOfPath)
+			segment, err := configuration.GetCollectorFromTopologySegment(segmentOfPath)
 			if err != nil {
 				debugMsg(group, err.Error())
 			}
