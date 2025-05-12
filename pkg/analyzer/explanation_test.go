@@ -496,6 +496,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 	}
 	// get ResourcesContainerModel from Example object
 	var override bool
+	// todo: consider using the common.Update flag for override indication instead
 	//nolint: gocritic //keep this commented out code for test updates
 	// override = true // use when modifying tests above
 	rc, err := data.ExamplesGeneration(example, override)

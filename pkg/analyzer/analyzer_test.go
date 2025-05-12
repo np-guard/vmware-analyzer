@@ -63,6 +63,10 @@ var allTests = []analyzerTest{
 		exData: data.ExampleAppWithGroupsAdditionalDropRule,
 	},
 	{
+		name:   "ExampleAppWithGroupsAndSegments",
+		exData: data.ExampleAppWithGroupsAndSegments,
+	},
+	{
 		name:   "ExampleGroup1",
 		exData: data.ExampleGroup1,
 	},
@@ -86,6 +90,9 @@ func (a *analyzerTest) file() string {
 
 func (a *analyzerTest) run(t *testing.T) {
 	var override bool
+	if *common.Update {
+		override = true
+	}
 	//nolint:gocritic // comment here should stay
 	// override = true // uncommnet to override expected output
 	rc, err := data.ExamplesGeneration(a.exData, false)

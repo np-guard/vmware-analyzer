@@ -1,0 +1,37 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: A
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__192.168.10.5: "true"
+                group__A-by-IP: "true"
+                group__frontend: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: B
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__backend: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}

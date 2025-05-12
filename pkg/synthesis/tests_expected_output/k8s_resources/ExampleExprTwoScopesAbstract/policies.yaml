@@ -2,10 +2,25 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
+        description: default deny policy for namespace default
+        nsx-id: "10230"
+    creationTimestamp: null
+    name: default-deny-for-default
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
         nsx-id: none
     creationTimestamp: null
-    name: dns-policy
+    name: dns-policy-default
     namespace: default
 spec:
     egress:
@@ -19,19 +34,4 @@ spec:
                     k8s-app: kube-dns
     podSelector: {}
     policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Default Deny Network Policy
-        nsx-id: "10230"
-    creationTimestamp: null
-    name: default-deny
-    namespace: default
-spec:
-    podSelector: {}
-    policyTypes:
-        - Ingress
         - Egress

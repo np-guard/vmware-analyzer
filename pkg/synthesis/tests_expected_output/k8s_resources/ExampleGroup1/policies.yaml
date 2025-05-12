@@ -2,33 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy-1
+    name: policy-0
     namespace: default
 spec:
     egress:
@@ -36,7 +13,13 @@ spec:
             - port: 445
               protocol: TCP
           to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__backend
                       operator: Exists
@@ -54,12 +37,18 @@ metadata:
         description: 'src: (group = frontend) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy-2
+    name: policy-1
     namespace: default
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: group__frontend
                       operator: Exists
@@ -80,7 +69,7 @@ metadata:
         description: 'src: (IP addr in 8.8.8.8/32) dst: (group = frontend) conn: TCP dst-ports: 80'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     ingress:
@@ -101,13 +90,36 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace default
         nsx-id: "1003"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-default
     namespace: default
 spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-default
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

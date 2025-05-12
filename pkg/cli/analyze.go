@@ -1,6 +1,10 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
+)
 
 func newCommandAnalyze() *cobra.Command {
 	c := &cobra.Command{
@@ -14,7 +18,7 @@ func newCommandAnalyze() *cobra.Command {
 	}
 
 	c.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
-	c.PersistentFlags().VarP(&args.outputFormat, outputFormatFlag, outputFormantShortFlag, outputFormatHelp+allFormatsStr)
+	c.PersistentFlags().VarP(&args.outputFormat, outputFormatFlag, outputFormantShortFlag, outputFormatHelp+common.AllFormatsStr)
 	c.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 	c.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
 	c.PersistentFlags().StringVar(&args.topologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)

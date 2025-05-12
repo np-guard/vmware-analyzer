@@ -1,0 +1,15 @@
+apiVersion: k8s.ovn.org/v1
+kind: UserDefinedNetwork
+metadata:
+    creationTimestamp: null
+    name: udn-seg1
+    namespace: seg1
+spec:
+    layer2:
+        ipam:
+            lifecycle: Persistent
+        role: Primary
+        subnets:
+            - 192.168.1.0/24
+    topology: Layer2
+status: {}

@@ -22,6 +22,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/resources"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
@@ -42,7 +43,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	kubeDir := path.Join(synTest.debugDir(), "kube_test_dir")
 	err := logging.Tee(path.Join(kubeDir, "runK8STraceFlow.log"))
 	require.Nil(t, err)
-	k8sDir := path.Join(kubeDir, utils.K8sResourcesDir)
+	k8sDir := path.Join(kubeDir, resources.K8sResourcesDir)
 	setEnvironmentFile := path.Join(kubeDir, "setEnvironment.sh")
 	cleanEnvironmentFile := path.Join(kubeDir, "cleanEnvironment.sh")
 	// create K8S k8sResources
@@ -52,7 +53,7 @@ func runK8STraceFlow(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	fixPodsResources(synTest.name, k8sResources.Pods)
 	fixPoliciesResources(k8sResources.NetworkPolicies)
 	fixAdminPoliciesResources(k8sResources.AdminNetworkPolicies)
-	require.Nil(t, k8sResources.CreateDir(kubeDir))
+	require.Nil(t, k8sResources.WriteResourcesToDir(kubeDir))
 	// run netpol-analyzer, for debugging:
 	_, err = utils.K8sAnalyzer(k8sDir, path.Join(kubeDir, "k8s_connectivity.txt"), "txt")
 	require.Nil(t, err)

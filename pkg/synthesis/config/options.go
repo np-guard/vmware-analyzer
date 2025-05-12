@@ -6,11 +6,13 @@ import (
 )
 
 type SynthesisOptions struct {
-	Hints           *symbolicexpr.Hints
-	SynthesizeAdmin bool
-	Color           bool
-	CreateDNSPolicy bool
-	FilterVMs       []string
+	Hints            *symbolicexpr.Hints
+	SynthesizeAdmin  bool
+	Color            bool
+	CreateDNSPolicy  bool
+	FilterVMs        []string
+	EndpointsMapping common.Endpoints
+	SegmentsMapping  common.Segments
 }
 
 func (options SynthesisOptions) OutputOption() common.OutputParameters {

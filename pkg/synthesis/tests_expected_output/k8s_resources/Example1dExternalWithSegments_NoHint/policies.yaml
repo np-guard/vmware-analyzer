@@ -2,56 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: seg_a_and_b
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: seg_c
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (VMs within IPs 0.0.1.0/25) dst: (VMs within IPs 0.0.1.128/25) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy-2
+    name: policy-0
     namespace: seg_a_and_b
 spec:
     egress:
@@ -59,7 +13,13 @@ spec:
             - port: 445
               protocol: TCP
           to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_a_and_b
+              podSelector:
                 matchExpressions:
                     - key: VMs_within_IPs__0.0.1.128-25
                       operator: Exists
@@ -77,12 +37,18 @@ metadata:
         description: 'src: (VMs within IPs 0.0.1.0/25) dst: (VMs within IPs 0.0.1.128/25) conn: TCP dst-ports: 445'
         nsx-id: "1004"
     creationTimestamp: null
-    name: policy-3
+    name: policy-1
     namespace: seg_a_and_b
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - seg_a_and_b
+              podSelector:
                 matchExpressions:
                     - key: VMs_within_IPs__0.0.1.0-25
                       operator: Exists
@@ -103,7 +69,7 @@ metadata:
         description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-4
+    name: policy-2
     namespace: seg_a_and_b
 spec:
     egress:
@@ -135,7 +101,7 @@ metadata:
         description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-5
+    name: policy-3
     namespace: seg_c
 spec:
     ingress:
@@ -164,10 +130,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace seg_a_and_b
         nsx-id: "1003"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-seg_a_and_b
     namespace: seg_a_and_b
 spec:
     podSelector: {}
@@ -179,13 +145,59 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace seg_c
         nsx-id: "1003"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-seg_c
     namespace: seg_c
 spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace seg_a_and_b
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-seg_a_and_b
+    namespace: seg_a_and_b
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace seg_c
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-seg_c
+    namespace: seg_c
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

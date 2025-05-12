@@ -49,6 +49,10 @@ test:
 	@echo -- $@ --
 	go test ./... -v -coverpkg=./... -coverprofile $(COVERAGE)
 
+test-update: # overrides/generates tests expected output files
+	@echo -- $@ --
+	go test ./... -v -coverpkg=./... -coverprofile $(COVERAGE) --args --update
+
 test-fail-fast:		
 	./scripts/tests_fail_fast.sh	
 
