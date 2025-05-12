@@ -27,7 +27,7 @@ type Runner struct {
 	// output args
 	logFile        string
 	highVerobsity  bool
-	outputFormat   string
+	outputFormat   common.OutFormat
 	color          bool
 	quietVerobsity bool
 
@@ -49,10 +49,12 @@ type Runner struct {
 
 	// synthesis args
 	synth               bool
-	synthesisDumpDir    string
+	synthesisDir        string
 	disjointHints       []string
 	synthesizeAdmin     bool
 	suppressDNSPolicies bool
+	endpointsMapping    common.Endpoints
+	segmentsMapping     common.Segments
 
 	// lint args
 	lint bool
@@ -176,7 +178,7 @@ func (r *Runner) runLint() error {
 }
 
 func (r *Runner) runSynthesis() error {
-	if r.synthesisDumpDir == "" && !r.synth {
+	if r.synthesisDir == "" && !r.synth {
 		return nil
 	}
 	hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(r.disjointHints))}
@@ -184,11 +186,13 @@ func (r *Runner) runSynthesis() error {
 		hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 	}
 	opts := &synth_config.SynthesisOptions{
-		Hints:           hints,
-		SynthesizeAdmin: r.synthesizeAdmin,
-		Color:           r.color,
-		CreateDNSPolicy: !r.suppressDNSPolicies,
-		FilterVMs:       r.analysisVMsFilter,
+		Hints:            hints,
+		SynthesizeAdmin:  r.synthesizeAdmin,
+		Color:            r.color,
+		CreateDNSPolicy:  !r.suppressDNSPolicies,
+		FilterVMs:        r.analysisVMsFilter,
+		EndpointsMapping: r.endpointsMapping,
+		SegmentsMapping:  r.segmentsMapping,
 	}
 	k8sResources, err := ocpvirt.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {
@@ -196,10 +200,10 @@ func (r *Runner) runSynthesis() error {
 	}
 	r.generatedK8sPolicies = k8sResources.NetworkPolicies
 	r.generatedK8sAdminPolicies = k8sResources.AdminNetworkPolicies
-	if r.synthesisDumpDir == "" {
+	if r.synthesisDir == "" {
 		return nil
 	}
-	return k8sResources.CreateDir(r.synthesisDumpDir)
+	return k8sResources.WriteResourcesToDir(r.synthesisDir)
 }
 
 func (r *Runner) resourcesToFile() error {
@@ -253,11 +257,12 @@ func (r *Runner) resourcesFromNSXEnv() error {
 
 func NewRunnerWithOptionsList(opts ...RunnerOption) (r *Runner, err error) {
 	r = &Runner{}
+	// default values for enam flags
+	r.outputFormat.SetDefault()
+	r.endpointsMapping.SetDefault()
+	r.segmentsMapping.SetDefault()
 	for _, o := range opts {
 		o(r)
-	}
-	if r.outputFormat == "" {
-		r.outputFormat = common.TextFormat
 	}
 	return r, nil
 }
@@ -326,7 +331,7 @@ func WithTopologyDumpFile(l string) RunnerOption {
 	}
 }
 
-func WithOutputFormat(l string) RunnerOption {
+func WithOutputFormat(l common.OutFormat) RunnerOption {
 	return func(r *Runner) {
 		r.outputFormat = l
 	}
@@ -362,9 +367,9 @@ func WithAnalysisExplain(explain bool) RunnerOption {
 	}
 }
 
-func WithSynthesisDumpDir(l string) RunnerOption {
+func WithSynthesisDir(l string) RunnerOption {
 	return func(r *Runner) {
-		r.synthesisDumpDir = l
+		r.synthesisDir = l
 	}
 }
 
@@ -409,5 +414,17 @@ func WithInsecureSkipVerify(insecureSkipVerify bool) RunnerOption {
 func WithLint(lintCmd bool) RunnerOption {
 	return func(r *Runner) {
 		r.lint = lintCmd
+	}
+}
+
+func WithEndpointsMapping(endpoints common.Endpoints) RunnerOption {
+	return func(r *Runner) {
+		r.endpointsMapping = endpoints
+	}
+}
+
+func WithSegmentsMapping(segments common.Segments) RunnerOption {
+	return func(r *Runner) {
+		r.segmentsMapping = segments
 	}
 }

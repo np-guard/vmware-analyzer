@@ -2,38 +2,21 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections'
         nsx-id: "9199"
     creationTimestamp: null
-    name: policy-1
+    name: policy-0
     namespace: default
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: DoesNotExist
@@ -51,12 +34,18 @@ metadata:
         description: 'src: (tag = Dumbledore) dst: (tag != Slytherin) conn: All Connections'
         nsx-id: "9199"
     creationTimestamp: null
-    name: policy-2
+    name: policy-1
     namespace: default
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Dumbledore
                       operator: Exists
@@ -74,12 +63,18 @@ metadata:
         description: 'src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Hufflepuff
                       operator: DoesNotExist
@@ -97,12 +92,18 @@ metadata:
         description: 'src: (tag = Gryffindor) dst: (tag != Hufflepuff) conn: All Connections'
         nsx-id: "9201"
     creationTimestamp: null
-    name: policy-4
+    name: policy-3
     namespace: default
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Gryffindor
                       operator: Exists
@@ -120,12 +121,18 @@ metadata:
         description: 'src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections'
         nsx-id: "9203"
     creationTimestamp: null
-    name: policy-5
+    name: policy-4
     namespace: default
 spec:
     egress:
         - to:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: DoesNotExist
@@ -143,12 +150,18 @@ metadata:
         description: 'src: (tag = Hufflepuff) dst: (tag != Slytherin) conn: All Connections'
         nsx-id: "9203"
     creationTimestamp: null
-    name: policy-6
+    name: policy-5
     namespace: default
 spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Hufflepuff
                       operator: Exists
@@ -166,7 +179,7 @@ metadata:
         description: 'src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections'
         nsx-id: "9205"
     creationTimestamp: null
-    name: policy-7
+    name: policy-6
     namespace: default
 spec:
     ingress:
@@ -186,13 +199,36 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace default
         nsx-id: "10230"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-default
     namespace: default
 spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-default
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

@@ -2,44 +2,10 @@ apiVersion: policy.networking.k8s.io/v1alpha1
 kind: AdminNetworkPolicy
 metadata:
     annotations:
-        description: Admin Network Policy To Allow Egress Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: egress-dns-policy
-spec:
-    egress:
-        - action: Allow
-          ports:
-            - portNumber:
-                port: 53
-                protocol: UDP
-          to:
-            - pods:
-                namespaceSelector: {}
-                podSelector:
-                    matchExpressions:
-                        - key: k8s-app
-                          operator: In
-                          values:
-                            - kube-dns
-    priority: 1
-    subject:
-        pods:
-            namespaceSelector:
-                matchLabels:
-                    kubernetes.io/metadata.name: default
-            podSelector: {}
-status:
-    conditions: null
----
-apiVersion: policy.networking.k8s.io/v1alpha1
-kind: AdminNetworkPolicy
-metadata:
-    annotations:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: All Connections)'
         nsx-id: "10218"
     creationTimestamp: null
-    name: admin-policy-1
+    name: admin-policy-0
 spec:
     ingress:
         - action: Pass
@@ -56,7 +22,7 @@ spec:
                         - key: group__Gryffindor
                           operator: Exists
           ports: null
-    priority: 2
+    priority: 1
     subject:
         pods:
             namespaceSelector:
@@ -76,7 +42,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (group = Gryffindor) conn: TCP)'
         nsx-id: "10219"
     creationTimestamp: null
-    name: admin-policy-2
+    name: admin-policy-1
 spec:
     egress:
         - action: Pass
@@ -97,7 +63,7 @@ spec:
                     matchExpressions:
                         - key: group__Gryffindor
                           operator: Exists
-    priority: 3
+    priority: 2
     subject:
         pods:
             namespaceSelector:
@@ -117,7 +83,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: TCP,UDP)'
         nsx-id: "10220"
     creationTimestamp: null
-    name: admin-policy-3
+    name: admin-policy-2
 spec:
     ingress:
         - action: Pass
@@ -134,7 +100,7 @@ spec:
                         - key: group__Slytherin
                           operator: Exists
           ports: null
-    priority: 4
+    priority: 3
     subject:
         pods:
             namespaceSelector:
@@ -154,7 +120,7 @@ metadata:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (group = Slytherin) conn: UDP)'
         nsx-id: "10221"
     creationTimestamp: null
-    name: admin-policy-4
+    name: admin-policy-3
 spec:
     egress:
         - action: Pass
@@ -175,7 +141,7 @@ spec:
                     matchExpressions:
                         - key: group__Slytherin
                           operator: Exists
-    priority: 5
+    priority: 4
     subject:
         pods:
             namespaceSelector:
@@ -195,7 +161,7 @@ metadata:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10231"
     creationTimestamp: null
-    name: admin-policy-5
+    name: admin-policy-4
 spec:
     egress:
         - action: Deny
@@ -209,7 +175,7 @@ spec:
                           values:
                             - default
                 podSelector: {}
-    priority: 6
+    priority: 5
     subject:
         pods:
             namespaceSelector:
@@ -226,7 +192,7 @@ metadata:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10231"
     creationTimestamp: null
-    name: admin-policy-6
+    name: admin-policy-5
 spec:
     ingress:
         - action: Deny
@@ -240,12 +206,56 @@ spec:
                             - default
                 podSelector: {}
           ports: null
-    priority: 7
+    priority: 6
     subject:
         pods:
             namespaceSelector:
                 matchLabels:
                     kubernetes.io/metadata.name: default
             podSelector: {}
+status:
+    conditions: null
+---
+apiVersion: policy.networking.k8s.io/v1alpha1
+kind: AdminNetworkPolicy
+metadata:
+    annotations:
+        description: Admin Network Policy To Allow Egress Access To DNS Server
+        nsx-id: none
+    creationTimestamp: null
+    name: egress-dns-policy
+spec:
+    egress:
+        - action: Allow
+          ports:
+            - portNumber:
+                port: 53
+                protocol: UDP
+          to:
+            - pods:
+                namespaceSelector:
+                    matchExpressions:
+                        - key: kubernetes.io/metadata.name
+                          operator: In
+                          values:
+                            - default
+                podSelector:
+                    matchExpressions:
+                        - key: k8s-app
+                          operator: In
+                          values:
+                            - kube-dns
+    priority: 7
+    subject:
+        pods:
+            namespaceSelector:
+                matchLabels:
+                    kubernetes.io/metadata.name: default
+            podSelector:
+                matchExpressions:
+                    - key: k8s-app
+                      operator: In
+                      values:
+                        - kube-dns
 status:
     conditions: null

@@ -1,0 +1,21 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src                            |Dst                    |Connection
+0        |1027    |allow  |(group = foo-frontend)         |(group = foo-backend)  |TCP dst-ports: 80
+1        |1028    |deny   |(group = foo-app)              |(group = foo-app)      |All Connections
+2        |1025    |allow  |(group = research-test-expr-2) |(group = foo-frontend) |TCP dst-ports: 445
+3        |1024    |allow  |(group = bar-app)              |(group = bar-app)      |TCP dst-ports: 443
+4        |1021    |deny   |(group = research-app)         |(group = research-app) |All Connections
+5        |2       |deny   |(*)                            |(*)                    |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src                            |Dst                    |Connection
+0        |1027    |allow  |(group = foo-frontend)         |(group = foo-backend)  |TCP dst-ports: 80
+1        |1028    |deny   |(group = foo-app)              |(group = foo-app)      |All Connections
+2        |1025    |allow  |(group = research-test-expr-2) |(group = foo-frontend) |TCP dst-ports: 445
+3        |1024    |allow  |(group = bar-app)              |(group = bar-app)      |TCP dst-ports: 443
+4        |1021    |deny   |(group = research-app)         |(group = research-app) |All Connections
+5        |2       |deny   |(*)                            |(*)                    |All Connections
+

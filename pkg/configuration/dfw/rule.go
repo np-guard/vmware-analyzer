@@ -20,6 +20,10 @@ const (
 	ActionJumpToApp RuleAction = "jump_to_application"
 )
 
+func (r RuleAction) String() string {
+	return string(r)
+}
+
 func actionFromString(s string) RuleAction {
 	switch strings.ToLower(s) {
 	case string(ActionAllow):

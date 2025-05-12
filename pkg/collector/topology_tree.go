@@ -6,6 +6,54 @@ SPDX-License-Identifier: Apache-2.0
 
 package collector
 
+import "github.com/np-guard/vmware-analyzer/internal/common"
+
+// OutputTopologyGraph is the main function to get analyzed topology output
+func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName string, format common.OutFormat) (res string, err error) {
+	var g common.Graph
+	switch format {
+	case common.JSONFormat:
+		g = common.NewTreeGraph()
+	case common.TextFormat:
+		g = common.NewEdgesGraph("topology", []string{}, false)
+	case common.DotFormat, common.SVGFormat:
+		g = common.NewDotGraph(true)
+	}
+	resources.createTopologyGraph(g)
+	return common.OutputGraph(g, fileName, format)
+}
+
+func (resources *ResourcesContainerModel) createTopologyGraph(g common.Graph) {
+	for t0i := range resources.Tier0List {
+		g.AddEdge(nil, &resources.Tier0List[t0i], nil)
+	}
+	for t1i := range resources.Tier1List {
+		t0 := resources.GetTier0(common.SafePointerDeref(resources.Tier1List[t1i].Tier0Path))
+		if t0 != nil {
+			g.AddEdge(t0, &resources.Tier1List[t1i], nil)
+		}
+	}
+	for si := range resources.SegmentList {
+		segment := &resources.SegmentList[si]
+		if segment.ConnectivityPath == nil {
+			g.AddEdge(nil, segment, nil)
+		} else if t1 := resources.GetTier1(common.SafePointerDeref(segment.ConnectivityPath)); t1 != nil {
+			g.AddEdge(t1, segment, nil)
+		} else if t0 := resources.GetTier0(common.SafePointerDeref(segment.ConnectivityPath)); t0 != nil {
+			g.AddEdge(t0, segment, nil)
+		}
+		for pi := range segment.SegmentPorts {
+			att := *segment.SegmentPorts[pi].Attachment.Id
+			vni := resources.GetVirtualNetworkInterfaceByPort(att)
+			//nolint: gocritic // keep commented-out code for now
+			// g.AddEdge(segment, vni, nil)
+			// g.AddEdge(vni, vm, nil)
+			vm := resources.GetVirtualMachine(common.SafePointerDeref(vni.OwnerVmId))
+			g.AddEdge(segment, vm, common.LabelFromString(vni.Name()))
+		}
+	}
+}
+
 type treeNode interface {
 	parent(resources *ResourcesContainerModel) treeNode
 }

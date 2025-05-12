@@ -2,33 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (group = Web and group = Gryffindor) dst: (IP addr in 0.0.1.0/16) conn: TCP'
         nsx-id: "10400"
     creationTimestamp: null
-    name: policy-1
+    name: policy-0
     namespace: default
 spec:
     egress:
@@ -53,7 +30,7 @@ metadata:
         description: 'src: (group = Web and group = Hufflepuff) dst: (IP addr in 0.0.1.0/16) conn: UDP dst-ports: 300-320'
         nsx-id: "10400"
     creationTimestamp: null
-    name: policy-2
+    name: policy-1
     namespace: default
 spec:
     egress:
@@ -80,7 +57,7 @@ metadata:
         description: 'src: (group = Web and group = Slytherin) dst: (IP addr in 0.0.1.0/16) conn: All Connections'
         nsx-id: "10400"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     egress:
@@ -103,7 +80,7 @@ metadata:
         description: 'src: (group = App and group = Gryffindor) dst: (IP addr in 146.2.0.0/16) conn: TCP'
         nsx-id: "10401"
     creationTimestamp: null
-    name: policy-4
+    name: policy-3
     namespace: default
 spec:
     egress:
@@ -128,7 +105,7 @@ metadata:
         description: 'src: (group = App and group = Hufflepuff) dst: (IP addr in 146.2.0.0/16) conn: UDP dst-ports: 300-320'
         nsx-id: "10401"
     creationTimestamp: null
-    name: policy-5
+    name: policy-4
     namespace: default
 spec:
     egress:
@@ -155,7 +132,7 @@ metadata:
         description: 'src: (group = App and group = Slytherin) dst: (IP addr in 146.2.0.0/16) conn: All Connections'
         nsx-id: "10401"
     creationTimestamp: null
-    name: policy-6
+    name: policy-5
     namespace: default
 spec:
     egress:
@@ -178,7 +155,7 @@ metadata:
         description: 'src: (group = DB and group = Gryffindor) dst: (IP addr in 220.0.1.0/28) conn: TCP'
         nsx-id: "10405"
     creationTimestamp: null
-    name: policy-7
+    name: policy-6
     namespace: default
 spec:
     egress:
@@ -203,7 +180,7 @@ metadata:
         description: 'src: (group = DB and group = Hufflepuff) dst: (IP addr in 220.0.1.0/28) conn: UDP dst-ports: 300-320'
         nsx-id: "10405"
     creationTimestamp: null
-    name: policy-8
+    name: policy-7
     namespace: default
 spec:
     egress:
@@ -230,7 +207,7 @@ metadata:
         description: 'src: (group = DB and group = Slytherin) dst: (IP addr in 220.0.1.0/28) conn: All Connections'
         nsx-id: "10405"
     creationTimestamp: null
-    name: policy-9
+    name: policy-8
     namespace: default
 spec:
     egress:
@@ -253,7 +230,7 @@ metadata:
         description: 'src: (IP addr in 122.0.0.0/8) dst: (group = Dumbledore) conn: All Connections'
         nsx-id: "10406"
     creationTimestamp: null
-    name: policy-10
+    name: policy-9
     namespace: default
 spec:
     ingress:
@@ -271,13 +248,36 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace default
         nsx-id: "10230"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-default
     namespace: default
 spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-default
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

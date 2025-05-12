@@ -2,33 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (IP addr in 1.2.0.4/30, 1.2.0.8/29, 1.2.0.16/28, 1.2.0.32/27, 1.2.0.64/26, 1.2.0.128/25, 1.2.1.0/24) dst: (group = frontend) conn: TCP'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-0
     namespace: default
 spec:
     ingress:
@@ -63,7 +40,7 @@ metadata:
         description: 'src: (IP addr in 1.2.3.0-1.2.4.255) dst: (group = frontend) conn: UDP'
         nsx-id: "1006"
     creationTimestamp: null
-    name: policy-2
+    name: policy-1
     namespace: default
 spec:
     ingress:
@@ -85,13 +62,36 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace default
         nsx-id: "1003"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-default
     namespace: default
 spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-default
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

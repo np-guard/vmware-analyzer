@@ -1,6 +1,7 @@
 package model
 
 import (
+	"maps"
 	"slices"
 
 	"github.com/np-guard/models/pkg/netset"
@@ -8,6 +9,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
@@ -21,7 +23,7 @@ type AbstractModelSyn struct {
 	AllRuleIPBlocks      []*topology.RuleIPBlock // todo - should we need it?
 	EndpointsToGroups    map[topology.Endpoint][]*collector.Group
 	RuleBlockPerEndpoint map[topology.Endpoint][]*topology.RuleIPBlock
-	VMsSegments          map[topology.Endpoint][]*topology.Segment
+	VMsSegments          map[topology.Endpoint][]*topology.Segment // map from vm to its segments
 	ExternalIP           *netset.IPBlock
 	// todo: add similar maps to OS, hostname
 
@@ -31,6 +33,10 @@ type AbstractModelSyn struct {
 	SynthesizeAdmin bool
 	Policy          []*SymbolicPolicy // with default deny todo: should be *symbolicPolicy?
 	DefaultDenyRule *dfw.FwRule
+
+	// labels gen info
+	LabelsToVMsMap map[string][]topology.Endpoint
+	VMToLablesMap  map[string][]string
 }
 
 // SymbolicRule input to synthesis. Synthesis very likely to non-prioritized only allow policy
@@ -111,4 +117,99 @@ func strAdminPolicy(policy *SymbolicPolicy, options *config.SynthesisOptions) st
 
 func strGroups(nsxConfig *configuration.Config, color bool) string {
 	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" + nsxConfig.GetGroupsStr(color)
+}
+
+//////////////////////////////////////////////////////////////////
+
+// todo: move tests and un-export this function
+
+func NSXConfigToAbstractModel(
+	resources *collector.ResourcesContainerModel,
+	nsxConfig *configuration.Config,
+	options *config.SynthesisOptions) (
+	*AbstractModelSyn, error) {
+	// retrieve config object from resources
+	if nsxConfig == nil {
+		var err error
+		nsxConfig, err = configuration.ConfigFromResourcesContainer(resources, options.OutputOption())
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// pre-processing rules
+	preProcessingCategoryToPolicy := PreProcessing(nsxConfig.FW.CategoriesSpecs)
+	logging.Debugf("pre processing symbolic rules\n=============================\n%s",
+		PrintPreProcessingSymbolicPolicy(
+			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
+
+	// policy flattenging
+	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(
+		nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
+		options.SynthesizeAdmin, options.Hints)
+	allowOnlyPolicyWithOptimization := OptimizeSymbolicPolicy(&allowOnlyPolicy, options)
+
+	// create result AbstractModelSyn object
+	abstractModel := &AbstractModelSyn{
+		Config:               nsxConfig,
+		VMs:                  nsxConfig.VMs,
+		Segments:             nsxConfig.Topology.Segments,
+		AllGroups:            nsxConfig.Groups,
+		EndpointsToGroups:    nsxConfig.GroupsPerVM,
+		AllRuleIPBlocks:      slices.Collect(maps.Values(nsxConfig.Topology.AllRuleIPBlocks)),
+		RuleBlockPerEndpoint: nsxConfig.Topology.RuleBlockPerEP,
+		VMsSegments:          nsxConfig.Topology.VmSegments,
+		ExternalIP:           nsxConfig.Topology.AllExternalIPBlock,
+		SynthesizeAdmin:      options.SynthesizeAdmin,
+		Policy:               []*SymbolicPolicy{allowOnlyPolicyWithOptimization},
+		DefaultDenyRule:      nsxConfig.DefaultDenyRule(),
+	}
+	// store labels info
+	abstractModel.addLabelsInfo()
+
+	// print generated abstract model
+	logging.Debugf("abstract model\n==============\n%s", StrAbstractModel(abstractModel, options))
+
+	return abstractModel, nil
+}
+
+func (a *AbstractModelSyn) addLabelsInfo() {
+	a.LabelsToVMsMap = map[string][]topology.Endpoint{}
+	a.VMToLablesMap = map[string][]string{}
+	for _, vm := range a.VMs {
+		labels := collectVMLabels(a, vm)
+		a.VMToLablesMap[vm.Name()] = labels
+		for _, label := range labels {
+			a.LabelsToVMsMap[label] = append(a.LabelsToVMsMap[label], vm)
+		}
+	}
+}
+
+// collectVMLabels returns the set of labels keys that should be added to the input VM
+func collectVMLabels(synthModel *AbstractModelSyn, vm topology.Endpoint) []string {
+	labels := []string{}
+
+	// add lable per vm's tag
+	for _, tag := range vm.Tags() {
+		label, _ := symbolicexpr.NewTagTerm(tag, false).AsSelector()
+		labels = append(labels, label)
+	}
+	// add label per vm's group
+	for _, group := range synthModel.EndpointsToGroups[vm] {
+		label, _ := symbolicexpr.NewGroupAtomicTerm(group, false).AsSelector()
+		labels = append(labels, label)
+	}
+	// add label per vm's segment
+	for _, segment := range synthModel.VMsSegments[vm] {
+		label, _ := symbolicexpr.NewSegmentTerm(segment, false).AsSelector()
+		labels = append(labels, label)
+	}
+	// add label per ip-block association
+	for _, ruleIPBlock := range synthModel.RuleBlockPerEndpoint[vm] {
+		if !ruleIPBlock.IsAll() {
+			label, _ := symbolicexpr.NewInternalIPTerm(ruleIPBlock, false).AsSelector()
+			labels = append(labels, label)
+		}
+	}
+	return labels
 }

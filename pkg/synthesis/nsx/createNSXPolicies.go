@@ -11,7 +11,6 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
 // this file contains main API for synthesis to NSX policies from abstract model (for testing purposes)
@@ -19,7 +18,7 @@ import (
 const firstRuleID = 3984
 const firstGroupID = 4826
 
-func ToNSXPolicies(rc *collector.ResourcesContainerModel, synthModel *model.AbstractModelSyn) (
+func AbstractToNSXPolicies(rc *collector.ResourcesContainerModel, synthModel *model.AbstractModelSyn) (
 	[]collector.SecurityPolicy, []collector.Group) {
 	a := newAbsToNXS(synthModel.ExternalIP)
 	a.getVMsInfo(rc, synthModel)
@@ -58,7 +57,7 @@ func (a *absToNXS) getVMsInfo(rc *collector.ResourcesContainerModel, synthModel 
 			}
 		}
 	}
-	a.labelsVMs = utils.CollectLabelsVMs(synthModel)
+	a.labelsVMs = synthModel.LabelsToVMsMap
 }
 
 var fwRuleToDataRuleAction = map[dfw.RuleAction]string{

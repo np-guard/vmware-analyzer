@@ -1,0 +1,72 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: Slytherin
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__Slytherin: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: Hufflepuff
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__Hufflepuff: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: Gryffindor
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__Gryffindor: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: Dumbledore2
+    namespace: default
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                group__Dumbledore: "true"
+                group__Dumbledore2: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
