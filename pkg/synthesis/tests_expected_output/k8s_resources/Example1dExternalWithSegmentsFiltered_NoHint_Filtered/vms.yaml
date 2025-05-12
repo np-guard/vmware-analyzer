@@ -1,0 +1,39 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: A
+    namespace: seg_a_and_b
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__0.0.1.0-25: "true"
+                group__default-group: "true"
+                in_Segment__seg_a_and_b: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+    creationTimestamp: null
+    name: B
+    namespace: seg_a_and_b
+spec:
+    template:
+        metadata:
+            creationTimestamp: null
+            labels:
+                VMs_within_IPs__0.0.1.128-25: "true"
+                group__default-group: "true"
+                in_Segment__seg_a_and_b: "true"
+        spec:
+            domain:
+                devices: {}
+                resources: {}
+status: {}

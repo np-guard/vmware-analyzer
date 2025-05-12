@@ -27,6 +27,7 @@ type Example struct {
 	// segments details
 	SegmentsByVMs map[string][]string
 	SegmentsBlock map[string]string
+	SegmentsT1GWs map[string]string
 
 	// groups details
 	GroupsByVMs         map[string][]string        // map from group name to its VMs
@@ -69,6 +70,7 @@ func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContaine
 	segmentedVMs := map[string]bool{}
 	segmentNames := slices.Collect(maps.Keys(e.SegmentsBlock))
 	slices.Sort(segmentNames)
+	// create segment resources
 	for _, segmentName := range segmentNames {
 		ip := e.SegmentsBlock[segmentName]
 		segment := collector.Segment{
@@ -107,6 +109,22 @@ func ExamplesGeneration(e *Example, override bool) (*collector.ResourcesContaine
 		}
 		res.SegmentList = append(res.SegmentList, segment)
 	}
+	// create t1-gw resources: iterate map from segment name to its t1 gateway
+	addedGWs := map[string]bool{}
+	for segmentName, t1gwName := range e.SegmentsT1GWs {
+		if !addedGWs[t1gwName] {
+			t1 := collector.Tier1{}
+			t1.DisplayName = &t1gwName
+			t1.Path = &t1gwName
+			res.Tier1List = append(res.Tier1List, t1)
+			addedGWs[*t1.DisplayName] = true
+		}
+		seg := res.GetSegment(segmentName)
+		if seg != nil {
+			seg.ConnectivityPath = &t1gwName
+		}
+	}
+
 	// VMs might have addresses and no segment:
 	for _, vmName := range e.VMs {
 		if address, ok := e.VMsAddress[vmName]; ok && !segmentedVMs[vmName] {

@@ -2,33 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Network Policy To Allow Access To DNS Server
-        nsx-id: none
-    creationTimestamp: null
-    name: dns-policy
-    namespace: default
-spec:
-    egress:
-        - ports:
-            - port: 53
-              protocol: UDP
-          to:
-            - namespaceSelector: {}
-              podSelector:
-                matchLabels:
-                    k8s-app: kube-dns
-    podSelector: {}
-    policyTypes:
-        - Egress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
         description: 'src: (IP addr in 1.2.0.4/30, 1.2.0.8/29, 1.2.0.16/28, 1.2.0.32/27, 1.2.0.64/26, 1.2.0.128/25) dst: (group = frontend) conn: TCP'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-0
     namespace: default
 spec:
     ingress:
@@ -61,7 +38,7 @@ metadata:
         description: 'src: (IP addr in 1.2.1.0/24, 1.2.2.0/23, 1.2.4.0/22, 1.2.8.0/21, 1.2.16.0/20, 1.2.32.0/19, 1.2.64.0/18, 1.2.128.0/17) dst: (group = frontend) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-2
+    name: policy-1
     namespace: default
 spec:
     ingress:
@@ -96,7 +73,7 @@ metadata:
         description: 'src: (IP addr in 1.240.0.0/28) dst: (group = frontend) conn: ICMP,UDP'
         nsx-id: "1009"
     creationTimestamp: null
-    name: policy-3
+    name: policy-2
     namespace: default
 spec:
     ingress:
@@ -116,13 +93,36 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: Default Deny Network Policy
+        description: default deny policy for namespace default
         nsx-id: "1003"
     creationTimestamp: null
-    name: default-deny
+    name: default-deny-for-default
     namespace: default
 spec:
     podSelector: {}
     policyTypes:
         - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-default
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
         - Egress

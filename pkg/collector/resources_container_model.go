@@ -58,7 +58,7 @@ func (resources *ResourcesContainerModel) FindGroupByPath(path string) *Group {
 }
 
 func (resources *DomainResources) GetGroup(query string) *Group {
-	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == *gr.Path })
+	i := slices.IndexFunc(resources.GroupList, func(gr Group) bool { return query == common.SafePointerDeref(gr.Path) })
 	if i < 0 {
 		return nil
 	}
@@ -66,7 +66,7 @@ func (resources *DomainResources) GetGroup(query string) *Group {
 }
 
 func (resources *ResourcesContainerModel) GetService(query string) *Service {
-	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == *gr.Path })
+	i := slices.IndexFunc(resources.ServiceList, func(gr Service) bool { return query == common.SafePointerDeref(gr.Path) })
 	if i < 0 {
 		return nil
 	}
@@ -114,7 +114,7 @@ func (resources *ResourcesContainerModel) GetVirtualMachine(id string) *VirtualM
 
 func (resources *ResourcesContainerModel) GetVMsByNames(names []string) (res []VirtualMachine) {
 	for i := range resources.VirtualMachineList {
-		if slices.Contains(names, *resources.VirtualMachineList[i].DisplayName) {
+		if slices.Contains(names, common.SafePointerDeref(resources.VirtualMachineList[i].DisplayName)) {
 			res = append(res, resources.VirtualMachineList[i])
 		}
 	}
@@ -219,31 +219,17 @@ func (resources *ResourcesContainerModel) GetRule(id string) *FirewallRule {
 
 /////////////////////////////////////////////////////////////////////////////
 
-func (t0 *Tier0) Name() string                    { return *t0.DisplayName }
-func (t1 *Tier1) Name() string                    { return *t1.DisplayName }
-func (segment *Segment) Name() string             { return *segment.DisplayName }
-func (vni *VirtualNetworkInterface) Name() string { return *vni.DisplayName }
-func (vm *VirtualMachine) Name() string           { return *vm.DisplayName }
+func (t0 *Tier0) Name() string                    { return common.SafePointerDeref(t0.DisplayName) }
+func (t1 *Tier1) Name() string                    { return common.SafePointerDeref(t1.DisplayName) }
+func (segment *Segment) Name() string             { return common.SafePointerDeref(segment.DisplayName) }
+func (vni *VirtualNetworkInterface) Name() string { return common.SafePointerDeref(vni.DisplayName) }
+func (vm *VirtualMachine) Name() string           { return common.SafePointerDeref(vm.DisplayName) }
 
 func (t0 *Tier0) Kind() string                    { return "t0" }
 func (t1 *Tier1) Kind() string                    { return "t1" }
 func (segment *Segment) Kind() string             { return "segment" }
 func (vni *VirtualNetworkInterface) Kind() string { return "vni" }
 func (vm *VirtualMachine) Kind() string           { return "VM" }
-
-func (resources *ResourcesContainerModel) OutputTopologyGraph(fileName, format string) (res string, err error) {
-	var g common.Graph
-	switch format {
-	case common.JSONFormat:
-		g = common.NewTreeGraph()
-	case common.TextFormat:
-		g = common.NewEdgesGraph("topology", []string{}, false)
-	case common.DotFormat, common.SvgFormat:
-		g = common.NewDotGraph(true)
-	}
-	resources.CreateTopologyGraph(g)
-	return common.OutputGraph(g, fileName, format)
-}
 
 func (resources *ResourcesContainerModel) GetVMsOfSegment(segment *Segment) (res []*VirtualMachine) {
 	for pi := range segment.SegmentPorts {
@@ -253,31 +239,4 @@ func (resources *ResourcesContainerModel) GetVMsOfSegment(segment *Segment) (res
 		res = append(res, vm)
 	}
 	return res
-}
-
-func (resources *ResourcesContainerModel) CreateTopologyGraph(g common.Graph) {
-	for t0i := range resources.Tier0List {
-		g.AddEdge(nil, &resources.Tier0List[t0i], nil)
-	}
-	for t1i := range resources.Tier1List {
-		t0 := resources.GetTier0(*resources.Tier1List[t1i].Tier0Path)
-		g.AddEdge(t0, &resources.Tier1List[t1i], nil)
-	}
-	for si := range resources.SegmentList {
-		segment := &resources.SegmentList[si]
-		if segment.ConnectivityPath == nil {
-			g.AddEdge(nil, segment, nil)
-		} else if t1 := resources.GetTier1(*segment.ConnectivityPath); t1 != nil {
-			g.AddEdge(t1, segment, nil)
-		} else if t0 := resources.GetTier0(*segment.ConnectivityPath); t0 != nil {
-			g.AddEdge(t0, segment, nil)
-		}
-		for pi := range segment.SegmentPorts {
-			att := *segment.SegmentPorts[pi].Attachment.Id
-			vni := resources.GetVirtualNetworkInterfaceByPort(att)
-			g.AddEdge(segment, vni, nil)
-			vm := resources.GetVirtualMachine(*vni.OwnerVmId)
-			g.AddEdge(vni, vm, nil)
-		}
-	}
 }

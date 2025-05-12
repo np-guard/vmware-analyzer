@@ -16,7 +16,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Hufflepuff: "true"
-        group__Not-NLCSlytherin: "true"
+        group__NotSlytherin: "true"
     name: Hufflepuff
     namespace: default
 spec:
@@ -29,7 +29,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Gryffindor: "true"
-        group__Not-NLCSlytherin: "true"
+        group__NotSlytherin: "true"
     name: Gryffindor
     namespace: default
 spec:
@@ -42,7 +42,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Dumbledore1: "true"
-        group__Not-NLCSlytherin: "true"
+        group__NotSlytherin: "true"
     name: Dumbledore1
     namespace: default
 spec:
@@ -55,7 +55,7 @@ metadata:
     creationTimestamp: null
     labels:
         group__Dumbledore2: "true"
-        group__Not-NLCSlytherin: "true"
+        group__NotSlytherin: "true"
     name: Dumbledore2
     namespace: default
 spec:

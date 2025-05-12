@@ -66,7 +66,7 @@ metadata:
     labels:
         group__research-app: "true"
         group__research-test-expr-2: "true"
-    name: New-NLCVirtual-NLCMachine
+    name: NewVirtualMachine
     namespace: default
 spec:
     containers: null
