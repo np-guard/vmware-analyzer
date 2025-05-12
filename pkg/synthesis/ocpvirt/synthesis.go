@@ -44,7 +44,7 @@ func NsxToPolicy(resources *collector.ResourcesContainerModel,
 	}
 
 	logging.Debugf("started synthesis")
-	preProcessingCategoryToPolicy := model.PreProcessing(nsxConfig.FW.CategoriesSpecs)
+	preProcessingCategoryToPolicy := model.PreProcessing(nsxConfig.OrigNSXResources, nsxConfig.FW.CategoriesSpecs)
 	preProcessingPolicyStr := model.PrintPreProcessingSymbolicPolicy(nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
 		options.Color)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%v", preProcessingPolicyStr)
