@@ -32,14 +32,14 @@ type Runner struct {
 	quietVerobsity bool
 
 	// collecttor args
-	nsxInsecureSkipVerify bool
-	nsxURL                string
-	nsxUser               string
-	nsxPassword           string
-	resourcesInputFile    string
-	anonymize             bool
-	resourcesDumpFile     string
-	topologyDumpFile      string
+	disableInsecureSkipVerify bool
+	nsxURL                    string
+	nsxUser                   string
+	nsxPassword               string
+	resourcesInputFile        string
+	anonymize                 bool
+	resourcesDumpFile         string
+	topologyDumpFile          string
 
 	// analyzer args
 	skipAnalysis       bool
@@ -244,7 +244,7 @@ func (r *Runner) resourcesFromInputFile() error {
 }
 
 func (r *Runner) resourcesFromNSXEnv() error {
-	server, err := collector.GetNSXServerDate(r.nsxURL, r.nsxUser, r.nsxPassword, r.nsxInsecureSkipVerify)
+	server, err := collector.GetNSXServerDate(r.nsxURL, r.nsxUser, r.nsxPassword, r.disableInsecureSkipVerify)
 	if err != nil {
 		return err
 	}
@@ -405,9 +405,9 @@ func WithNSXResources(rc *collector.ResourcesContainerModel) RunnerOption {
 	}
 }
 
-func WithInsecureSkipVerify(insecureSkipVerify bool) RunnerOption {
+func WithDisableInsecureSkipVerify(disableInsecureSkipVerify bool) RunnerOption {
 	return func(r *Runner) {
-		r.nsxInsecureSkipVerify = insecureSkipVerify
+		r.disableInsecureSkipVerify = disableInsecureSkipVerify
 	}
 }
 

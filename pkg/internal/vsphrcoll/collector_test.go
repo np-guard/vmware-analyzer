@@ -21,9 +21,9 @@ const (
 
 func TestCollectResources(t *testing.T) {
 	type args struct {
-		server             string
-		userName, password string
-		insecureSkipVerify bool
+		server                    string
+		userName, password        string
+		disableInsecureSkipVerify bool
 	}
 	tests := []struct {
 		name string
@@ -35,7 +35,7 @@ func TestCollectResources(t *testing.T) {
 				"no_server",
 				"no_user",
 				"no_password",
-				true,
+				false,
 			},
 		},
 	}
@@ -48,7 +48,7 @@ func TestCollectResources(t *testing.T) {
 				}
 				tt.args = args{os.Getenv("VSPHERE_HOST"), os.Getenv("VSPHERE_USER"), os.Getenv("VSPHERE_PASSWORD"), true}
 			}
-			got, err := CollectResources(tt.args.server, tt.args.userName, tt.args.password, tt.args.insecureSkipVerify)
+			got, err := CollectResources(tt.args.server, tt.args.userName, tt.args.password, tt.args.disableInsecureSkipVerify)
 			if err != nil {
 				t.Errorf("CollectResources() error = %v", err)
 				return

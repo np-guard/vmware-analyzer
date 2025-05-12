@@ -104,8 +104,8 @@ func (resources *ResourcesContainerModel) ToJSONString() (string, error) {
 	return common.MarshalJSON(resources)
 }
 
-func CollectResources(nsxServer, userName, password string, insecureSkipVerify bool) (*ResourcesContainerModel, error) {
-	server := &serverData{nsxServer, userName, password, "", insecureSkipVerify}
+func CollectResources(nsxServer, userName, password string, disableInsecureSkipVerify bool) (*ResourcesContainerModel, error) {
+	server := &serverData{nsxServer, userName, password, "", disableInsecureSkipVerify}
 	res := NewResourcesContainerModel()
 	err := collectResource(server, virtualMachineQuery, &res.Vms)
 	if err != nil {

@@ -35,7 +35,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	c.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, verboseHelp)
 	c.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
 	c.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
-	c.PersistentFlags().BoolVar(&args.insecureSkipVerify, insecureSkipVerifyFlag, false, insecureSkipVerifyHelp)
+	c.PersistentFlags().BoolVar(&args.disableInsecureSkipVerify, disableInsecureSkipVerifyFlag, false, disableInsecureSkipVerifyHelp)
 	c.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
 
 	// add sub-commands

@@ -3,6 +3,7 @@ EXE:= nsxanalyzer
 COVERAGE:=nsxanalyzer.coverprofile
 EXE_WINDOWS:= nsxanalyzer_windows_amd64.exe
 EXE_LINUX:= nsxanalyzer_linux_amd64
+EXE_MAC:= nsxanalyzer_darwin_amd64
 
 # TODO: update NSX_ANALYZER_IMAGE to the actual image name
 NSX_ANALYZER_IMAGE = nsx-analyzer
@@ -44,6 +45,11 @@ build-windows:
 build-linux:
 	@echo -- $@ --
 	GOOS=linux GOARCH=amd64 go build -o ./bin/$(EXE_LINUX) ./cmd
+
+build-mac:
+	@echo -- $@ --
+	GOOS=darwin GOARCH=amd64 go build -o ./bin/$(EXE_MAC) ./cmd
+
 
 test:
 	@echo -- $@ --
