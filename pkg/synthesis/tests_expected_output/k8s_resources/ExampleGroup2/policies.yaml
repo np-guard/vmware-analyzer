@@ -1,0 +1,89 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Network Policy To Allow Access To DNS Server
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (VMs within IPs 192.168.10.5) dst: (group = backend) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - podSelector:
+                matchExpressions:
+                    - key: group__backend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: VMs_within_IPs__192.168.10.5
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (VMs within IPs 192.168.10.5) dst: (group = backend) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - podSelector:
+                matchExpressions:
+                    - key: VMs_within_IPs__192.168.10.5
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__backend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: Default Deny Network Policy
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

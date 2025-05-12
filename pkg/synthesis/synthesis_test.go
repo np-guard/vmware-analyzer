@@ -308,6 +308,18 @@ var groupsOfNonVMsTests = []synthesisTest{
 		synthesizeAdmin: false,
 		noHint:          false,
 	},
+	{
+		name:            "ExampleGroup1",
+		exData:          data.ExampleGroup1,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
+	{
+		name:            "ExampleGroup2",
+		exData:          data.ExampleGroup2,
+		synthesizeAdmin: false,
+		noHint:          false,
+	},
 }
 
 var liveNsxTest = synthesisTest{
