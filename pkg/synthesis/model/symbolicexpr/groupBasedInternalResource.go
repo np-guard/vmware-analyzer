@@ -68,7 +68,7 @@ func getAtomicsForPath(containerModel *collector.ResourcesContainerModel,
 			}
 			res = append(res, SegmentTerm{segment: segment, atomicTerm: atomicTerm{neg: isExcluded}})
 		default:
-			debugMsg(group, fmt.Sprintf("includes a path %v which is not the current supported group or segment", path))
+			debugMsg(group, fmt.Sprintf("includes a path %s which is not the current supported group or segment", path))
 		}
 	}
 	return res
