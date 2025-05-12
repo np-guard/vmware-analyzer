@@ -20,7 +20,7 @@ import (
 type serverData struct {
 	server, userName, password string
 	session                    string
-	insecureSkipVerify         bool
+	disableInsecureSkipVerify  bool
 }
 
 func (s *serverData) getSession() error {
@@ -47,7 +47,7 @@ func curlRequestSession(server *serverData) error {
 
 	//nolint:gosec // need insecure TLS option for testing and development
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: server.insecureSkipVerify},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !server.disableInsecureSkipVerify},
 	}
 	client := &http.Client{Transport: tr}
 
@@ -77,7 +77,7 @@ func curlRequest(server *serverData, query string) ([]byte, error) {
 
 	//nolint:gosec // need insecure TLS option for testing and development
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: server.insecureSkipVerify},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !server.disableInsecureSkipVerify},
 	}
 	client := &http.Client{Transport: tr}
 

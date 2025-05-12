@@ -16,7 +16,6 @@ nsxanalyzer is a CLI for collecting NSX resources, analysis of permitted connect
 and generation of k8s network policies. It uses REST API calls from NSX manager.
 
 Usage:
-  nsxanalyzer [flags]
   nsxanalyzer [command]
 
 Available Commands:
@@ -28,18 +27,18 @@ Available Commands:
   lint        Lint input NSX config - show potential DFW redundant rules
 
 Flags:
-      --color                        flag to enable color output (default false)
-  -h, --help                         help for nsxanalyzer
-      --host string                  NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
-      --insecure-skip-verify         flag to enable NSX connection with insecureSkipVerify (default false).Alternatively, set the NSX_SKIP_VERIFY environment variable to true
-      --log-file string              file path to write nsxanalyzer log
-      --password string              NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable
-  -q, --quiet                        flag to run quietly, report only severe errors and result (default false)
-      --resource-dump-file string    file path to store collected resources in JSON format
-  -r, --resource-input-file string   file path input JSON of NSX resources (instead of collecting from NSX host)
-      --username string              NSX username. Alternatively, set the username via the NSX_USER environment variable
-  -v, --verbose                      flag to run with more informative messages printed to log (default false)
-      --version                      version for nsxanalyzer      
+      --color                          flag to enable color output (default false)
+      --disable-insecure-skip-verify   flag to disable NSX connection retry with insecureSkipVerify (default false).Alternatively, set the NSX_DISABLE_SKIP_VERIFY environment variable to true
+  -h, --help                           help for nsxanalyzer
+      --host string                    NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
+      --log-file string                file path to write nsxanalyzer log
+      --password string                NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable
+  -q, --quiet                          flag to run quietly, report only severe errors and result (default false)
+      --resource-dump-file string      file path to store collected resources in JSON format
+  -r, --resource-input-file string     file path input JSON of NSX resources (instead of collecting from NSX host)
+      --username string                NSX username. Alternatively, set the username via the NSX_USER environment variable
+  -v, --verbose                        flag to run with more informative messages printed to log (default false)
+      --version                        version for nsxanalyzer
 
 Use "nsxanalyzer [command] --help" for more information about a command.
 ```
@@ -81,8 +80,8 @@ Flags:
   -e, --explain                     flag to explain connectivity output with rules explanations per allowed/denied connections (default false)
   -f, --filename string             file path to store analysis results
   -h, --help                        help for analyze
-  -o, --output string               output format; must be one of txt,dot,svg,json (default "txt")
-      --output-filter strings       filter the analysis results by vm names, can specify more than one (example: "vm1,vm2")
+  -o, --output string               output format; must be one of txt,dot,json,svg (default "txt")
+      --output-filter strings       filter the analysis/synthesis results by vm names, can specify more than one (example: "vm1,vm2")
       --topology-dump-file string   file path to store topology
 
 ```
@@ -138,12 +137,14 @@ Examples:
 
 Flags:
       --disjoint-hint stringArray   comma separated list of NSX groups/tags that are always disjoint in their VM members, needed for an effective and sound synthesis process, can specify more than one hint (example: "--disjoint-hint frontend,backend --disjoint-hint app,web,db")
+      --endpoints-mapping string    flag to set target endpoints for synthesis;  must be one of vms,pods,both (default "both")
   -h, --help                        help for generate
+      --output-filter strings       filter the analysis/synthesis results by vm names, can specify more than one (example: "vm1,vm2")
+      --segments-mapping string     flag to set target mapping from segments; must be one of pod-network,udns (default "udns")
       --synth-create-dns-policy     flag to create a policy allowing access to target env dns pod (default true)
   -d, --synthesis-dir string        run synthesis; specify directory path to store target synthesis resources
       --synthesize-admin-policies   include admin network policies in policy synthesis (default false)
 ```
-
 
 ## Example k8s network policy synthesis
 

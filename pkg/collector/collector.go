@@ -50,18 +50,18 @@ var supportedMembersTypes = []string{
 	"IPAddress", "TransportNode", "Group"}
 
 type ServerData struct {
-	host, user, password string
-	insecureSkipVerify   bool
+	host, user, password      string
+	disableInsecureSkipVerify bool
 }
 
-func NewServerData(host, user, password string, insecureSkipVerify bool) ServerData {
-	return ServerData{host, user, password, insecureSkipVerify}
+func NewServerData(host, user, password string, disableInsecureSkipVerify bool) ServerData {
+	return ServerData{host, user, password, disableInsecureSkipVerify}
 }
 
-func ValidateNSXConnection(host, user, password string, insecureSkipVerify bool) (string, error) {
+func ValidateNSXConnection(host, user, password string, disableInsecureSkipVerify bool) (string, error) {
 	res := NewResourcesContainerModel()
 	// vms:
-	err := collectResultList(NewServerData(host, user, password, insecureSkipVerify), virtualMachineQuery, &res.VirtualMachineList)
+	err := collectResultList(NewServerData(host, user, password, disableInsecureSkipVerify), virtualMachineQuery, &res.VirtualMachineList)
 	if err != nil {
 		return "", err
 	}

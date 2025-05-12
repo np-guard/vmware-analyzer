@@ -30,7 +30,7 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithSynthAdminPolicies(args.synthesizeAdmin),
 		runner.WithSynthesisHints(args.disjointHints),
 		runner.WithSynthDNSPolicies(args.createDNSPolicy),
-		runner.WithInsecureSkipVerify(args.insecureSkipVerify),
+		runner.WithDisableInsecureSkipVerify(args.disableInsecureSkipVerify),
 		runner.WithSkipAnalysis(cmd != cmdAnalyze),
 		runner.WithSynth(cmd == cmdGenerate),
 		runner.WithLint(cmd == cmdLint),

@@ -322,7 +322,7 @@ func (r *NSXMigrationReconciler) getNSXCredentials(cr *nsxv1alpha1.NSXMigration,
 	log.Info("extracted nsx credentials", "user", conn.user, "url", conn.url)
 
 	// next: validate nsx connection with given credentials
-	res, err := collector.ValidateNSXConnection(conn.url, conn.user, conn.password, conn.insecureSkipVerify)
+	res, err := collector.ValidateNSXConnection(conn.url, conn.user, conn.password, !conn.insecureSkipVerify)
 	if err != nil {
 		log.Error(err, "REST API call error", "errStr", err.Error())
 		return nil, err
@@ -345,7 +345,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		runner.WithNSXURL(conn.url),
 		runner.WithNSXUser(conn.user),
 		runner.WithNSXPassword(conn.password),
-		runner.WithInsecureSkipVerify(conn.insecureSkipVerify),
+		runner.WithDisableInsecureSkipVerify(!conn.insecureSkipVerify),
 		runner.WithSynth(true),
 	)
 	if err != nil {
