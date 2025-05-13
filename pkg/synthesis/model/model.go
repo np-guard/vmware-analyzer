@@ -144,9 +144,9 @@ func NSXConfigToAbstractModel(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
 	// policy flattenging
-	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(
+	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(nsxConfig.Groups,
 		nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
-		options.SynthesizeAdmin, options.Hints)
+		options.SynthesizeAdmin, options.Hints, options.InferHints)
 	allowOnlyPolicyWithOptimization := OptimizeSymbolicPolicy(&allowOnlyPolicy, options)
 
 	// create result AbstractModelSyn object

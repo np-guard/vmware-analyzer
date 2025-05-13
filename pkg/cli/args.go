@@ -24,6 +24,7 @@ type inArgs struct {
 	color                     bool
 	createDNSPolicy           bool
 	disjointHints             []string
+	inferDisjointHints        bool
 	disableInsecureSkipVerify bool
 	endpointsMapping          common.Endpoints
 	segmentsMapping           common.Segments
@@ -60,6 +61,7 @@ const (
 	colorFlag                     = "color"
 	createDNSPolicyFlag           = "synth-create-dns-policy"
 	disjointHintsFlag             = "disjoint-hint"
+	inferDisjointHintsFlag        = "hints-inference"
 	disableInsecureSkipVerifyFlag = "disable-insecure-skip-verify"
 	endpointsMappingFlag          = "endpoints-mapping"
 	segmentsMappingFlag           = "segments-mapping"
@@ -90,6 +92,8 @@ const (
 	disjointHintsHelp = "comma separated list of NSX groups/tags that are always disjoint in their VM members," +
 		" needed for an effective and sound synthesis process, can specify more than one hint" +
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
+	inferDisjointHintsFlagHelp = "automatic inference of NSX groups/tags that are always disjoint, " +
+		"needed for an effective and sound synthesis process"
 	endpointsMappingFlagHelp = "flag to set target endpoints for synthesis;  must be one of "
 	segmentsMappingFlagHelp  = "flag to set target mapping from segments; must be one of "
 )

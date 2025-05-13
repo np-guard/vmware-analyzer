@@ -41,7 +41,8 @@ type synthesisTest struct {
 	name            string
 	exData          *data.Example
 	synthesizeAdmin bool
-	noHint          bool // run also with no hint
+	noHint          bool // run also with ignoring hints
+	inferHints      bool
 	filter          []string
 }
 
@@ -85,6 +86,7 @@ func (synTest *synthesisTest) hasExpectedResults() bool {
 func (synTest *synthesisTest) options() *config.SynthesisOptions {
 	res := &config.SynthesisOptions{
 		Hints:           synTest.hints(),
+		InferHints:      synTest.inferHints,
 		SynthesizeAdmin: synTest.synthesizeAdmin,
 		CreateDNSPolicy: true,
 		FilterVMs:       synTest.filter,
@@ -106,66 +108,77 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.Example1c,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleDumbeldore",
 		exData:          data.ExampleDumbeldore,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleTwoDeniesSimple",
 		exData:          data.ExampleTwoDeniesSimple,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleDenyPassSimple",
 		exData:          data.ExampleDenyPassSimple,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHintsDisjoint_NoHint",
 		exData:          data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHintsDisjoint",
 		exData:          data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsSimpler",
 		exData:          data.ExampleHogwartsSimpler,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsNoDumbledore",
 		exData:          data.ExampleHogwartsNoDumbledore,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwarts",
 		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsAdmin",
 		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: true,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsFiltered",
 		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 		filter:          []string{data.SlyWeb, data.GryWeb, data.HufWeb, data.Dum1, data.Dum2},
 	},
 	{
@@ -173,18 +186,21 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.ExampleHogwartsSimplerNonSymInOut,
 		synthesizeAdmin: true,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsExcludeSimple",
 		exData:          data.ExampleHogwartsExcludeSimple,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleAppWithGroupsAndSegments",
 		exData:          data.ExampleAppWithGroupsAndSegments,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 }
 
@@ -194,18 +210,21 @@ var vmsByIpsTests = []synthesisTest{
 		exData:          data.Example1External,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "Example1dExternalWithSegments",
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "Example1dExternalWithSegmentsFiltered",
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 		filter:          []string{"A", "B"},
 	},
 	{
@@ -213,104 +232,122 @@ var vmsByIpsTests = []synthesisTest{
 		exData:          data.ExampleExternalWithDenySimple,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleExternalSimpleWithInterlDenyAllow",
 		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
 		synthesizeAdmin: false,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleExternalSimpleWithInterlDenyAllowAdmin",
 		exData:          data.ExampleExternalSimpleWithInterlDenyAllow,
 		synthesizeAdmin: true,
 		noHint:          true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleInternalWithInterDenyAllow",
 		exData:          data.ExampleInternalWithInterDenyAllow,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleInternalWithInterDenyAllowWithSegments",
 		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleInternalWithInterDenyAllowMixedSegments",
 		exData:          data.ExampleInternalWithInterDenyAllowMixedSegments,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsExternal",
 		exData:          data.ExampleHogwartsExternal,
 		noHint:          false,
 		synthesizeAdmin: false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHogwartsExternalAdmin",
 		exData:          data.ExampleHogwartsExternal,
 		noHint:          false,
+		inferHints:      false,
 		synthesizeAdmin: true,
 	},
 	{
 		name:            "ExampleExternalWithTautology",
 		exData:          data.ExampleExternalWithTautology,
 		noHint:          false,
+		inferHints:      false,
 		synthesizeAdmin: false,
 	},
 }
 
 var groupsByExprTests = []synthesisTest{
 	{
-		name:   "ExampleExprSingleScope",
-		exData: data.ExampleExprSingleScope,
-		noHint: false,
+		name:       "ExampleExprSingleScope",
+		exData:     data.ExampleExprSingleScope,
+		noHint:     false,
+		inferHints: false,
 	},
 	{
-		name:   "ExampleExprTwoScopes",
-		exData: data.ExampleExprTwoScopes,
-		noHint: false,
+		name:       "ExampleExprTwoScopes",
+		exData:     data.ExampleExprTwoScopes,
+		noHint:     false,
+		inferHints: false,
 	},
 	{
-		name:   "ExampleExprTwoScopesAbstract",
-		exData: data.ExampleExprTwoScopesAbstract,
-		noHint: false,
+		name:       "ExampleExprTwoScopesAbstract",
+		exData:     data.ExampleExprTwoScopesAbstract,
+		noHint:     false,
+		inferHints: false,
 	},
 	{
-		name:   "ExampleExprAndConds",
-		exData: data.ExampleExprAndConds,
-		noHint: false,
+		name:       "ExampleExprAndConds",
+		exData:     data.ExampleExprAndConds,
+		noHint:     false,
+		inferHints: false,
 	},
 	{
-		name:   "ExampleExprOrConds",
-		exData: data.ExampleExprOrConds,
-		noHint: false,
+		name:       "ExampleExprOrConds",
+		exData:     data.ExampleExprOrConds,
+		noHint:     false,
+		inferHints: false,
 	},
 	{
 		name:            "ExampleExprAndCondsAdmin",
 		exData:          data.ExampleExprAndConds,
 		noHint:          false,
 		synthesizeAdmin: true,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleExprOrCondsAdmin",
 		exData:          data.ExampleExprOrConds,
 		noHint:          false,
 		synthesizeAdmin: true,
+		inferHints:      false,
 	},
 	{
-		name:   "ExampleExprOrCondsExclude",
-		exData: data.ExampleExprOrCondsExclude,
-		noHint: false,
+		name:       "ExampleExprOrCondsExclude",
+		exData:     data.ExampleExprOrCondsExclude,
+		noHint:     false,
+		inferHints: false,
 	},
 	{
-		name:   "ExampleExprAndCondsExclude",
-		exData: data.ExampleExprAndCondsExclude,
-		noHint: false,
+		name:       "ExampleExprAndCondsExclude",
+		exData:     data.ExampleExprAndCondsExclude,
+		noHint:     false,
+		inferHints: false,
 	},
 }
 
@@ -320,18 +357,21 @@ var groupsOfNonVMsTests = []synthesisTest{
 		exData:          data.ExampleGroup3,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleGroup1",
 		exData:          data.ExampleGroup1,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleGroup2",
 		exData:          data.ExampleGroup2,
 		synthesizeAdmin: false,
 		noHint:          false,
+		inferHints:      false,
 	},
 }
 
@@ -340,12 +380,14 @@ var liveNsxTest = synthesisTest{
 	exData:          nil,
 	synthesizeAdmin: false,
 	noHint:          true,
+	inferHints:      false,
 }
 var resourceFileTest = synthesisTest{
 	name:            "fromResourceFile",
 	exData:          nil,
 	synthesizeAdmin: false,
 	noHint:          true,
+	inferHints:      false,
 }
 
 var allSyntheticTests = append(groupsByVmsTests, append(groupsByExprTests,
