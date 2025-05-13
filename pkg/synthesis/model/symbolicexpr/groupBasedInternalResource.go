@@ -64,7 +64,8 @@ func getAtomicsForPath(config *configuration.Config, isExcluded bool, pathExpr *
 		case isSegment:
 			res = append(res, SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
 		default:
-			debugMsg(group, fmt.Sprintf("includes a path %s which is not the current supported group or segment", path))
+			debugMsg(group, fmt.Sprintf("group %s includes a path %s which is not currently supported "+
+				"(currently supported: group or segment) ", group, path))
 		}
 	}
 	return res
