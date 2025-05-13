@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
@@ -108,15 +109,15 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-func getTermForExprElement(containerModel *collector.ResourcesContainerModel,
-	isExcluded bool, elem collector.ExpressionElement, group string) []atomic {
+func getTermForExprElement(config *configuration.Config, isExcluded bool, elem collector.ExpressionElement,
+	group string) []atomic {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
 	case okCond:
 		return getAtomicsForCondition(isExcluded, cond, group)
 	case okPath:
-		return getAtomicsForPath(containerModel, isExcluded, path, group)
+		return getAtomicsForPath(config, isExcluded, path, group)
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
@@ -132,11 +133,11 @@ func debugMsg(group, text string) {
 // GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
-func GetConjunctionFromExpr(containerModel *collector.ResourcesContainerModel,
+func GetConjunctionFromExpr(config *configuration.Config,
 	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	exprVal := *expr
-	condTag1 := getTermForExprElement(containerModel, isExcluded, exprVal[0], group)
+	condTag1 := getTermForExprElement(config, isExcluded, exprVal[0], group)
 	if condTag1 == nil {
 		return nil
 	}
@@ -144,7 +145,7 @@ func GetConjunctionFromExpr(containerModel *collector.ResourcesContainerModel,
 		return orAtomicToConjunction(condTag1)
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getTermForExprElement(containerModel, isExcluded, exprVal[2], group)
+		condTag2 := getTermForExprElement(config, isExcluded, exprVal[2], group)
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}

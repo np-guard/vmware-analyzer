@@ -476,7 +476,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
-	categoryToPolicy := model.PreProcessing(nsxConfig.OrigNSXResources, nsxConfig.FW.CategoriesSpecs)
+	categoryToPolicy := model.PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
 	preProcessOutput := model.PrintPreProcessingSymbolicPolicy(nsxConfig.FW.CategoriesSpecs, categoryToPolicy, false)
 	logging.Debug(preProcessOutput)
 	// write the preProcess results into a file, for debugging:

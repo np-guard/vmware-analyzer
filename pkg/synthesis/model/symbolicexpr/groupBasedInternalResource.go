@@ -16,7 +16,7 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 
 // Evaluates group and translates it into []*Conjunction
 // If group has no expr or evaluation expr fails then uses the group names in  Conjunction
-func getConjunctionForGroups(containerModel *collector.ResourcesContainerModel, isExclude bool, groups []*collector.Group,
+func getConjunctionForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
 	groupToConjunctions map[string][]*Conjunction, ruleID int) []*Conjunction {
 	res := []*Conjunction{}
 	for _, group := range groups {
@@ -36,7 +36,7 @@ func getConjunctionForGroups(containerModel *collector.ResourcesContainerModel, 
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			tagConj := GetConjunctionFromExpr(containerModel, isExclude, &group.Expression, group.Name())
+			tagConj := GetConjunctionFromExpr(config, isExclude, &group.Expression, group.Name())
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
@@ -52,21 +52,17 @@ func getConjunctionForGroups(containerModel *collector.ResourcesContainerModel, 
 }
 
 // return the []atomic corresponding to a given condition
-func getAtomicsForPath(containerModel *collector.ResourcesContainerModel,
-	isExcluded bool, pathExpr *collector.PathExpression, group string) []atomic {
+func getAtomicsForPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
+	group string) []atomic {
 	res := []atomic{}
 	for _, path := range pathExpr.Paths {
-		groupOfPath := containerModel.FindGroupByPath(path)
-		segmentOfPath := containerModel.GetSegment(path)
+		groupOfPath, isGroup := config.PathToGroupsMap[path]
+		segmentOfPath, isSegment := config.PathToSegmentsMap[path]
 		switch {
-		case groupOfPath != nil:
+		case isGroup:
 			res = append(res, groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
-		case segmentOfPath != nil:
-			segment, err := configuration.GetCollectorFromTopologySegment(segmentOfPath)
-			if err != nil {
-				debugMsg(group, err.Error())
-			}
-			res = append(res, SegmentTerm{segment: segment, atomicTerm: atomicTerm{neg: isExcluded}})
+		case isSegment:
+			res = append(res, SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
 		default:
 			debugMsg(group, fmt.Sprintf("includes a path %s which is not the current supported group or segment", path))
 		}
