@@ -57,6 +57,7 @@ func (p *nsxConfigParser) getTopology() (err error) {
 }
 
 func (p *nsxConfigParser) getSegments() (err error) {
+	p.configRes.PathToSegmentsMap = map[string]*topology.Segment{}
 	for i := range p.rc.SegmentList {
 		segResource := &p.rc.SegmentList[i]
 		if len(segResource.SegmentPorts) == 0 && len(segResource.Subnets) == 0 {
@@ -78,6 +79,9 @@ func (p *nsxConfigParser) getSegments() (err error) {
 		p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(segment.Block)
 		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(segment.Block)
 		p.configRes.Topology.Segments = append(p.configRes.Topology.Segments, segment)
+		if segResource.Path != nil {
+			p.configRes.PathToSegmentsMap[*segResource.Path] = segment
+		}
 	}
 	return nil
 }

@@ -178,6 +178,7 @@ func (p *nsxConfigParser) storeParsedGroups() {
 	p.getAllGroups()
 	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
+	p.configRes.PathToGroupsMap = p.pathToGroupMap
 }
 
 func (p *nsxConfigParser) storeParsedDFW() {
