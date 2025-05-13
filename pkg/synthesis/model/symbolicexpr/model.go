@@ -3,7 +3,7 @@ package symbolicexpr
 import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 )
 
@@ -13,12 +13,12 @@ type atomicTerm struct {
 	neg bool // equal to group/tag/... (false) or not-equal to it (true)
 }
 
-// abstraction of all terms representing group based internal resources: groupAtomicTerm and tagAtomicTerm
+// abstraction of all terms representing group based internal nsx: groupAtomicTerm and tagAtomicTerm
 type groupBasedInternalResource struct {
 	anyInternalResource
 }
 
-// abstraction of all terms representing internal resources: groupBasedInternalResource and internalIPTerm
+// abstraction of all terms representing internal nsx: groupBasedInternalResource and internalIPTerm
 type anyInternalResource struct {
 }
 
@@ -32,7 +32,7 @@ type groupAtomicTerm struct {
 type tagAtomicTerm struct {
 	groupBasedInternalResource
 	atomicTerm
-	tag *resources.Tag
+	tag *nsx.Tag
 }
 
 // internalIPTerm represents an VMs originating from an NSX internal cidr which is not composed of segments
@@ -63,7 +63,7 @@ type tautology struct {
 type contradiction struct {
 }
 
-// allGroups: represents all internal resources (e.g. VMs)
+// allGroups: represents all internal nsx (e.g. VMs)
 type allGroup struct {
 }
 
@@ -92,7 +92,7 @@ type atomic interface {
 	isInternalOnly() bool              // is the atom internal, not including tautology
 	AsSelector() (string, bool)        // for the usage of policy synthesis
 	disjoint(atomic, *Hints) bool      // based on hints
-	supersetOf(atomic, *Hints) bool    // super set of resources satisfying atom, given Hints based on hints
+	supersetOf(atomic, *Hints) bool    // super set of nsx satisfying atom, given Hints based on hints
 	GetExternalBlock() *netset.IPBlock // gets block for ipBlockTerm; nil otherwise
 	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }

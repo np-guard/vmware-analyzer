@@ -5,7 +5,7 @@ package symbolicexpr
 import (
 	"fmt"
 
-	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 )
 
 const tagConst = "tag"
@@ -13,7 +13,7 @@ const tagConst = "tag"
 // NewTagTerm new tag term
 // todo: support scope as well
 func NewTagTerm(tagName string, neg bool) *tagAtomicTerm {
-	return &tagAtomicTerm{atomicTerm: atomicTerm{neg: neg}, tag: &resources.Tag{Tag: tagName}}
+	return &tagAtomicTerm{atomicTerm: atomicTerm{neg: neg}, tag: &nsx.Tag{Tag: tagName}}
 }
 
 func (tagTerm tagAtomicTerm) name() string {

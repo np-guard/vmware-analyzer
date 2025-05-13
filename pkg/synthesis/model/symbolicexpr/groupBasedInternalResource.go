@@ -6,11 +6,11 @@ import (
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
-	resources "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
+	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
-// groupBasedInternalResource represents term over group based internal resources - groupTerm, tagTerm
+// groupBasedInternalResource represents term over group based internal nsx - groupTerm, tagTerm
 func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 	return nil
 }
@@ -58,20 +58,20 @@ func getConjunctionForGroups(config *configuration.Config, isExclude bool, group
 // return the tag corresponding to a given condition
 func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) []atomic {
 	// assumption: cond is of a tag over VMs
-	if cond.MemberType == nil || *cond.MemberType != resources.ConditionMemberTypeVirtualMachine ||
-		cond.Key == nil || *cond.Key != resources.ConditionKeyTag ||
+	if cond.MemberType == nil || *cond.MemberType != nsx.ConditionMemberTypeVirtualMachine ||
+		cond.Key == nil || *cond.Key != nsx.ConditionKeyTag ||
 		cond.Operator == nil {
 		debugMsg(group, fmt.Sprintf("contains an NSX condition %s which is not supported", cond.String()))
 		return nil
 	}
 	var neg bool
-	if *cond.Operator == resources.ConditionOperatorNOTEQUALS {
+	if *cond.Operator == nsx.ConditionOperatorNOTEQUALS {
 		neg = true
 	}
 	if isExcluded {
 		neg = !neg
 	}
-	tagAtomicTerm := tagAtomicTerm{tag: &resources.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
+	tagAtomicTerm := tagAtomicTerm{tag: &nsx.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 	var atomicRes atomic = tagAtomicTerm
 	return []atomic{atomicRes}
 }
@@ -80,24 +80,24 @@ func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group st
 // if isExcluded: returns "or" for "and" and vice versa (de-morgan)
 // returns nil if neither
 func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
-	group string) *resources.ConjunctionOperatorConjunctionOperator {
+	group string) *nsx.ConjunctionOperatorConjunctionOperator {
 	conj, ok := elem.(*collector.ConjunctionOperator)
 	if !ok {
 		debugMsg(group, fmt.Sprintf("contains an operator of type %T which is not a legal NSX operator", elem))
 		return nil
 	}
 	// assumption: conj is an "Or" or "And" of two conditions on vm's tag (as above)
-	if *conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorAND &&
-		*conj.ConjunctionOperator.ConjunctionOperator != resources.ConjunctionOperatorConjunctionOperatorOR {
+	if *conj.ConjunctionOperator.ConjunctionOperator != nsx.ConjunctionOperatorConjunctionOperatorAND &&
+		*conj.ConjunctionOperator.ConjunctionOperator != nsx.ConjunctionOperatorConjunctionOperatorOR {
 		debugMsg(group, fmt.Sprintf("contains an operator %s which is not supported (yet)", conj.String()))
 		return nil
 	}
 	var retOp = *conj.ConjunctionOperator.ConjunctionOperator
 	if isExcluded { // De-Morgan
-		if *conj.ConjunctionOperator.ConjunctionOperator == resources.ConjunctionOperatorConjunctionOperatorAND {
-			retOp = resources.ConjunctionOperatorConjunctionOperatorOR // And -> Or
+		if *conj.ConjunctionOperator.ConjunctionOperator == nsx.ConjunctionOperatorConjunctionOperatorAND {
+			retOp = nsx.ConjunctionOperatorConjunctionOperatorOR // And -> Or
 		} else {
-			retOp = resources.ConjunctionOperatorConjunctionOperatorAND // Or -> And
+			retOp = nsx.ConjunctionOperatorConjunctionOperatorAND // Or -> And
 		}
 	}
 	return &retOp
@@ -141,7 +141,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
-		if *orOrAnd == resources.ConjunctionOperatorConjunctionOperatorAND {
+		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
 			return andAtomicToConjunction(condTag1, condTag2)
 		}
 		return orAtomicToConjunction(append(condTag1, condTag2...))
