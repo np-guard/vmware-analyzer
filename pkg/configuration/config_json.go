@@ -83,9 +83,9 @@ func (c *Config) buildConfigInfo() {
 		})
 	}
 
-	for i := range c.OrigNSXResources.Tier1List {
-		t1 := &c.OrigNSXResources.Tier1List[i]
-		t1Segments := c.OrigNSXResources.GetSegmentsOfTier1(t1)
+	for i := range c.origNSXResources.Tier1List {
+		t1 := &c.origNSXResources.Tier1List[i]
+		t1Segments := c.origNSXResources.GetSegmentsOfTier1(t1)
 		t1Obj := t1Info{
 			Name: *t1.DisplayName,
 			Segments: common.CustomStrSliceToStrings(t1Segments, func(s *collector.Segment) string {
@@ -98,10 +98,10 @@ func (c *Config) buildConfigInfo() {
 		c.configSummary.T1Gateways = append(c.configSummary.T1Gateways, t1Obj)
 	}
 
-	for i := range c.OrigNSXResources.Tier0List {
-		t0 := &c.OrigNSXResources.Tier0List[i]
-		t0Segments := c.OrigNSXResources.GetSegmentsOfTier0(t0)
-		attachedT1s := c.OrigNSXResources.GetT1sOfTier0(t0)
+	for i := range c.origNSXResources.Tier0List {
+		t0 := &c.origNSXResources.Tier0List[i]
+		t0Segments := c.origNSXResources.GetSegmentsOfTier0(t0)
+		attachedT1s := c.origNSXResources.GetT1sOfTier0(t0)
 		t0Obj := t0Info{
 			Name: *t0.DisplayName,
 			Segments: common.CustomStrSliceToStrings(t0Segments, func(s *collector.Segment) string {

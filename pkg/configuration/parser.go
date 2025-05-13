@@ -55,7 +55,7 @@ type nsxConfigParser struct {
 }
 
 func (p *nsxConfigParser) init() {
-	p.configRes = &Config{OrigNSXResources: p.rc}
+	p.configRes = &Config{origNSXResources: p.rc}
 	p.groupPathsToObjects = map[string]*collector.Group{}
 	p.servicePathsToObjects = map[string]*collector.Service{}
 	p.groupToVMsListCache = map[*collector.Group][]topology.Endpoint{}
@@ -178,6 +178,7 @@ func (p *nsxConfigParser) storeParsedGroups() {
 	p.getAllGroups()
 	p.configRes.Groups = p.allGroups
 	p.configRes.GroupsPerVM = p.vMsGroups()
+	p.configRes.PathToGroupsMap = p.pathToGroupMap
 }
 
 func (p *nsxConfigParser) storeParsedDFW() {

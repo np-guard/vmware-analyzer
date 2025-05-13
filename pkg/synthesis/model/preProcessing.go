@@ -5,6 +5,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
@@ -14,7 +15,7 @@ import (
 /////////////////////////////////////////////////////////////////////////////////////
 
 // PreProcessing: convert policy from spec to symbolicPolicy struct
-func PreProcessing(containerModel *collector.ResourcesContainerModel,
+func PreProcessing(config *configuration.Config,
 	categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy) {
 	categoryToPolicy = map[collector.DfwCategory]*SymbolicPolicy{}
 	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
@@ -23,9 +24,9 @@ func PreProcessing(containerModel *collector.ResourcesContainerModel,
 		if len(category.EvaluatedRules.OutboundRules)+len(category.EvaluatedRules.InboundRules) == 0 {
 			continue
 		}
-		categoryPolicy.Inbound = append(categoryPolicy.Inbound, convertRulesToSymbolicPaths(containerModel, true,
+		categoryPolicy.Inbound = append(categoryPolicy.Inbound, convertRulesToSymbolicPaths(config, true,
 			category.EvaluatedRules.InboundRules, category.Category, groupToConjunctions)...)
-		categoryPolicy.Outbound = append(categoryPolicy.Outbound, convertRulesToSymbolicPaths(containerModel, false,
+		categoryPolicy.Outbound = append(categoryPolicy.Outbound, convertRulesToSymbolicPaths(config, false,
 			category.EvaluatedRules.OutboundRules, category.Category, groupToConjunctions)...)
 
 		categoryToPolicy[category.Category] = &categoryPolicy
@@ -33,12 +34,12 @@ func PreProcessing(containerModel *collector.ResourcesContainerModel,
 	return categoryToPolicy
 }
 
-func convertRulesToSymbolicPaths(containerModel *collector.ResourcesContainerModel, isInbound bool,
+func convertRulesToSymbolicPaths(config *configuration.Config, isInbound bool,
 	rules []*dfw.EvaluatedFWRule, category collector.DfwCategory,
 	groupToConjunctions map[string][]*symbolicexpr.Conjunction) []*SymbolicRule {
 	res := make([]*SymbolicRule, len(rules))
 	for i, rule := range rules {
-		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(containerModel, isInbound, rule.RuleObj, groupToConjunctions)
+		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(config, isInbound, rule.RuleObj, groupToConjunctions)
 		res[i] = &SymbolicRule{OrigRule: rule.RuleObj, OrigRuleCategory: category, OrigSymbolicPaths: ruleSymbolicPaths}
 	}
 	return res

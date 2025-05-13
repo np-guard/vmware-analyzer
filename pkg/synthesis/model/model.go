@@ -138,7 +138,7 @@ func NSXConfigToAbstractModel(
 	}
 
 	// pre-processing rules
-	preProcessingCategoryToPolicy := PreProcessing(nsxConfig.OrigNSXResources, nsxConfig.FW.CategoriesSpecs)
+	preProcessingCategoryToPolicy := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%s",
 		PrintPreProcessingSymbolicPolicy(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))

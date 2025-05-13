@@ -8,7 +8,6 @@ import (
 
 	"github.com/np-guard/models/pkg/netset"
 	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
@@ -57,15 +56,19 @@ func (p *nsxConfigParser) getTopology() (err error) {
 }
 
 func (p *nsxConfigParser) getSegments() (err error) {
+	p.configRes.PathToSegmentsMap = map[string]*topology.Segment{}
 	for i := range p.rc.SegmentList {
 		segResource := &p.rc.SegmentList[i]
 		if len(segResource.SegmentPorts) == 0 && len(segResource.Subnets) == 0 {
 			continue
 		}
-		segment, err := GetCollectorFromTopologySegment(segResource)
+		subnetsNetworks := common.CustomStrSliceToStrings(segResource.Subnets, func(subnet nsx.SegmentSubnet) string { return *subnet.Network })
+		block, err := netset.IPBlockFromCidrList(subnetsNetworks)
 		if err != nil {
 			return err
 		}
+
+		segment := topology.NewSegment(*segResource.DisplayName, block, subnetsNetworks)
 
 		for pi := range segResource.SegmentPorts {
 			att := *segResource.SegmentPorts[pi].Attachment.Id
@@ -78,20 +81,11 @@ func (p *nsxConfigParser) getSegments() (err error) {
 		p.configRes.Topology.allInternalIPBlock = p.configRes.Topology.allInternalIPBlock.Union(segment.Block)
 		p.configRes.Topology.allIPBlock = p.configRes.Topology.allIPBlock.Union(segment.Block)
 		p.configRes.Topology.Segments = append(p.configRes.Topology.Segments, segment)
+		if segResource.Path != nil {
+			p.configRes.PathToSegmentsMap[*segResource.Path] = segment
+		}
 	}
 	return nil
-}
-
-// GetCollectorFromTopologySegment translates collector's segment's to topology's segment
-func GetCollectorFromTopologySegment(collectorSegment *collector.Segment) (*topology.Segment, error) {
-	subnetsNetworks := common.CustomStrSliceToStrings(collectorSegment.Subnets,
-		func(subnet nsx.SegmentSubnet) string { return *subnet.Network })
-	block, err := netset.IPBlockFromCidrList(subnetsNetworks)
-	if err != nil {
-		return nil, err
-	}
-
-	return topology.NewSegment(*collectorSegment.DisplayName, block, subnetsNetworks), nil
 }
 
 func (p *nsxConfigParser) getAllRulesIPBlocks() {
