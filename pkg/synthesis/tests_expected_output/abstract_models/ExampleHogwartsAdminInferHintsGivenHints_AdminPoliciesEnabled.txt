@@ -23,6 +23,20 @@ Slytherin, Hufflepuff, Gryffindor, Dumbledore
 Web, App, DB
 Web, Dumbledore
 
+Automatically inferred based on groups' snapshot
+App, DB
+Dumbledore, App
+Dumbledore, DB
+Dumbledore, Hufflepuff
+Dumbledore, Slytherin
+Dumbledore, Web
+Gryffindor, Dumbledore
+Gryffindor, Hufflepuff
+Gryffindor, Slytherin
+Slytherin, Hufflepuff
+Web, App
+Web, DB
+
 
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~

@@ -16,21 +16,29 @@ Slytherin     |Slytherin
 Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
-no disjoint groups' hints inferred from current groups' configuration
+Automatically inferred based on groups' snapshot
+Dumbledore1, Dumbledore2
+Gryffindor, Dumbledore1
+Gryffindor, Dumbledore2
+Hufflepuff, Dumbledore1
+Hufflepuff, Dumbledore2
+Hufflepuff, Gryffindor
+Slytherin, Dumbledore1
+Slytherin, Dumbledore2
+Slytherin, Gryffindor
+Slytherin, Hufflepuff
+Slytherin, Not Slytherin
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-Original allow rule priority |Rule id |Src                                            |Dst                                             |Connection
-0                            |9200    |(group = Dumbledore1 and group != Dumbledore2) |(group = Not Slytherin)                         |All Connections
-0                            |9200    |(group = Dumbledore1)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
-1                            |9201    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                           |All Connections
-1                            |9201    |(group = Dumbledore2)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
+Original allow rule priority |Rule id |Src                   |Dst                     |Connection
+0                            |9200    |(group = Dumbledore1) |(group = Not Slytherin) |All Connections
+1                            |9201    |(group = Dumbledore2) |(group != Gryffindor)   |All Connections
 
 outbound rules
-Original allow rule priority |Rule id |Src                                            |Dst                                             |Connection
-0                            |9200    |(group = Dumbledore1 and group != Dumbledore2) |(group = Not Slytherin)                         |All Connections
-0                            |9200    |(group = Dumbledore1)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
-1                            |9201    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                           |All Connections
-1                            |9201    |(group = Dumbledore2)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
+Original allow rule priority |Rule id |Src                   |Dst                     |Connection
+0                            |9200    |(group = Dumbledore1) |(group = Not Slytherin) |All Connections
+1                            |9201    |(group = Dumbledore2) |(group != Gryffindor)   |All Connections
 

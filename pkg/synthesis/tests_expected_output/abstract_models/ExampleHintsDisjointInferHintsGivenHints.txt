@@ -19,6 +19,19 @@ Provided by user
 Slytherin, Hufflepuff, Gryffindor, Dumbledore, Dumbledore1, Dumbledore2
 Slytherin, Not Slytherin
 
+Automatically inferred based on groups' snapshot
+Dumbledore2, Dumbledore1
+Dumbledore2, Gryffindor
+Dumbledore2, Hufflepuff
+Dumbledore2, Slytherin
+Gryffindor, Dumbledore1
+Hufflepuff, Dumbledore1
+Hufflepuff, Gryffindor
+Not Slytherin, Slytherin
+Slytherin, Dumbledore1
+Slytherin, Gryffindor
+Slytherin, Hufflepuff
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
