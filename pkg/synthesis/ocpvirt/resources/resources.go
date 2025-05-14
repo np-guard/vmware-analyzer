@@ -14,6 +14,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/policy_utils"
 )
 
 // contains all generated resources
@@ -33,6 +34,8 @@ func (g *Generated) Log() {
 	logGeneratedResources("udns", len(g.UDNs))
 	logGeneratedResources("pods", len(g.Pods))
 	logGeneratedResources("vms", len(g.VMs))
+
+	g.printPoliciesDetails()
 }
 
 func logGeneratedResources(kind string, num int) {
@@ -78,4 +81,68 @@ func yamlWriter[A any](content []A, file, outDir string) error {
 		}
 	}
 	return nil
+}
+
+func (g *Generated) printPoliciesDetails() {
+	sections := &common.SectionsOutput{}
+
+	g.addNetpolSectionDetails(sections)
+	g.addAdminNetpolSectionDetails(sections)
+	g.addPolicyAnnotationsDetails(sections)
+
+	logging.Debugf("the generated policy details: %s", sections.GenerateSectionsString())
+}
+
+const (
+	nameTitle        = "NAME"
+	podSelectorTitle = "POD-SELECTOR"
+)
+
+func (g *Generated) addNetpolSectionDetails(sections *common.SectionsOutput) {
+	// network policies
+	section := "Policies details:"
+	header := []string{"NAMESPACE", nameTitle, podSelectorTitle}
+	lines := [][]string{}
+
+	for _, netpol := range g.NetworkPolicies {
+		// todo improve selector string
+		line := []string{netpol.Namespace, netpol.Name, policy_utils.LabelSelectorString(&netpol.Spec.PodSelector)}
+		lines = append(lines, line)
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	sections.AddSection(section, tableStr)
+}
+
+func (g *Generated) addAdminNetpolSectionDetails(sections *common.SectionsOutput) {
+	// admin network policies
+	section := "Admin Policy details"
+	header := []string{nameTitle, "PRIORITY", "NAMESPACE-SELECTOR", podSelectorTitle}
+	lines := [][]string{}
+	for _, netpol := range g.AdminNetworkPolicies {
+		// todo: fix selector string
+		nsSelector, podsSelector := policy_utils.AdminPolicySubjectSelectorString(netpol)
+		line := []string{netpol.Name, common.IntStr(netpol.Spec.Priority), nsSelector, podsSelector}
+		lines = append(lines, line)
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	sections.AddSection(section, tableStr)
+}
+
+func (g *Generated) addPolicyAnnotationsDetails(sections *common.SectionsOutput) {
+	section := "Policy annotations details"
+	header := []string{nameTitle, "DESCRIPTION", "NSX-ID"}
+	lines := [][]string{}
+	for _, netpol := range g.AdminNetworkPolicies {
+		name := policy_utils.NetpolStr(&netpol.TypeMeta, &netpol.ObjectMeta)
+		line := []string{name, netpol.Annotations[policy_utils.AnnotationDescription], netpol.Annotations[policy_utils.AnnotationNSXRuleUID]}
+		lines = append(lines, line)
+	}
+	for _, netpol := range g.NetworkPolicies {
+		// todo improve selector string
+		name := policy_utils.NetpolStr(&netpol.TypeMeta, &netpol.ObjectMeta)
+		line := []string{name, netpol.Annotations[policy_utils.AnnotationDescription], netpol.Annotations[policy_utils.AnnotationNSXRuleUID]}
+		lines = append(lines, line)
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	sections.AddSection(section, tableStr)
 }
