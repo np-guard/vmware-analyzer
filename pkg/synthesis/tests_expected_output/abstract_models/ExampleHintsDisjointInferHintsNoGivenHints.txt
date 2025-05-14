@@ -17,17 +17,17 @@ Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 Automatically inferred based on groups' snapshot
-Dumbledore1, Dumbledore2
+Dumbledore2, Dumbledore1
+Dumbledore2, Gryffindor
+Dumbledore2, Hufflepuff
+Dumbledore2, Slytherin
 Gryffindor, Dumbledore1
-Gryffindor, Dumbledore2
 Hufflepuff, Dumbledore1
-Hufflepuff, Dumbledore2
 Hufflepuff, Gryffindor
+Not Slytherin, Slytherin
 Slytherin, Dumbledore1
-Slytherin, Dumbledore2
 Slytherin, Gryffindor
 Slytherin, Hufflepuff
-Slytherin, Not Slytherin
 
 
 Allow Only Rules

@@ -25,10 +25,8 @@ Web, Dumbledore
 
 Automatically inferred based on groups' snapshot
 App, DB
-App, Dumbledore
-App, Web
-DB, Dumbledore
-DB, Web
+Dumbledore, App
+Dumbledore, DB
 Dumbledore, Web
 Gryffindor, Dumbledore
 Hufflepuff, Dumbledore
@@ -36,6 +34,8 @@ Hufflepuff, Gryffindor
 Slytherin, Dumbledore
 Slytherin, Gryffindor
 Slytherin, Hufflepuff
+Web, App
+Web, DB
 
 
 Allow Only Rules

@@ -200,7 +200,14 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.ExampleAppWithGroupsAndSegments,
 		synthesizeAdmin: false,
 		noHint:          false,
-		inferHints:      true,
+		inferHints:      false,
+	},
+	{
+		name:            "ExampleAppWithGroupsAndSegmentsInferHintsNoGivenHints",
+		exData:          data.ExampleAppWithGroupsAndSegments,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
 	},
 	{
 		name:            "ExampleHintsDisjointInferHintsGivenHints",

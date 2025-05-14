@@ -27,12 +27,12 @@ Automatically inferred based on groups' snapshot
 App, DB
 Dumbledore, App
 Dumbledore, DB
+Dumbledore, Gryffindor
 Dumbledore, Hufflepuff
 Dumbledore, Slytherin
 Dumbledore, Web
-Gryffindor, Dumbledore
-Gryffindor, Hufflepuff
-Gryffindor, Slytherin
+Hufflepuff, Gryffindor
+Slytherin, Gryffindor
 Slytherin, Hufflepuff
 Web, App
 Web, DB

@@ -20,16 +20,16 @@ Slytherin, Hufflepuff, Gryffindor, Dumbledore, Dumbledore1, Dumbledore2
 Slytherin, Not Slytherin
 
 Automatically inferred based on groups' snapshot
-Dumbledore2, Dumbledore1
-Dumbledore2, Gryffindor
+Dumbledore1, Dumbledore2
+Dumbledore1, Hufflepuff
+Dumbledore1, Slytherin
 Dumbledore2, Hufflepuff
 Dumbledore2, Slytherin
 Gryffindor, Dumbledore1
-Hufflepuff, Dumbledore1
-Hufflepuff, Gryffindor
+Gryffindor, Dumbledore2
+Gryffindor, Hufflepuff
+Gryffindor, Slytherin
 Not Slytherin, Slytherin
-Slytherin, Dumbledore1
-Slytherin, Gryffindor
 Slytherin, Hufflepuff
 
 

@@ -18,18 +18,18 @@ Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 Automatically inferred based on groups' snapshot
-DB, App
-DB, Dumbledore
-DB, Web
+App, DB
 Dumbledore, App
+Dumbledore, DB
+Dumbledore, Gryffindor
+Dumbledore, Hufflepuff
+Dumbledore, Slytherin
 Dumbledore, Web
-Gryffindor, Dumbledore
-Hufflepuff, Dumbledore
 Hufflepuff, Gryffindor
-Slytherin, Dumbledore
 Slytherin, Gryffindor
 Slytherin, Hufflepuff
 Web, App
+Web, DB
 
 
 Admin policy rules
