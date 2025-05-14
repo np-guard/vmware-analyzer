@@ -200,7 +200,7 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.ExampleAppWithGroupsAndSegments,
 		synthesizeAdmin: false,
 		noHint:          false,
-		inferHints:      false,
+		inferHints:      false, // todo
 	},
 	{
 		name:            "ExampleHintsDisjointInferHintsGivenHints",
@@ -214,35 +214,35 @@ var groupsByVmsTests = []synthesisTest{
 		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: false,
 		noHint:          false,
-		inferHints:      false,
+		inferHints:      true,
 	},
 	{
 		name:            "ExampleHogwartsAdminInferHintsGivenHints",
 		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: true,
 		noHint:          false,
-		inferHints:      false,
+		inferHints:      true,
 	},
 	{
 		name:            "ExampleHintsDisjointInferHintsNoGivenHints",
 		exData:          data.ExampleHintsDisjointNoGivenHints,
 		synthesizeAdmin: false,
 		noHint:          false,
-		inferHints:      false,
+		inferHints:      true,
 	},
 	{
 		name:            "ExampleHogwartsInferHintsNoGivenHints",
 		exData:          data.ExampleHogwartsNoGivenHints,
 		synthesizeAdmin: false,
 		noHint:          false,
-		inferHints:      false,
+		inferHints:      true,
 	},
 	{
 		name:            "ExampleHogwartsAdminInferNoHintsGivenHints",
 		exData:          data.ExampleHogwartsNoGivenHints,
 		synthesizeAdmin: true,
 		noHint:          false,
-		inferHints:      false,
+		inferHints:      true,
 	},
 }
 
