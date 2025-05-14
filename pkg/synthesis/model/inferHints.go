@@ -5,6 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
 
-func inferDisjointGroups(groups []*collector.Group, givenHints *symbolicexpr.Hints, inferHints bool) *symbolicexpr.Hints {
-	return givenHints
+func inferDisjointGroups(groups []*collector.Group, givenHints *symbolicexpr.Hints,
+	inferHints bool) (inferredHints, allHints *symbolicexpr.Hints) {
+	return givenHints, givenHints
 }

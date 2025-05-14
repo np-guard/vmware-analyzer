@@ -34,6 +34,10 @@ type AbstractModelSyn struct {
 	Policy          []*SymbolicPolicy // with default deny todo: should be *symbolicPolicy?
 	DefaultDenyRule *dfw.FwRule
 
+	// Disjoint groups ("hints") the translation assumed
+	givenHints    *symbolicexpr.Hints
+	inferredHints *symbolicexpr.Hints
+
 	// labels gen info
 	LabelsToVMsMap map[string][]topology.Endpoint
 	VMToLablesMap  map[string][]string
@@ -144,11 +148,11 @@ func NSXConfigToAbstractModel(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
 	// computes disjoint groups, based on "hints" given by the user, and potentially current groups snapshot
-	hints := inferDisjointGroups(nsxConfig.Groups, options.Hints, options.InferHints)
+	inferredHints, allHints := inferDisjointGroups(nsxConfig.Groups, options.Hints, options.InferHints)
 
 	// policy flattening
 	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
-		options.SynthesizeAdmin, hints)
+		options.SynthesizeAdmin, allHints)
 	allowOnlyPolicyWithOptimization := OptimizeSymbolicPolicy(&allowOnlyPolicy, options)
 
 	// create result AbstractModelSyn object
@@ -163,6 +167,8 @@ func NSXConfigToAbstractModel(
 		VMsSegments:          nsxConfig.Topology.VmSegments,
 		ExternalIP:           nsxConfig.Topology.AllExternalIPBlock,
 		SynthesizeAdmin:      options.SynthesizeAdmin,
+		givenHints:           options.Hints,
+		inferredHints:        inferredHints,
 		Policy:               []*SymbolicPolicy{allowOnlyPolicyWithOptimization},
 		DefaultDenyRule:      nsxConfig.DefaultDenyRule(),
 	}
