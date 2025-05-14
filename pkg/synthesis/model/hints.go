@@ -5,6 +5,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 
+	"sort"
 	"strings"
 )
 
@@ -13,17 +14,23 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool) *symbolicex
 	if !inferHints {
 		return &symbolicexpr.Hints{}
 	}
+	// sort the groups by name so that the results is always the same (and not e.g. sometimes [sly][gry] and sometimes [gry][sly]
 	// includes only groups with VMs
-	groupsDisjoint := [][]string{}
-	for outerIndex, outerGroup := range groups {
-		if len(outerGroup.VMMembers) == 0 {
+	nameToGroup := map[string]*collector.Group{}
+	names := []string{}
+	for _, group := range groups {
+		if len(group.VMMembers) == 0 {
 			continue
 		}
+		nameToGroup[group.String()] = group
+		names = append(names, group.String())
+	}
+	sort.Strings(names)
+	groupsDisjoint := [][]string{}
+	for outerIndex := range names {
+		outerGroup := nameToGroup[names[outerIndex]]
 		for innerIndex := outerIndex + 1; innerIndex < len(groups); innerIndex++ {
-			innerGroup := groups[innerIndex]
-			if len(innerGroup.VMMembers) == 0 {
-				continue
-			}
+			innerGroup := nameToGroup[names[innerIndex]]
 			if groupsVMDisjoint(outerGroup, innerGroup) {
 				groupsDisjoint = append(groupsDisjoint, []string{outerGroup.String(), innerGroup.String()})
 			}

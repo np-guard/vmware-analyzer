@@ -25,17 +25,17 @@ Web, Dumbledore
 
 Automatically inferred based on groups' snapshot
 App, DB
-Dumbledore, App
-Dumbledore, DB
+App, Dumbledore
+App, Web
+DB, Dumbledore
+DB, Web
 Dumbledore, Gryffindor
 Dumbledore, Hufflepuff
 Dumbledore, Slytherin
 Dumbledore, Web
-Hufflepuff, Gryffindor
-Slytherin, Gryffindor
-Slytherin, Hufflepuff
-Web, App
-Web, DB
+Gryffindor, Hufflepuff
+Gryffindor, Slytherin
+Hufflepuff, Slytherin
 
 
 Admin policy rules

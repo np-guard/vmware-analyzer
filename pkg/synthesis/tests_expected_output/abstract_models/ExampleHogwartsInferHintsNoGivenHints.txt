@@ -23,13 +23,13 @@ App, Dumbledore
 App, Web
 DB, Dumbledore
 DB, Web
+Dumbledore, Gryffindor
+Dumbledore, Hufflepuff
+Dumbledore, Slytherin
 Dumbledore, Web
-Gryffindor, Dumbledore
-Hufflepuff, Dumbledore
-Hufflepuff, Gryffindor
-Slytherin, Dumbledore
-Slytherin, Gryffindor
-Slytherin, Hufflepuff
+Gryffindor, Hufflepuff
+Gryffindor, Slytherin
+Hufflepuff, Slytherin
 
 
 Allow Only Rules

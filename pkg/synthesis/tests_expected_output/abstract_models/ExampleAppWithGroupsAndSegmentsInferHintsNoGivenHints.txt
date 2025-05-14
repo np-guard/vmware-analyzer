@@ -18,9 +18,9 @@ Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 Automatically inferred based on groups' snapshot
+bar-app, foo-app
 bar-app, foo-backend
 bar-app, foo-frontend
-foo-app, bar-app
 foo-app, research-test-expr-2
 foo-backend, foo-frontend
 foo-backend, research-test-expr-2
