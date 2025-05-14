@@ -114,7 +114,7 @@ func strAdminPolicy(policy *SymbolicPolicy, options *config.SynthesisOptions) st
 	if !options.SynthesizeAdmin {
 		return ""
 	}
-	return "Admin policy rules\n~~~~~~~~~~~~~~~~~~\ninbound rules\n" +
+	return "\nAdmin policy rules\n~~~~~~~~~~~~~~~~~~\ninbound rules\n" +
 		strOrigSymbolicRules(policy.Inbound, true, options.Color) + "outbound rules\n" +
 		strOrigSymbolicRules(policy.Outbound, true, options.Color)
 }
@@ -132,10 +132,10 @@ func strHints(abstractModel *AbstractModelSyn, options *config.SynthesisOptions)
 	if options.InferHints {
 		actualInferredHintsStr := getHintsStr(abstractModel.inferredHints, false, options.Color)
 		if len(actualInferredHintsStr) == 0 {
-			inferredHintsStr = "no disjoint groups' hints inferred from current groups' configuration\n\n"
+			inferredHintsStr = "no disjoint groups' hints inferred from current groups' configuration\n"
 		}
 	}
-	return givenHintsStr + inferredHintsStr
+	return "\nDisjoint Groups' (hints)\n~~~~~~~~~~~~~~~~~~~~~~~~\n" + givenHintsStr + inferredHintsStr
 }
 
 //////////////////////////////////////////////////////////////////

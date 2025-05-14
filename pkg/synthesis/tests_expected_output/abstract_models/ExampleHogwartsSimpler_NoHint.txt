@@ -11,6 +11,9 @@ Slytherin          |Slytherin-Web, Slytherin-App
 Web                |Slytherin-Web, Gryffindor-Web
 no-group-vms-group |Slytherin-DB, Gryffindor-DB
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
 Allow Only Rules

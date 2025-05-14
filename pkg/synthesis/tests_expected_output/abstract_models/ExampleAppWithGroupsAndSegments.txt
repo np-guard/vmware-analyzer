@@ -13,6 +13,9 @@ research-app         |New-VM-1, New-VM-2, New-VM-3, New-VM-4, New Virtual Machin
 research-seg-1       |New-VM-1, New-VM-3, New-VM-4
 research-test-expr-2 |New-VM-1
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
 Allow Only Rules

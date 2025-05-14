@@ -14,9 +14,9 @@ func inferDisjointGroups(groups []*collector.Group, givenHints *symbolicexpr.Hin
 }
 
 func getHintsStr(hints *symbolicexpr.Hints, isGivenHints, color bool) string {
-	headerStr := "List of disjoint groups provided by user"
+	headerStr := "Provided by user"
 	if !isGivenHints {
-		headerStr = "List of disjoint groups automatically inferred based on groups' snapshot"
+		headerStr = "Automatically inferred based on groups' snapshot"
 	}
 	header := []string{headerStr}
 	lines := [][]string{}

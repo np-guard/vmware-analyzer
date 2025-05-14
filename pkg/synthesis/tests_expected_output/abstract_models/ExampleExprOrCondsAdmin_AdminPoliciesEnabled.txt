@@ -21,9 +21,13 @@ Hufflepuff-Or-no-DB |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App, Slytherin-We
 Slytherin           |Slytherin-DB, Slytherin-Web, Slytherin-App
 Slytherin-Or-no-DB  |Slytherin-DB, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App, Gryffindor-Web, Gryffindor-App
 
-List of disjoint groups provided by user
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
 Slytherin, Hufflepuff, Gryffindor, Dumbledore
 Web, App, DB
+
 
 
 Admin policy rules

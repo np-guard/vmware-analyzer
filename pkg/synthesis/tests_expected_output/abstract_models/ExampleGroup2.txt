@@ -23,6 +23,9 @@ Group Name     |IP Groups
 A-by-IP        |A-by-IP
 external-group |external-group
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
 Allow Only Rules

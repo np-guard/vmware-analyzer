@@ -11,9 +11,13 @@ Slytherin          |Slytherin-Web, Slytherin-App
 Web                |Slytherin-Web, Gryffindor-Web
 no-group-vms-group |Slytherin-DB, Gryffindor-DB
 
-List of disjoint groups provided by user
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
 Slytherin, Hufflepuff, Gryffindor, Dumbledore
 Web, App, DB
+
 
 
 Admin policy rules

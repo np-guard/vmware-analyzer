@@ -7,7 +7,11 @@ Groups' definition
 Group Name |VMs
 frontend   |A
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
+
 
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~

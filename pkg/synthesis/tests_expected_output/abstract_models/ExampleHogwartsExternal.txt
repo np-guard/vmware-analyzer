@@ -13,7 +13,10 @@ Hufflepuff |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
 Slytherin  |Slytherin-Web, Slytherin-App, Slytherin-DB
 Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
 
-List of disjoint groups provided by user
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
 App, Dumbledore
 DB, Dumbledore
 Slytherin, Hufflepuff, Gryffindor, Dumbledore

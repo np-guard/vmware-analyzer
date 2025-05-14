@@ -7,6 +7,9 @@ Groups' definition
 Group Name    |VMs
 default-group |A, B, C-no-address
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
 Allow Only Rules

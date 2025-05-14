@@ -8,6 +8,9 @@ Group Name    |VMs
 default-group |vm1, vm2, vm3, vm4, vm5, vm6, vm7, vm8, vm9, vm10
 real-group    |vm-no-address1, vm-no-address2
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
 Allow Only Rules

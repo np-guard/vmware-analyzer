@@ -9,6 +9,9 @@ backend    |B
 frontend   |A
 frontend1  |C
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
 Allow Only Rules

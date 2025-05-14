@@ -12,7 +12,10 @@ Hufflepuff |((Tag Of VirtualMachine EQUALS Hufflepuff))
 Slytherin  |((Tag Of VirtualMachine EQUALS Slytherin))
 Web        |((Tag Of VirtualMachine EQUALS Web))
 
-List of disjoint groups provided by user
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
 Slytherin, Hufflepuff, Gryffindor, Dumbledore
 Web, App, DB
 
