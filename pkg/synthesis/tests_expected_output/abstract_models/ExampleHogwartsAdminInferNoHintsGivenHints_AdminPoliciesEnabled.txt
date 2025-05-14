@@ -17,6 +17,7 @@ Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
 Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
+no disjoint groups' hints inferred from current groups' configuration
 
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~

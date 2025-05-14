@@ -16,6 +16,7 @@ Slytherin     |Slytherin
 Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
+no disjoint groups' hints inferred from current groups' configuration
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
