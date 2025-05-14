@@ -31,7 +31,7 @@ func getHintsStr(hints *symbolicexpr.Hints, isGivenHints, color bool) string {
 		lines = append(lines, []string{strings.Join(disjointGroups, ", ")})
 	}
 	if len(lines) > 0 {
-		return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color}) + "\n"
+		return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 	}
 	return ""
 }

@@ -29,7 +29,6 @@ Slytherin, Hufflepuff, Gryffindor, Dumbledore
 Web, App, DB
 
 
-
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -43,6 +42,7 @@ Priority |Rule Id |Action |Src                |Dst                              
 0        |9199    |allow  |(tag = Gryffindor) |(tag = Slytherin and tag != DB)  |All Connections
 1        |9201    |allow  |(*)                |(tag = Hufflepuff and tag != DB) |All Connections
 2        |10300   |deny   |(*)                |(*)                              |All Connections
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

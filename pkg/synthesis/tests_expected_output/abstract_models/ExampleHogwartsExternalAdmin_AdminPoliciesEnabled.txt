@@ -24,7 +24,6 @@ Web, App, DB
 Web, Dumbledore
 
 
-
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -38,6 +37,7 @@ Priority |Rule Id |Action              |Src                  |Dst               
 1        |10219   |jump_to_application |(group = Hufflepuff) |(IP addr in 0.0.0.0/0) |UDP dst-ports: 300-320
 2        |10220   |jump_to_application |(group = Slytherin)  |(IP addr in 0.0.0.0/0) |All Connections
 3        |10300   |deny                |(*)                  |(IP addr in 0.0.0.0/0) |All Connections
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

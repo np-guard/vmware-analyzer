@@ -126,7 +126,7 @@ func strGroups(nsxConfig *configuration.Config, color bool) string {
 func strHints(abstractModel *AbstractModelSyn, options *config.SynthesisOptions) string {
 	givenHintsStr := getHintsStr(abstractModel.givenHints, true, options.Color)
 	if len(givenHintsStr) == 0 {
-		givenHintsStr = "no disjoint groups' hints provided by user\n\n"
+		givenHintsStr = "no disjoint groups' hints provided by user\n"
 	}
 	inferredHintsStr := ""
 	if options.InferHints {

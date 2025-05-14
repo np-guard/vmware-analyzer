@@ -18,7 +18,6 @@ Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
 
-
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -35,6 +34,7 @@ Priority |Rule Id |Action              |Src                  |Dst               
 1        |10220   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
 2        |10221   |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
 3        |10300   |deny                |(*)                  |(*)                  |All Connections
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
