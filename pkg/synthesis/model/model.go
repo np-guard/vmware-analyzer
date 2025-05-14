@@ -143,10 +143,12 @@ func NSXConfigToAbstractModel(
 		PrintPreProcessingSymbolicPolicy(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
-	// policy flattenging
-	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(nsxConfig.Groups,
-		nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
-		options.SynthesizeAdmin, options.Hints, options.InferHints)
+	// computes disjoint groups, based on "hints" given by the user, and potentially current groups snapshot
+	hints := inferDisjointGroups(nsxConfig.Groups, options.Hints, options.InferHints)
+
+	// policy flattening
+	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
+		options.SynthesizeAdmin, hints)
 	allowOnlyPolicyWithOptimization := OptimizeSymbolicPolicy(&allowOnlyPolicy, options)
 
 	// create result AbstractModelSyn object

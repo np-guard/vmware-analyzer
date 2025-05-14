@@ -20,12 +20,9 @@ import (
 //  Is it guaranteed that groups and tags do not have the same name?
 //  Does it make sense to define a tag disjoint to a group (or vice versa)?
 
-func ComputeAllowOnlyRulesForPolicy(groups []*collector.Group, categoriesSpecs []*dfw.CategorySpec,
+func ComputeAllowOnlyRulesForPolicy(categoriesSpecs []*dfw.CategorySpec,
 	categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy, synthesizeAdmin bool,
-	hints *symbolicexpr.Hints, inferHints bool) SymbolicPolicy {
-	if inferHints {
-		// todo here call automatic Hints inference based on groups
-	}
+	hints *symbolicexpr.Hints) SymbolicPolicy {
 	computedPolicy := SymbolicPolicy{}
 	globalInboundDenies, globalOutboundDenies := symbolicexpr.SymbolicPaths{}, symbolicexpr.SymbolicPaths{}
 	// we go over categoriesSpecs to make sure we follow the correct order of categories
