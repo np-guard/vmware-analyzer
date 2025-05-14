@@ -202,6 +202,48 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          false,
 		inferHints:      false,
 	},
+	{
+		name:            "ExampleHintsDisjointInferHintsGivenHints",
+		exData:          data.ExampleHintsDisjoint,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
+	{
+		name:            "ExampleHogwartsInferHintsGivenHints",
+		exData:          data.ExampleHogwarts,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
+	{
+		name:            "ExampleHogwartsAdminInferHintsGivenHints",
+		exData:          data.ExampleHogwarts,
+		synthesizeAdmin: true,
+		noHint:          false,
+		inferHints:      false,
+	},
+	{
+		name:            "ExampleHintsDisjointInferHintsNoGivenHints",
+		exData:          data.ExampleHintsDisjointNoGivenHints,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
+	{
+		name:            "ExampleHogwartsInferHintsNoGivenHints",
+		exData:          data.ExampleHogwartsNoGivenHints,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
+	{
+		name:            "ExampleHogwartsAdminInferNoHintsGivenHints",
+		exData:          data.ExampleHogwartsNoGivenHints,
+		synthesizeAdmin: true,
+		noHint:          false,
+		inferHints:      false,
+	},
 }
 
 var vmsByIpsTests = []synthesisTest{

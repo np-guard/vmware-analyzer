@@ -1,0 +1,35 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name    |VMs
+Dumbledore1   |Dumbledore1
+Dumbledore2   |Dumbledore2
+Gryffindor    |Gryffindor
+Hufflepuff    |Hufflepuff
+Not Slytherin |Hufflepuff, Gryffindor, Dumbledore1, Dumbledore2
+Slytherin     |Slytherin
+
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                                            |Dst                                             |Connection
+0                            |9200    |(group = Dumbledore1 and group != Dumbledore2) |(group = Not Slytherin)                         |All Connections
+0                            |9200    |(group = Dumbledore1)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
+1                            |9201    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                           |All Connections
+1                            |9201    |(group = Dumbledore2)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                                            |Dst                                             |Connection
+0                            |9200    |(group = Dumbledore1 and group != Dumbledore2) |(group = Not Slytherin)                         |All Connections
+0                            |9200    |(group = Dumbledore1)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
+1                            |9201    |(group = Dumbledore2 and group != Dumbledore1) |(group != Gryffindor)                           |All Connections
+1                            |9201    |(group = Dumbledore2)                          |(group = Not Slytherin and group != Gryffindor) |All Connections
+

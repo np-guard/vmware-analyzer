@@ -1340,6 +1340,67 @@ var ExampleHintsDisjoint = registerExample(&Example{
 	DisjointGroupsTags: disjointHouses2Dum,
 })
 
+var ExampleHintsDisjointNoGivenHints = registerExample(&Example{
+	Name: "ExampleHintsDisjoint",
+	VMs:  []string{sly, huf, gry, Dum1, Dum2},
+	GroupsByVMs: map[string][]string{
+		sly:    {sly},
+		huf:    {huf},
+		gry:    {gry},
+		Dum1:   {Dum1},
+		Dum2:   {Dum2},
+		notSly: {huf, gry, Dum1, Dum2},
+	},
+	Policies: []Category{
+		{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:                 "Dumb1-Not-Sly",
+					ID:                   newRuleID,
+					Source:               Dum1,
+					Dest:                 notSly,
+					DestinationsExcluded: true,
+					Services:             []string{AnyStr},
+					Action:               Drop,
+				},
+				{
+					Name:     "Dumb2-Not-Gryf",
+					ID:       newRuleID + 1,
+					Source:   Dum2,
+					Dest:     gry,
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+				{
+					Name:     "Dumb1-To-All",
+					ID:       newRuleID + 2,
+					Source:   Dum1,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "Dumb2-To-All",
+					ID:       newRuleID + 3,
+					Source:   Dum2,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+})
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -1499,6 +1560,121 @@ var ExampleHogwarts = registerExample(&Example{
 		{app, dum},
 		{db, dum},
 	},
+})
+
+var ExampleHogwartsNoGivenHints = registerExample(&Example{
+	Name: "ExampleHogwarts",
+	VMs: []string{SlyWeb, slyApp, slyDB, HufWeb, hufApp, hufDB,
+		GryWeb, gryApp, gryDB, Dum1, Dum2},
+	GroupsByVMs: hogwartsBidimensionalGroups,
+	Policies: []Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Gryffindor-to-Gryffindor",
+					ID:     10218,
+					Source: gry,
+					Dest:   gry,
+					Action: JumpToApp,
+					Conn:   netset.AllTCPTransport(),
+				},
+			},
+		},
+		{
+			Name:         "Hufflepuff-to-Hufflepuff-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Hufflepuff-to-Hufflepuff",
+					ID:     10219,
+					Source: huf,
+					Dest:   AnyStr,
+					Scope:  huf,
+					Action: JumpToApp,
+					//nolint:mnd // these are the port numbers for the test
+					Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:     "allow-Slytherin-to-Slytherin",
+					ID:       10220,
+					Source:   sly,
+					Dest:     sly,
+					Services: []string{AnyStr},
+					Action:   JumpToApp,
+				},
+			},
+		},
+		{
+			Name:         "Dumbledore-connection",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:     "allow-Dumbledore-to-all",
+					ID:       10221,
+					Source:   dum,
+					Dest:     gry,
+					Services: []string{AnyStr},
+					Action:   JumpToApp,
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10300,
+					Source:   AnyStr,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+			},
+		},
+
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:     "Client-Access",
+					ID:       10400,
+					Source:   AnyStr,
+					Dest:     web,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "Web-To-App-Access",
+					ID:       10401,
+					Source:   web,
+					Dest:     app,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "App-To-DB-Access",
+					ID:       10405,
+					Source:   app,
+					Dest:     db,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: [][]string{},
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

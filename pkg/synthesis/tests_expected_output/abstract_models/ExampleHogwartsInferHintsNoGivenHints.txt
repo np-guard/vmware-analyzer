@@ -1,0 +1,52 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name |VMs
+App        |Slytherin-App, Gryffindor-App, Hufflepuff-App
+DB         |Slytherin-DB, Gryffindor-DB, Hufflepuff-DB
+Dumbledore |Dumbledore1, Dumbledore2
+Gryffindor |Gryffindor-Web, Gryffindor-App, Gryffindor-DB
+Hufflepuff |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
+Slytherin  |Slytherin-Web, Slytherin-App, Slytherin-DB
+Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
+
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                                                         |Dst                                                         |Connection
+0                            |10400   |(group = Dumbledore)                                        |(group = Web and group = Gryffindor)                        |All Connections
+0                            |10400   |(group = Gryffindor and group = Hufflepuff)                 |(group = Web and group = Gryffindor and group = Hufflepuff) |TCP | UDP dst-ports: 300-320
+0                            |10400   |(group = Gryffindor)                                        |(group = Web and group = Gryffindor)                        |TCP
+0                            |10400   |(group = Hufflepuff)                                        |(group = Web and group = Hufflepuff)                        |UDP dst-ports: 300-320
+0                            |10400   |(group = Slytherin)                                         |(group = Web and group = Slytherin)                         |All Connections
+1                            |10401   |(group = Web and group = Dumbledore)                        |(group = App and group = Gryffindor)                        |All Connections
+1                            |10401   |(group = Web and group = Gryffindor and group = Hufflepuff) |(group = App and group = Gryffindor and group = Hufflepuff) |TCP | UDP dst-ports: 300-320
+1                            |10401   |(group = Web and group = Gryffindor)                        |(group = App and group = Gryffindor)                        |TCP
+1                            |10401   |(group = Web and group = Hufflepuff)                        |(group = App and group = Hufflepuff)                        |UDP dst-ports: 300-320
+1                            |10401   |(group = Web and group = Slytherin)                         |(group = App and group = Slytherin)                         |All Connections
+2                            |10405   |(group = App and group = Dumbledore)                        |(group = DB and group = Gryffindor)                         |All Connections
+2                            |10405   |(group = App and group = Gryffindor and group = Hufflepuff) |(group = DB and group = Gryffindor and group = Hufflepuff)  |TCP | UDP dst-ports: 300-320
+2                            |10405   |(group = App and group = Gryffindor)                        |(group = DB and group = Gryffindor)                         |TCP
+2                            |10405   |(group = App and group = Hufflepuff)                        |(group = DB and group = Hufflepuff)                         |UDP dst-ports: 300-320
+2                            |10405   |(group = App and group = Slytherin)                         |(group = DB and group = Slytherin)                          |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                                  |Dst                                  |Connection
+0                            |10400   |(group = Dumbledore)                 |(group = Web and group = Gryffindor) |All Connections
+0                            |10400   |(group = Gryffindor)                 |(group = Web and group = Gryffindor) |TCP
+0                            |10400   |(group = Slytherin)                  |(group = Web and group = Slytherin)  |All Connections
+1                            |10401   |(group = Web and group = Dumbledore) |(group = App and group = Gryffindor) |All Connections
+1                            |10401   |(group = Web and group = Gryffindor) |(group = App and group = Gryffindor) |TCP
+1                            |10401   |(group = Web and group = Slytherin)  |(group = App and group = Slytherin)  |All Connections
+2                            |10405   |(group = App and group = Dumbledore) |(group = DB and group = Gryffindor)  |All Connections
+2                            |10405   |(group = App and group = Gryffindor) |(group = DB and group = Gryffindor)  |TCP
+2                            |10405   |(group = App and group = Slytherin)  |(group = DB and group = Slytherin)   |All Connections
+
