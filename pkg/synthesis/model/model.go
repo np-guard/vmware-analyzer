@@ -163,7 +163,8 @@ func NSXConfigToAbstractModel(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
 	// computes disjoint groups, based on "hints" given by the user, and potentially current groups snapshot
-	inferredHints, allHints := inferDisjointGroups(nsxConfig.Groups, options.Hints, options.InferHints)
+	inferredHints := inferDisjointGroups(nsxConfig.Groups, options.Hints, options.InferHints)
+	allHints := getAllHints(options.Hints, inferredHints)
 
 	// policy flattening
 	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,

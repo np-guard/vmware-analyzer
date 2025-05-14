@@ -9,8 +9,15 @@ import (
 )
 
 func inferDisjointGroups(groups []*collector.Group, givenHints *symbolicexpr.Hints,
-	inferHints bool) (inferredHints, allHints *symbolicexpr.Hints) {
-	return givenHints, givenHints
+	inferHints bool) *symbolicexpr.Hints {
+	return givenHints
+}
+
+func getAllHints(givenHints, inferredHints *symbolicexpr.Hints) *symbolicexpr.Hints {
+	allDisjointGroups := make([][]string, 0, len(givenHints.GroupsDisjoint)+len(inferredHints.GroupsDisjoint))
+	allDisjointGroups = append(allDisjointGroups, givenHints.GroupsDisjoint...)
+	allDisjointGroups = append(allDisjointGroups, inferredHints.GroupsDisjoint...)
+	return &symbolicexpr.Hints{GroupsDisjoint: allDisjointGroups}
 }
 
 func getHintsStr(hints *symbolicexpr.Hints, isGivenHints, color bool) string {
