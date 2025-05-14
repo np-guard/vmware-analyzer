@@ -17,22 +17,27 @@ research-test-expr-2 |New-VM-1
 Disjoint Groups' (hints)
 ~~~~~~~~~~~~~~~~~~~~~~~~
 no disjoint groups' hints provided by user
+Automatically inferred based on groups' snapshot
+bar-app, foo-backend
+bar-app, foo-frontend
+foo-app, bar-app
+foo-app, research-test-expr-2
+foo-backend, foo-frontend
+foo-backend, research-test-expr-2
+foo-frontend, research-test-expr-2
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
-Original allow rule priority |Rule id |Src                                                 |Dst                                         |Connection
-0                            |1027    |(group = foo-frontend)                              |(group = foo-backend)                       |TCP dst-ports: 80
-1                            |1025    |(group = research-test-expr-2 and group != foo-app) |(group = foo-frontend)                      |TCP dst-ports: 445
-1                            |1025    |(group = research-test-expr-2)                      |(group = foo-frontend and group != foo-app) |TCP dst-ports: 445
-2                            |1024    |(group = bar-app and group != foo-app)              |(group = bar-app)                           |TCP dst-ports: 443
-2                            |1024    |(group = bar-app)                                   |(group = bar-app and group != foo-app)      |TCP dst-ports: 443
+Original allow rule priority |Rule id |Src                            |Dst                    |Connection
+0                            |1027    |(group = foo-frontend)         |(group = foo-backend)  |TCP dst-ports: 80
+1                            |1025    |(group = research-test-expr-2) |(group = foo-frontend) |TCP dst-ports: 445
+2                            |1024    |(group = bar-app)              |(group = bar-app)      |TCP dst-ports: 443
 
 outbound rules
-Original allow rule priority |Rule id |Src                                                 |Dst                                         |Connection
-0                            |1027    |(group = foo-frontend)                              |(group = foo-backend)                       |TCP dst-ports: 80
-1                            |1025    |(group = research-test-expr-2 and group != foo-app) |(group = foo-frontend)                      |TCP dst-ports: 445
-1                            |1025    |(group = research-test-expr-2)                      |(group = foo-frontend and group != foo-app) |TCP dst-ports: 445
-2                            |1024    |(group = bar-app and group != foo-app)              |(group = bar-app)                           |TCP dst-ports: 443
-2                            |1024    |(group = bar-app)                                   |(group = bar-app and group != foo-app)      |TCP dst-ports: 443
+Original allow rule priority |Rule id |Src                            |Dst                    |Connection
+0                            |1027    |(group = foo-frontend)         |(group = foo-backend)  |TCP dst-ports: 80
+1                            |1025    |(group = research-test-expr-2) |(group = foo-frontend) |TCP dst-ports: 445
+2                            |1024    |(group = bar-app)              |(group = bar-app)      |TCP dst-ports: 443
 
