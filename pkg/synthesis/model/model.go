@@ -106,8 +106,8 @@ func (policy *SymbolicPolicy) SortRules() []*SymbolicRule {
 
 func StrAbstractModel(abstractModel *AbstractModelSyn, options *config.SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroups(abstractModel.Config, options.Color) + strAdminPolicy(abstractModel.Policy[0], options) +
-		strAllowOnlyPolicy(abstractModel.Policy[0], options.Color)
+		strGroups(abstractModel.Config, options.Color) + strHints(abstractModel, options) +
+		strAdminPolicy(abstractModel.Policy[0], options) + strAllowOnlyPolicy(abstractModel.Policy[0], options.Color)
 }
 
 func strAdminPolicy(policy *SymbolicPolicy, options *config.SynthesisOptions) string {
@@ -121,6 +121,21 @@ func strAdminPolicy(policy *SymbolicPolicy, options *config.SynthesisOptions) st
 
 func strGroups(nsxConfig *configuration.Config, color bool) string {
 	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" + nsxConfig.GetGroupsStr(color)
+}
+
+func strHints(abstractModel *AbstractModelSyn, options *config.SynthesisOptions) string {
+	givenHintsStr := getHintsStr(abstractModel.givenHints, true, options.Color)
+	if len(givenHintsStr) == 0 {
+		givenHintsStr = "no disjoint groups' hints provided by user\n\n"
+	}
+	inferredHintsStr := ""
+	if options.InferHints {
+		actualInferredHintsStr := getHintsStr(abstractModel.inferredHints, false, options.Color)
+		if len(actualInferredHintsStr) == 0 {
+			inferredHintsStr = "no disjoint groups' hints inferred from current groups' configuration\n\n"
+		}
+	}
+	return givenHintsStr + inferredHintsStr
 }
 
 //////////////////////////////////////////////////////////////////

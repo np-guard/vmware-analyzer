@@ -7,6 +7,8 @@ Groups' definition
 Group Name |VMs
 frontend   |A
 
+no disjoint groups' hints provided by user
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

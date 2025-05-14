@@ -16,6 +16,10 @@ Dumbledore |Dumbledore
 Gryffindor |Gryffindor
 Hufflepuff |Hufflepuff
 
+List of disjoint groups provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

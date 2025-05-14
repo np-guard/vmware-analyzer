@@ -9,6 +9,8 @@ backend    |B
 frontend   |A
 frontend1  |C
 
+no disjoint groups' hints provided by user
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

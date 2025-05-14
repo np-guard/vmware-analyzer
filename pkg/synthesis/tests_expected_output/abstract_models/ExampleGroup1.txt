@@ -20,6 +20,8 @@ external-group |8.8.8.8/32
 Group Name     |IP Groups
 external-group |external-group
 
+no disjoint groups' hints provided by user
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
