@@ -1,13 +1,13 @@
 package model
 
 import (
-	"github.com/np-guard/vmware-analyzer/internal/common"
-	"github.com/np-guard/vmware-analyzer/pkg/collector"
-	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
-
 	"fmt"
 	"sort"
 	"strings"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
 
 // todo: make more efficient https://github.com/np-guard/vmware-analyzer/issues/436
