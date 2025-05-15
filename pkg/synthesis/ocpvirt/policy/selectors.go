@@ -8,7 +8,7 @@ import (
 	adminv1alpha1 "sigs.k8s.io/network-policy-api/apis/v1alpha1"
 
 	"github.com/np-guard/models/pkg/netset"
-	"github.com/np-guard/vmware-analyzer/internal/common"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/policy_utils"
 )
 
 // //////////////////////////////////////////////////////////////////////////////////////////
@@ -22,28 +22,15 @@ type policySelector struct {
 	namespaces []string
 }
 
-func (selector *policySelector) string() string {
-	return fmt.Sprintf("cidrs: %v, namespaes: %v, podsSelector: [%s]", selector.cidrs, selector.namespaces, labelSelectorString(selector.pods))
+func newEmptyPolicySelector() *policySelector {
+	return &policySelector{
+		pods: &metav1.LabelSelector{},
+	}
 }
 
-func labelSelectorString(selector *metav1.LabelSelector) string {
-	var matchLabelsStr, matchExpressionsStr string
-	matchLabelsStr = fmt.Sprintf("%v", selector.MatchLabels)
-	matchExpressionsStr = common.SortedJoinCustomStrFuncSlice(selector.MatchExpressions,
-		func(s metav1.LabelSelectorRequirement) string { return s.String() }, common.CommaSpaceSeparator)
-	switch {
-	case len(selector.MatchExpressions) == 0 && len(selector.MatchLabels) == 0:
-		return "empty selector"
-
-	case len(selector.MatchExpressions) > 0 && len(selector.MatchLabels) == 0:
-		return matchExpressionsStr
-
-	case len(selector.MatchExpressions) == 0 && len(selector.MatchLabels) > 0:
-		return matchLabelsStr
-
-	default:
-		return matchLabelsStr + ";" + matchExpressionsStr
-	}
+func (selector *policySelector) string() string {
+	return fmt.Sprintf("cidrs: %v, namespaes: %v, podsSelector: [%s]",
+		selector.cidrs, selector.namespaces, policy_utils.LabelSelectorString(selector.pods))
 }
 
 func (selector *policySelector) namespaceLabelSelector(isAdmin bool) *metav1.LabelSelector {

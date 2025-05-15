@@ -57,8 +57,8 @@ func (e *Example) syncJSONWithExample() error {
 
 	// compare both parsed configs that should be in-sync
 
-	exampleConfigStr := exampleConfig.GetConfigInfoStr(false)
-	jsonConfigStr := jsonConfig.GetConfigInfoStr(false)
+	exampleConfigStr := exampleConfig.AllConfigInfoStr()
+	jsonConfigStr := jsonConfig.AllConfigInfoStr()
 
 	if exampleConfigStr != jsonConfigStr {
 		// generating text files wilt config str - for easy comparison and gaps review

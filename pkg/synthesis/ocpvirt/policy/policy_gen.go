@@ -110,7 +110,7 @@ func (np *PolicyGenerator) symbolicPathToPolicy(path *symbolicexpr.SymbolicPath,
 		np.NotFullySupported = true
 		return
 	}
-	description := policyDescriptionFromPath(path, isAdmin, action.String())
+	description := policyDescriptionFromSymbolicPath(path, isAdmin, action.String())
 
 	if isAdmin {
 		adminAction := abstractToAdminRuleAction[action]
@@ -121,7 +121,7 @@ func (np *PolicyGenerator) symbolicPathToPolicy(path *symbolicexpr.SymbolicPath,
 	}
 }
 
-func policyDescriptionFromPath(path *symbolicexpr.SymbolicPath, isAdmin bool, action string) string {
+func policyDescriptionFromSymbolicPath(path *symbolicexpr.SymbolicPath, isAdmin bool, action string) string {
 	if isAdmin {
 		return fmt.Sprintf("(%s: (%s)", action, path.String())
 	}
@@ -129,13 +129,17 @@ func policyDescriptionFromPath(path *symbolicexpr.SymbolicPath, isAdmin bool, ac
 }
 
 func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policySelector {
+	if con == nil {
+		return newEmptyPolicySelector()
+	}
+
 	if cachedRes := np.conjunctionToSelector[con.String()]; cachedRes != nil {
-		logging.Debugf("pulling from cache for conjunction %s , the following policySelector: %s", con.String(), cachedRes.string())
+		logging.Debug2f("pulling from cache for conjunction %s , the following policySelector: %s", con.String(), cachedRes.string())
 		// todo: result can currently be changed, thus returning a copy object
 		res := *cachedRes
 		return &res
 	}
-	logging.Debugf("createSelector for conj: %s", con.String())
+	logging.Debug2f("createSelector for conj: %s", con.String())
 	boolToOperator := map[bool]meta.LabelSelectorOperator{
 		false: meta.LabelSelectorOpExists,
 		true:  meta.LabelSelectorOpDoesNotExist}
@@ -164,6 +168,6 @@ func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policyS
 		}
 	}
 	np.conjunctionToSelector[con.String()] = res
-	logging.Debugf("caching for conjunction %s , the following policySelector: %s", con.String(), res.string())
+	logging.Debug2f("caching for conjunction %s , the following policySelector: %s", con.String(), res.string())
 	return res
 }

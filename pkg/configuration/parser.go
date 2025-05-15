@@ -64,7 +64,7 @@ func (p *nsxConfigParser) init() {
 }
 
 func (p *nsxConfigParser) runParser() error {
-	logging.Debugf("started parsing the given NSX config")
+	logging.Infof("started parsing the given NSX config")
 
 	p.init() // initialize relevant maps objects
 
