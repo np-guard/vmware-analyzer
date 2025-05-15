@@ -312,6 +312,13 @@ var vmsByIpsTests = []synthesisTest{
 		inferHints:      false,
 	},
 	{
+		name:            "ExampleInternalWithInterDenyAllowInfer",
+		exData:          data.ExampleInternalWithInterDenyAllow,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      true,
+	},
+	{
 		name:            "ExampleInternalWithInterDenyAllowWithSegments",
 		exData:          data.ExampleInternalWithInterDenyAllowWithSegments,
 		synthesizeAdmin: false,
