@@ -1294,7 +1294,7 @@ var ExampleHintsDisjoint = registerExample(&Example{
 })
 
 var ExampleHintsDisjointNoGivenHints = registerExample(&Example{
-	Name: "ExampleHintsDisjoint",
+	Name: "ExampleHintsDisjointNoGivenHints",
 	VMs:  []string{sly, huf, gry, Dum1, Dum2},
 	GroupsByVMs: map[string][]string{
 		sly:    {sly},
@@ -1532,7 +1532,7 @@ var ExampleHogwartsDisjointGroup = [][]string{
 }
 
 var ExampleHogwartsNoGivenHints = registerExample(&Example{
-	Name:        "ExampleHogwarts",
+	Name:        "ExampleHogwartsNoGivenHints",
 	VMs:         ExampleHogwartsVMs,
 	GroupsByVMs: hogwartsBidimensionalGroups,
 	Policies: []Category{
@@ -2606,96 +2606,115 @@ func createExampleAppWithGroups2() *Example {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
+var vmsAppWithGroupsAndSegments = []string{"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"}
+var vmsAddressesWithGroupsAndSegments = map[string]string{
+	"New-VM-1":            "192.168.1.1",
+	"New-VM-2":            "192.168.1.3",
+	"New-VM-3":            "192.168.0.1",
+	"New-VM-4":            "192.168.0.2",
+	"New Virtual Machine": "192.168.1.2",
+}
+var segmentsByVMsAddressesWithGroupsAndSegments = map[string][]string{
+	"T1-192-168-0-0": {"New-VM-3", "New-VM-4"},
+	"T1-192-168-1-0": {"New-VM-1", "New-VM-2", "New Virtual Machine"},
+}
+var segmentsBlockAppWithGroupsAndSegments = map[string]string{
+	"T1-192-168-0-0": "192.168.0.0/24",
+	"T1-192-168-1-0": "192.168.1.0/24",
+}
+var segmentsT1GWsAppWithGroupsAndSegments = map[string]string{
+	"T1-192-168-0-0": "T1-workloads",
+	"T1-192-168-1-0": "T1-workloads",
+}
+var groupsByVMsAppWithGroupsAndSegments = map[string][]string{
+	"research-app":         {"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
+	"research-seg-1":       {"New-VM-1", "New-VM-3", "New-VM-4"},
+	"foo-app":              {"New-VM-3", "New-VM-4"},
+	"bar-app":              {"New-VM-1", "New-VM-2", "New Virtual Machine"},
+	"foo-backend":          {"New-VM-4"},
+	"foo-frontend":         {"New-VM-3"},
+	"research-test-expr-2": {"New-VM-1"},
+}
+var policiesAppWithGroupsAndSegments = []Category{
+	{
+		Name:         "foo-app",
+		CategoryType: "Application",
+		Rules: []Rule{
+			{
+				Name:     "foo-allow-http-to-backend",
+				ID:       1027,
+				Source:   "foo-frontend",
+				Dest:     "foo-backend",
+				Services: []string{"/infra/services/HTTP"},
+				Action:   Allow,
+			},
+			{
+				Name:     "default-deny-foo-app",
+				ID:       1028,
+				Source:   "foo-app",
+				Dest:     "foo-app",
+				Services: []string{AnyStr},
+				Action:   Drop,
+			},
+		},
+	},
+	{
+		Name:         "New Policy",
+		CategoryType: "Application",
+		Rules: []Rule{
+			{
+				Name:     "allow-smb-to-foo-frontend",
+				ID:       1025,
+				Source:   "research-test-expr-2",
+				Dest:     "foo-frontend",
+				Services: []string{"/infra/services/SMB"},
+				Action:   Allow,
+			},
+			{
+				Name:     "allow-bar-app-https",
+				ID:       1024,
+				Source:   "bar-app",
+				Dest:     "bar-app",
+				Services: []string{"/infra/services/HTTPS"},
+				Action:   Allow,
+			},
+		},
+	},
+	{
+		Name:         "Default Layer3 Section",
+		CategoryType: "Application",
+		Rules: []Rule{
+			{
+				Name:     "deny-research-app",
+				ID:       1021,
+				Source:   "research-app",
+				Dest:     "research-app",
+				Services: []string{AnyStr},
+				Action:   Drop,
+			},
+			DefaultDenyRule(2),
+		},
+	},
+}
+
 var ExampleAppWithGroupsAndSegments = registerExample(&Example{
-	Name: "ExampleAppWithGroupsAndSegments",
-	VMs:  []string{"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
-	VMsAddress: map[string]string{
-		"New-VM-1":            "192.168.1.1",
-		"New-VM-2":            "192.168.1.3",
-		"New-VM-3":            "192.168.0.1",
-		"New-VM-4":            "192.168.0.2",
-		"New Virtual Machine": "192.168.1.2",
-	},
-	SegmentsByVMs: map[string][]string{
-		"T1-192-168-0-0": {"New-VM-3", "New-VM-4"},
-		"T1-192-168-1-0": {"New-VM-1", "New-VM-2", "New Virtual Machine"},
-	},
-	SegmentsBlock: map[string]string{
-		"T1-192-168-0-0": "192.168.0.0/24",
-		"T1-192-168-1-0": "192.168.1.0/24",
-	},
-	SegmentsT1GWs: map[string]string{
-		"T1-192-168-0-0": "T1-workloads",
-		"T1-192-168-1-0": "T1-workloads",
-	},
-	GroupsByVMs: map[string][]string{
-		"research-app":         {"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
-		"research-seg-1":       {"New-VM-1", "New-VM-3", "New-VM-4"},
-		"foo-app":              {"New-VM-3", "New-VM-4"},
-		"bar-app":              {"New-VM-1", "New-VM-2", "New Virtual Machine"},
-		"foo-backend":          {"New-VM-4"},
-		"foo-frontend":         {"New-VM-3"},
-		"research-test-expr-2": {"New-VM-1"},
-	},
-	Policies: []Category{
-		{
-			Name:         "foo-app",
-			CategoryType: "Application",
-			Rules: []Rule{
-				{
-					Name:     "foo-allow-http-to-backend",
-					ID:       1027,
-					Source:   "foo-frontend",
-					Dest:     "foo-backend",
-					Services: []string{"/infra/services/HTTP"},
-					Action:   Allow,
-				},
-				{
-					Name:     "default-deny-foo-app",
-					ID:       1028,
-					Source:   "foo-app",
-					Dest:     "foo-app",
-					Services: []string{AnyStr},
-					Action:   Drop,
-				},
-			},
-		},
-		{
-			Name:         "New Policy",
-			CategoryType: "Application",
-			Rules: []Rule{
-				{
-					Name:     "allow-smb-to-foo-frontend",
-					ID:       1025,
-					Source:   "research-test-expr-2",
-					Dest:     "foo-frontend",
-					Services: []string{"/infra/services/SMB"},
-					Action:   Allow,
-				},
-				{
-					Name:     "allow-bar-app-https",
-					ID:       1024,
-					Source:   "bar-app",
-					Dest:     "bar-app",
-					Services: []string{"/infra/services/HTTPS"},
-					Action:   Allow,
-				},
-			},
-		},
-		{
-			Name:         "Default Layer3 Section",
-			CategoryType: "Application",
-			Rules: []Rule{
-				{
-					Name:     "deny-research-app",
-					ID:       1021,
-					Source:   "research-app",
-					Dest:     "research-app",
-					Services: []string{AnyStr},
-					Action:   Drop,
-				},
-				DefaultDenyRule(2),
-			},
-		},
-	},
+	Name:          "ExampleAppWithGroupsAndSegments",
+	VMs:           vmsAppWithGroupsAndSegments,
+	VMsAddress:    vmsAddressesWithGroupsAndSegments,
+	SegmentsByVMs: segmentsByVMsAddressesWithGroupsAndSegments,
+	SegmentsBlock: segmentsBlockAppWithGroupsAndSegments,
+	SegmentsT1GWs: segmentsT1GWsAppWithGroupsAndSegments,
+	GroupsByVMs:   groupsByVMsAppWithGroupsAndSegments,
+	Policies:      policiesAppWithGroupsAndSegments,
+})
+
+var ExampleAppWithGroupsAndSegmentsInfer = registerExample(&Example{
+	Name:          "ExampleAppWithGroupsAndSegmentsInfer",
+	VMs:           vmsAppWithGroupsAndSegments,
+	VMsAddress:    vmsAddressesWithGroupsAndSegments,
+	SegmentsByVMs: segmentsByVMsAddressesWithGroupsAndSegments,
+	SegmentsBlock: segmentsBlockAppWithGroupsAndSegments,
+	SegmentsT1GWs: segmentsT1GWsAppWithGroupsAndSegments,
+	GroupsByVMs:   groupsByVMsAppWithGroupsAndSegments,
+	Policies:      policiesAppWithGroupsAndSegments,
 })
