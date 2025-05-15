@@ -844,7 +844,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-var runTestMode = OutputGeneration
+var runTestMode = OutputComparison
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)
