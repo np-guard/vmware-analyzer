@@ -14,6 +14,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
 const stringFormat = "%s"
@@ -21,40 +23,37 @@ const stringFormat = "%s"
 var logger DefaultLogger
 var once sync.Once
 
-// Verbosity is an enumerated type for defining the level of verbosity.
-type Verbosity int
-
-const (
-	LowVerbosity    Verbosity = iota // LowVerbosity only reports errors
-	MediumVerbosity                  // MediumVerbosity reports warnings and errors
-	HighVerbosity                    // HighVerbosity reports infos, warnings and errors
-)
-
 // DefaultLogger is the package's built-in logger. It uses log.Default() as the underlying logger.
 type DefaultLogger struct {
-	verbosity Verbosity
-	l         *log.Logger
+	logLevel common.LogLevel
+	l        *log.Logger
 }
 
-// NewDefaultLoggerWithVerbosity creates an instance of DefaultLogger with a user-defined verbosity.
-func NewDefaultLoggerWithVerbosity(verbosity Verbosity) *DefaultLogger {
+// NewDefaultLoggerWithVerbosity creates an instance of DefaultLogger with a user-defined log level
+func NewDefaultLoggerWithLevel(level common.LogLevel) *DefaultLogger {
 	return &DefaultLogger{
-		verbosity: verbosity,
-		l:         log.Default(),
+		logLevel: level,
+		l:        log.Default(),
 	}
 }
 
 // Init initializes a thread-safe singleton logger
 // This would be called from a main method when the application starts up
-func Init(verbosity Verbosity, logFile string) error {
+func Init(level common.LogLevel, logFile string) error {
 	// once ensures the singleton is initialized only once
 	once.Do(func() {
-		logger = *NewDefaultLoggerWithVerbosity(verbosity)
+		logger = *NewDefaultLoggerWithLevel(level)
 	})
 	if logFile != "" {
 		return Tee(logFile)
 	}
 	return nil
+}
+
+func InitDefault() error {
+	var level common.LogLevel
+	level.SetDefault()
+	return Init(level, "")
 }
 
 // Tee() redirect the output into the default log, and a file
@@ -72,9 +71,28 @@ func Tee(fileName string) error {
 	return nil
 }
 
-func DebugVerbosity() bool   { return logger.verbosity == HighVerbosity }
-func InfoVerbosity() bool    { return logger.verbosity == HighVerbosity }
-func WarningVerbosity() bool { return logger.verbosity >= MediumVerbosity }
+var logLevelValues = map[common.LogLevel]int{
+	common.LogLevelFatal:  0,
+	common.LogLevelError:  1,
+	common.LogLevelWarn:   2,
+	common.LogLevelInfo:   3,
+	common.LogLevelDebug:  4,
+	common.LogLevelDebug2: 5,
+}
+
+func DebugVerbosity() bool {
+	return logLevelValues[logger.logLevel] >= logLevelValues[common.LogLevelDebug]
+}
+func InfoVerbosity() bool {
+	return logLevelValues[logger.logLevel] >= logLevelValues[common.LogLevelInfo]
+}
+func WarningVerbosity() bool {
+	return logLevelValues[logger.logLevel] >= logLevelValues[common.LogLevelWarn]
+}
+
+func ErrorVerbosity() bool {
+	return logLevelValues[logger.logLevel] >= logLevelValues[common.LogLevelError]
+}
 
 // Debug/Debugf writes a debug message to the log (only if DefaultLogger verbosity is set to HighVerbosity)
 func Debug(msg string) {
@@ -82,6 +100,13 @@ func Debug(msg string) {
 }
 func Debugf(format string, o ...interface{}) {
 	debugCommonf(format, o...)
+}
+
+// Debug2f for debug2 log level
+func Debug2f(format string, o ...interface{}) {
+	if logger.logLevel == common.LogLevelDebug2 {
+		debugCommonf(format, o...)
+	}
 }
 
 func debugCommonf(format string, o ...interface{}) {
@@ -112,14 +137,17 @@ func Warnf(format string, o ...interface{}) {
 
 // Errorf writes an error message to the log
 func Errorf(format string, o ...interface{}) {
-	logger.l.Printf("ERROR	%s", fmt.Sprintf(format, o...))
+	if ErrorVerbosity() {
+		logger.l.Printf("ERROR	%s", fmt.Sprintf(format, o...))
+	}
 }
 
-func InternalError(msg string) {
-	InternalErrorf(stringFormat, msg)
+func FatalError(msg string) {
+	FatalErrorf(stringFormat, msg)
 }
 
-func InternalErrorf(format string, o ...interface{}) {
-	logger.l.Printf("INTERNAL ERROR	%s", fmt.Sprintf(format, o...))
+func FatalErrorf(format string, o ...interface{}) {
+	// fatal error always displayed
+	logger.l.Printf("FATAL	%s", fmt.Sprintf(format, o...))
 	panic(fmt.Sprintf(format, o...))
 }

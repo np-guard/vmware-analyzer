@@ -91,7 +91,7 @@ func FilterExplanation(allExplanations []*RuleAndConn, connSet *netset.Transport
 	res := []*RuleAndConn{}
 	for _, r := range allExplanations {
 		if r == nil {
-			logging.InternalErrorf("unexpected nil entry in allExplanations []*RuleAndConn")
+			logging.FatalErrorf("unexpected nil entry in allExplanations []*RuleAndConn")
 		}
 		if !r.Conn.Intersect(connSet).IsEmpty() {
 			res = append(res, &RuleAndConn{RuleID: r.RuleID, Conn: r.Conn.Intersect(connSet), Action: r.Action})

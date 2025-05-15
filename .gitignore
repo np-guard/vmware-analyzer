@@ -20,6 +20,7 @@ bin/
 
 # IDE settings
 .vscode/
+*.code-workspace
 
 # For auto-generated sdk
 schemas/*.json

@@ -16,6 +16,7 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithHighVerbosity(args.verbose),
 		runner.WithQuietVerbosity(args.quiet),
 		runner.WithLogFile(args.logFile),
+		runner.WithLogLevel(args.logLevel),
 		runner.WithNSXURL(args.host),
 		runner.WithNSXUser(args.user),
 		runner.WithNSXPassword(args.password),

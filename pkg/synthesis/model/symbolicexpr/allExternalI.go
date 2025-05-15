@@ -38,7 +38,7 @@ func (allExt allExternal) AsSelector() (string, bool) {
 
 // GetExternalBlock allExternal kept only symbolically; GetExternalBlock() just used to symbolize it is external
 func (allExternal) GetExternalBlock() *netset.IPBlock {
-	logging.InternalError("do not call GetExternalBlock() of externalIPTerm")
+	logging.FatalError("do not call GetExternalBlock() of externalIPTerm")
 	return netset.GetCidrAll()
 }
 

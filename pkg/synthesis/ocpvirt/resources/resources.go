@@ -39,7 +39,7 @@ func (g *Generated) Log() {
 }
 
 func logGeneratedResources(kind string, num int) {
-	logging.Debugf("generated %d %s", num, kind)
+	logging.Infof("generated %d %s", num, kind)
 }
 
 func (g *Generated) CopyPolicyResources(g1 *Generated) {
@@ -62,6 +62,7 @@ func (g *Generated) WriteResourcesToDir(outDir string) error {
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
 	}
+	logging.Infof("writing generated resources YAMLs to %s", outDir)
 
 	err1 := yamlWriter(g.NetworkPolicies, "policies.yaml", outDir)
 	err2 := yamlWriter(g.AdminNetworkPolicies, "adminPolicies.yaml", outDir)
@@ -86,11 +87,11 @@ func yamlWriter[A any](content []A, file, outDir string) error {
 func (g *Generated) printPoliciesDetails() {
 	sections := &common.SectionsOutput{}
 
-	g.addNetpolSectionDetails(sections)
 	g.addAdminNetpolSectionDetails(sections)
+	g.addNetpolSectionDetails(sections)
 	g.addPolicyAnnotationsDetails(sections)
 
-	logging.Debugf("the generated policy details: %s", sections.GenerateSectionsString())
+	logging.Infof("the generated policy details: %s", sections.GenerateSectionsString())
 }
 
 const (
@@ -105,7 +106,6 @@ func (g *Generated) addNetpolSectionDetails(sections *common.SectionsOutput) {
 	lines := [][]string{}
 
 	for _, netpol := range g.NetworkPolicies {
-		// todo improve selector string
 		line := []string{netpol.Namespace, netpol.Name, policy_utils.LabelSelectorString(&netpol.Spec.PodSelector)}
 		lines = append(lines, line)
 	}
@@ -119,12 +119,12 @@ func (g *Generated) addAdminNetpolSectionDetails(sections *common.SectionsOutput
 	header := []string{nameTitle, "PRIORITY", "NAMESPACE-SELECTOR", podSelectorTitle}
 	lines := [][]string{}
 	for _, netpol := range g.AdminNetworkPolicies {
-		// todo: fix selector string
 		nsSelector, podsSelector := policy_utils.AdminPolicySubjectSelectorString(netpol)
 		line := []string{netpol.Name, common.IntStr(netpol.Spec.Priority), nsSelector, podsSelector}
 		lines = append(lines, line)
 	}
 	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	// todo: don't add this section if empty?
 	sections.AddSection(section, tableStr)
 }
 
@@ -138,7 +138,6 @@ func (g *Generated) addPolicyAnnotationsDetails(sections *common.SectionsOutput)
 		lines = append(lines, line)
 	}
 	for _, netpol := range g.NetworkPolicies {
-		// todo improve selector string
 		name := policy_utils.NetpolStr(&netpol.TypeMeta, &netpol.ObjectMeta)
 		line := []string{name, netpol.Annotations[policy_utils.AnnotationDescription], netpol.Annotations[policy_utils.AnnotationNSXRuleUID]}
 		lines = append(lines, line)

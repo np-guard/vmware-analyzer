@@ -3,7 +3,6 @@ package ocpvirt
 import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
 )
@@ -15,9 +14,8 @@ func NSXToK8sSynthesis(
 	nsxConfig *configuration.Config,
 	options *config.SynthesisOptions,
 ) (*resourcesGenerator, error) {
-	logging.Debugf("started synthesis")
-
-	// first stage: convert nsx config to abstract model (includes policy "flattening")
+	// first stage: parse/revrieve nsx config,
+	// then convert nsx config to abstract model (includes policy "flattening")
 	abstractModel, err := model.NSXConfigToAbstractModel(resources, nsxConfig, options)
 	if err != nil {
 		return nil, err

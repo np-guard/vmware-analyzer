@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/test_utils"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 )
 
@@ -136,7 +137,7 @@ var testPaths = []*groupPathParserTest{
 
 // test parsed groups members and interpretation done by RuleEndpoints by function getEndpointsFromGroupsPaths()
 func TestParser(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	currentDir, _ := os.Getwd()
 	err := logging.Tee(path.Join(filepath.Join(currentDir, "out"), "log.txt"))
 	require.Nil(t, err)

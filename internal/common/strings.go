@@ -171,7 +171,7 @@ func (s *SectionsOutput) GenerateSectionsString() string {
 			sb.WriteString(sectionContent)
 		}
 	}
-
+	sb.WriteString(OutputSectionSep)
 	return sb.String()
 }
 

@@ -134,12 +134,12 @@ func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policyS
 	}
 
 	if cachedRes := np.conjunctionToSelector[con.String()]; cachedRes != nil {
-		logging.Debugf("pulling from cache for conjunction %s , the following policySelector: %s", con.String(), cachedRes.string())
+		logging.Debug2f("pulling from cache for conjunction %s , the following policySelector: %s", con.String(), cachedRes.string())
 		// todo: result can currently be changed, thus returning a copy object
 		res := *cachedRes
 		return &res
 	}
-	logging.Debugf("createSelector for conj: %s", con.String())
+	logging.Debug2f("createSelector for conj: %s", con.String())
 	boolToOperator := map[bool]meta.LabelSelectorOperator{
 		false: meta.LabelSelectorOpExists,
 		true:  meta.LabelSelectorOpDoesNotExist}
@@ -168,6 +168,6 @@ func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policyS
 		}
 	}
 	np.conjunctionToSelector[con.String()] = res
-	logging.Debugf("caching for conjunction %s , the following policySelector: %s", con.String(), res.string())
+	logging.Debug2f("caching for conjunction %s , the following policySelector: %s", con.String(), res.string())
 	return res
 }
