@@ -131,7 +131,7 @@ func strHints(abstractModel *AbstractModelSyn, options *config.SynthesisOptions)
 	inferredHintsStr := ""
 	if options.InferHints {
 		inferredHintsStr = getHintsStr(abstractModel.inferredHints, false, options.Color)
-		if len(inferredHintsStr) == 0 {
+		if inferredHintsStr == "" {
 			inferredHintsStr = "no disjoint groups' hints inferred from current groups' configuration\n"
 		}
 	}
