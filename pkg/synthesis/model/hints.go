@@ -5,32 +5,45 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 
+	"fmt"
 	"sort"
 	"strings"
 )
 
 // todo: make more efficient https://github.com/np-guard/vmware-analyzer/issues/436
-func inferDisjointGroups(groups []*collector.Group, inferHints bool) *symbolicexpr.Hints {
+func inferDisjointGroups(groups []*collector.Group, inferHints bool,
+	groupToConjunctions map[string][]*symbolicexpr.Conjunction) *symbolicexpr.Hints {
 	if !inferHints {
 		return &symbolicexpr.Hints{}
 	}
 	// sort the groups by name so that the results is always the same (and not e.g. sometimes [sly][gry] and sometimes [gry][sly]
-	// includes only groups with VMs
+	// includes only groups with VMs that are not based on IPs todo: perhaps only avoid groups that are both based on IPs??
 	nameToGroup := map[string]*collector.Group{}
 	names := []string{}
 	for _, group := range groups {
+		name := group.String()
 		if len(group.VMMembers) == 0 {
 			continue
 		}
-		nameToGroup[group.String()] = group
-		names = append(names, group.String())
+		// todo: improve group caching https://github.com/np-guard/vmware-analyzer/issues/436
+		if conjs, exists := groupToConjunctions[name]; exists {
+			if symbolicexpr.ConjunctionsOnlyIPBlockTerms(conjs) {
+				fmt.Printf("skipping OnlyIPBlock %v\n", name)
+				continue
+			}
+		} else {
+			fmt.Printf("did not find #%v# in groupToConjunctions\n", name)
+		}
+		nameToGroup[name] = group
+		names = append(names, name)
 	}
 	sort.Strings(names)
 	groupsDisjoint := [][]string{}
 	for outerIndex := range names {
 		outerGroup := nameToGroup[names[outerIndex]]
-		for innerIndex := outerIndex + 1; innerIndex < len(groups); innerIndex++ {
+		for innerIndex := outerIndex + 1; innerIndex < len(names); innerIndex++ {
 			innerGroup := nameToGroup[names[innerIndex]]
+			// if both has IPs then do not add
 			if groupsVMDisjoint(outerGroup, innerGroup) {
 				groupsDisjoint = append(groupsDisjoint, []string{outerGroup.String(), innerGroup.String()})
 			}

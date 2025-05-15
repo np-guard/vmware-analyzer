@@ -159,13 +159,13 @@ func NSXConfigToAbstractModel(
 	}
 
 	// pre-processing rules
-	preProcessingCategoryToPolicy := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
+	preProcessingCategoryToPolicy, groupToConjunctions := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%s",
 		PrintPreProcessingSymbolicPolicy(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
 	// computes disjoint groups, based on "hints" given by the user, and potentially current groups snapshot
-	inferredHints := inferDisjointGroups(nsxConfig.Groups, options.InferHints)
+	inferredHints := inferDisjointGroups(nsxConfig.Groups, options.InferHints, groupToConjunctions)
 	allHints := getAllHints(options.Hints, inferredHints)
 
 	// policy flattening

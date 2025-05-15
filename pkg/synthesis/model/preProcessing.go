@@ -14,11 +14,12 @@ import (
 // preprocessing related functionality
 /////////////////////////////////////////////////////////////////////////////////////
 
-// PreProcessing: convert policy from spec to symbolicPolicy struct
+// PreProcessing convert policy from spec to symbolicPolicy struct
 func PreProcessing(config *configuration.Config,
-	categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy) {
+	categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy,
+	groupToConjunctions map[string][]*symbolicexpr.Conjunction) {
 	categoryToPolicy = map[collector.DfwCategory]*SymbolicPolicy{}
-	groupToConjunctions := map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
+	groupToConjunctions = map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
 	for _, category := range categoriesSpecs {
 		categoryPolicy := SymbolicPolicy{}
 		if len(category.EvaluatedRules.OutboundRules)+len(category.EvaluatedRules.InboundRules) == 0 {
@@ -31,7 +32,7 @@ func PreProcessing(config *configuration.Config,
 
 		categoryToPolicy[category.Category] = &categoryPolicy
 	}
-	return categoryToPolicy
+	return categoryToPolicy, groupToConjunctions
 }
 
 func convertRulesToSymbolicPaths(config *configuration.Config, isInbound bool,
@@ -69,7 +70,7 @@ func strOrigSymbolicRules(rules []*SymbolicRule, printOnlyAdmin, color bool) str
 	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
 }
 
-// prints pre-processing symbolic rules by ordered category;
+// PrintPreProcessingSymbolicPolicy prints pre-processing symbolic rules by ordered category;
 // with an option to print only the subset that will be synthesized to admin rules
 // categoriesSpecs []*dfw.CategorySpec is required to have the correct printing order
 func PrintPreProcessingSymbolicPolicy(categoriesSpecs []*dfw.CategorySpec,
