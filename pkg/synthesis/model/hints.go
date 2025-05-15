@@ -25,7 +25,7 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool,
 		if len(group.VMMembers) == 0 {
 			continue
 		}
-		// todo: improve group caching https://github.com/np-guard/vmware-analyzer/issues/436
+		// todo: not all groups are in cache https://github.com/np-guard/vmware-analyzer/issues/436
 		if conjs, exists := groupToConjunctions[name]; exists {
 			if symbolicexpr.ConjunctionsOnlyIPBlockTerms(conjs) {
 				fmt.Printf("skipping OnlyIPBlock %v\n", name)
@@ -54,9 +54,9 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool,
 }
 
 func groupsVMDisjoint(group1, group2 *collector.Group) bool {
-	for _, vm1 := range group1.VMMembers {
-		for _, vm2 := range group2.VMMembers {
-			if vm1.String() == vm2.String() {
+	for vm1 := range group1.VMMembers {
+		for vm2 := range group2.VMMembers {
+			if group1.VMMembers[vm1].String() == group2.VMMembers[vm2].String() {
 				return false
 			}
 		}
