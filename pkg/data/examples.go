@@ -1289,54 +1289,7 @@ var ExampleHintsDisjoint = registerExample(&Example{
 		Dum2:   {Dum2},
 		notSly: {huf, gry, Dum1, Dum2},
 	},
-	Policies: []Category{
-		{
-			Name:         "From-Dumbledore-connection",
-			CategoryType: application,
-			Rules: []Rule{
-				{
-					Name:                 "Dumb1-Not-Sly",
-					ID:                   newRuleID,
-					Source:               Dum1,
-					Dest:                 notSly,
-					DestinationsExcluded: true,
-					Services:             []string{AnyStr},
-					Action:               Drop,
-				},
-				{
-					Name:     "Dumb2-Not-Gryf",
-					ID:       newRuleID + 1,
-					Source:   Dum2,
-					Dest:     gry,
-					Services: []string{AnyStr},
-					Action:   Drop,
-				},
-				{
-					Name:     "Dumb1-To-All",
-					ID:       newRuleID + 2,
-					Source:   Dum1,
-					Dest:     AnyStr,
-					Services: []string{AnyStr},
-					Action:   Allow,
-				},
-				{
-					Name:     "Dumb2-To-All",
-					ID:       newRuleID + 3,
-					Source:   Dum2,
-					Dest:     AnyStr,
-					Services: []string{AnyStr},
-					Action:   Allow,
-				},
-			},
-		},
-		{
-			Name:         defaultL3,
-			CategoryType: application,
-			Rules: []Rule{
-				DefaultDenyRule(denyRuleIDEnv),
-			},
-		},
-	},
+	Policies:           HintsDisjointPolicy,
 	DisjointGroupsTags: disjointHouses2Dum,
 })
 
@@ -1351,55 +1304,57 @@ var ExampleHintsDisjointNoGivenHints = registerExample(&Example{
 		Dum2:   {Dum2},
 		notSly: {huf, gry, Dum1, Dum2},
 	},
-	Policies: []Category{
-		{
-			Name:         "From-Dumbledore-connection",
-			CategoryType: application,
-			Rules: []Rule{
-				{
-					Name:                 "Dumb1-Not-Sly",
-					ID:                   newRuleID,
-					Source:               Dum1,
-					Dest:                 notSly,
-					DestinationsExcluded: true,
-					Services:             []string{AnyStr},
-					Action:               Drop,
-				},
-				{
-					Name:     "Dumb2-Not-Gryf",
-					ID:       newRuleID + 1,
-					Source:   Dum2,
-					Dest:     gry,
-					Services: []string{AnyStr},
-					Action:   Drop,
-				},
-				{
-					Name:     "Dumb1-To-All",
-					ID:       newRuleID + 2,
-					Source:   Dum1,
-					Dest:     AnyStr,
-					Services: []string{AnyStr},
-					Action:   Allow,
-				},
-				{
-					Name:     "Dumb2-To-All",
-					ID:       newRuleID + 3,
-					Source:   Dum2,
-					Dest:     AnyStr,
-					Services: []string{AnyStr},
-					Action:   Allow,
-				},
+	Policies: HintsDisjointPolicy,
+})
+
+var HintsDisjointPolicy = []Category{
+	{
+		Name:         "From-Dumbledore-connection",
+		CategoryType: application,
+		Rules: []Rule{
+			{
+				Name:                 "Dumb1-Not-Sly",
+				ID:                   newRuleID,
+				Source:               Dum1,
+				Dest:                 notSly,
+				DestinationsExcluded: true,
+				Services:             []string{AnyStr},
+				Action:               Drop,
 			},
-		},
-		{
-			Name:         defaultL3,
-			CategoryType: application,
-			Rules: []Rule{
-				DefaultDenyRule(denyRuleIDEnv),
+			{
+				Name:     "Dumb2-Not-Gryf",
+				ID:       newRuleID + 1,
+				Source:   Dum2,
+				Dest:     gry,
+				Services: []string{AnyStr},
+				Action:   Drop,
+			},
+			{
+				Name:     "Dumb1-To-All",
+				ID:       newRuleID + 2,
+				Source:   Dum1,
+				Dest:     AnyStr,
+				Services: []string{AnyStr},
+				Action:   Allow,
+			},
+			{
+				Name:     "Dumb2-To-All",
+				ID:       newRuleID + 3,
+				Source:   Dum2,
+				Dest:     AnyStr,
+				Services: []string{AnyStr},
+				Action:   Allow,
 			},
 		},
 	},
-})
+	{
+		Name:         defaultL3,
+		CategoryType: application,
+		Rules: []Rule{
+			DefaultDenyRule(denyRuleIDEnv),
+		},
+	},
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
