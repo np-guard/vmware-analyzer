@@ -1404,6 +1404,14 @@ var ExampleHogwarts = registerExample(&Example{
 	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
 })
 
+var ExampleHogwartsInfer = registerExample(&Example{
+	Name:               "ExampleHogwartsInfer",
+	VMs:                ExampleHogwartsVMs,
+	GroupsByVMs:        hogwartsBidimensionalGroups,
+	Policies:           ExampleHogwartsPolicies,
+	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
+})
+
 var ExampleHogwartsVMs = []string{SlyWeb, slyApp, slyDB, HufWeb, hufApp, hufDB,
 	GryWeb, gryApp, gryDB, Dum1, Dum2}
 
