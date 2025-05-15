@@ -13,6 +13,17 @@ Hufflepuff |Hufflepuff-Web, Hufflepuff-App, Hufflepuff-DB
 Slytherin  |Slytherin-Web, Slytherin-App, Slytherin-DB
 Web        |Slytherin-Web, Gryffindor-Web, Hufflepuff-Web
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+App, Dumbledore
+DB, Dumbledore
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+Web, App, DB
+Web, Dumbledore
+
+
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -29,6 +40,7 @@ Priority |Rule Id |Action              |Src                  |Dst               
 1        |10220   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |All Connections
 2        |10221   |jump_to_application |(group = Dumbledore) |(group = Gryffindor) |All Connections
 3        |10300   |deny                |(*)                  |(*)                  |All Connections
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

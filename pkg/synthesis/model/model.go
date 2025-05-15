@@ -34,6 +34,10 @@ type AbstractModelSyn struct {
 	Policy          []*SymbolicPolicy // with default deny todo: should be *symbolicPolicy?
 	DefaultDenyRule *dfw.FwRule
 
+	// Disjoint groups ("hints") the translation assumed
+	givenHints    *symbolicexpr.Hints
+	inferredHints *symbolicexpr.Hints
+
 	// labels gen info
 	LabelsToVMsMap map[string][]topology.Endpoint
 	VMToLablesMap  map[string][]string
@@ -102,21 +106,36 @@ func (policy *SymbolicPolicy) SortRules() []*SymbolicRule {
 
 func StrAbstractModel(abstractModel *AbstractModelSyn, options *config.SynthesisOptions) string {
 	return "\nAbstract Model Details\n=======================\n" +
-		strGroups(abstractModel.Config, options.Color) + strAdminPolicy(abstractModel.Policy[0], options) +
-		strAllowOnlyPolicy(abstractModel.Policy[0], options.Color)
+		strGroups(abstractModel.Config, options.Color) + strHints(abstractModel, options) +
+		strAdminPolicy(abstractModel.Policy[0], options) + strAllowOnlyPolicy(abstractModel.Policy[0], options.Color)
 }
 
 func strAdminPolicy(policy *SymbolicPolicy, options *config.SynthesisOptions) string {
 	if !options.SynthesizeAdmin {
 		return ""
 	}
-	return "Admin policy rules\n~~~~~~~~~~~~~~~~~~\ninbound rules\n" +
+	return "\nAdmin policy rules\n~~~~~~~~~~~~~~~~~~\ninbound rules\n" +
 		strOrigSymbolicRules(policy.Inbound, true, options.Color) + "outbound rules\n" +
 		strOrigSymbolicRules(policy.Outbound, true, options.Color)
 }
 
 func strGroups(nsxConfig *configuration.Config, color bool) string {
 	return "\nGroups' definition\n~~~~~~~~~~~~~~~~~~\n" + nsxConfig.GetGroupsStr(color)
+}
+
+func strHints(abstractModel *AbstractModelSyn, options *config.SynthesisOptions) string {
+	givenHintsStr := getHintsStr(abstractModel.givenHints, true, options.Color)
+	if givenHintsStr == "" {
+		givenHintsStr = "no disjoint groups' hints provided by user\n"
+	}
+	inferredHintsStr := ""
+	if options.InferHints {
+		inferredHintsStr = getHintsStr(abstractModel.inferredHints, false, options.Color)
+		if inferredHintsStr == "" {
+			inferredHintsStr = "no disjoint groups' hints inferred from current groups' configuration\n"
+		}
+	}
+	return "\nDisjoint Groups' (hints)\n~~~~~~~~~~~~~~~~~~~~~~~~\n" + givenHintsStr + inferredHintsStr
 }
 
 //////////////////////////////////////////////////////////////////
@@ -138,15 +157,18 @@ func NSXConfigToAbstractModel(
 	}
 
 	// pre-processing rules
-	preProcessingCategoryToPolicy := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
+	preProcessingCategoryToPolicy, groupToConjunctions := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%s",
 		PrintPreProcessingSymbolicPolicy(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
-	// policy flattenging
-	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(
-		nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
-		options.SynthesizeAdmin, options.Hints)
+	// computes disjoint groups, based on "hints" given by the user, and potentially current groups snapshot
+	inferredHints := inferDisjointGroups(nsxConfig.Groups, options.InferHints, groupToConjunctions)
+	allHints := getAllHints(options.Hints, inferredHints)
+
+	// policy flattening
+	allowOnlyPolicy := ComputeAllowOnlyRulesForPolicy(nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy,
+		options.SynthesizeAdmin, allHints)
 	allowOnlyPolicyWithOptimization := OptimizeSymbolicPolicy(&allowOnlyPolicy, options)
 
 	// create result AbstractModelSyn object
@@ -161,6 +183,8 @@ func NSXConfigToAbstractModel(
 		VMsSegments:          nsxConfig.Topology.VmSegments,
 		ExternalIP:           nsxConfig.Topology.AllExternalIPBlock,
 		SynthesizeAdmin:      options.SynthesizeAdmin,
+		givenHints:           options.Hints,
+		inferredHints:        inferredHints,
 		Policy:               []*SymbolicPolicy{allowOnlyPolicyWithOptimization},
 		DefaultDenyRule:      nsxConfig.DefaultDenyRule(),
 	}

@@ -337,3 +337,22 @@ func (c *Conjunction) processTautology(externalRelevant bool) []*Conjunction {
 	var allExtrenalConj = Conjunction{allExternal{}}
 	return []*Conjunction{&conjWOTautology, &allExtrenalConj}
 }
+
+// hasOnlyIPBlockTerms returns true if all terms in Conjunction c are based on IPBlocks
+func (c *Conjunction) hasOnlyIPBlockTerms() bool {
+	for _, item := range *c {
+		if item.GetExternalBlock() == nil && item.getInternalBlock() == nil {
+			return false
+		}
+	}
+	return true
+}
+
+func ConjunctionsOnlyIPBlockTerms(conjunctions []*Conjunction) bool {
+	for _, conj := range conjunctions {
+		if !conj.hasOnlyIPBlockTerms() {
+			return false
+		}
+	}
+	return true
+}

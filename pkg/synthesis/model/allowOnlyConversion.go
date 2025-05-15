@@ -164,7 +164,7 @@ func optimizeSymbolicRules(rules []*SymbolicRule, options *config.SynthesisOptio
 }
 
 func strAllowOnlyPolicy(policy *SymbolicPolicy, color bool) string {
-	return "Allow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n" +
+	return "\nAllow Only Rules\n~~~~~~~~~~~~~~~~~\ninbound rules\n" +
 		strAllowOnlyPathsOfRules(policy.Inbound, color) + "outbound rules\n" +
 		strAllowOnlyPathsOfRules(policy.Outbound, color)
 }

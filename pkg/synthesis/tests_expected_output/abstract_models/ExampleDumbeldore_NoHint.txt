@@ -11,6 +11,11 @@ DumbledoreNoSly |Dumbledore2
 Gryffindor      |Gryffindor
 Hufflepuff      |Hufflepuff
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
