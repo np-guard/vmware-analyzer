@@ -262,6 +262,13 @@ var vmsByIpsTests = []synthesisTest{
 		inferHints:      false,
 	},
 	{
+		name:            "Example1ExternalIInfer",
+		exData:          data.Example1External,
+		synthesizeAdmin: false,
+		noHint:          true,
+		inferHints:      true,
+	},
+	{
 		name:            "Example1dExternalWithSegments",
 		exData:          data.Example1dExternalWithSegments,
 		synthesizeAdmin: false,
@@ -830,7 +837,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-var runTestMode = OutputComparison
+var runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)

@@ -1,0 +1,85 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (IP addr in 1.2.0.0-1.2.1.255) dst: (group = frontend) conn: TCP'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - ipBlock:
+                cidr: 1.2.0.0/23
+          ports:
+            - protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__frontend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (IP addr in 1.2.3.0-1.2.4.255) dst: (group = frontend) conn: UDP'
+        nsx-id: "1005"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - ipBlock:
+                cidr: 1.2.3.0/24
+            - ipBlock:
+                cidr: 1.2.4.0/24
+          ports:
+            - protocol: UDP
+    podSelector:
+        matchExpressions:
+            - key: group__frontend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace default
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny-for-default
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: NetworkPolicy to allow access to DNS for namespace default
+        nsx-id: none
+    creationTimestamp: null
+    name: dns-policy-default
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 53
+              protocol: UDP
+          to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                    k8s-app: kube-dns
+    podSelector: {}
+    policyTypes:
+        - Egress

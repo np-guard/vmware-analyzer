@@ -1,0 +1,27 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name |VMs
+frontend   |A
+
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+no disjoint groups' hints inferred from current groups' configuration
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                            |Dst                |Connection
+0                            |1004    |(IP addr in 1.2.0.0-1.2.1.255) |(group = frontend) |TCP
+1                            |1005    |(IP addr in 1.2.3.0-1.2.4.255) |(group = frontend) |UDP
+2                            |1006    |(IP addr in 1.2.1.0-1.2.3.255) |(group = frontend) |ICMP
+
+outbound rules
+Original allow rule priority |Rule id |Src |Dst |Connection
+
+
