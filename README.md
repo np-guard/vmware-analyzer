@@ -32,6 +32,7 @@ Flags:
   -h, --help                           help for nsxanalyzer
       --host string                    NSX host URL. Alternatively, set the host via the NSX_HOST environment variable
       --log-file string                file path to write nsxanalyzer log
+      --log-level string               flag to set log level; must by one of: fatal,error,warn,info,debug,debug2 (default "fatal")
       --password string                NSX password. Alternatively, set the password via the NSX_PASSWORD environment variable
   -q, --quiet                          flag to run quietly, report only severe errors and result (default false)
       --resource-dump-file string      file path to store collected resources in JSON format
@@ -136,12 +137,13 @@ Examples:
         nsxanalyzer generate -r config.json
 
 Flags:
+      --create-dns-policy           flag to create a policy allowing access to target env dns pod (default false)
       --disjoint-hint stringArray   comma separated list of NSX groups/tags that are always disjoint in their VM members, needed for an effective and sound synthesis process, can specify more than one hint (example: "--disjoint-hint frontend,backend --disjoint-hint app,web,db")
       --endpoints-mapping string    flag to set target endpoints for synthesis;  must be one of vms,pods,both (default "both")
   -h, --help                        help for generate
+      --hints-inference             automatic inference of NSX groups/tags that are always disjoint, needed for an effective and sound synthesis process
       --output-filter strings       filter the analysis/synthesis results by vm names, can specify more than one (example: "vm1,vm2")
       --segments-mapping string     flag to set target mapping from segments; must be one of pod-network,udns (default "udns")
-      --synth-create-dns-policy     flag to create a policy allowing access to target env dns pod (default true)
   -d, --synthesis-dir string        run synthesis; specify directory path to store target synthesis resources
       --synthesize-admin-policies   include admin network policies in policy synthesis (default false)
 ```

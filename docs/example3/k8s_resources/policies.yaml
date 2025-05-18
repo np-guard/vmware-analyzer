@@ -1,0 +1,78 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
+        nsx-id: "1027"
+    creationTimestamp: null
+    name: policy-0
+    namespace: T1-192-168-0-0
+spec:
+    egress:
+        - ports:
+            - port: 80
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-backend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
+        nsx-id: "1027"
+    creationTimestamp: null
+    name: policy-1
+    namespace: T1-192-168-0-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+          ports:
+            - port: 80
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-backend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace T1-192-168-0-0
+        nsx-id: "2"
+    creationTimestamp: null
+    name: default-deny-for-T1-192-168-0-0
+    namespace: T1-192-168-0-0
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
