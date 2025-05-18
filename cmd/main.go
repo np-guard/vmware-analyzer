@@ -17,7 +17,7 @@ import (
 func main() {
 	err := _main(os.Args[1:])
 	if err != nil {
-		_ = logging.Init(logging.MediumVerbosity, "") // just in case it wasn't initialized earlier
+		_ = logging.InitDefault() // just in case it wasn't initialized earlier
 		fmt.Fprintf(os.Stderr, "%v", err)
 	}
 }

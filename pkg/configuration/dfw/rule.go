@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/np-guard/models/pkg/netset"
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
 	nsx "github.com/np-guard/vmware-analyzer/pkg/configuration/generated"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
@@ -92,7 +93,7 @@ func NewFwRule(
 }
 
 func (f *FwRule) RuleIDStr() string {
-	return fmt.Sprintf("%d", f.RuleID)
+	return common.IntStr(f.RuleID)
 }
 
 func (f *FwRule) IsDenyAll() bool {

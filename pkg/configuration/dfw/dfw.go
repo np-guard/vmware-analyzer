@@ -62,7 +62,7 @@ func (d *DFW) AddRule(src, dst, scope *RuleEndpoints, conn *netset.TransportSet,
 		}
 	}
 	if !added {
-		logging.Debugf("warning: rule id %d from category %s was not added to any exitsing category in DFW model", ruleID, categoryStr)
+		logging.Warnf("rule id %d from category %s was not added to any exitsing category in DFW model", ruleID, categoryStr)
 	}
 }
 
@@ -95,13 +95,13 @@ func (d *DFW) redundantRulesAnalysisPerCategory(allVMs []topology.Endpoint, cate
 		switch ruleObj.direction {
 		case string(nsx.RuleDirectionOUT):
 			if okOut {
-				logging.Debugf("rule %d (outbound) is potentially redundant, covered by rules: %v", rID, outCovering)
+				logging.Debug2f("rule %d (outbound) is potentially redundant, covered by rules: %v", rID, outCovering)
 				reportLines = append(reportLines, []string{fmt.Sprintf("%d", rID), category.Category.String(),
 					string(nsx.RuleDirectionOUT), fmt.Sprintf("%v", outCovering)})
 			}
 		case string(nsx.RuleDirectionIN):
 			if okIn {
-				logging.Debugf("rule %d (inbound) is potentially redundant, covered by rules: %v", rID, inCovering)
+				logging.Debug2f("rule %d (inbound) is potentially redundant, covered by rules: %v", rID, inCovering)
 				reportLines = append(reportLines, []string{fmt.Sprintf("%d", rID), category.Category.String(),
 					string(nsx.RuleDirectionIN), fmt.Sprintf("%v", inCovering)})
 			}
@@ -111,7 +111,7 @@ func (d *DFW) redundantRulesAnalysisPerCategory(allVMs []topology.Endpoint, cate
 				unionRules := slices.Concat(inCovering, outCovering)
 				sort.IntSlice(unionRules).Sort()
 				unionRules = slices.Compact(unionRules)
-				logging.Debugf("rule %d (in_out) is potentially redundant, covered by rules: %v", rID, unionRules)
+				logging.Debug2f("rule %d (in_out) is potentially redundant, covered by rules: %v", rID, unionRules)
 				reportLines = append(reportLines, []string{fmt.Sprintf("%d", rID), category.Category.String(),
 					string(nsx.RuleDirectionINOUT), fmt.Sprintf("%v", unionRules)})
 			}

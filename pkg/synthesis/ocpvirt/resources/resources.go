@@ -14,6 +14,7 @@ import (
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/policy_utils"
 )
 
 // contains all generated resources
@@ -33,10 +34,12 @@ func (g *Generated) Log() {
 	logGeneratedResources("udns", len(g.UDNs))
 	logGeneratedResources("pods", len(g.Pods))
 	logGeneratedResources("vms", len(g.VMs))
+
+	g.printPoliciesDetails()
 }
 
 func logGeneratedResources(kind string, num int) {
-	logging.Debugf("generated %d %s", num, kind)
+	logging.Infof("generated %d %s", num, kind)
 }
 
 func (g *Generated) CopyPolicyResources(g1 *Generated) {
@@ -59,6 +62,7 @@ func (g *Generated) WriteResourcesToDir(outDir string) error {
 	if err := os.RemoveAll(outDir); err != nil {
 		return err
 	}
+	logging.Infof("writing generated resources YAMLs to %s", outDir)
 
 	err1 := yamlWriter(g.NetworkPolicies, "policies.yaml", outDir)
 	err2 := yamlWriter(g.AdminNetworkPolicies, "adminPolicies.yaml", outDir)
@@ -78,4 +82,66 @@ func yamlWriter[A any](content []A, file, outDir string) error {
 		}
 	}
 	return nil
+}
+
+func (g *Generated) printPoliciesDetails() {
+	sections := &common.SectionsOutput{}
+
+	g.addAdminNetpolSectionDetails(sections)
+	g.addNetpolSectionDetails(sections)
+	g.addPolicyAnnotationsDetails(sections)
+
+	logging.Infof("the generated policy details: %s", sections.GenerateSectionsString())
+}
+
+const (
+	nameTitle        = "NAME"
+	podSelectorTitle = "POD-SELECTOR"
+)
+
+func (g *Generated) addNetpolSectionDetails(sections *common.SectionsOutput) {
+	// network policies
+	section := "Policies details:"
+	header := []string{"NAMESPACE", nameTitle, podSelectorTitle}
+	lines := [][]string{}
+
+	for _, netpol := range g.NetworkPolicies {
+		line := []string{netpol.Namespace, netpol.Name, policy_utils.LabelSelectorString(&netpol.Spec.PodSelector)}
+		lines = append(lines, line)
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	sections.AddSection(section, tableStr)
+}
+
+func (g *Generated) addAdminNetpolSectionDetails(sections *common.SectionsOutput) {
+	// admin network policies
+	section := "Admin Policy details"
+	header := []string{nameTitle, "PRIORITY", "NAMESPACE-SELECTOR", podSelectorTitle}
+	lines := [][]string{}
+	for _, netpol := range g.AdminNetworkPolicies {
+		nsSelector, podsSelector := policy_utils.AdminPolicySubjectSelectorString(netpol)
+		line := []string{netpol.Name, common.IntStr(netpol.Spec.Priority), nsSelector, podsSelector}
+		lines = append(lines, line)
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	// todo: don't add this section if empty?
+	sections.AddSection(section, tableStr)
+}
+
+func (g *Generated) addPolicyAnnotationsDetails(sections *common.SectionsOutput) {
+	section := "Policy annotations details"
+	header := []string{nameTitle, "DESCRIPTION", "NSX-ID"}
+	lines := [][]string{}
+	for _, netpol := range g.AdminNetworkPolicies {
+		name := policy_utils.NetpolStr(&netpol.TypeMeta, &netpol.ObjectMeta)
+		line := []string{name, netpol.Annotations[policy_utils.AnnotationDescription], netpol.Annotations[policy_utils.AnnotationNSXRuleUID]}
+		lines = append(lines, line)
+	}
+	for _, netpol := range g.NetworkPolicies {
+		name := policy_utils.NetpolStr(&netpol.TypeMeta, &netpol.ObjectMeta)
+		line := []string{name, netpol.Annotations[policy_utils.AnnotationDescription], netpol.Annotations[policy_utils.AnnotationNSXRuleUID]}
+		lines = append(lines, line)
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true})
+	sections.AddSection(section, tableStr)
 }

@@ -25,8 +25,10 @@ func ConfigFromResourcesContainer(resources *collector.ResourcesContainerModel,
 	config := parser.getConfig()
 
 	// in debug/verbose mode -- print the parsed config
-	logging.Debugf("the parsed config details: %s", config.GetConfigInfoStr(params.Color))
-	logging.Debugf("the dfw evaluated rules details:\n%s", config.FW.AllEvaluatedRulesDetails())
+	logging.Infof("the parsed config details: %s", config.getConfigInfoStr(params.Color))
+	logging.Debugf("additional config info: %s", config.additionalConfigInfo(params.Color))
+
+	logging.Debug2f("the dfw evaluated rules details:\n%s", config.FW.AllEvaluatedRulesDetails())
 
 	return config, nil
 }
@@ -64,62 +66,34 @@ func (c *Config) GetVMs(collectorVMs []*collector.VirtualMachine) (res []*topolo
 	return res
 }
 
-// GetConfigInfoStr returns string describing the captured configuration content
-func (c *Config) GetConfigInfoStr(color bool) string {
-	var sb strings.Builder
+// additionalConfigInfo returns mode details about parsed config, related to ip addresses
+func (c *Config) additionalConfigInfo(color bool) string {
+	sections := &common.SectionsOutput{}
 
-	// vms
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("VMs:\n")
-	sb.WriteString(c.getVMsInfoStr(color))
+	c.getIPRangeInfoStr(sections, color)
+	c.getExternalEPInfoStr(sections, color)
+	c.getInternalEPInfoStr(sections, color)
+	c.getRuleBlocksStr(sections, color)
 
-	// Summary of IP Ranges
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("IP Ranges:\n")
-	sb.WriteString(c.getIPRangeInfoStr(color))
+	return sections.GenerateSectionsString()
+}
 
-	// External Endpoints
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("External Endpoints:\n")
-	sb.WriteString(c.getExternalEPInfoStr(color))
+// getConfigInfoStr returns string describing the captured configuration content
+func (c *Config) getConfigInfoStr(color bool) string {
+	sections := &common.SectionsOutput{}
 
-	// Internal IP Ranges
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Internal IP:\n")
-	sb.WriteString(c.getInternalEPInfoStr(color))
+	c.getVMsInfoStr(sections, color)
+	c.getSegmentsInfoStr(sections, color)
+	c.getSegmentsPortsInfoStr(sections, color)
+	c.getVMGroupsStr(sections, color)
+	c.getGroupDefinitions(sections, color)
+	c.getDFWInfoStr(sections, color)
 
-	// Rule Blocks
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Rule Blocks:\n")
-	sb.WriteString(c.getRuleBlocksStr(color))
+	return sections.GenerateSectionsString()
+}
 
-	// segments
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Segments:\n")
-	sb.WriteString(c.getSegmentsInfoStr(color))
-
-	// segments ports
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Segments ports:\n")
-	sb.WriteString(c.getSegmentsPortsInfoStr(color))
-
-	// groups per vms
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Groups per VMs:\n")
-	sb.WriteString(c.getVMGroupsStr(color))
-
-	// groups definitions
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("Groups definitions:\n")
-	sb.WriteString(c.GetGroupsStr(color))
-
-	// dfw
-	sb.WriteString(common.OutputSectionSep)
-	sb.WriteString("DFW:\n")
-	sb.WriteString(c.FW.OriginalRulesStrFormatted(color))
-	sb.WriteString(common.OutputSectionSep)
-
-	return sb.String()
+func (c *Config) AllConfigInfoStr() string {
+	return c.getConfigInfoStr(false) + c.additionalConfigInfo(false)
 }
 
 const (
@@ -128,7 +102,31 @@ const (
 	segmentNameTitle = "Segment Name"
 )
 
-func (c *Config) getSegmentsPortsInfoStr(color bool) string {
+func (c *Config) getVMsInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "VMs:"
+	header := []string{vmNameTitle, "VM ID", "VM Addresses"}
+	lines := [][]string{}
+	for _, vm := range c.VMs {
+		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.(*topology.VM).IPAddresses(), common.CommaSeparator)})
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, tableStr)
+}
+
+func (c *Config) getSegmentsInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "Segments:"
+	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", vmsTitle}
+	lines := [][]string{}
+	for _, s := range c.segments {
+		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
+		lines = append(lines, []string{s.SegmentType(), s.OverlayOrVlan(), s.Name(), s.ID(), s.CIDRs(), s.VlanIDs(), vmsStr})
+	}
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, tableStr)
+}
+
+func (c *Config) getSegmentsPortsInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "Segments ports:"
 	header := []string{segmentNameTitle, "Port Name", "Port UID", vmNameTitle}
 	lines := [][]string{}
 	for _, s := range c.segments {
@@ -136,20 +134,12 @@ func (c *Config) getSegmentsPortsInfoStr(color bool) string {
 			lines = append(lines, p.ToStrSlice())
 		}
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, tableStr)
 }
 
-func (c *Config) getSegmentsInfoStr(color bool) string {
-	header := []string{"Type", "overlay/vlan", segmentNameTitle, "Segment ID", "Segment CIDRs", "VLAN IDs", vmsTitle}
-	lines := [][]string{}
-	for _, s := range c.segments {
-		vmsStr := common.JoinStringifiedSlice(s.VMs(), common.CommaSeparator)
-		lines = append(lines, []string{s.SegmentType(), s.OverlayOrVlan(), s.Name(), s.ID(), s.CIDRs(), s.VlanIDs(), vmsStr})
-	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
-}
-
-func (c *Config) getVMGroupsStr(color bool) string {
+func (c *Config) getVMGroupsStr(sections *common.SectionsOutput, color bool) {
+	section := "Groups per VMs:"
 	header := []string{"VM", "Groups"}
 	lines := [][]string{}
 	for vm, groups := range c.GroupsPerVM {
@@ -157,38 +147,47 @@ func (c *Config) getVMGroupsStr(color bool) string {
 			func(g *collector.Group) string { return *g.DisplayName }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{vm.Name(), groupsStr})
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	tableStr := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, tableStr)
 }
 
-func (c *Config) getVMsInfoStr(color bool) string {
-	header := []string{vmNameTitle, "VM ID", "VM Addresses"}
-	lines := [][]string{}
-	for _, vm := range c.VMs {
-		lines = append(lines, []string{vm.Name(), vm.ID(), strings.Join(vm.(*topology.VM).IPAddresses(), common.CommaSeparator)})
-	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+func (c *Config) getGroupDefinitions(sections *common.SectionsOutput, color bool) {
+	section := "Groups definitions:"
+	content := c.GetGroupsStr(color)
+	sections.AddSection(section, content)
 }
 
-func (c *Config) getIPRangeInfoStr(color bool) string {
+func (c *Config) getDFWInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "DFW:"
+	content := c.FW.OriginalRulesStrFormatted(color)
+	sections.AddSection(section, content)
+}
+
+func (c *Config) getIPRangeInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "IP Ranges info:"
 	header := []string{"Total", "Internal", "External"}
 	lines := [][]string{{
 		common.IPBlockShortString(c.Topology.allIPBlock),
 		common.IPBlockShortString(c.Topology.allInternalIPBlock),
 		common.IPBlockShortString(c.Topology.AllExternalIPBlock),
 	}}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	table := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, table)
 }
 
-func (c *Config) getExternalEPInfoStr(color bool) string {
+func (c *Config) getExternalEPInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "External Endpoints:"
 	header := []string{"External EP", "Rule Blocks"}
 	lines := [][]string{}
 	for _, ip := range c.externalIPs {
 		lines = append(lines, []string{ip.IPAddressesStr(), common.SortedJoinCustomStrFuncSlice(c.Topology.RuleBlockPerEP[ip],
 			func(ruleBlock *topology.RuleIPBlock) string { return ruleBlock.OriginalIP }, common.CommaSpaceSeparator)})
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	table := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, table)
 }
-func (c *Config) getInternalEPInfoStr(color bool) string {
+func (c *Config) getInternalEPInfoStr(sections *common.SectionsOutput, color bool) {
+	section := "Internal Endpoints:"
 	header := []string{"Internal IP", segmentNameTitle, vmsTitle}
 	lines := [][]string{}
 	vmWithAddressedSegments := []*topology.VM{}
@@ -206,10 +205,12 @@ func (c *Config) getInternalEPInfoStr(color bool) string {
 			}
 		}
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	table := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, table)
 }
 
-func (c *Config) getRuleBlocksStr(color bool) string {
+func (c *Config) getRuleBlocksStr(sections *common.SectionsOutput, color bool) {
+	section := "Rule Blocks info:"
 	header := []string{"Rule Block", "External Endpoints", vmsTitle}
 	lines := [][]string{}
 	for _, block := range c.Topology.AllRuleIPBlocks {
@@ -219,7 +220,8 @@ func (c *Config) getRuleBlocksStr(color bool) string {
 			func(vm topology.Endpoint) string { return vm.Name() }, common.CommaSpaceSeparator)
 		lines = append(lines, []string{block.OriginalIP, eps, vms})
 	}
-	return common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	table := common.GenerateTableString(header, lines, &common.TableOptions{SortLines: true, Colors: color})
+	sections.AddSection(section, table)
 }
 
 func (c *Config) GetGroupsStr(color bool) string {
