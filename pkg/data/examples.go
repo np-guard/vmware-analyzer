@@ -1279,33 +1279,30 @@ var ExampleDenyPassSimple = registerExample(&Example{
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
 var ExampleHintsDisjoint = registerExample(&Example{
-	Name: "ExampleHintsDisjoint",
-	VMs:  []string{sly, huf, gry, Dum1, Dum2},
-	GroupsByVMs: map[string][]string{
-		sly:    {sly},
-		huf:    {huf},
-		gry:    {gry},
-		Dum1:   {Dum1},
-		Dum2:   {Dum2},
-		notSly: {huf, gry, Dum1, Dum2},
-	},
+	Name:               "ExampleHintsDisjoint",
+	VMs:                exampleHintsDisjointVMs,
+	GroupsByVMs:        exampleHintsDisjointGroupsByVMs,
 	Policies:           HintsDisjointPolicy,
 	DisjointGroupsTags: disjointHouses2Dum,
 })
 
 var ExampleHintsDisjointNoGivenHints = registerExample(&Example{
-	Name: "ExampleHintsDisjointNoGivenHints",
-	VMs:  []string{sly, huf, gry, Dum1, Dum2},
-	GroupsByVMs: map[string][]string{
-		sly:    {sly},
-		huf:    {huf},
-		gry:    {gry},
-		Dum1:   {Dum1},
-		Dum2:   {Dum2},
-		notSly: {huf, gry, Dum1, Dum2},
-	},
-	Policies: HintsDisjointPolicy,
+	Name:        "ExampleHintsDisjointNoGivenHints",
+	VMs:         exampleHintsDisjointVMs,
+	GroupsByVMs: exampleHintsDisjointGroupsByVMs,
+	Policies:    HintsDisjointPolicy,
 })
+
+var exampleHintsDisjointVMs = []string{sly, huf, gry, Dum1, Dum2}
+
+var exampleHintsDisjointGroupsByVMs = map[string][]string{
+	sly:    {sly},
+	huf:    {huf},
+	gry:    {gry},
+	Dum1:   {Dum1},
+	Dum2:   {Dum2},
+	notSly: {huf, gry, Dum1, Dum2},
+}
 
 var HintsDisjointPolicy = []Category{
 	{
@@ -1404,13 +1401,13 @@ var ExampleHogwarts = registerExample(&Example{
 	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
 })
 
-var ExampleHogwartsInfer = registerExample(&Example{
-	Name:               "ExampleHogwartsInfer",
-	VMs:                ExampleHogwartsVMs,
-	GroupsByVMs:        hogwartsBidimensionalGroups,
-	Policies:           ExampleHogwartsPolicies,
-	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
-})
+var ExampleHogwartsInfer = registerExample(getExampleHogwartsInfer())
+
+func getExampleHogwartsInfer() *Example {
+	res := ExampleHogwarts
+	res.Name = "ExampleHogwartsInfer"
+	return res
+}
 
 var ExampleHogwartsVMs = []string{SlyWeb, slyApp, slyDB, HufWeb, hufApp, hufDB,
 	GryWeb, gryApp, gryDB, Dum1, Dum2}
