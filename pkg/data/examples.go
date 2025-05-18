@@ -1401,13 +1401,13 @@ var ExampleHogwarts = registerExample(&Example{
 	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
 })
 
-var ExampleHogwartsInfer = registerExample(getExampleHogwartsInfer())
-
-func getExampleHogwartsInfer() *Example {
-	res := ExampleHogwarts
-	res.Name = "ExampleHogwartsInfer"
-	return res
-}
+var ExampleHogwartsInfer = registerExample(&Example{
+	Name:               "ExampleHogwartsInfer",
+	VMs:                ExampleHogwartsVMs,
+	GroupsByVMs:        hogwartsBidimensionalGroups,
+	Policies:           ExampleHogwartsPolicies,
+	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
+})
 
 var ExampleHogwartsVMs = []string{SlyWeb, slyApp, slyDB, HufWeb, hufApp, hufDB,
 	GryWeb, gryApp, gryDB, Dum1, Dum2}
