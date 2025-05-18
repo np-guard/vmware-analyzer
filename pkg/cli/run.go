@@ -36,6 +36,7 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithLint(cmd == cmdLint),
 		runner.WithSegmentsMapping(args.segmentsMapping),
 		runner.WithEndpointsMapping(args.endpointsMapping),
+		runner.WithInferHints(args.inferDisjointHints),
 	)
 	if err != nil {
 		return err

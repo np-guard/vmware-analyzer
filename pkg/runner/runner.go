@@ -430,3 +430,9 @@ func WithSegmentsMapping(segments common.Segments) RunnerOption {
 		r.segmentsMapping = segments
 	}
 }
+
+func WithInferHints(inferHints bool) RunnerOption {
+	return func(r *Runner) {
+		r.inferHints = inferHints
+	}
+}
