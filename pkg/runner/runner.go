@@ -51,6 +51,7 @@ type Runner struct {
 	synth               bool
 	synthesisDir        string
 	disjointHints       []string
+	inferHints          bool
 	synthesizeAdmin     bool
 	suppressDNSPolicies bool
 	endpointsMapping    common.Endpoints
@@ -187,6 +188,7 @@ func (r *Runner) runSynthesis() error {
 	}
 	opts := &synth_config.SynthesisOptions{
 		Hints:            hints,
+		InferHints:       r.inferHints,
 		SynthesizeAdmin:  r.synthesizeAdmin,
 		Color:            r.color,
 		CreateDNSPolicy:  !r.suppressDNSPolicies,
@@ -426,5 +428,11 @@ func WithEndpointsMapping(endpoints common.Endpoints) RunnerOption {
 func WithSegmentsMapping(segments common.Segments) RunnerOption {
 	return func(r *Runner) {
 		r.segmentsMapping = segments
+	}
+}
+
+func WithInferHints(inferHints bool) RunnerOption {
+	return func(r *Runner) {
+		r.inferHints = inferHints
 	}
 }

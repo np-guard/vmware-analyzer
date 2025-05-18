@@ -21,6 +21,14 @@ Hufflepuff-Or-no-DB |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App, Slytherin-We
 Slytherin           |Slytherin-DB, Slytherin-Web, Slytherin-App
 Slytherin-Or-no-DB  |Slytherin-DB, Slytherin-Web, Slytherin-App, Hufflepuff-Web, Hufflepuff-App, Gryffindor-Web, Gryffindor-App
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+Web, App, DB
+
+
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -38,6 +46,7 @@ Priority |Rule Id |Action |Src                |Dst                |Connection
 1        |9201    |allow  |(*)                |(tag != DB)        |All Connections
 1        |9201    |allow  |(*)                |(tag = Hufflepuff) |All Connections
 2        |10300   |deny   |(*)                |(*)                |All Connections
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

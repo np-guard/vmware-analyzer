@@ -11,6 +11,11 @@ Gryffindor  |Gryffindor
 Hufflepuff  |Hufflepuff
 Slytherin   |Slytherin
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules
