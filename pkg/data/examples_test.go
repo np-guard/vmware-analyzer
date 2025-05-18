@@ -84,6 +84,7 @@ func (e *Example) syncJSONWithExample() error {
 func TestDoNotAllowSameName(t *testing.T) {
 	names := map[string]bool{}
 	for _, example := range allExamples {
+		fmt.Printf("TestDoNotAllowSameName name is %v\n", example.Name)
 		require.NotEmpty(t, example.Name, "example name should not be empty")
 		require.False(t, names[example.Name], "There are two examples with the same name %s", example.Name)
 		names[example.Name] = true

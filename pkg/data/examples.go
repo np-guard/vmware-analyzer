@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/np-guard/models/pkg/netp"
@@ -54,6 +55,7 @@ var allExamples = map[int]*Example{}
 var examplesCount = 0
 
 func registerExample(e *Example) *Example {
+	fmt.Printf("examplesCount is %v example.Name is %v\n", examplesCount, e.Name)
 	allExamples[examplesCount] = e
 	examplesCount++
 	return e
@@ -1393,19 +1395,23 @@ var hogwartsBidimensionalGroups = map[string][]string{
 	app: {slyApp, gryApp, hufApp},
 	db:  {slyDB, gryDB, hufDB}}
 
-var ExampleHogwarts = registerExample(&Example{
+var ExampleHogwartsBasic = Example{
 	Name:               "ExampleHogwarts",
 	VMs:                ExampleHogwartsVMs,
 	GroupsByVMs:        hogwartsBidimensionalGroups,
 	Policies:           ExampleHogwartsPolicies,
 	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
-})
+}
 
-var ExampleHogwartsInfer = registerExample(getExampleHogwartsInfer())
+var ExampleHogwarts = registerExample(getExampleHogwarts(false))
 
-func getExampleHogwartsInfer() *Example {
-	res := ExampleHogwarts
-	res.Name = "ExampleHogwartsInfer"
+//var ExampleHogwartsInfer = registerExample(getExampleHogwarts(true))
+
+func getExampleHogwarts(forInfer bool) *Example {
+	res := &ExampleHogwartsBasic
+	if forInfer {
+		res.Name = "ExampleHogwartsInfer"
+	}
 	return res
 }
 
@@ -2588,7 +2594,7 @@ var policiesAppWithGroupsAndSegments = []Category{
 	},
 }
 
-var ExampleAppWithGroupsAndSegments = registerExample(&Example{
+var ExampleAppWithGroupsAndSegmentsBasic = Example{
 	Name:          "ExampleAppWithGroupsAndSegments",
 	VMs:           vmsAppWithGroupsAndSegments,
 	VMsAddress:    vmsAddressesWithGroupsAndSegments,
@@ -2597,12 +2603,18 @@ var ExampleAppWithGroupsAndSegments = registerExample(&Example{
 	SegmentsT1GWs: segmentsT1GWsAppWithGroupsAndSegments,
 	GroupsByVMs:   groupsByVMsAppWithGroupsAndSegments,
 	Policies:      policiesAppWithGroupsAndSegments,
-})
+}
 
-var ExampleAppWithGroupsAndSegmentsInfer = registerExample(getExampleAppWithGroupsAndSegmentsInfer())
+var ExampleAppWithGroupsAndSegments = registerExample(getExampleAppWithGroupsAndSegmentsInfer(false))
 
-func getExampleAppWithGroupsAndSegmentsInfer() *Example {
-	res := ExampleAppWithGroupsAndSegments
-	res.Name = "ExampleAppWithGroupsAndSegmentsInfer"
+var ExampleAppWithGroupsAndSegmentsForInfer = registerExample(getExampleAppWithGroupsAndSegmentsInfer(true))
+
+func getExampleAppWithGroupsAndSegmentsInfer(forInfer bool) *Example {
+	fmt.Printf("in getExampleAppWithGroupsAndSegmentsInfer with %v\n", forInfer)
+	res := &ExampleAppWithGroupsAndSegmentsBasic
+	if forInfer {
+		res.Name = "ExampleAppWithGroupsAndSegmentsInfer"
+	}
+	fmt.Printf("res.Name is %v\n", res.Name)
 	return res
 }
