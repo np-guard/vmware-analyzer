@@ -148,3 +148,37 @@ func editLineWithColor(line []string, color string) {
 	line[0] = color + line[0]
 	line[maxInd] += reset
 }
+
+type SectionsOutput struct {
+	sections      map[string]string // map from section header to content
+	sectionsOrder []string
+}
+
+func (s *SectionsOutput) AddSection(section, content string) {
+	if s.sections == nil {
+		s.sections = map[string]string{}
+	}
+	s.sections[section] = content
+	s.sectionsOrder = append(s.sectionsOrder, section)
+}
+
+func (s *SectionsOutput) GenerateSectionsString() string {
+	var sb strings.Builder
+	for _, section := range s.sectionsOrder {
+		if sectionContent, ok := s.sections[section]; ok {
+			sb.WriteString(OutputSectionSep)
+			sb.WriteString(section + "\n")
+			sb.WriteString(sectionContent)
+		}
+	}
+	sb.WriteString(OutputSectionSep)
+	return sb.String()
+}
+
+type Int interface {
+	int | uint | int8 | uint8 | int16 | uint16 | int32 | uint32 | int64 | uint64
+}
+
+func IntStr[I Int](v I) string {
+	return fmt.Sprintf("%d", v)
+}

@@ -156,6 +156,9 @@ func NSXConfigToAbstractModel(
 		}
 	}
 
+	// here start the actual synthesis procuedures
+	logging.Infof("started synthesis of ocpvirt resources")
+
 	// pre-processing rules
 	preProcessingCategoryToPolicy, groupToConjunctions := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%s",

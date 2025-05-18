@@ -24,7 +24,7 @@ func newCommandGenerate() *cobra.Command {
 	c.PersistentFlags().BoolVar(&args.inferDisjointHints, inferDisjointHintsFlag, false, inferDisjointHintsFlagHelp)
 	c.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
 	c.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
-	c.PersistentFlags().Var(&args.endpointsMapping, endpointsMappingFlag, endpointsMappingFlagHelp+common.AllEndpointsStr)
-	c.PersistentFlags().Var(&args.segmentsMapping, segmentsMappingFlag, segmentsMappingFlagHelp+common.AllSegmentOptionsStr)
+	c.PersistentFlags().Var(&args.endpointsMapping, endpointsMappingFlag, endpointsMappingHelp+common.AllEndpointsStr)
+	c.PersistentFlags().Var(&args.segmentsMapping, segmentsMappingFlag, segmentsMappingHelp+common.AllSegmentOptionsStr)
 	return c
 }

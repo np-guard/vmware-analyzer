@@ -28,6 +28,7 @@ type inArgs struct {
 	disableInsecureSkipVerify bool
 	endpointsMapping          common.Endpoints
 	segmentsMapping           common.Segments
+	logLevel                  common.LogLevel
 }
 
 func newInArgs() *inArgs {
@@ -36,8 +37,11 @@ func newInArgs() *inArgs {
 	res.outputFormat.SetDefault()
 	res.segmentsMapping.SetDefault()
 	res.endpointsMapping.SetDefault()
+	res.logLevel.SetDefault()
 	return res
 }
+
+const mustBeOneOf string = "; must by one of: "
 
 const (
 	resourceInputFileFlag         = "resource-input-file"
@@ -65,6 +69,7 @@ const (
 	disableInsecureSkipVerifyFlag = "disable-insecure-skip-verify"
 	endpointsMappingFlag          = "endpoints-mapping"
 	segmentsMappingFlag           = "segments-mapping"
+	logLevelFlag                  = "log-level"
 
 	resourceInputFileHelp = "file path input JSON of NSX resources (instead of collecting from NSX host)"
 	hostHelp              = "NSX host URL. Alternatively, set the host via the NSX_HOST environment variable"
@@ -80,7 +85,7 @@ const (
 		"allowed/denied connections (default false)"
 	synthesisDirHelp              = "run synthesis; specify directory path to store target synthesis resources"
 	synthesizeAdminPoliciesHelp   = "include admin network policies in policy synthesis (default false)"
-	outputFormatHelp              = "output format; must be one of "
+	outputFormatHelp              = "output format" + mustBeOneOf
 	outputFilterFlagHelp          = "filter the analysis/synthesis results by vm names, can specify more than one (example: \"vm1,vm2\")"
 	quietHelp                     = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                   = "flag to run with more informative messages printed to log (default false)"
@@ -94,6 +99,7 @@ const (
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
 	inferDisjointHintsFlagHelp = "automatic inference of NSX groups/tags that are always disjoint, " +
 		"needed for an effective and sound synthesis process"
-	endpointsMappingFlagHelp = "flag to set target endpoints for synthesis;  must be one of "
-	segmentsMappingFlagHelp  = "flag to set target mapping from segments; must be one of "
+	endpointsMappingHelp = "flag to set target endpoints for synthesis;  must be one of "
+	segmentsMappingHelp  = "flag to set target mapping from segments; must be one of "
+	logLevelHelp         = "flag to set log level" + mustBeOneOf
 )

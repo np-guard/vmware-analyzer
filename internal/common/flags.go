@@ -133,3 +133,49 @@ func (e *Segments) Type() string {
 func (e *Segments) SetDefault() {
 	*e = SegmentsToUDNs
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+type LogLevel string
+
+const (
+	LogLevelFatal  LogLevel = "fatal"
+	LogLevelError  LogLevel = "error"
+	LogLevelWarn   LogLevel = "warn"
+	LogLevelInfo   LogLevel = "info"
+	LogLevelDebug  LogLevel = "debug"
+	LogLevelDebug2 LogLevel = "debug2" // more debug messages than "debug" level
+)
+
+var allLogLevelOptions = []*LogLevel{
+	PointerTo(LogLevelFatal),
+	PointerTo(LogLevelError),
+	PointerTo(LogLevelWarn),
+	PointerTo(LogLevelInfo),
+	PointerTo(LogLevelDebug),
+	PointerTo(LogLevelDebug2),
+}
+var AllLogLevelOptionsStr = JoinStringifiedSlice(allLogLevelOptions, CommaSeparator)
+
+func (e *LogLevel) String() string {
+	return string(*e)
+}
+
+func (e *LogLevel) Set(v string) error {
+	switch v {
+	case string(LogLevelFatal), string(LogLevelError), string(LogLevelWarn),
+		string(LogLevelInfo), string(LogLevelDebug), string(LogLevelDebug2):
+		*e = LogLevel(v)
+		return nil
+	default:
+		return fmt.Errorf(errPrefix, AllLogLevelOptionsStr)
+	}
+}
+
+func (e *LogLevel) Type() string {
+	return enumFlagType
+}
+
+func (e *LogLevel) SetDefault() {
+	*e = LogLevelFatal // quiet mode by default
+}

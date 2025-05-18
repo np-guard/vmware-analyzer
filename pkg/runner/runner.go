@@ -26,6 +26,7 @@ type Runner struct {
 
 	// output args
 	logFile        string
+	logLevel       common.LogLevel
 	highVerobsity  bool
 	outputFormat   common.OutFormat
 	color          bool
@@ -102,13 +103,13 @@ func (r *Runner) Run() (*Observations, error) {
 }
 
 func (r *Runner) initLogger() error {
-	verbosity := logging.MediumVerbosity
 	if r.quietVerobsity {
-		verbosity = logging.LowVerbosity
-	} else if r.highVerobsity {
-		verbosity = logging.HighVerbosity
+		r.logLevel = common.LogLevelFatal
 	}
-	return logging.Init(verbosity, r.logFile) // initializes a thread-safe singleton logger
+	if r.highVerobsity {
+		r.logLevel = common.LogLevelInfo // debug levels should be used explicitly
+	}
+	return logging.Init(r.logLevel, r.logFile)
 }
 
 // runCollector should assign collected NSX resources into r.resources
@@ -276,6 +277,12 @@ type RunnerOption func(*Runner)
 func WithLogFile(l string) RunnerOption {
 	return func(r *Runner) {
 		r.logFile = l
+	}
+}
+
+func WithLogLevel(l common.LogLevel) RunnerOption {
+	return func(r *Runner) {
+		r.logLevel = l
 	}
 }
 

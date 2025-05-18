@@ -54,8 +54,8 @@ func (c *CategorySpec) addRule(src, dst, scope *RuleEndpoints, conn *netset.Tran
 	c.rulesMap[newRule.RuleID] = newRule
 
 	if c.Category == collector.EthernetCategory {
-		logging.Debugf(
-			"Ethernet category not supported - rule %d in Ethernet category is ignored and not added to list of effective/evaluated rules", ruleID)
+		logging.Warnf(
+			"Ethernet category not supported - rule %d in Ethernet category is ignored", ruleID)
 		return
 	}
 
@@ -142,7 +142,7 @@ func (c *CategorySpec) originalRulesComponentsStr() [][]string {
 //nolint:gocritic //keep comments for now
 func (c *CategorySpec) potentialRedundantRules(rulesPerDirection []*EvaluatedFWRule, allVMs []topology.Endpoint) map[int][]int {
 	res := map[int][]int{}
-	// logging.Debugf("called potentialRedundantRules for catrgory %s", c.Category.String())
+	logging.Debug2f("called potentialRedundantRules for catrgory %s", c.Category.String())
 	vmNameToIndex := map[string]int{}
 	// index `i` to VM is just allVMs[i]
 	for i, vm := range allVMs {
@@ -199,7 +199,7 @@ func (c *CategorySpec) potentialRedundantRules(rulesPerDirection []*EvaluatedFWR
 		// after iterating all prior rules - check if they already cover all ruleI tuples
 		delta := ruleIHC.Subtract(priorRulesHC)
 		if delta.IsEmpty() {
-			// logging.Debugf("rule %d (inbound )is potentially redundant, covered by rules: %v", ruleI.RuleID, coveringRules)
+			logging.Debug2f("rule %d (inbound )is potentially redundant, covered by rules: %v", ruleI.RuleObj.RuleID, coveringRules)
 			res[ruleI.RuleObj.RuleID] = coveringRules
 		}
 	}

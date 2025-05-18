@@ -12,6 +12,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/dfw"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/policy_utils"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/ocpvirt/utils"
 )
 
@@ -106,13 +107,13 @@ func (np *PolicyGenerator) addDNSAllowNetworkPolicy() {
 }
 
 func (np *PolicyGenerator) addDNSAllowAdminNetworkPolicy() {
-	dnsSelector := np.createSelector(nil)
+	dnsSelector := newEmptyPolicySelector()
 	dnsSelector.pods = &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{{
 		Key:      dnsLabelKey,
 		Operator: metav1.LabelSelectorOpIn,
 		Values:   []string{dnsLabelVal}},
 	}}
-	allSelector := np.createSelector(nil)
+	allSelector := newEmptyPolicySelector()
 	ports := connToAdminPolicyPort(dnsPortConn)
 	egressPolicy := newAdminNetworkPolicy("egress-dns-policy",
 		"Admin Network Policy To Allow Egress Access To DNS Server",
@@ -124,6 +125,7 @@ func (np *PolicyGenerator) setAdminNetworkPolicy(
 	policy *adminv1alpha1.AdminNetworkPolicy, ports []adminv1alpha1.AdminNetworkPolicyPort,
 	isInbound bool, action adminv1alpha1.AdminNetworkPolicyRuleAction,
 	srcSelector, dstSelector *policySelector) {
+	logging.Debug2f("setAdminNetworkPolicy with srcSelector: %s, dstSelector %s  ", srcSelector.string(), dstSelector.string())
 	np.AdminNetworkPolicies = append(np.AdminNetworkPolicies, policy)
 	//nolint:gosec // priority should fit int32:
 	policy.Spec.Priority = int32(len(np.AdminNetworkPolicies))
@@ -138,6 +140,9 @@ func (np *PolicyGenerator) setAdminNetworkPolicy(
 		policy.Spec.Egress = rules
 		policy.Spec.Subject = srcSelector.toAdminPolicySubject()
 	}
+	ns, pods := policy_utils.AdminPolicySubjectSelectorString(policy)
+	logging.Debug2f("res admin subjet ns selector: %s", ns)
+	logging.Debug2f("res admin subjet pod selector: %s", pods)
 }
 
 var abstractToAdminRuleAction = map[dfw.RuleAction]adminv1alpha1.AdminNetworkPolicyRuleAction{
@@ -153,9 +158,6 @@ const noNSXRuleID = "none"
 
 var namespaceNameKey = path.Join("kubernetes.io", metav1.ObjectNameField)
 
-const annotationDescription = "description"
-const annotationUID = "nsx-id"
-
 func newNetworkPolicy(name, namespace, description, nsxRuleID string, typeValue policyType) *networkingv1.NetworkPolicy {
 	policy := &networkingv1.NetworkPolicy{}
 	policy.Kind = "NetworkPolicy"
@@ -163,8 +165,8 @@ func newNetworkPolicy(name, namespace, description, nsxRuleID string, typeValue 
 	policy.Name = utils.ToLegalK8SString(name)
 	policy.Namespace = namespace
 	policy.Annotations = map[string]string{
-		annotationDescription: description,
-		annotationUID:         nsxRuleID,
+		policy_utils.AnnotationDescription: description,
+		policy_utils.AnnotationNSXRuleUID:  nsxRuleID,
 	}
 	policy.Spec = networkingv1.NetworkPolicySpec{
 		PolicyTypes: typeValue.get(),
@@ -178,8 +180,8 @@ func newAdminNetworkPolicy(name, description, nsxRuleID string) *adminv1alpha1.A
 	policy.APIVersion = "policy.networking.k8s.io/v1alpha1"
 	policy.Name = utils.ToLegalK8SString(name)
 	policy.Annotations = map[string]string{
-		annotationDescription: description,
-		annotationUID:         nsxRuleID,
+		policy_utils.AnnotationDescription: description,
+		policy_utils.AnnotationNSXRuleUID:  nsxRuleID,
 	}
 	return policy
 }

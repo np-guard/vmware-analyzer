@@ -9,7 +9,7 @@ import (
 )
 
 func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivity.ConnMap {
-	logging.Debugf("compute connectivity on parsed config")
+	logging.Debugf("started computing connectivity on parsed NSX config")
 	res := connectivity.ConnMap{}
 	// make sure all vm pairs are in the result, by init with global default
 	res.InitPairs(false, c.VMs, c.Endpoints(), vmsFilter)

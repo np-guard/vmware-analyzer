@@ -12,18 +12,16 @@ import (
 )
 
 // AllowedConnections computes for a pair of vms (src,dst), the set of allowed connections
-//
-//nolint:gocritic // temporarily keep commented-out code
 func dfwAllowedConnections(d *dfw.DFW, src, dst topology.Endpoint) *connectivity.DetailedConnection {
 	ingressAllowed, ingressDenied, ingressDelegated, ingressNotDeterminedConns := dfwAllowedConnectionsIngressOrEgress(d, src, dst, true)
-	// logging.Debugf("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
-	// logging.Debugf("ingressAllowed: %s", ingressAllowed.String())
-	// logging.Debugf("ingressDenied: %s", ingressDenied.String())
-	// logging.Debugf("ingressDelegated: %s", ingressDelegated.String())
+	logging.Debug2f("AllowedConnections src %s, dst %s", src.Name(), dst.Name())
+	logging.Debug2f("ingressAllowed: %s", ingressAllowed.String())
+	logging.Debug2f("ingressDenied: %s", ingressDenied.String())
+	logging.Debug2f("ingressDelegated: %s", ingressDelegated.String())
 	egressAllowed, egressDenied, egressDelegated, egressNotDeterminedConns := dfwAllowedConnectionsIngressOrEgress(d, src, dst, false)
-	// logging.Debugf("egressAllowed: %s", egressAllowed.String())
-	// logging.Debugf("egressDenied: %s", egressDenied.String())
-	// logging.Debugf("egressDelegated: %s", egressDelegated.String())
+	logging.Debug2f("egressAllowed: %s", egressAllowed.String())
+	logging.Debug2f("egressDenied: %s", egressDenied.String())
+	logging.Debug2f("egressDelegated: %s", egressDelegated.String())
 
 	return buildDetailedConnection(ingressAllowed, egressAllowed, ingressDenied,
 		egressDenied, ingressDelegated, egressDelegated, ingressNotDeterminedConns, egressNotDeterminedConns)
@@ -94,11 +92,11 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 			remainingRulesNum -= len(dfwCategory.GetOutboundEffectiveRules())
 		}
 
-		// logging.Debugf("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
-		//	dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
-		// logging.Debugf("categoryAllowedConns: %s", categoryAllowedConns.String())
-		// logging.Debugf("categoryDeniedConns: %s", categoryDeniedConns.String())
-		// logging.Debugf("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
+		logging.Debug2f("analyzeCategory: category %s, src %s, dst %s, isIngress %t",
+			dfwCategory.Category.String(), src.Name(), dst.Name(), isIngress)
+		logging.Debug2f("categoryAllowedConns: %s", categoryAllowedConns.String())
+		logging.Debug2f("categoryDeniedConns: %s", categoryDeniedConns.String())
+		logging.Debug2f("categoryJumptToAppConns: %s", categoryJumptToAppConns.String())
 
 		// remove connections already denied by higher-prio categories, from this category's allowed conns
 		// categoryAllowedConns.removeHigherPrioConnections(allDeniedConns.accumulatedConns)
@@ -123,36 +121,36 @@ func dfwAllowedConnectionsIngressOrEgress(d *dfw.DFW, src, dst topology.Endpoint
 		////////////////////////
 		// update accumulated allowed, denied and not-determined conns, from current category's sets
 		// allAllowedConns.accumulatedConns = allAllowedConns.accumulatedConns.Union(categoryAllowedConns.accumulatedConns)
-		// logging.Debugf("allAllowedConns before: %s", allAllowedConns.String())
+		logging.Debug2f("allAllowedConns before: %s", allAllowedConns.String())
 		allAllowedConns.union(categoryAllowedConns)
-		// logging.Debugf("allAllowedConns new: %s", allAllowedConns.String())
+		logging.Debug2f("allAllowedConns new: %s", allAllowedConns.String())
 		// todo: add to allAllowedConns.partitionsByRules the relevant partitions from this category
 
 		// allDeniedConns.accumulatedConns = allDeniedConns.accumulatedConns.Union(categoryDeniedConns.accumulatedConns)
-		// logging.Debugf("allDeniedConns before: %s", allDeniedConns.String())
+		logging.Debug2f("allDeniedConns before: %s", allDeniedConns.String())
 		allDeniedConns.union(categoryDeniedConns)
-		// logging.Debugf("allDeniedConns new: %s", allDeniedConns.String())
+		logging.Debug2f("allDeniedConns new: %s", allDeniedConns.String())
 
-		// logging.Debugf("delegatedConns before: %s", delegatedConns.String())
+		logging.Debug2f("delegatedConns before: %s", delegatedConns.String())
 		delegatedConns.union(categoryJumptToAppConns)
-		// logging.Debugf("delegatedConns new: %s", delegatedConns.String())
+		logging.Debug2f("delegatedConns new: %s", delegatedConns.String())
 		// accumulated not-determined conns: remove the conns determined from this/prev categories, and add those not-determined in this category
 		allNotDeterminedConns.accumulatedConns = allNotDeterminedConns.accumulatedConns.Union(
 			categoryNotDeterminedConns.accumulatedConns).Union(categoryJumptToAppConns.accumulatedConns).Subtract(
 			allAllowedConns.accumulatedConns).Subtract(allDeniedConns.accumulatedConns)
-		// logging.Debugf("categoryNotDeterminedConns.accumulatedConns: %s", categoryNotDeterminedConns.accumulatedConns.String())
+		logging.Debug2f("categoryNotDeterminedConns.accumulatedConns: %s", categoryNotDeterminedConns.accumulatedConns.String())
 	}
 	// todo: add warning if there are remaining non determined connections
 
 	// TODO: add test and issue warning on allNotDeterminedConns.accumulatedConns if there is no defaule rule in last category
 	if !allNotDeterminedConns.accumulatedConns.IsEmpty() {
-		// logging.Debugf("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
+		logging.Debug2f("allNotDeterminedConns.accumulatedConns: %s", allNotDeterminedConns.accumulatedConns.String())
 		msg := fmt.Sprintf("no default rule - unexpected connections %s to %s for which no decision was found: %s", src.Name(), dst.Name(),
 			allNotDeterminedConns.accumulatedConns.String())
 		if src.IsExternal() || dst.IsExternal() {
 			logging.Debug(msg)
 		} else {
-			logging.InternalError(msg)
+			logging.FatalError(msg)
 		}
 	}
 	// returning the set of allowed conns from all possible categories, whether captured by explicit rules or by defaults.

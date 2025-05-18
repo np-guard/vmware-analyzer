@@ -22,6 +22,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/test_utils"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
@@ -398,7 +399,7 @@ func TestCompareNSXConnectivity(t *testing.T) {
 
 // the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
 func TestLiveNSXServer(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	server, err := collector.GetNSXServerDate("", "", "", true)
 	if err != nil {
 		logging.Debug(err.Error())
@@ -415,7 +416,7 @@ func TestLiveNSXServer(t *testing.T) {
 
 // the TestNsxResourceFile() get the resource from resources.json, and run the testsMethods on it
 func TestNsxResourceFile(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	rc := readUserResourceFile(t)
 	if rc == nil {
 		return
@@ -450,7 +451,7 @@ func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
 // ///////////////////////////////////////////////////////////////////////////////////
 // subTestsRunByTestName() gets a test function to run, and run it on all the syntheticTests as subtests
 func subTestsRunByTestName(t *testing.T, f testMethod) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	for _, test := range allSyntheticTests {
 		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
@@ -472,7 +473,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	nsxConfig, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
-	configStr := nsxConfig.GetConfigInfoStr(false)
+	configStr := nsxConfig.AllConfigInfoStr()
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
@@ -696,7 +697,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	nsxConfig, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
-	configStr := nsxConfig.GetConfigInfoStr(false)
+	configStr := nsxConfig.AllConfigInfoStr()
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "generated_nsx_config.txt"), configStr)
 	require.Nil(t, err)
 

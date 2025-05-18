@@ -181,7 +181,7 @@ func (ni *NamespacesInfo) GetConjunctionNamespaces(conj symbolicexpr.Conjunction
 		return slices.Index(ni.Namespaces, n1) - slices.Index(ni.Namespaces, n2)
 	})
 	resStr := common.StringifiedSliceToStrings(res)
-	logging.Debugf("input Conjunction: %s, result namespaces: %v", conj.String(), resStr)
+	logging.Debug2f("input Conjunction: %s, result namespaces: %v", conj.String(), resStr)
 	ni.cacheConjNamespaces[conj.String()] = resStr
 	return resStr
 }

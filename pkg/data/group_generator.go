@@ -65,7 +65,7 @@ func createGroupByPathExpr(groupName string, paths []string, rc *collector.Resou
 
 		// if not found - internal err for this example generation
 		if !found {
-			logging.InternalErrorf("cannot generate example with GroupByPath - path %s was not found", path)
+			logging.FatalErrorf("cannot generate example with GroupByPath - path %s was not found", path)
 		}
 	}
 
@@ -123,7 +123,7 @@ func vmsOfExpressionElement(vmList []collector.VirtualMachine, c collector.Expre
 	case *collector.NestedExpression:
 		vmsRes = vmsOfExpr(vmList, &c1Expr.Expressions)
 	default:
-		logging.InternalErrorf("unsupported expr elem type: %v", c1Expr)
+		logging.FatalErrorf("unsupported expr elem type: %v", c1Expr)
 	}
 	return vmsRes
 }
