@@ -2602,13 +2602,10 @@ var ExampleAppWithGroupsAndSegments = registerExample(&Example{
 	Policies:      policiesAppWithGroupsAndSegments,
 })
 
-var ExampleAppWithGroupsAndSegmentsInfer = registerExample(&Example{
-	Name:          "ExampleAppWithGroupsAndSegmentsInfer",
-	VMs:           vmsAppWithGroupsAndSegments,
-	VMsAddress:    vmsAddressesWithGroupsAndSegments,
-	SegmentsByVMs: segmentsByVMsAddressesWithGroupsAndSegments,
-	SegmentsBlock: segmentsBlockAppWithGroupsAndSegments,
-	SegmentsT1GWs: segmentsT1GWsAppWithGroupsAndSegments,
-	GroupsByVMs:   groupsByVMsAppWithGroupsAndSegments,
-	Policies:      policiesAppWithGroupsAndSegments,
-})
+var ExampleAppWithGroupsAndSegmentsInfer = registerExample(getExampleAppWithGroupsAndSegmentsInfer())
+
+func getExampleAppWithGroupsAndSegmentsInfer() *Example {
+	res := ExampleAppWithGroupsAndSegments
+	res.Name = "ExampleAppWithGroupsAndSegmentsInfer"
+	return res
+}
