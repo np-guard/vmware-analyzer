@@ -2,33 +2,10 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (*) dst: (*) conn: All Connections'
-        nsx-id: "10218"
+        description: 'src: (*) dst: (group = Web) conn: All Connections'
+        nsx-id: "10400"
     creationTimestamp: null
     name: policy-0
-    namespace: default
-spec:
-    ingress:
-        - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector: {}
-    podSelector: {}
-    policyTypes:
-        - Ingress
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    annotations:
-        description: 'src: (group = Slytherin) dst: (group != Slytherin) conn: TCP,UDP'
-        nsx-id: "10220"
-    creationTimestamp: null
-    name: policy-1
     namespace: default
 spec:
     egress:
@@ -41,12 +18,9 @@ spec:
                         - default
               podSelector:
                 matchExpressions:
-                    - key: group__Slytherin
-                      operator: DoesNotExist
-    podSelector:
-        matchExpressions:
-            - key: group__Slytherin
-              operator: Exists
+                    - key: group__Web
+                      operator: Exists
+    podSelector: {}
     policyTypes:
         - Egress
 ---
@@ -54,8 +28,34 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Gryffindor) dst: (group != Gryffindor) conn: TCP,UDP'
-        nsx-id: "10221"
+        description: 'src: (*) dst: (group = Web) conn: All Connections'
+        nsx-id: "10400"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector: {}
+    podSelector:
+        matchExpressions:
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Web) dst: (group = App) conn: All Connections'
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy-2
     namespace: default
@@ -70,11 +70,11 @@ spec:
                         - default
               podSelector:
                 matchExpressions:
-                    - key: group__Gryffindor
-                      operator: DoesNotExist
+                    - key: group__App
+                      operator: Exists
     podSelector:
         matchExpressions:
-            - key: group__Gryffindor
+            - key: group__Web
               operator: Exists
     policyTypes:
         - Egress
@@ -83,10 +83,39 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
     annotations:
-        description: 'src: (group = Hufflepuff) dst: (group != Hufflepuff) conn: TCP,UDP'
-        nsx-id: "10222"
+        description: 'src: (group = Web) dst: (group = App) conn: All Connections'
+        nsx-id: "10401"
     creationTimestamp: null
     name: policy-3
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Web
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__App
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = App) dst: (group = DB) conn: All Connections'
+        nsx-id: "10405"
+    creationTimestamp: null
+    name: policy-4
     namespace: default
 spec:
     egress:
@@ -99,14 +128,43 @@ spec:
                         - default
               podSelector:
                 matchExpressions:
-                    - key: group__Hufflepuff
-                      operator: DoesNotExist
+                    - key: group__DB
+                      operator: Exists
     podSelector:
         matchExpressions:
-            - key: group__Hufflepuff
+            - key: group__App
               operator: Exists
     policyTypes:
         - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = App) dst: (group = DB) conn: All Connections'
+        nsx-id: "10405"
+    creationTimestamp: null
+    name: policy-5
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__App
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__DB
+              operator: Exists
+    policyTypes:
+        - Ingress
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

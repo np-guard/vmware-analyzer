@@ -63,7 +63,7 @@ const (
 	verboseFlag                   = "verbose"
 	explainFlag                   = "explain"
 	colorFlag                     = "color"
-	createDNSPolicyFlag           = "synth-create-dns-policy"
+	createDNSPolicyFlag           = "create-dns-policy"
 	disjointHintsFlag             = "disjoint-hint"
 	inferDisjointHintsFlag        = "hints-inference"
 	disableInsecureSkipVerifyFlag = "disable-insecure-skip-verify"
@@ -90,7 +90,7 @@ const (
 	quietHelp                     = "flag to run quietly, report only severe errors and result (default false)"
 	verboseHelp                   = "flag to run with more informative messages printed to log (default false)"
 	colorHelp                     = "flag to enable color output (default false)"
-	createDNSPolicyHelp           = "flag to create a policy allowing access to target env dns pod"
+	createDNSPolicyHelp           = "flag to create a policy allowing access to target env dns pod (default false)"
 	synthHelp                     = "flag to run synthesis, even if synthesis-dir is not specified"
 	disableInsecureSkipVerifyHelp = "flag to disable NSX connection retry with insecureSkipVerify (default false)." +
 		"Alternatively, set the NSX_DISABLE_SKIP_VERIFY environment variable to true"

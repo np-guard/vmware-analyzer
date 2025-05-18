@@ -48,14 +48,6 @@ func NewPolicyGenerator(synthModel *model.AbstractModelSyn, createDNSPolicy bool
 func (np *PolicyGenerator) Generate(ni *topology.NamespacesInfo) {
 	np.NamespacesInfo = ni
 
-	for _, symbolicPolicy := range np.synthModel.Policy {
-		for _, rule := range symbolicPolicy.SortRules() {
-			np.symbolicRuleToPolicies(rule, symbolicPolicy.IsInbound(rule))
-		}
-	}
-
-	np.addDefaultDenyNetworkPolicy()
-
 	if np.createDNSPolicy {
 		if np.synthModel.SynthesizeAdmin {
 			np.addDNSAllowAdminNetworkPolicy()
@@ -63,6 +55,14 @@ func (np *PolicyGenerator) Generate(ni *topology.NamespacesInfo) {
 			np.addDNSAllowNetworkPolicy()
 		}
 	}
+
+	for _, symbolicPolicy := range np.synthModel.Policy {
+		for _, rule := range symbolicPolicy.SortRules() {
+			np.symbolicRuleToPolicies(rule, symbolicPolicy.IsInbound(rule))
+		}
+	}
+
+	np.addDefaultDenyNetworkPolicy()
 }
 
 func (np *PolicyGenerator) symbolicRuleToPolicies(rule *model.SymbolicRule, isInbound bool) {

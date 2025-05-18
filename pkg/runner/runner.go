@@ -49,14 +49,14 @@ type Runner struct {
 	analysisExplain    bool
 
 	// synthesis args
-	synth               bool
-	synthesisDir        string
-	disjointHints       []string
-	inferHints          bool
-	synthesizeAdmin     bool
-	suppressDNSPolicies bool
-	endpointsMapping    common.Endpoints
-	segmentsMapping     common.Segments
+	synth             bool
+	synthesisDir      string
+	disjointHints     []string
+	inferHints        bool
+	synthesizeAdmin   bool
+	createDNSPolicies bool
+	endpointsMapping  common.Endpoints
+	segmentsMapping   common.Segments
 
 	// lint args
 	lint bool
@@ -192,7 +192,7 @@ func (r *Runner) runSynthesis() error {
 		InferHints:       r.inferHints,
 		SynthesizeAdmin:  r.synthesizeAdmin,
 		Color:            r.color,
-		CreateDNSPolicy:  !r.suppressDNSPolicies,
+		CreateDNSPolicy:  r.createDNSPolicies,
 		FilterVMs:        r.analysisVMsFilter,
 		EndpointsMapping: r.endpointsMapping,
 		SegmentsMapping:  r.segmentsMapping,
@@ -402,8 +402,7 @@ func WithSynth(synth bool) RunnerOption {
 
 func WithSynthDNSPolicies(create bool) RunnerOption {
 	return func(r *Runner) {
-		// create is true by default, so suppressDNSPolicies is false by default
-		r.suppressDNSPolicies = !create
+		r.createDNSPolicies = create
 	}
 }
 
