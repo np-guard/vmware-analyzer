@@ -21,6 +21,14 @@ Hufflepuff |Hufflepuff-DB, Hufflepuff-Web, Hufflepuff-App
 Slytherin  |Slytherin-DB, Slytherin-Web, Slytherin-App
 Web        |Slytherin-Web, Hufflepuff-Web, Gryffindor-Web
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+Web, App, DB
+
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

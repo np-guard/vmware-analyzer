@@ -21,6 +21,11 @@ research-test-expr-2 |New Virtual Machine
 Group Name |Segments
 path-group |seg1
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

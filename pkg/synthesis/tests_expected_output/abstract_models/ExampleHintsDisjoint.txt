@@ -12,6 +12,14 @@ Hufflepuff    |Hufflepuff
 Not Slytherin |Hufflepuff, Gryffindor, Dumbledore1, Dumbledore2
 Slytherin     |Slytherin
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore, Dumbledore1, Dumbledore2
+Slytherin, Not Slytherin
+
+
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~
 inbound rules

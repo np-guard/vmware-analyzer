@@ -7,6 +7,11 @@ Groups' definition
 Group Name |VMs
 frontend   |A
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -18,6 +23,7 @@ Priority |Rule Id |Action |Src                     |Dst                |Connecti
 
 outbound rules
 Priority |Rule Id |Action |Src |Dst |Connection
+
 
 
 Allow Only Rules

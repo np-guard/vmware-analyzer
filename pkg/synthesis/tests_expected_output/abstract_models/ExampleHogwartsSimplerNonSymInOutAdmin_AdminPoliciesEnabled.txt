@@ -11,6 +11,14 @@ Slytherin          |Slytherin-Web, Slytherin-App
 Web                |Slytherin-Web, Gryffindor-Web
 no-group-vms-group |Slytherin-DB, Gryffindor-DB
 
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+Web, App, DB
+
+
 Admin policy rules
 ~~~~~~~~~~~~~~~~~~
 inbound rules
@@ -24,6 +32,7 @@ Priority |Rule Id |Action              |Src                  |Dst               
 0        |10219   |jump_to_application |(group = Gryffindor) |(group = Gryffindor) |TCP
 1        |10221   |jump_to_application |(group = Slytherin)  |(group = Slytherin)  |UDP
 2        |10231   |deny                |(*)                  |(*)                  |All Connections
+
 
 Allow Only Rules
 ~~~~~~~~~~~~~~~~~

@@ -7,6 +7,7 @@ import (
 
 type SynthesisOptions struct {
 	Hints            *symbolicexpr.Hints
+	InferHints       bool
 	SynthesizeAdmin  bool
 	Color            bool
 	CreateDNSPolicy  bool
