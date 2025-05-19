@@ -1,0 +1,130 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin) conn: All Connections'
+        nsx-id: "9200"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    egress:
+        - to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__NotSlytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore1
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin) conn: All Connections'
+        nsx-id: "9200"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Dumbledore1
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__NotSlytherin
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Dumbledore2) dst: (group != Gryffindor) conn: All Connections'
+        nsx-id: "9201"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    egress:
+        - to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Gryffindor
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__Dumbledore2
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Dumbledore2) dst: (group != Gryffindor) conn: All Connections'
+        nsx-id: "9201"
+    creationTimestamp: null
+    name: policy-3
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Dumbledore2
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Gryffindor
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace default
+        nsx-id: "10230"
+    creationTimestamp: null
+    name: default-deny-for-default
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
