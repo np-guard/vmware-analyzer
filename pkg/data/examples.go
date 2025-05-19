@@ -1405,8 +1405,6 @@ var ExampleHogwartsBasic = Example{
 
 var ExampleHogwarts = registerExample(getExampleHogwarts(false))
 
-//var ExampleHogwartsInfer = registerExample(getExampleHogwarts(true))
-
 func getExampleHogwarts(forInfer bool) *Example {
 	res := &ExampleHogwartsBasic
 	if forInfer {
