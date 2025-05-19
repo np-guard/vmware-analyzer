@@ -48,14 +48,6 @@ func NewPolicyGenerator(synthModel *model.AbstractModelSyn, createDNSPolicy bool
 func (np *PolicyGenerator) Generate(ni *topology.NamespacesInfo) {
 	np.NamespacesInfo = ni
 
-	for _, symbolicPolicy := range np.synthModel.Policy {
-		for _, rule := range symbolicPolicy.SortRules() {
-			np.symbolicRuleToPolicies(rule, symbolicPolicy.IsInbound(rule))
-		}
-	}
-
-	np.addDefaultDenyNetworkPolicy()
-
 	if np.createDNSPolicy {
 		if np.synthModel.SynthesizeAdmin {
 			np.addDNSAllowAdminNetworkPolicy()
@@ -63,6 +55,14 @@ func (np *PolicyGenerator) Generate(ni *topology.NamespacesInfo) {
 			np.addDNSAllowNetworkPolicy()
 		}
 	}
+
+	for _, symbolicPolicy := range np.synthModel.Policy {
+		for _, rule := range symbolicPolicy.SortRules() {
+			np.symbolicRuleToPolicies(rule, symbolicPolicy.IsInbound(rule))
+		}
+	}
+
+	np.addDefaultDenyNetworkPolicy()
 }
 
 func (np *PolicyGenerator) symbolicRuleToPolicies(rule *model.SymbolicRule, isInbound bool) {
@@ -80,7 +80,7 @@ func (np *PolicyGenerator) symbolicRuleToPolicies(rule *model.SymbolicRule, isIn
 		if !p.Conn.TCPUDPSet().IsEmpty() {
 			np.symbolicPathToPolicy(p, isInbound, isAdmin, rule.OrigRule.Action, rule.OrigRule.RuleIDStr())
 		} else {
-			logging.Debugf("did not create the following k8s %s policy for rule %d, since connection %s is not supported: %s",
+			logging.Infof("did not create the following k8s %s policy for nsx rule %d, since connection %s is not supported: %s",
 				directionStr(isInbound), rule.OrigRule.RuleID, p.Conn.String(), p.String())
 		}
 	}
@@ -110,7 +110,7 @@ func (np *PolicyGenerator) symbolicPathToPolicy(path *symbolicexpr.SymbolicPath,
 		np.NotFullySupported = true
 		return
 	}
-	description := policyDescriptionFromPath(path, isAdmin, action.String())
+	description := policyDescriptionFromSymbolicPath(path, isAdmin, action.String())
 
 	if isAdmin {
 		adminAction := abstractToAdminRuleAction[action]
@@ -121,7 +121,7 @@ func (np *PolicyGenerator) symbolicPathToPolicy(path *symbolicexpr.SymbolicPath,
 	}
 }
 
-func policyDescriptionFromPath(path *symbolicexpr.SymbolicPath, isAdmin bool, action string) string {
+func policyDescriptionFromSymbolicPath(path *symbolicexpr.SymbolicPath, isAdmin bool, action string) string {
 	if isAdmin {
 		return fmt.Sprintf("(%s: (%s)", action, path.String())
 	}
@@ -129,13 +129,17 @@ func policyDescriptionFromPath(path *symbolicexpr.SymbolicPath, isAdmin bool, ac
 }
 
 func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policySelector {
+	if con == nil {
+		return newEmptyPolicySelector()
+	}
+
 	if cachedRes := np.conjunctionToSelector[con.String()]; cachedRes != nil {
-		logging.Debugf("pulling from cache for conjunction %s , the following policySelector: %s", con.String(), cachedRes.string())
+		logging.Debug2f("pulling from cache for conjunction %s , the following policySelector: %s", con.String(), cachedRes.string())
 		// todo: result can currently be changed, thus returning a copy object
 		res := *cachedRes
 		return &res
 	}
-	logging.Debugf("createSelector for conj: %s", con.String())
+	logging.Debug2f("createSelector for conj: %s", con.String())
 	boolToOperator := map[bool]meta.LabelSelectorOperator{
 		false: meta.LabelSelectorOpExists,
 		true:  meta.LabelSelectorOpDoesNotExist}
@@ -164,6 +168,6 @@ func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policyS
 		}
 	}
 	np.conjunctionToSelector[con.String()] = res
-	logging.Debugf("caching for conjunction %s , the following policySelector: %s", con.String(), res.string())
+	logging.Debug2f("caching for conjunction %s , the following policySelector: %s", con.String(), res.string())
 	return res
 }

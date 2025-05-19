@@ -134,7 +134,7 @@ var staticTests = []*cliTest{
 	{
 		name: "synthesize-only",
 		args: "generate --resource-input-file ../pkg/data/json/Example1.json -d examples/output/synthesis" +
-			" --disjoint-hint backend,frontend --disjoint-hint frontend,backend --synth-create-dns-policy=false",
+			" --disjoint-hint backend,frontend --disjoint-hint frontend,backend --create-dns-policy=true",
 		expectedOutFile: []string{"examples/output/synthesis/k8s_resources/policies.yaml"},
 	},
 	{

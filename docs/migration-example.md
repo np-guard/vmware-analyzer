@@ -1,5 +1,7 @@
 ## Migration example
 
+This section details simple walkthrough for micro-segmentation migration automaion from NSX to OCP-Virt with `nsxanalyzer`.
+
 ### Source: NSX 
 
 Following segments connected by T1-Gateway:
@@ -29,7 +31,7 @@ $ nsxanalyzer analyze -r pkg/data/json/ExampleAppWithGroupsAndSegments.json -o s
 ![](topology.svg "NSX analyzed topology graph")
 
 
-Micro-segmentation config details:
+Micro-segmentation of NSX details:
 
 ```
 Group Name           |VMs
@@ -79,12 +81,11 @@ $ nsxanalyzer analyze -r pkg/data/json/ExampleAppWithGroupsAndSegments.json -o s
 
 ### Target: OCP-Virt 
 
-Migration options:
+Migration with `generate` command options:
 
 Segments to namespace mapping: 
 * segment to namespace in pod-network
 * segment to namespace in UDN 
-* "flat" one namespace to all VMs 
 
 Endpoints options:
 * VMs 
@@ -99,8 +100,11 @@ $ nsxanalyzer generate -r pkg/data/json/ExampleAppWithGroupsAndSegments.json -v 
 
 Generated YAML files [here](./generated_manifests_1/k8s_resources/).
 
+Now, let's analyze OCP-Virt connectivity of generated resources, with [`netpol-analyzer`](https://github.com/np-guard/netpol-analyzer).
+
 ```
-$ k8snetpolicy list --dirpath example1/
+
+$ netpol-analyzer list --dirpath example1/
 
 T1-192-168-0-0/New-VM-3[Pod] => T1-192-168-0-0/New-VM-4[Pod] : TCP 80
 T1-192-168-1-0/New-VM-1[Pod] => T1-192-168-0-0/New-VM-3[Pod] : TCP 445
@@ -120,10 +124,12 @@ Example result for migration to VMs in "segment to namespace in UDN" mapping:
 $ nsxanalyzer generate -r pkg/data/json/ExampleAppWithGroupsAndSegments.json -v --endpoints-mapping vms --segments-mapping udns -d example2/
 ```
 
+Note that this time, connectivity cross NSX segments is not preserved in target (cross UDNs), due to UDNs isolation. 
+
 Generated YAML files [here](./generated_manifests_2/k8s_resources/).
 
 ```
-$ k8snetpolicy list --dirpath example2/
+$ netpol-analyzer list --dirpath example2/
 
 T1-192-168-0-0[udn]:
 T1-192-168-0-0[udn]/New-VM-3[VirtualMachine] => T1-192-168-0-0[udn]/New-VM-4[VirtualMachine] : TCP 80
@@ -139,3 +145,30 @@ T1-192-168-1-0[udn]/NewVirtualMachine[VirtualMachine] => T1-192-168-1-0[udn]/New
 ```
 
 ![](ocpvirt-graph-2.svg "OCP-Virt connectivity graph in UDNs level")
+
+
+### Partial migration option - example
+
+The flag `--output-filter` allows specifying VMs names to focus on for the `generate` command. 
+It will consider onlt NSX resources relevant for these VMs, and will generate policies from these resources only.
+
+For example, for the run below, let's focus only on `VM3` and `VM4`:
+```
+nsxanalyzer generate -r pkg/data/json/ExampleAppWithGroupsAndSegments.json -v --output-filter "New-VM-3,New-VM-4" -d example3/ --endpoints-mapping vms
+```
+
+Generated YAML files [here](./example3/k8s_resources/).
+
+The connectivity analysis for the generated policies will be as follows:
+```
+$ netpol-analyzer list --dirpath example3/
+
+T1-192-168-0-0/New-VM-3[Pod] => T1-192-168-0-0/New-VM-4[Pod] : TCP 80
+```
+
+![](ocpvirt-graph-3.svg "OCP-Virt connectivity graph in UDNs level for partial migration option")
+
+### Aspects in policy generation
+
+see docmentation [here.](./policy-generation.md)
+

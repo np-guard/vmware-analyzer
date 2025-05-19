@@ -22,7 +22,9 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/configuration"
 	"github.com/np-guard/vmware-analyzer/pkg/configuration/topology"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/test_utils"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
+	"github.com/np-guard/vmware-analyzer/pkg/runner"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/config"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
@@ -91,11 +93,8 @@ func (synTest *synthesisTest) options() *config.SynthesisOptions {
 		Hints:           synTest.hints(),
 		InferHints:      synTest.inferHints,
 		SynthesizeAdmin: synTest.synthesizeAdmin,
-		CreateDNSPolicy: true,
+		CreateDNSPolicy: false,
 		FilterVMs:       synTest.filter,
-		// default enum flags values:
-		//EndpointsMapping: common.EndpointsBoth,
-		//SegmentsMapping:  common.SegmentsToUDNs,
 	}
 	res.EndpointsMapping.SetDefault()
 	res.SegmentsMapping.SetDefault()
@@ -485,7 +484,7 @@ func TestCompareNSXConnectivity(t *testing.T) {
 
 // the TestLiveNSXServer() collect the resource from live nsx server, and call serialTestsRun()
 func TestLiveNSXServer(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	server, err := collector.GetNSXServerDate("", "", "", true)
 	if err != nil {
 		logging.Debug(err.Error())
@@ -502,7 +501,7 @@ func TestLiveNSXServer(t *testing.T) {
 
 // the TestNsxResourceFile() get the resource from resources.json, and run the testsMethods on it
 func TestNsxResourceFile(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	rc := readUserResourceFile(t)
 	if rc == nil {
 		return
@@ -537,7 +536,7 @@ func readUserResourceFile(t *testing.T) *collector.ResourcesContainerModel {
 // ///////////////////////////////////////////////////////////////////////////////////
 // subTestsRunByTestName() gets a test function to run, and run it on all the syntheticTests as subtests
 func subTestsRunByTestName(t *testing.T, f testMethod) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	for _, test := range allSyntheticTests {
 		rc, err := data.ExamplesGeneration(test.exData, false)
 		require.Nil(t, err)
@@ -559,7 +558,7 @@ func runPreprocessing(synTest *synthesisTest, t *testing.T, rc *collector.Resour
 	nsxConfig, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
-	configStr := nsxConfig.GetConfigInfoStr(false)
+	configStr := nsxConfig.AllConfigInfoStr()
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "config.txt"), configStr)
 	require.Nil(t, err)
 	// get the preProcess results:
@@ -638,7 +637,7 @@ func compareToNetpol(synTest *synthesisTest, t *testing.T, rc *collector.Resourc
 	err = common.WriteToFile(path.Join(debugDir, "k8s_grouped_connectivity.txt"), k8sGroupedMapStr)
 	require.Nil(t, err)
 	require.Equal(t, noICMPGroupedMapStr, k8sGroupedMapStr,
-		fmt.Sprintf("k8s and vmware connectivities of test %v are not equal", t.Name()))
+		fmt.Sprintf("k8s and vmware connectivities of test %s are not equal", t.Name()))
 }
 
 // adjust connectivity map to be later compared to netpol analyzer map:
@@ -783,7 +782,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	nsxConfig, err := configuration.ConfigFromResourcesContainer(rc, synTest.outputParams())
 	require.Nil(t, err)
 	// write the config summary into a file, for debugging:
-	configStr := nsxConfig.GetConfigInfoStr(false)
+	configStr := nsxConfig.AllConfigInfoStr()
 	err = common.WriteToFile(path.Join(synTest.debugDir(), "generated_nsx_config.txt"), configStr)
 	require.Nil(t, err)
 
@@ -800,7 +799,7 @@ func runCompareNSXConnectivity(synTest *synthesisTest, t *testing.T, rc *collect
 	// the validation of the abstract model conversion is here:
 	// validate connectivity analysis is the same for the new (from abstract) and original NSX configs
 	require.Equal(t, connGroupedMapStr, analyzedGroupedMapStr,
-		fmt.Sprintf("nsx and vmware connectivities of test %v are not equal", t.Name()))
+		fmt.Sprintf("nsx and vmware connectivities of test %s are not equal", t.Name()))
 }
 
 // /////////////////////////////////////////////////////////////////////
@@ -840,14 +839,14 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 		expectedFiles, err := os.ReadDir(expectedDir)
 		require.Nil(t, err)
 		require.Equal(t, len(expectedFiles), len(actualFiles),
-			fmt.Sprintf("number of output files of test %v not as expected", testName))
+			fmt.Sprintf("number of output files of test %s not as expected", testName))
 		for _, file := range actualFiles {
 			expectedOutput, err := os.ReadFile(filepath.Join(expectedDir, file.Name()))
 			require.Nil(t, err)
 			actualOutput, err := os.ReadFile(filepath.Join(actualDir, file.Name()))
 			require.Nil(t, err)
 			require.Equal(t, common.CleanStr(string(actualOutput)), common.CleanStr(string(expectedOutput)),
-				fmt.Sprintf("output file %s of test %v not as expected", file.Name(), testName))
+				fmt.Sprintf("output file %s of test %s not as expected", file.Name(), testName))
 		}
 	case OutputGeneration:
 		err := os.RemoveAll(expectedDir)
@@ -858,15 +857,70 @@ func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, t
 }
 
 func compareOrRegenerateOutputPerTest(t *testing.T, actualOutput, expectedOutputFileName, testName string) {
+	if *common.Update {
+		runTestMode = OutputGeneration
+	}
 	switch runTestMode {
 	case OutputComparison:
 		expectedOutput, err := os.ReadFile(expectedOutputFileName)
 		require.Nil(t, err)
 		expectedOutputStr := string(expectedOutput)
 		require.Equal(t, common.CleanStr(actualOutput), common.CleanStr(expectedOutputStr),
-			fmt.Sprintf("output of test %v not as expected", testName))
+			fmt.Sprintf("output of test %s not as expected", testName))
 	case OutputGeneration:
 		err := common.WriteToFile(expectedOutputFileName, actualOutput)
 		require.Nil(t, err)
+	}
+}
+
+func testDNSPolicySynthesis(t *testing.T, useAdmin bool, exData *data.Example) {
+	rc, err := data.ExamplesGeneration(exData, false)
+	require.Nil(t, err)
+	adminName := "_noAdmin"
+	if useAdmin {
+		adminName = "_admin"
+	}
+	testDirName := filepath.Join("dns_tests", exData.Name+adminName)
+
+	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), testDirName)
+	actualOutputDir := filepath.Join(getTestsDirActualOut(), testDirName)
+
+	runnerObj, err := runner.NewRunnerWithOptionsList(
+		runner.WithNSXResources(rc),
+		runner.WithHighVerbosity(true),
+		runner.WithSynth(true),
+		runner.WithSynthDNSPolicies(true),
+		runner.WithSynthesisDir(actualOutputDir),
+		runner.WithSynthAdminPolicies(useAdmin),
+	)
+	require.Nil(t, err)
+	_, err = runnerObj.Run()
+	require.Nil(t, err)
+	compareOrRegenerateOutputDirPerTest(t,
+		filepath.Join(actualOutputDir, resources.K8sResourcesDir),
+		filepath.Join(expectedOutputDir, resources.K8sResourcesDir),
+		testDirName)
+}
+
+func TestDNSPolicy(t *testing.T) {
+	dnsTests := []struct {
+		exData   *data.Example
+		useAdmin bool
+	}{
+		{
+			exData:   data.ExampleAppWithGroupsAndSegments,
+			useAdmin: false,
+		},
+		{
+			exData:   data.ExampleAppWithGroupsAndSegments,
+			useAdmin: true,
+		},
+		{
+			exData:   data.ExampleHogwarts,
+			useAdmin: true,
+		},
+	}
+	for _, test := range dnsTests {
+		testDNSPolicySynthesis(t, test.useAdmin, test.exData)
 	}
 }

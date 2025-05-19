@@ -5,6 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/version"
 )
 
@@ -37,6 +38,7 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 	c.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
 	c.PersistentFlags().BoolVar(&args.disableInsecureSkipVerify, disableInsecureSkipVerifyFlag, false, disableInsecureSkipVerifyHelp)
 	c.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
+	c.PersistentFlags().Var(&args.logLevel, logLevelFlag, logLevelHelp+common.AllLogLevelOptionsStr)
 
 	// add sub-commands
 	c.AddCommand(newCommandCollect())

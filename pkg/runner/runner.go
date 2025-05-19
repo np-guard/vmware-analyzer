@@ -26,6 +26,7 @@ type Runner struct {
 
 	// output args
 	logFile        string
+	logLevel       common.LogLevel
 	highVerobsity  bool
 	outputFormat   common.OutFormat
 	color          bool
@@ -48,14 +49,14 @@ type Runner struct {
 	analysisExplain    bool
 
 	// synthesis args
-	synth               bool
-	synthesisDir        string
-	disjointHints       []string
-	inferHints          bool
-	synthesizeAdmin     bool
-	suppressDNSPolicies bool
-	endpointsMapping    common.Endpoints
-	segmentsMapping     common.Segments
+	synth             bool
+	synthesisDir      string
+	disjointHints     []string
+	inferHints        bool
+	synthesizeAdmin   bool
+	createDNSPolicies bool
+	endpointsMapping  common.Endpoints
+	segmentsMapping   common.Segments
 
 	// lint args
 	lint bool
@@ -102,13 +103,13 @@ func (r *Runner) Run() (*Observations, error) {
 }
 
 func (r *Runner) initLogger() error {
-	verbosity := logging.MediumVerbosity
 	if r.quietVerobsity {
-		verbosity = logging.LowVerbosity
-	} else if r.highVerobsity {
-		verbosity = logging.HighVerbosity
+		r.logLevel = common.LogLevelFatal
 	}
-	return logging.Init(verbosity, r.logFile) // initializes a thread-safe singleton logger
+	if r.highVerobsity {
+		r.logLevel = common.LogLevelInfo // debug levels should be used explicitly
+	}
+	return logging.Init(r.logLevel, r.logFile)
 }
 
 // runCollector should assign collected NSX resources into r.resources
@@ -191,7 +192,7 @@ func (r *Runner) runSynthesis() error {
 		InferHints:       r.inferHints,
 		SynthesizeAdmin:  r.synthesizeAdmin,
 		Color:            r.color,
-		CreateDNSPolicy:  !r.suppressDNSPolicies,
+		CreateDNSPolicy:  r.createDNSPolicies,
 		FilterVMs:        r.analysisVMsFilter,
 		EndpointsMapping: r.endpointsMapping,
 		SegmentsMapping:  r.segmentsMapping,
@@ -276,6 +277,12 @@ type RunnerOption func(*Runner)
 func WithLogFile(l string) RunnerOption {
 	return func(r *Runner) {
 		r.logFile = l
+	}
+}
+
+func WithLogLevel(l common.LogLevel) RunnerOption {
+	return func(r *Runner) {
+		r.logLevel = l
 	}
 }
 
@@ -395,8 +402,7 @@ func WithSynth(synth bool) RunnerOption {
 
 func WithSynthDNSPolicies(create bool) RunnerOption {
 	return func(r *Runner) {
-		// create is true by default, so suppressDNSPolicies is false by default
-		r.suppressDNSPolicies = !create
+		r.createDNSPolicies = create
 	}
 }
 

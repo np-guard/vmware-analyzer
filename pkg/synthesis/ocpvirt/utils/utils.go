@@ -58,6 +58,6 @@ func K8sAnalyzer(k8sDir, outfile, format string) (bool, error) {
 		return false, nil
 	}
 	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
-	logging.Debug(cmd.String())
+	logging.Debug2f("%s", cmd.String())
 	return true, cmd.Run()
 }

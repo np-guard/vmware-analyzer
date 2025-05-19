@@ -11,6 +11,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/data"
 	"github.com/np-guard/vmware-analyzer/pkg/internal/projectpath"
+	"github.com/np-guard/vmware-analyzer/pkg/internal/test_utils"
 	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/runner"
 )
@@ -135,7 +136,7 @@ func (a *analyzerTest) run(t *testing.T) {
 }
 
 func TestAnalyzer(t *testing.T) {
-	require.Nil(t, logging.Init(logging.HighVerbosity, ""))
+	test_utils.LogInit(t, "")
 	for i := range allTests {
 		test := &allTests[i]
 		t.Run(test.name, func(t *testing.T) {
