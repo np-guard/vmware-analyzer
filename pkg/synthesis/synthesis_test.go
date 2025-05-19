@@ -71,6 +71,9 @@ func (synTest *synthesisTest) id() string {
 	if synTest.filter != nil {
 		id += "_Filtered"
 	}
+	if synTest.inferHints {
+		id += "_InferHints"
+	}
 	return id
 }
 
@@ -206,7 +209,7 @@ var groupsByVmsTests = []synthesisTest{
 		name:            "ExampleAppWithGroupsAndSegmentsInferHintsNoGivenHints",
 		exData:          data.ExampleAppWithGroupsAndSegments,
 		synthesizeAdmin: false,
-		noHint:          false,
+		noHint:          true,
 		inferHints:      true,
 	},
 	{
@@ -227,7 +230,7 @@ var groupsByVmsTests = []synthesisTest{
 		name:            "ExampleHintsDisjointInferHintsNoGivenHints",
 		exData:          data.ExampleHintsDisjointNoGivenHints,
 		synthesizeAdmin: false,
-		noHint:          false,
+		noHint:          true,
 		inferHints:      true,
 	},
 }
