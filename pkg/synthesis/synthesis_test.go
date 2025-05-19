@@ -221,14 +221,14 @@ var groupsByVmsTests = []synthesisTest{
 	},
 	{
 		name:            "ExampleHogwartsAdminInferNoHintsGivenHints",
-		exData:          data.ExampleHogwartsNoGivenHints,
+		exData:          data.ExampleHogwarts,
 		synthesizeAdmin: true,
-		noHint:          false,
+		noHint:          true,
 		inferHints:      true,
 	},
 	{
 		name:            "ExampleHintsDisjointInferHintsNoGivenHints",
-		exData:          data.ExampleHintsDisjointNoGivenHints,
+		exData:          data.ExampleHintsDisjoint,
 		synthesizeAdmin: false,
 		noHint:          true,
 		inferHints:      true,
