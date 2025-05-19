@@ -2594,7 +2594,7 @@ var policiesAppWithGroupsAndSegments = []Category{
 	},
 }
 
-var ExampleAppWithGroupsAndSegmentsBasic = Example{
+var ExampleAppWithGroupsAndSegments = registerExample(&Example{
 	Name:          "ExampleAppWithGroupsAndSegments",
 	VMs:           vmsAppWithGroupsAndSegments,
 	VMsAddress:    vmsAddressesWithGroupsAndSegments,
@@ -2603,18 +2603,4 @@ var ExampleAppWithGroupsAndSegmentsBasic = Example{
 	SegmentsT1GWs: segmentsT1GWsAppWithGroupsAndSegments,
 	GroupsByVMs:   groupsByVMsAppWithGroupsAndSegments,
 	Policies:      policiesAppWithGroupsAndSegments,
-}
-
-var ExampleAppWithGroupsAndSegments = registerExample(getExampleAppWithGroupsAndSegmentsInfer(false))
-
-var ExampleAppWithGroupsAndSegmentsForInfer = registerExample(getExampleAppWithGroupsAndSegmentsInfer(true))
-
-func getExampleAppWithGroupsAndSegmentsInfer(forInfer bool) *Example {
-	fmt.Printf("in getExampleAppWithGroupsAndSegmentsInfer with %v\n", forInfer)
-	res := &ExampleAppWithGroupsAndSegmentsBasic
-	if forInfer {
-		res.Name = "ExampleAppWithGroupsAndSegmentsInfer"
-	}
-	fmt.Printf("res.Name is %v\n", res.Name)
-	return res
-}
+})
