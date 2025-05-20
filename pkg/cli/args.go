@@ -5,39 +5,12 @@ import "github.com/np-guard/vmware-analyzer/internal/common"
 var args = newInArgs()
 
 type inArgs struct {
-	resourceInputFile         string
-	host                      string
-	user                      string
-	password                  string
-	resourceDumpFile          string
-	topologyDumpFile          string
-	synthesisDir              string
-	synthesizeAdmin           bool
-	anonymize                 bool
-	logFile                   string
-	outputFile                string
-	outputFormat              common.OutFormat
-	quiet                     bool
-	verbose                   bool
-	explain                   bool
-	outputFilter              []string
-	color                     bool
-	createDNSPolicy           bool
-	disjointHints             []string
-	inferDisjointHints        bool
-	disableInsecureSkipVerify bool
-	endpointsMapping          common.Endpoints
-	segmentsMapping           common.Segments
-	logLevel                  common.LogLevel
+	common.InputArgs
 }
 
 func newInArgs() *inArgs {
 	res := &inArgs{}
-	// init enum flags with default values
-	res.outputFormat.SetDefault()
-	res.segmentsMapping.SetDefault()
-	res.endpointsMapping.SetDefault()
-	res.logLevel.SetDefault()
+	res.SetDefault()
 	return res
 }
 

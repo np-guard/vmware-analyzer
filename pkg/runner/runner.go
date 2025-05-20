@@ -23,46 +23,49 @@ import (
 
 // Runner provides API to run NSX collection / analysis / synthesis operations.
 type Runner struct {
+	args *common.InputArgs
+	/*
+		// output args
+		logFile        string
+		logLevel       *common.LogLevel
+		highVerobsity  bool
+		outputFormat   *common.OutFormat
+		color          bool
+		quietVerobsity bool
 
-	// output args
-	logFile        string
-	logLevel       common.LogLevel
-	highVerobsity  bool
-	outputFormat   common.OutFormat
-	color          bool
-	quietVerobsity bool
+		// collecttor args
+		disableInsecureSkipVerify bool
+		nsxURL                    string
+		nsxUser                   string
+		nsxPassword               string
+		resourcesInputFile        string
+		anonymize                 bool
+		resourcesDumpFile         string
+		topologyDumpFile          string
 
-	// collecttor args
-	disableInsecureSkipVerify bool
-	nsxURL                    string
-	nsxUser                   string
-	nsxPassword               string
-	resourcesInputFile        string
-	anonymize                 bool
-	resourcesDumpFile         string
-	topologyDumpFile          string
+		// analyzer args
+		skipAnalysis       bool
+		analysisOutputFile string
+		analysisVMsFilter  []string
+		analysisExplain    bool
 
-	// analyzer args
-	skipAnalysis       bool
-	analysisOutputFile string
-	analysisVMsFilter  []string
-	analysisExplain    bool
+		// synthesis args
+		synth             bool
+		synthesisDir      string
+		disjointHints     []string
+		inferHints        bool
+		synthesizeAdmin   bool
+		createDNSPolicies bool
+		endpointsMapping  *common.Endpoints
+		segmentsMapping   *common.Segments
 
-	// synthesis args
-	synth             bool
-	synthesisDir      string
-	disjointHints     []string
-	inferHints        bool
-	synthesizeAdmin   bool
-	createDNSPolicies bool
-	endpointsMapping  common.Endpoints
-	segmentsMapping   common.Segments
-
-	// lint args
-	lint bool
+		// lint args
+		lint bool*/
 
 	// runner state
-	nsxResources               *collector.ResourcesContainerModel
+	nsxResources *collector.ResourcesContainerModel // can be given as input..
+
+	// runner objects holding results
 	generatedK8sPolicies       []*v1.NetworkPolicy
 	generatedK8sAdminPolicies  []*v1alpha1.AdminNetworkPolicy
 	connectivityAnalysisOutput string
@@ -103,13 +106,13 @@ func (r *Runner) Run() (*Observations, error) {
 }
 
 func (r *Runner) initLogger() error {
-	if r.quietVerobsity {
-		r.logLevel = common.LogLevelFatal
+	if r.args.Quiet {
+		r.args.LogLevel = common.LogLevelFatal
 	}
-	if r.highVerobsity {
-		r.logLevel = common.LogLevelInfo // debug levels should be used explicitly
+	if r.args.Verbose {
+		r.args.LogLevel = common.LogLevelInfo // debug levels should be used explicitly
 	}
-	return logging.Init(r.logLevel, r.logFile)
+	return logging.Init(r.args.LogLevel, r.args.LogFile)
 }
 
 // runCollector should assign collected NSX resources into r.resources
@@ -119,7 +122,7 @@ func (r *Runner) runCollector() error {
 		return nil // skip collector
 	}
 	var err error
-	if r.resourcesInputFile != "" {
+	if r.args.ResourceInputFile != "" {
 		err = r.resourcesFromInputFile()
 	} else {
 		err = r.resourcesFromNSXEnv()
@@ -127,7 +130,7 @@ func (r *Runner) runCollector() error {
 	if err != nil {
 		return err
 	}
-	if r.anonymize {
+	if r.args.Anonymize {
 		if err := anonymizer.AnonymizeNsx(r.nsxResources); err != nil {
 			return err
 		}
@@ -139,16 +142,16 @@ func (r *Runner) runCollector() error {
 }
 
 func (r *Runner) runAnalyzer() error {
-	if r.skipAnalysis {
+	if r.args.Cmd != common.CmdAnalyze {
 		return nil
 	}
 
 	params := common.OutputParameters{
-		Format:   r.outputFormat,
-		FileName: r.analysisOutputFile,
-		VMs:      r.analysisVMsFilter,
-		Explain:  r.analysisExplain,
-		Color:    r.color,
+		Format:   r.args.OutputFormat,
+		FileName: r.args.OutputFile,
+		VMs:      r.args.OutputFilter,
+		Explain:  r.args.Explain,
+		Color:    r.args.Color,
 	}
 
 	logging.Infof("starting connectivity analysis")
@@ -166,36 +169,36 @@ func (r *Runner) runAnalyzer() error {
 }
 
 func (r *Runner) runLint() error {
-	if !r.lint {
+	if r.args.Cmd != common.CmdLint {
 		return nil
 	}
 
-	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color: r.color})
+	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color: r.args.Color})
 	if err != nil {
 		return err
 	}
-	lintReport := lint.LintReport(config, r.color) // currently only redundant rules analysis
+	lintReport := lint.LintReport(config, r.args.Color) // currently only redundant rules analysis
 	fmt.Println(lintReport)
 	return nil
 }
 
 func (r *Runner) runSynthesis() error {
-	if r.synthesisDir == "" && !r.synth {
+	if r.args.Cmd != common.CmdGenerate {
 		return nil
 	}
-	hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(r.disjointHints))}
-	for i, hint := range r.disjointHints {
+	hints := &symbolicexpr.Hints{GroupsDisjoint: make([][]string, len(r.args.DisjointHints))}
+	for i, hint := range r.args.DisjointHints {
 		hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 	}
 	opts := &synth_config.SynthesisOptions{
 		Hints:            hints,
-		InferHints:       r.inferHints,
-		SynthesizeAdmin:  r.synthesizeAdmin,
-		Color:            r.color,
-		CreateDNSPolicy:  r.createDNSPolicies,
-		FilterVMs:        r.analysisVMsFilter,
-		EndpointsMapping: r.endpointsMapping,
-		SegmentsMapping:  r.segmentsMapping,
+		InferHints:       r.args.InferDisjointHints,
+		SynthesizeAdmin:  r.args.SynthesizeAdmin,
+		Color:            r.args.Color,
+		CreateDNSPolicy:  r.args.CreateDNSPolicy,
+		FilterVMs:        r.args.OutputFilter,
+		EndpointsMapping: r.args.EndpointsMapping,
+		SegmentsMapping:  r.args.SegmentsMapping,
 	}
 	k8sResources, err := ocpvirt.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {
@@ -203,28 +206,28 @@ func (r *Runner) runSynthesis() error {
 	}
 	r.generatedK8sPolicies = k8sResources.NetworkPolicies
 	r.generatedK8sAdminPolicies = k8sResources.AdminNetworkPolicies
-	if r.synthesisDir == "" {
+	if r.args.SynthesisDir == "" {
 		return nil
 	}
-	return k8sResources.WriteResourcesToDir(r.synthesisDir)
+	return k8sResources.WriteResourcesToDir(r.args.SynthesisDir)
 }
 
 func (r *Runner) resourcesToFile() error {
-	if r.resourcesDumpFile == "" {
+	if r.args.ResourceDumpFile == "" {
 		return nil
 	}
 	jsonString, err := r.nsxResources.ToJSONString()
 	if err != nil {
 		return err
 	}
-	return common.WriteToFile(r.resourcesDumpFile, jsonString)
+	return common.WriteToFile(r.args.ResourceDumpFile, jsonString)
 }
 
 func (r *Runner) resourcesTopologyToFile() error {
-	if r.topologyDumpFile == "" {
+	if r.args.TopologyDumpFile == "" {
 		return nil
 	}
-	topology, err := r.nsxResources.OutputTopologyGraph(r.topologyDumpFile, r.outputFormat)
+	topology, err := r.nsxResources.OutputTopologyGraph(r.args.TopologyDumpFile, r.args.OutputFormat)
 	if err != nil {
 		return err
 	}
@@ -234,8 +237,8 @@ func (r *Runner) resourcesTopologyToFile() error {
 }
 
 func (r *Runner) resourcesFromInputFile() error {
-	logging.Infof("reading input NSX config file %s", r.resourcesInputFile)
-	b, err := os.ReadFile(r.resourcesInputFile)
+	logging.Infof("reading input NSX config file %s", r.args.ResourceInputFile)
+	b, err := os.ReadFile(r.args.ResourceInputFile)
 	if err != nil {
 		return err
 	}
@@ -247,7 +250,7 @@ func (r *Runner) resourcesFromInputFile() error {
 }
 
 func (r *Runner) resourcesFromNSXEnv() error {
-	server, err := collector.GetNSXServerDate(r.nsxURL, r.nsxUser, r.nsxPassword, r.disableInsecureSkipVerify)
+	server, err := collector.GetNSXServerDate(r.args.Host, r.args.User, r.args.Password, r.args.DisableInsecureSkipVerify)
 	if err != nil {
 		return err
 	}
@@ -258,187 +261,228 @@ func (r *Runner) resourcesFromNSXEnv() error {
 	return nil
 }
 
+func newDefaultRunner() *Runner {
+	r := Runner{
+		args: &common.InputArgs{},
+	}
+	r.args.SetDefault()
+	return &r
+}
+
 func NewRunnerWithOptionsList(opts ...RunnerOption) (r *Runner, err error) {
-	r = &Runner{}
-	// default values for enam flags
-	r.outputFormat.SetDefault()
-	r.endpointsMapping.SetDefault()
-	r.segmentsMapping.SetDefault()
+	r = newDefaultRunner()
 	for _, o := range opts {
-		o(r)
+		if err := o(r); err != nil {
+			return nil, err
+		}
 	}
 	return r, nil
 }
 
 // RunnerOption is the type for specifying options for Runner,
 // using Golang's Options Pattern (https://golang.cafe/blog/golang-functional-options-pattern.html).
-type RunnerOption func(*Runner)
+type RunnerOption func(*Runner) error
 
-func WithLogFile(l string) RunnerOption {
-	return func(r *Runner) {
-		r.logFile = l
+func WithCmd(c string) RunnerOption {
+	return func(r *Runner) error {
+		switch c {
+		case common.CmdAnalyze, common.CmdCollect, common.CmdLint, common.CmdGenerate:
+			r.args.Cmd = c
+		default:
+			return fmt.Errorf("unknown command: %s", c)
+		}
+		return nil
 	}
 }
 
-func WithLogLevel(l common.LogLevel) RunnerOption {
-	return func(r *Runner) {
-		r.logLevel = l
+func WithLogFile(l string) RunnerOption {
+	return func(r *Runner) error {
+		r.args.LogFile = l
+		return nil
+	}
+}
+
+func WithLogLevel(l string) RunnerOption {
+	return func(r *Runner) error {
+		var logLevel common.LogLevel
+		if err := logLevel.Set(l); err != nil {
+			return err
+		}
+		r.args.LogLevel = logLevel
+		return nil
 	}
 }
 
 func WithNSXURL(l string) RunnerOption {
-	return func(r *Runner) {
-		r.nsxURL = l
+	return func(r *Runner) error {
+		r.args.Host = l
+		return nil
 	}
 }
 
 func WithNSXPassword(l string) RunnerOption {
-	return func(r *Runner) {
-		r.nsxPassword = l
+	return func(r *Runner) error {
+		r.args.Password = l
+		return nil
 	}
 }
 
 func WithNSXUser(l string) RunnerOption {
-	return func(r *Runner) {
-		r.nsxUser = l
+	return func(r *Runner) error {
+		r.args.User = l
+		return nil
 	}
 }
 
 func WithHighVerbosity(verbose bool) RunnerOption {
-	return func(r *Runner) {
-		r.highVerobsity = verbose
+	return func(r *Runner) error {
+		r.args.Verbose = verbose
+		return nil
 	}
 }
 
 func WithQuietVerbosity(quiet bool) RunnerOption {
-	return func(r *Runner) {
-		r.quietVerobsity = quiet
+	return func(r *Runner) error {
+		r.args.Quiet = quiet
+		return nil
 	}
 }
 
 func WithResourcesInputFile(l string) RunnerOption {
-	return func(r *Runner) {
-		r.resourcesInputFile = l
+	return func(r *Runner) error {
+		r.args.ResourceInputFile = l
+		return nil
 	}
 }
 
 func WithResourcesAnonymization(anonymize bool) RunnerOption {
-	return func(r *Runner) {
-		r.anonymize = anonymize
+	return func(r *Runner) error {
+		r.args.Anonymize = anonymize
+		return nil
 	}
 }
 
 func WithResourcesDumpFile(l string) RunnerOption {
-	return func(r *Runner) {
-		r.resourcesDumpFile = l
+	return func(r *Runner) error {
+		r.args.ResourceDumpFile = l
+		return nil
 	}
 }
 
 func WithTopologyDumpFile(l string) RunnerOption {
-	return func(r *Runner) {
-		r.topologyDumpFile = l
+	return func(r *Runner) error {
+		r.args.TopologyDumpFile = l
+		return nil
 	}
 }
 
-func WithOutputFormat(l common.OutFormat) RunnerOption {
-	return func(r *Runner) {
-		r.outputFormat = l
-	}
-}
-
-func WithSkipAnalysis(skip bool) RunnerOption {
-	return func(r *Runner) {
-		r.skipAnalysis = skip
+func WithOutputFormat(l string) RunnerOption {
+	return func(r *Runner) error {
+		var f common.OutFormat
+		if err := f.Set(l); err != nil {
+			return err
+		}
+		r.args.OutputFormat = f
+		return nil
 	}
 }
 
 func WithAnalysisOutputFile(l string) RunnerOption {
-	return func(r *Runner) {
-		r.analysisOutputFile = l
+	return func(r *Runner) error {
+		r.args.OutputFile = l
+		return nil
 	}
 }
 
 func WithOutputColor(color bool) RunnerOption {
-	return func(r *Runner) {
-		r.color = color
+	return func(r *Runner) error {
+		r.args.Color = color
+		return nil
 	}
 }
 
 func WithAnalysisVMsFilter(l []string) RunnerOption {
-	return func(r *Runner) {
-		r.analysisVMsFilter = l
+	return func(r *Runner) error {
+		r.args.OutputFilter = l
+		return nil
 	}
 }
 
 func WithAnalysisExplain(explain bool) RunnerOption {
-	return func(r *Runner) {
-		r.analysisExplain = explain
+	return func(r *Runner) error {
+		r.args.Explain = explain
+		return nil
 	}
 }
 
 func WithSynthesisDir(l string) RunnerOption {
-	return func(r *Runner) {
-		r.synthesisDir = l
+	return func(r *Runner) error {
+		r.args.SynthesisDir = l
+		return nil
 	}
 }
 
 func WithSynthesisHints(l []string) RunnerOption {
-	return func(r *Runner) {
-		r.disjointHints = l
+	return func(r *Runner) error {
+		r.args.DisjointHints = l
+		return nil
 	}
 }
 
 func WithSynthAdminPolicies(enableAdmin bool) RunnerOption {
-	return func(r *Runner) {
-		r.synthesizeAdmin = enableAdmin
-	}
-}
-
-func WithSynth(synth bool) RunnerOption {
-	return func(r *Runner) {
-		r.synth = synth
+	return func(r *Runner) error {
+		r.args.SynthesizeAdmin = enableAdmin
+		return nil
 	}
 }
 
 func WithSynthDNSPolicies(create bool) RunnerOption {
-	return func(r *Runner) {
-		r.createDNSPolicies = create
+	return func(r *Runner) error {
+		r.args.CreateDNSPolicy = create
+		return nil
 	}
 }
 
 // WithNSXResources will make runner skip runCollector() stage
 func WithNSXResources(rc *collector.ResourcesContainerModel) RunnerOption {
-	return func(r *Runner) {
+	return func(r *Runner) error {
 		r.nsxResources = rc
+		return nil
 	}
 }
 
 func WithDisableInsecureSkipVerify(disableInsecureSkipVerify bool) RunnerOption {
-	return func(r *Runner) {
-		r.disableInsecureSkipVerify = disableInsecureSkipVerify
+	return func(r *Runner) error {
+		r.args.DisableInsecureSkipVerify = disableInsecureSkipVerify
+		return nil
 	}
 }
 
-func WithLint(lintCmd bool) RunnerOption {
-	return func(r *Runner) {
-		r.lint = lintCmd
+func WithEndpointsMapping(endpoints string) RunnerOption {
+	return func(r *Runner) error {
+		var endpointsValue common.Endpoints
+		if err := endpointsValue.Set(endpoints); err != nil {
+			return err
+		}
+		r.args.EndpointsMapping = endpointsValue
+		return nil
 	}
 }
 
-func WithEndpointsMapping(endpoints common.Endpoints) RunnerOption {
-	return func(r *Runner) {
-		r.endpointsMapping = endpoints
-	}
-}
-
-func WithSegmentsMapping(segments common.Segments) RunnerOption {
-	return func(r *Runner) {
-		r.segmentsMapping = segments
+func WithSegmentsMapping(segments string) RunnerOption {
+	return func(r *Runner) error {
+		var segmentsValue common.Segments
+		if err := segmentsValue.Set(segments); err != nil {
+			return err
+		}
+		r.args.SegmentsMapping = segmentsValue
+		return nil
 	}
 }
 
 func WithInferHints(inferHints bool) RunnerOption {
-	return func(r *Runner) {
-		r.inferHints = inferHints
+	return func(r *Runner) error {
+		r.args.InferDisjointHints = inferHints
+		return nil
 	}
 }
