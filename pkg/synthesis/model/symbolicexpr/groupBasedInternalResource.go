@@ -152,8 +152,32 @@ func debugMsg(group, text string) {
 // gets here only if expression is non-nil and of length > 1
 func GetConjunctionFromExpr(config *configuration.Config,
 	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
-	const nonTrivialExprLength = 3
 	exprVal := *expr
+	// iterates exprVal, relying on the assumption that even places (starting with 0) holds ConjunctionExpr or NestedExpr
+	// and odd places holds ConditionExpression
+	res := []*Conjunction{}
+	for i, subExpr := range exprVal {
+		var lastCond *nsx.ConjunctionOperatorConjunctionOperator
+		if i%2 == 0 { // even: ConjunctionExpr or NestedExpr
+			newTerm := getTermForExprElement(config, isExcluded, group, subExpr)
+			if i == 0 {
+				continue
+			}
+			if *lastCond == nsx.ConjunctionOperatorConjunctionOperatorAND {
+				_ = newTerm
+				// res =... andAtomicToConjunction(condTag1, condTag2)
+				// todo: expand andAtomicToConjunction; the first parm should be []Conjunction instead of []atomic
+			} else {
+				// orAtomicToConjunction(append(condTag1, condTag2...))
+				// todo: expand orAtomicToConjunction; the first parm should be []Conjunction instead of []atomic
+			}
+		} else {
+			lastCond = getConjunctionOperator(isExcluded, subExpr, group)
+		}
+		return res
+	}
+	// todo: remove old code
+	const nonTrivialExprLength = 3
 	condTag1 := getTermForExprElement(config, isExcluded, group, exprVal[0])
 	if condTag1 == nil {
 		return nil
