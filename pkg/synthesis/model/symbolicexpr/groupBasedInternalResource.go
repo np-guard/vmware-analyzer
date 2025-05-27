@@ -122,7 +122,11 @@ func debugMsg(group, text string) {
 	logging.Debugf("group's %s defining expression %s ", group, text)
 }
 
-// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
+// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression.
+// An Expression is of the for x_1 op_1 x_2 op_2 ..op_{n-1} x_n where:
+// 1. op_i is either "OR" or "AND"
+// 2. Each x_i is either a "conjunction expression" or a "nested expression", where:
+// a "conjunction expression" is one of: tag/negation of a tag/group/negation of a group
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
 func GetConjunctionFromExpr(config *configuration.Config,
