@@ -103,8 +103,29 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-func getTermForExprElement(config *configuration.Config, isExcluded bool, elem collector.ExpressionElement,
-	group string) []atomic {
+// gets []atomic for nested expression which is either a nested expression, a path or a cond;
+// a nested expression is AND of (up to 6) paths or conds
+func getTermForExprElement(config *configuration.Config, isExcluded bool, group string,
+	elem collector.ExpressionElement) []atomic {
+	nested, okNested := elem.(*collector.NestedExpression)
+	if okNested {
+		res := []atomic{}
+		for _, subExpr := range nested.Expressions {
+			newTerm := getTermFromAtomicExpr(config, isExcluded, group, subExpr)
+			if newTerm == nil {
+				return nil
+			}
+			res = append(res, newTerm...)
+		}
+		return res
+	}
+	// not a nested expression
+	return getTermFromAtomicExpr(config, isExcluded, group, elem)
+}
+
+// gets []atomic from Condition or path expression
+func getTermFromAtomicExpr(config *configuration.Config, isExcluded bool, group string,
+	elem collector.ExpressionElement) []atomic {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
@@ -133,7 +154,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
 	const nonTrivialExprLength = 3
 	exprVal := *expr
-	condTag1 := getTermForExprElement(config, isExcluded, exprVal[0], group)
+	condTag1 := getTermForExprElement(config, isExcluded, group, exprVal[0])
 	if condTag1 == nil {
 		return nil
 	}
@@ -141,7 +162,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 		return orAtomicToConjunction(condTag1)
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getTermForExprElement(config, isExcluded, exprVal[2], group)
+		condTag2 := getTermForExprElement(config, isExcluded, group, exprVal[2])
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
