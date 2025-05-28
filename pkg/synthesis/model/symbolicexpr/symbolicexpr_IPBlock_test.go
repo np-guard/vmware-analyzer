@@ -245,7 +245,7 @@ func TestProcessTautologyWithExternals(t *testing.T) {
 	require.Equal(t, false, Conj4AfterProcess[0].isAllGroup())
 }
 
-func str(cs []*Term) string {
+func str(cs DNF) string {
 	res := make([]string, len(cs))
 	for i, conj := range cs {
 		res[i] = conj.String()
