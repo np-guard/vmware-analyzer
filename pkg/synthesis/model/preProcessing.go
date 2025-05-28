@@ -17,9 +17,9 @@ import (
 // PreProcessing convert policy from spec to symbolicPolicy struct
 func PreProcessing(config *configuration.Config,
 	categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy,
-	groupToConjunctions map[string][]*symbolicexpr.Conjunction) {
+	groupToConjunctions map[string][]*symbolicexpr.Term) {
 	categoryToPolicy = map[collector.DfwCategory]*SymbolicPolicy{}
-	groupToConjunctions = map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
+	groupToConjunctions = map[string][]*symbolicexpr.Term{} // caching groups' Conjunctions
 	for _, category := range categoriesSpecs {
 		categoryPolicy := SymbolicPolicy{}
 		if len(category.EvaluatedRules.OutboundRules)+len(category.EvaluatedRules.InboundRules) == 0 {
@@ -37,7 +37,7 @@ func PreProcessing(config *configuration.Config,
 
 func convertRulesToSymbolicPaths(config *configuration.Config, isInbound bool,
 	rules []*dfw.EvaluatedFWRule, category collector.DfwCategory,
-	groupToConjunctions map[string][]*symbolicexpr.Conjunction) []*SymbolicRule {
+	groupToConjunctions map[string][]*symbolicexpr.Term) []*SymbolicRule {
 	res := make([]*SymbolicRule, len(rules))
 	for i, rule := range rules {
 		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(config, isInbound, rule.RuleObj, groupToConjunctions)

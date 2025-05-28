@@ -15,12 +15,12 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 	return nil
 }
 
-// Evaluates group and translates it into []*Conjunction
-// s.t. if []*Conjunction = [*C_1, .... *C_n] then the symbolic representation of the group: C_1 Or C_2 ... C_n
-// If group has no expr or evaluation expr fails then uses the group names in Conjunction
+// Evaluates group and translates it into []*Term
+// s.t. if []*Term = [*C_1, .... *C_n] then the symbolic representation of the group: C_1 Or C_2 ... C_n
+// If group has no expr or evaluation expr fails then uses the group names in Term
 func getConjunctionForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
-	groupToConjunctions map[string][]*Conjunction, ruleID int) []*Conjunction {
-	res := []*Conjunction{}
+	groupToConjunctions map[string][]*Term, ruleID int) []*Term {
+	res := []*Term{}
 	for _, group := range groups {
 		key := group.Name()
 		if isExclude {
@@ -32,8 +32,8 @@ func getConjunctionForGroups(config *configuration.Config, isExclude bool, group
 			continue
 		}
 		// not in cache
-		// default: Conjunction defined via group only
-		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
+		// default: Term defined via group only
+		groupConj := []*Term{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
 		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
@@ -104,15 +104,15 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-// return  []*Conjunction which is a symbolic presentation of the expression element
-// []*Conjunction{C_1,...C_n} represents c_1 Or C_2 Or.. Or C_n
+// return  []*Term which is a symbolic presentation of the expression element
+// []*Term{C_1,...C_n} represents c_1 Or C_2 Or.. Or C_n
 func getConjunctionsForExprElement(config *configuration.Config, isExcluded bool, group string,
-	elem collector.ExpressionElement) []*Conjunction {
+	elem collector.ExpressionElement) []*Term {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
 	case okCond:
-		return []*Conjunction{{getAtomicsForCondition(isExcluded, cond, group)}}
+		return []*Term{{getAtomicsForCondition(isExcluded, cond, group)}}
 	case okPath:
 		return getCojunctionsOfPath(config, isExcluded, path, group)
 	default:
@@ -125,11 +125,11 @@ func debugMsg(group, text string) {
 	logging.Debugf("group's %s defining expression %s ", group, text)
 }
 
-// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
+// GetConjunctionFromExpr returns the []*Term corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
 func GetConjunctionFromExpr(config *configuration.Config,
-	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
+	isExcluded bool, expr *collector.Expression, group string) []*Term {
 	exprVal := *expr
 	const nonTrivialExprLength = 3
 	condTag1 := getConjunctionsForExprElement(config, isExcluded, group, exprVal[0])
@@ -154,9 +154,9 @@ func GetConjunctionFromExpr(config *configuration.Config,
 	return nil
 }
 
-// ANDing a cartesian products of two []*Conjunction
-func andConjunctions(conjunctions1, conjunctions2 []*Conjunction) []*Conjunction {
-	res := []*Conjunction{}
+// ANDing a cartesian products of two []*Term
+func andConjunctions(conjunctions1, conjunctions2 []*Term) []*Term {
+	res := []*Term{}
 	for _, conj1 := range conjunctions1 {
 		for _, conj2 := range conjunctions2 {
 			var andConj = *conj1.copy()
@@ -170,16 +170,16 @@ func andConjunctions(conjunctions1, conjunctions2 []*Conjunction) []*Conjunction
 // returns the []*conjunction corresponding to a given condition on []path
 // []path represents ORing the paths of the slice
 func getCojunctionsOfPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
-	group string) []*Conjunction {
-	res := []*Conjunction{}
+	group string) []*Term {
+	res := []*Term{}
 	for _, path := range pathExpr.Paths {
 		groupOfPath, isGroup := config.PathToGroupsMap[path]
 		segmentOfPath, isSegment := config.PathToSegmentsMap[path]
 		switch {
 		case isGroup:
-			res = append(res, &Conjunction{groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
+			res = append(res, &Term{groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		case isSegment:
-			res = append(res, &Conjunction{SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
+			res = append(res, &Term{SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		default:
 			debugMsg(group, fmt.Sprintf("group %s includes a path %s which is not currently supported "+
 				"(currently supported: group or segment) ", group, path))

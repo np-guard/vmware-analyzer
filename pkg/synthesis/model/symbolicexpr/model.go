@@ -97,13 +97,13 @@ type atomic interface {
 	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }
 
-// Conjunction of []atomic
-type Conjunction []atomic
+// Term of []atomic
+type Term []atomic
 
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
-	Src  Conjunction
-	Dst  Conjunction
+	Src  Term
+	Dst  Term
 	Conn *netset.TransportSet
 }
 
