@@ -100,6 +100,9 @@ type atomic interface {
 // Conjunction of []atomic
 type Conjunction []atomic
 
+// disjunction of []atomic
+type disjunction []atomic
+
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
 	Src  Conjunction

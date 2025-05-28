@@ -104,28 +104,7 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-// gets []atomic for nested expression which is either a nested expression, a path or a cond;
-// a nested expression is AND of (up to 6) paths or conds
 func getTermForExprElement(config *configuration.Config, isExcluded bool, group string,
-	elem collector.ExpressionElement) []atomic {
-	nested, okNested := elem.(*collector.NestedExpression)
-	if okNested {
-		res := []atomic{}
-		for _, subExpr := range nested.Expressions {
-			newTerm := getTermFromAtomicExpr(config, isExcluded, group, subExpr)
-			if newTerm == nil {
-				return nil
-			}
-			res = append(res, newTerm...)
-		}
-		return res
-	}
-	// not a nested expression
-	return getTermFromAtomicExpr(config, isExcluded, group, elem)
-}
-
-// gets []atomic from Condition or path expression
-func getTermFromAtomicExpr(config *configuration.Config, isExcluded bool, group string,
 	elem collector.ExpressionElement) []atomic {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
@@ -144,11 +123,7 @@ func debugMsg(group, text string) {
 	logging.Debugf("group's %s defining expression %s ", group, text)
 }
 
-// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression.
-// An Expression is of the for x_1 op_1 x_2 op_2 ..op_{n-1} x_n where:
-// 1. op_i is either "OR" or "AND"
-// 2. Each x_i is either a "conjunction expression" or a "nested expression", where:
-// a "conjunction expression" is one of: tag/negation of a tag/group/negation of a group
+// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
 func GetConjunctionFromExpr(config *configuration.Config,
@@ -192,7 +167,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 			return nil
 		}
 		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
-			return conjunctionsAndAtomic(condTag1, condTag2)
+			return andAtomicToConjunction(condTag1, condTag2)
 		}
 		return orAtomicToConjunction(append(condTag1, condTag2...))
 	}
@@ -209,8 +184,8 @@ func orAtomicToConjunction(atomics []atomic) []*Conjunction {
 	return res
 }
 
-// ANDing a cartesian products of Conjunction and []atomic
-func conjunctionsAndAtomic(atomics1, atomics2 []atomic) []*Conjunction {
+// ANDing a cartesian products of two []atomic
+func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
 	res := []*Conjunction{}
 	for _, atomic1 := range atomics1 {
 		for _, atomic2 := range atomics2 {
@@ -220,7 +195,7 @@ func conjunctionsAndAtomic(atomics1, atomics2 []atomic) []*Conjunction {
 	return res
 }
 
-// return the []atomic corresponding to a given condition
+// returns the todo disjunction []atomic corresponding to a given condition
 func getAtomicsForPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
 	group string) []atomic {
 	res := []atomic{}
