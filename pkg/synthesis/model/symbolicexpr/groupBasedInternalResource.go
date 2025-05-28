@@ -112,7 +112,7 @@ func getConjunctionsForExprElement(config *configuration.Config, isExcluded bool
 	case okCond:
 		return DNF{{getAtomicsForCondition(isExcluded, cond, group)}}
 	case okPath:
-		return getCojunctionsOfPath(config, isExcluded, path, group)
+		return getDNFOfPath(config, isExcluded, path, group)
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
@@ -151,24 +151,23 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 	return nil
 }
 
-// ANDing a cartesian products of two []*Term
-func andConjunctions(conjunctions1, conjunctions2 []*Term) []*Term {
-	res := []*Term{}
-	for _, conj1 := range conjunctions1 {
-		for _, conj2 := range conjunctions2 {
-			var andConj = *conj1.copy()
-			andConj = append(andConj, *conj2...)
-			res = append(res, &andConj)
+// ANDing two DNFs
+func andConjunctions(dnf1, dnf2 DNF) DNF {
+	res := DNF{}
+	for _, term1 := range dnf1 {
+		for _, term2 := range dnf2 {
+			var andTerms = *term1.copy()
+			andTerms = append(andTerms, *term2...)
+			res = append(res, &andTerms)
 		}
 	}
 	return res
 }
 
-// returns the []*conjunction corresponding to a given condition on []path
-// []path represents ORing the paths of the slice
-func getCojunctionsOfPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
-	group string) []*Term {
-	res := []*Term{}
+// returns the DNF corresponding to a given condition on []path
+func getDNFOfPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
+	group string) DNF {
+	res := DNF{}
 	for _, path := range pathExpr.Paths {
 		groupOfPath, isGroup := config.PathToGroupsMap[path]
 		segmentOfPath, isSegment := config.PathToSegmentsMap[path]
