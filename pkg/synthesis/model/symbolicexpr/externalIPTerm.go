@@ -124,29 +124,29 @@ func (externalIPTerm) IsAllExternal() bool {
 // 2. External IP addr - these are further translated into externalIPTerm
 // 3. Segments - these are further translated in segmentTerm
 // 4. Internal IP addr - in case not all VMs are covered by segments, the *entire* IP is handled as internalIPTerm
-func getDNFForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExclude bool) (externalIPBlocksConjunctions,
-	internalIPBlocksConjunctions DNF, isTautology bool) {
-	externalIPBlocksConjunctions = DNF{}
+func getDNFForIPBlock(ruleIPBlocks []*topology.RuleIPBlock, isExclude bool) (externalIPBlocksDNF,
+	internalIPBlocksDNFs DNF, isTautology bool) {
+	externalIPBlocksDNF = DNF{}
 	for _, ruleIPBlock := range ruleIPBlocks {
 		if ruleIPBlock.IsAll() {
 			return DNF{{&tautology{}}}, nil, true
 		}
 		if ruleIPBlock.HasExternal() {
 			externalIPBlock := &topology.IPBlock{Block: ruleIPBlock.ExternalRange, OriginalIP: ruleIPBlock.OriginalIP}
-			externalIPBlocksConjunctions = append(externalIPBlocksConjunctions,
+			externalIPBlocksDNF = append(externalIPBlocksDNF,
 				&Term{&externalIPTerm{atomicTerm: atomicTerm{neg: isExclude}, IPBlock: externalIPBlock}})
 		}
 		for _, segment := range ruleIPBlock.Segments {
 			newSegmentTerm := NewSegmentTerm(segment, isExclude)
-			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Term{newSegmentTerm})
+			internalIPBlocksDNFs = append(internalIPBlocksDNFs, &Term{newSegmentTerm})
 		}
 		// if there is *any* VM not in subnet then the *entire* IP is handled as internalIPTerm
 		if ruleIPBlock.HasInternalIPNotInSegments() {
 			newInternalIPTerm := NewInternalIPTerm(ruleIPBlock, isExclude)
-			internalIPBlocksConjunctions = append(internalIPBlocksConjunctions, &Term{newInternalIPTerm})
+			internalIPBlocksDNFs = append(internalIPBlocksDNFs, &Term{newInternalIPTerm})
 		}
 	}
-	return externalIPBlocksConjunctions, internalIPBlocksConjunctions, isTautology
+	return externalIPBlocksDNF, internalIPBlocksDNFs, isTautology
 }
 
 func (externalIPTerm) getInternalBlock() *netset.IPBlock {

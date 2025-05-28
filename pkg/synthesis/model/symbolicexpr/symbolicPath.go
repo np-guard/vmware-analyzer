@@ -196,7 +196,7 @@ func updateSrcOrDstDNF(isAllGroups bool, srcOrDstDNF, scopeDNF *DNF) {
 
 // given details of Src/Dst returns symbolic representation DNF
 func getDNFSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
-	groupToConjunctions map[string]DNF, isExclude, isExternalRelevant,
+	groupToDNF map[string]DNF, isExclude, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res DNF) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
 		getDNFForIPBlock(ruleBlocks, isExclude)
@@ -223,7 +223,7 @@ func getDNFSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 	case isAllGroups && !isExclude:
 		res = append(res, &Term{allGroup{}}) // if "Any" group then this is the only relevant internal resource
 	default:
-		res = append(res, getDNFForGroups(config, isExclude, groups, groupToConjunctions, rule.RuleID)...)
+		res = append(res, getDNFForGroups(config, isExclude, groups, groupToDNF, rule.RuleID)...)
 	}
 	if len(res) == 0 {
 		fmt.Printf("debug")

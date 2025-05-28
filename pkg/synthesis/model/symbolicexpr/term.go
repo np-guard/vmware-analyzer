@@ -100,7 +100,7 @@ func (t *Term) removeRedundant(hints *Hints) Term {
 	redundantRemoved := false
 	for _, atom := range *t {
 		// tautology is both external and internal, thus the "superset" redundancy does not apply to it
-		if atom.IsTautology() || (!atom.IsAllGroups() && !atomRedundantInConj(atom, t, hints)) {
+		if atom.IsTautology() || (!atom.IsAllGroups() && !atomRedundantInTerm(atom, t, hints)) {
 			newC = append(newC, atom)
 		} else {
 			redundantRemoved = true
@@ -114,11 +114,11 @@ func (t *Term) removeRedundant(hints *Hints) Term {
 
 // atomic atom is a redundant in Term c, if it is a superset of one of c's terms; this applies to tagTerm and
 // groupTerm; as to ipBlockTerm - there is at most one such term which is not redundant by design
-func atomRedundantInConj(atom atomic, c *Term, hints *Hints) bool {
-	if len(*c) == 0 { // nil Term is equiv to tautology
+func atomRedundantInTerm(atom atomic, t *Term, hints *Hints) bool {
+	if len(*t) == 0 { // nil Term is equiv to tautology
 		return false
 	}
-	for _, otherAtom := range *c {
+	for _, otherAtom := range *t {
 		if atom.String() == otherAtom.String() {
 			continue
 		}
@@ -273,22 +273,22 @@ func (t *Term) isSuperset(other *Term, hints *Hints) bool {
 		return false
 	}
 	for _, atom := range *t {
-		if !other.contains(atom) && !conjSupersetOfAtom(other, atom, hints) {
+		if !other.contains(atom) && !termSupersetOfAtom(other, atom, hints) {
 			return false
 		}
 	}
 	return true
 }
 
-// Term c is a superset of atomic atom if any resource satisfying atom also satisfies c
+// Term t is a superset of atomic atom if any resource satisfying atom also satisfies c
 // this is the case if each of c's term is a superset of atom
 // e.g.,  1.2.1.0/8 is a superset of 1.2.1.0/16;
 // given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
-func conjSupersetOfAtom(c *Term, atom atomic, hints *Hints) bool {
-	if len(*c) == 0 { // nil Term is equiv to tautology
+func termSupersetOfAtom(t *Term, atom atomic, hints *Hints) bool {
+	if len(*t) == 0 { // nil Term is equiv to tautology
 		return false
 	}
-	for _, otherAtom := range *c {
+	for _, otherAtom := range *t {
 		if !otherAtom.supersetOf(atom, hints) {
 			return false
 		}
@@ -323,19 +323,19 @@ func (t *Term) processTautology(externalRelevant bool) DNF {
 	var atomicsWOTautology []atomic
 	atomicsWOTautology = append(atomicsWOTautology, (*t)[:tautIndex]...)
 	atomicsWOTautology = append(atomicsWOTautology, (*t)[tautIndex+1:]...)
-	var conjWOTautology Term = atomicsWOTautology
+	var termWOTautology Term = atomicsWOTautology
 	// by design (in ComputeAllowGivenDenies()), in addition to the tautology, we either have externals *xor* internals
 	if t.hasExternalIPBlockTerm() {
 		// Term of tautology and externals. Divided to two terms: one of *allGroup* and the non-tautology externals
-		var allGroupConj = Term{allGroup{}}
-		return DNF{&conjWOTautology, &allGroupConj}
+		var allGroupTerm = Term{allGroup{}}
+		return DNF{&termWOTautology, &allGroupTerm}
 	}
 	// Term of tautology and internals. Divided to two Terms: one of *allExternal* and the non-tautology externals
 	if !externalRelevant {
-		return DNF{&conjWOTautology}
+		return DNF{&termWOTautology}
 	}
-	var allExtrenalConj = Term{allExternal{}}
-	return DNF{&conjWOTautology, &allExtrenalConj}
+	var allExtrenalTerms = Term{allExternal{}}
+	return DNF{&termWOTautology, &allExtrenalTerms}
 }
 
 // hasOnlyIPBlockTerms returns true if all terms in Term c are based on IPBlocks

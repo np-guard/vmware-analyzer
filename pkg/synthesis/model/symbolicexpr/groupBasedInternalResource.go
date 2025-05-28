@@ -26,28 +26,28 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 			key = "not-" + key
 		}
 		// todo: treat negation properly
-		if cachedGroupConj, ok := groupToDNF[key]; ok {
-			res = append(res, cachedGroupConj...)
+		if cachedGroupDNF, ok := groupToDNF[key]; ok {
+			res = append(res, cachedGroupDNF...)
 			continue
 		}
 		// not in cache
 		// default: Term defined via group only
-		groupConj := DNF{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
+		groupDNF := DNF{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
 		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
 			tagConj := GetDNFFromExpr(config, isExclude, &group.Expression, group.Name())
 			if tagConj != nil {
-				groupConj = tagConj
+				groupDNF = tagConj
 			} else {
 				logging.Debugf("for %s", synthesisUseGroup)
 			}
 		} else {
 			logging.Debugf("No expression is attached to %s", synthesisUseGroup)
 		}
-		groupToDNF[key] = groupConj
-		res = append(res, groupConj...)
+		groupToDNF[key] = groupDNF
+		res = append(res, groupDNF...)
 	}
 	return res
 }

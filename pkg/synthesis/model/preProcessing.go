@@ -19,7 +19,7 @@ func PreProcessing(config *configuration.Config,
 	categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy,
 	groupToDNF map[string]symbolicexpr.DNF) {
 	categoryToPolicy = map[collector.DfwCategory]*SymbolicPolicy{}
-	groupToDNF = map[string]symbolicexpr.DNF{} // caching groups' Conjunctions
+	groupToDNF = map[string]symbolicexpr.DNF{} // caching groups' DNFs
 	for _, category := range categoriesSpecs {
 		categoryPolicy := SymbolicPolicy{}
 		if len(category.EvaluatedRules.OutboundRules)+len(category.EvaluatedRules.InboundRules) == 0 {
