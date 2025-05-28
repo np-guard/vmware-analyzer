@@ -193,6 +193,7 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 	}
 }
 
+// given details of Src/Dst returns []*Conjunction = [*C_1, .... *C_n] symbolic representation of it: C_1 Or C_2 ... C_n
 func getConjunctionsSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 	groupToConjunctions map[string][]*Conjunction, isExclude, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {

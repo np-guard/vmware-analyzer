@@ -16,7 +16,8 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 }
 
 // Evaluates group and translates it into []*Conjunction
-// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
+// s.t. if []*Conjunction = [*C_1, .... *C_n] then the symbolic representation of the group: C_1 Or C_2 ... C_n
+// If group has no expr or evaluation expr fails then uses the group names in Conjunction
 func getConjunctionForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
 	groupToConjunctions map[string][]*Conjunction, ruleID int) []*Conjunction {
 	res := []*Conjunction{}
@@ -155,7 +156,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 	exprVal := *expr
 	// iterates exprVal, relying on the assumption that even places (starting with 0) holds ConjunctionExpr or NestedExpr
 	// and odd places holds ConditionExpression
-	res := []*Conjunction{}
+	/*res := []*Conjunction{}
 	for i, subExpr := range exprVal {
 		var lastCond *nsx.ConjunctionOperatorConjunctionOperator
 		if i%2 == 0 { // even: ConjunctionExpr or NestedExpr
@@ -165,8 +166,8 @@ func GetConjunctionFromExpr(config *configuration.Config,
 			}
 			if *lastCond == nsx.ConjunctionOperatorConjunctionOperatorAND {
 				_ = newTerm
-				// res =... andAtomicToConjunction(condTag1, condTag2)
-				// todo: expand andAtomicToConjunction; the first parm should be []Conjunction instead of []atomic
+				// res =... conjunctionsAndAtomic(condTag1, condTag2)
+				// todo: expand conjunctionsAndAtomic; the first parm should be []Conjunction instead of []atomic
 			} else {
 				// orAtomicToConjunction(append(condTag1, condTag2...))
 				// todo: expand orAtomicToConjunction; the first parm should be []Conjunction instead of []atomic
@@ -175,7 +176,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 			lastCond = getConjunctionOperator(isExcluded, subExpr, group)
 		}
 		return res
-	}
+	}*/
 	// todo: remove old code
 	const nonTrivialExprLength = 3
 	condTag1 := getTermForExprElement(config, isExcluded, group, exprVal[0])
@@ -191,7 +192,7 @@ func GetConjunctionFromExpr(config *configuration.Config,
 			return nil
 		}
 		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
-			return andAtomicToConjunction(condTag1, condTag2)
+			return conjunctionsAndAtomic(condTag1, condTag2)
 		}
 		return orAtomicToConjunction(append(condTag1, condTag2...))
 	}
@@ -208,8 +209,8 @@ func orAtomicToConjunction(atomics []atomic) []*Conjunction {
 	return res
 }
 
-// ANDing a cartesian products of two []atomic
-func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
+// ANDing a cartesian products of Conjunction and []atomic
+func conjunctionsAndAtomic(atomics1, atomics2 []atomic) []*Conjunction {
 	res := []*Conjunction{}
 	for _, atomic1 := range atomics1 {
 		for _, atomic2 := range atomics2 {
