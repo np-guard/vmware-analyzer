@@ -56,8 +56,8 @@ func getConjunctionForGroups(config *configuration.Config, isExclude bool, group
 // evaluates symbolic Conjunctions from a given Expression
 //////////////////////////////////////////////////////////
 
-// return the tag corresponding to a given condition
-func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) []atomic {
+// returns atomic tagAtomicTerm corresponding to a given condition
+func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) atomic {
 	// assumption: cond is of a tag over VMs
 	if cond.MemberType == nil || *cond.MemberType != nsx.ConditionMemberTypeVirtualMachine ||
 		cond.Key == nil || *cond.Key != nsx.ConditionKeyTag ||
@@ -74,7 +74,7 @@ func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group st
 	}
 	tagAtomicTerm := tagAtomicTerm{tag: &nsx.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 	var atomicRes atomic = tagAtomicTerm
-	return []atomic{atomicRes}
+	return atomicRes
 }
 
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nested "Or" or "And"
@@ -104,15 +104,17 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-func getTermForExprElement(config *configuration.Config, isExcluded bool, group string,
-	elem collector.ExpressionElement) []atomic {
+// return  []*Conjunction which is a symbolic presentation of the expression element
+// []*Conjunction{C_1,...C_n} represents c_1 Or C_2 Or.. Or C_n
+func getConjunctionsForExprElement(config *configuration.Config, isExcluded bool, group string,
+	elem collector.ExpressionElement) []*Conjunction {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
 	case okCond:
-		return getAtomicsForCondition(isExcluded, cond, group)
+		return []*Conjunction{{getAtomicsForCondition(isExcluded, cond, group)}}
 	case okPath:
-		return getAtomicsForPath(config, isExcluded, path, group)
+		return getCojunctionsOfPath(config, isExcluded, path, group)
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
@@ -129,84 +131,55 @@ func debugMsg(group, text string) {
 func GetConjunctionFromExpr(config *configuration.Config,
 	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
 	exprVal := *expr
-	// iterates exprVal, relying on the assumption that even places (starting with 0) holds ConjunctionExpr or NestedExpr
-	// and odd places holds ConditionExpression
-	/*res := []*Conjunction{}
-	for i, subExpr := range exprVal {
-		var lastCond *nsx.ConjunctionOperatorConjunctionOperator
-		if i%2 == 0 { // even: ConjunctionExpr or NestedExpr
-			newTerm := getTermForExprElement(config, isExcluded, group, subExpr)
-			if i == 0 {
-				continue
-			}
-			if *lastCond == nsx.ConjunctionOperatorConjunctionOperatorAND {
-				_ = newTerm
-				// res =... conjunctionsAndAtomic(condTag1, condTag2)
-				// todo: expand conjunctionsAndAtomic; the first parm should be []Conjunction instead of []atomic
-			} else {
-				// orAtomicToConjunction(append(condTag1, condTag2...))
-				// todo: expand orAtomicToConjunction; the first parm should be []Conjunction instead of []atomic
-			}
-		} else {
-			lastCond = getConjunctionOperator(isExcluded, subExpr, group)
-		}
-		return res
-	}*/
-	// todo: remove old code
 	const nonTrivialExprLength = 3
-	condTag1 := getTermForExprElement(config, isExcluded, group, exprVal[0])
+	condTag1 := getConjunctionsForExprElement(config, isExcluded, group, exprVal[0])
 	if condTag1 == nil {
 		return nil
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
-		return orAtomicToConjunction(condTag1)
+		return condTag1
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getTermForExprElement(config, isExcluded, group, exprVal[2])
+		condTag2 := getConjunctionsForExprElement(config, isExcluded, group, exprVal[2])
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
 		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
-			return andAtomicToConjunction(condTag1, condTag2)
+			return andConjunctions(condTag1, condTag2)
 		}
-		return orAtomicToConjunction(append(condTag1, condTag2...))
+		return append(condTag1, condTag2...)
 	}
 	// len not 1 neither 3
 	debugMsg(group, "is not supported")
 	return nil
 }
 
-func orAtomicToConjunction(atomics []atomic) []*Conjunction {
-	res := make([]*Conjunction, len(atomics))
-	for i, thisAtomic := range atomics {
-		res[i] = &Conjunction{thisAtomic}
-	}
-	return res
-}
-
-// ANDing a cartesian products of two []atomic
-func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
+// ANDing a cartesian products of two []*Conjunction
+func andConjunctions(conjunctions1, conjunctions2 []*Conjunction) []*Conjunction {
 	res := []*Conjunction{}
-	for _, atomic1 := range atomics1 {
-		for _, atomic2 := range atomics2 {
-			res = append(res, &Conjunction{atomic1, atomic2})
+	for _, conj1 := range conjunctions1 {
+		for _, conj2 := range conjunctions2 {
+			var andConj = *conj1.copy()
+			andConj = append(andConj, *conj2...)
+			res = append(res, &andConj)
 		}
 	}
 	return res
 }
 
-// returns the todo disjunction []atomic corresponding to a given condition
-func getAtomicsForPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
-	group string) []atomic {
-	res := []atomic{}
+// returns the []*conjunction corresponding to a given condition on []path
+// []path represents ORing the paths of the slice
+func getCojunctionsOfPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
+	group string) []*Conjunction {
+	res := []*Conjunction{}
 	for _, path := range pathExpr.Paths {
 		groupOfPath, isGroup := config.PathToGroupsMap[path]
 		segmentOfPath, isSegment := config.PathToSegmentsMap[path]
 		switch {
 		case isGroup:
-			res = append(res, groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
+			res = append(res, &Conjunction{groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		case isSegment:
-			res = append(res, SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
+			res = append(res, &Conjunction{SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		default:
 			debugMsg(group, fmt.Sprintf("group %s includes a path %s which is not currently supported "+
 				"(currently supported: group or segment) ", group, path))
