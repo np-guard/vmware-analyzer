@@ -185,7 +185,7 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 	return &resSymbolicPaths
 }
 
-// todo: this seems wrong!!!!!!
+// todo: this seems wrong!!!!!! https://github.com/np-guard/vmware-analyzer/issues/443
 func updateSrcOrDstDNF(isAllGroups bool, srcOrDstDNF, scopeDNF *DNF) {
 	if isAllGroups {
 		*srcOrDstDNF = *scopeDNF
