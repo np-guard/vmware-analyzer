@@ -37,9 +37,9 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			tagConj := GetDNFFromExpr(config, isExclude, &group.Expression, group.Name())
-			if tagConj != nil {
-				groupDNF = tagConj
+			tagTerm := GetDNFFromExpr(config, isExclude, &group.Expression, group.Name())
+			if tagTerm != nil {
+				groupDNF = tagTerm
 			} else {
 				logging.Debugf("for %s", synthesisUseGroup)
 			}
@@ -52,7 +52,7 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 	return res
 }
 
-// evaluates symbolic Conjunctions from a given Expression
+// evaluates symbolic DNF from a given Expression
 //////////////////////////////////////////////////////////
 
 // returns atomic tagAtomicTerm corresponding to a given condition
