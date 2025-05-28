@@ -12,7 +12,7 @@ import (
 
 // todo: make more efficient https://github.com/np-guard/vmware-analyzer/issues/436
 func inferDisjointGroups(groups []*collector.Group, inferHints bool,
-	groupToConjunctions map[string][]*symbolicexpr.Term) *symbolicexpr.Hints {
+	groupToDNF map[string][]*symbolicexpr.Term) *symbolicexpr.Hints {
 	if !inferHints {
 		return &symbolicexpr.Hints{}
 	}
@@ -26,13 +26,13 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool,
 			continue
 		}
 		// todo: not all groups are in cache https://github.com/np-guard/vmware-analyzer/issues/436
-		if conjs, exists := groupToConjunctions[name]; exists {
+		if conjs, exists := groupToDNF[name]; exists {
 			if symbolicexpr.TermsOnlyIPBlockTerms(conjs) {
 				fmt.Printf("skipping OnlyIPBlock %v\n", name)
 				continue
 			}
 		} else {
-			fmt.Printf("did not find #%v# in groupToConjunctions\n", name)
+			fmt.Printf("did not find #%v# in groupToDNF\n", name)
 		}
 		nameToGroup[name] = group
 		names = append(names, name)

@@ -305,8 +305,8 @@ func conjSupersetOfAtom(c *Term, atom atomic, hints *Hints) bool {
 // if the Term has internals (in addition to the tautology) then it should be replaced with two terms:
 // 1. *All Externals Term*
 // 2. The internals in the original Term (excluding the tautology)
-func (t *Term) processTautology(externalRelevant bool) []*Term {
-	resOrig := []*Term{t}
+func (t *Term) processTautology(externalRelevant bool) DNF {
+	resOrig := DNF{t}
 	if len(*t) < 2 {
 		return resOrig
 	}
@@ -328,14 +328,14 @@ func (t *Term) processTautology(externalRelevant bool) []*Term {
 	if t.hasExternalIPBlockTerm() {
 		// Term of tautology and externals. Divided to two terms: one of *allGroup* and the non-tautology externals
 		var allGroupConj = Term{allGroup{}}
-		return []*Term{&conjWOTautology, &allGroupConj}
+		return DNF{&conjWOTautology, &allGroupConj}
 	}
 	// Term of tautology and internals. Divided to two Terms: one of *allExternal* and the non-tautology externals
 	if !externalRelevant {
-		return []*Term{&conjWOTautology}
+		return DNF{&conjWOTautology}
 	}
 	var allExtrenalConj = Term{allExternal{}}
-	return []*Term{&conjWOTautology, &allExtrenalConj}
+	return DNF{&conjWOTautology, &allExtrenalConj}
 }
 
 // hasOnlyIPBlockTerms returns true if all terms in Term c are based on IPBlocks
@@ -348,8 +348,8 @@ func (t *Term) hasOnlyIPBlockTerms() bool {
 	return true
 }
 
-func TermsOnlyIPBlockTerms(terms []*Term) bool {
-	for _, term := range terms {
+func TermsOnlyIPBlockTerms(dnf DNF) bool {
+	for _, term := range dnf {
 		if !term.hasOnlyIPBlockTerms() {
 			return false
 		}

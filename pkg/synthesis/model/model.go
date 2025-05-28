@@ -160,13 +160,13 @@ func NSXConfigToAbstractModel(
 	logging.Infof("started synthesis of ocpvirt resources")
 
 	// pre-processing rules
-	preProcessingCategoryToPolicy, groupToConjunctions := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
+	preProcessingCategoryToPolicy, groupToDNF := PreProcessing(nsxConfig, nsxConfig.FW.CategoriesSpecs)
 	logging.Debugf("pre processing symbolic rules\n=============================\n%s",
 		PrintPreProcessingSymbolicPolicy(
 			nsxConfig.FW.CategoriesSpecs, preProcessingCategoryToPolicy, options.Color))
 
 	// computes disjoint groups, based on "hints" given by the user, and potentially current groups snapshot
-	inferredHints := inferDisjointGroups(nsxConfig.Groups, options.InferHints, groupToConjunctions)
+	inferredHints := inferDisjointGroups(nsxConfig.Groups, options.InferHints, groupToDNF)
 	allHints := getAllHints(options.Hints, inferredHints)
 
 	// policy flattening

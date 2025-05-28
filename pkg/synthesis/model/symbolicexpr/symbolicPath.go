@@ -233,10 +233,10 @@ func getDNFSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 // divide tautology to internal and external components
 func (path *SymbolicPath) processTautology(isInbound bool) *SymbolicPaths {
 	resPaths := SymbolicPaths{}
-	newSrc := path.Src.processTautology(isInbound)  // inbound (ingress): external source relevant
-	newDst := path.Dst.processTautology(!isInbound) // !inbound (egress): external dst relevant
-	for _, src := range newSrc {
-		for _, dst := range newDst {
+	dnfSrc := path.Src.processTautology(isInbound)  // inbound (ingress): external source relevant
+	dnfDst := path.Dst.processTautology(!isInbound) // !inbound (egress): external dst relevant
+	for _, src := range dnfSrc {
+		for _, dst := range dnfDst {
 			newPath := SymbolicPath{Src: *src, Dst: *dst, Conn: path.Conn}
 			resPaths = append(resPaths, &newPath)
 		}
