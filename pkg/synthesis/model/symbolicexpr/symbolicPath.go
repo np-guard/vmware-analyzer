@@ -163,12 +163,12 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 	resSymbolicPaths := SymbolicPaths{}
 	externalRelevantSrc := isInbound
 	externalRelevantDst := !isInbound
-	srcConjunctions := getConjunctionsSrcOrDst(config, rule, groupToConjunctions, rule.Src.IsExclude, externalRelevantSrc,
+	srcConjunctions := getDNFSrcOrDst(config, rule, groupToConjunctions, rule.Src.IsExclude, externalRelevantSrc,
 		rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
-	dstConjunctions := getConjunctionsSrcOrDst(config, rule, groupToConjunctions, rule.Dst.IsExclude, externalRelevantDst,
+	dstConjunctions := getDNFSrcOrDst(config, rule, groupToConjunctions, rule.Dst.IsExclude, externalRelevantDst,
 		rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
 	if !rule.Scope.IsAllGroups { // do not add *any* to Term
-		scopeConjunctions := getConjunctionsSrcOrDst(config, rule, groupToConjunctions, rule.Scope.IsExclude,
+		scopeConjunctions := getDNFSrcOrDst(config, rule, groupToConjunctions, rule.Scope.IsExclude,
 			false, false, rule.Scope.Groups, nil)
 		if isInbound {
 			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
@@ -193,12 +193,12 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 	}
 }
 
-// given details of Src/Dst returns []*Term = [*C_1, .... *C_n] symbolic representation of it: C_1 Or C_2 ... C_n
-func getConjunctionsSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
+// given details of Src/Dst returns symbolic representation DNF
+func getDNFSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 	groupToConjunctions map[string][]*Term, isExclude, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Term) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
-		getConjunctionForIPBlock(ruleBlocks, isExclude)
+		getDNFForIPBlock(ruleBlocks, isExclude)
 	// todo add tests for all switch cases https://github.com/np-guard/vmware-analyzer/issues/402
 	// group is defined either by ip blocks or in other manners (tags, specific vms)
 	// group defined by IP blocks
@@ -222,7 +222,7 @@ func getConjunctionsSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 	case isAllGroups && !isExclude:
 		res = append(res, &Term{allGroup{}}) // if "Any" group then this is the only relevant internal resource
 	default:
-		res = append(res, getConjunctionForGroups(config, isExclude, groups, groupToConjunctions, rule.RuleID)...)
+		res = append(res, getDNFForGroups(config, isExclude, groups, groupToConjunctions, rule.RuleID)...)
 	}
 	if len(res) == 0 {
 		fmt.Printf("debug")

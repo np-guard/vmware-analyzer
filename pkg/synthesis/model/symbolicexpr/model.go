@@ -100,6 +100,9 @@ type atomic interface {
 // Term of []atomic
 type Term []atomic
 
+// DNF of []*Term
+type DNF []*Term
+
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
 	Src  Term

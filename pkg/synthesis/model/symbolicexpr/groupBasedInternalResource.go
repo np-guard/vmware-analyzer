@@ -15,12 +15,11 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 	return nil
 }
 
-// Evaluates group and translates it into []*Term
-// s.t. if []*Term = [*C_1, .... *C_n] then the symbolic representation of the group: C_1 Or C_2 ... C_n
-// If group has no expr or evaluation expr fails then uses the group names in Term
-func getConjunctionForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
-	groupToConjunctions map[string][]*Term, ruleID int) []*Term {
-	res := []*Term{}
+// Evaluates group and translates it into DNF
+// If group has no expr or evaluation expr fails then uses the group names in the DNF
+func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
+	groupToConjunctions map[string][]*Term, ruleID int) DNF {
+	res := DNF{}
 	for _, group := range groups {
 		key := group.Name()
 		if isExclude {
@@ -33,7 +32,7 @@ func getConjunctionForGroups(config *configuration.Config, isExclude bool, group
 		}
 		// not in cache
 		// default: Term defined via group only
-		groupConj := []*Term{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
+		groupConj := DNF{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
 		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
