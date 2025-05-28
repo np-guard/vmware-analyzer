@@ -18,7 +18,7 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 // Evaluates group and translates it into DNF
 // If group has no expr or evaluation expr fails then uses the group names in the DNF
 func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
-	groupToConjunctions map[string][]*Term, ruleID int) DNF {
+	groupToDNF map[string]DNF, ruleID int) DNF {
 	res := DNF{}
 	for _, group := range groups {
 		key := group.Name()
@@ -26,7 +26,7 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 			key = "not-" + key
 		}
 		// todo: treat negation properly
-		if cachedGroupConj, ok := groupToConjunctions[key]; ok {
+		if cachedGroupConj, ok := groupToDNF[key]; ok {
 			res = append(res, cachedGroupConj...)
 			continue
 		}
@@ -37,7 +37,7 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			tagConj := GetConjunctionFromExpr(config, isExclude, &group.Expression, group.Name())
+			tagConj := GetDNFFromExpr(config, isExclude, &group.Expression, group.Name())
 			if tagConj != nil {
 				groupConj = tagConj
 			} else {
@@ -46,7 +46,7 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 		} else {
 			logging.Debugf("No expression is attached to %s", synthesisUseGroup)
 		}
-		groupToConjunctions[key] = groupConj
+		groupToDNF[key] = groupConj
 		res = append(res, groupConj...)
 	}
 	return res
@@ -103,15 +103,14 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-// return  []*Term which is a symbolic presentation of the expression element
-// []*Term{C_1,...C_n} represents c_1 Or C_2 Or.. Or C_n
+// return  DNF which is a symbolic presentation of the expression element
 func getConjunctionsForExprElement(config *configuration.Config, isExcluded bool, group string,
-	elem collector.ExpressionElement) []*Term {
+	elem collector.ExpressionElement) DNF {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
 	case okCond:
-		return []*Term{{getAtomicsForCondition(isExcluded, cond, group)}}
+		return DNF{{getAtomicsForCondition(isExcluded, cond, group)}}
 	case okPath:
 		return getCojunctionsOfPath(config, isExcluded, path, group)
 	default:
@@ -124,11 +123,10 @@ func debugMsg(group, text string) {
 	logging.Debugf("group's %s defining expression %s ", group, text)
 }
 
-// GetConjunctionFromExpr returns the []*Term corresponding to an expression - supported in this stage:
+// GetDNFFromExpr returns the DNF corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
-func GetConjunctionFromExpr(config *configuration.Config,
-	isExcluded bool, expr *collector.Expression, group string) []*Term {
+func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collector.Expression, group string) DNF {
 	exprVal := *expr
 	const nonTrivialExprLength = 3
 	condTag1 := getConjunctionsForExprElement(config, isExcluded, group, exprVal[0])

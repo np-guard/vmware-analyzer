@@ -159,16 +159,16 @@ func computeAllowGivenAllowHigherDeny(isInbound bool, allowPath, denyPath Symbol
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, rule *dfw.FwRule,
-	groupToConjunctions map[string][]*Term) *SymbolicPaths {
+	groupToDNF map[string]DNF) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	externalRelevantSrc := isInbound
 	externalRelevantDst := !isInbound
-	srcConjunctions := getDNFSrcOrDst(config, rule, groupToConjunctions, rule.Src.IsExclude, externalRelevantSrc,
+	srcConjunctions := getDNFSrcOrDst(config, rule, groupToDNF, rule.Src.IsExclude, externalRelevantSrc,
 		rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
-	dstConjunctions := getDNFSrcOrDst(config, rule, groupToConjunctions, rule.Dst.IsExclude, externalRelevantDst,
+	dstConjunctions := getDNFSrcOrDst(config, rule, groupToDNF, rule.Dst.IsExclude, externalRelevantDst,
 		rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
 	if !rule.Scope.IsAllGroups { // do not add *any* to Term
-		scopeConjunctions := getDNFSrcOrDst(config, rule, groupToConjunctions, rule.Scope.IsExclude,
+		scopeConjunctions := getDNFSrcOrDst(config, rule, groupToDNF, rule.Scope.IsExclude,
 			false, false, rule.Scope.Groups, nil)
 		if isInbound {
 			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
@@ -195,7 +195,7 @@ func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunction
 
 // given details of Src/Dst returns symbolic representation DNF
 func getDNFSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
-	groupToConjunctions map[string][]*Term, isExclude, isExternalRelevant,
+	groupToConjunctions map[string]DNF, isExclude, isExternalRelevant,
 	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Term) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
 		getDNFForIPBlock(ruleBlocks, isExclude)

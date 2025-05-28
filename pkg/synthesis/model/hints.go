@@ -12,7 +12,7 @@ import (
 
 // todo: make more efficient https://github.com/np-guard/vmware-analyzer/issues/436
 func inferDisjointGroups(groups []*collector.Group, inferHints bool,
-	groupToDNF map[string][]*symbolicexpr.Term) *symbolicexpr.Hints {
+	groupToDNF map[string]symbolicexpr.DNF) *symbolicexpr.Hints {
 	if !inferHints {
 		return &symbolicexpr.Hints{}
 	}
