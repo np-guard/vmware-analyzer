@@ -1634,11 +1634,11 @@ var ExampleHogwartsScopeAnd = registerExample(&Example{
 	GroupsByVMs: simpleHogwartsGroups,
 	Policies: []Category{
 		{
-			Name:         "GryffindorApp-to-GryffindorWeb",
+			Name:         "GryffindorWeb-to-GryffindorApp",
 			CategoryType: application,
 			Rules: []Rule{
 				{
-					Name:      "allow-GryffindorApp-to-Gryffindor",
+					Name:      "allow-Gryffindor-to-GryffindorApp",
 					ID:        10218,
 					Source:    gry,
 					Dest:      gry,
@@ -1647,7 +1647,7 @@ var ExampleHogwartsScopeAnd = registerExample(&Example{
 					Direction: string(nsx.RuleDirectionIN),
 				},
 				{
-					Name:      "allow-Gryffindor-to-GryffindorWeb",
+					Name:      "allow-GryffindorWeb-to-Gryffindor",
 					ID:        10219,
 					Source:    gry,
 					Dest:      gry,
@@ -1662,7 +1662,7 @@ var ExampleHogwartsScopeAnd = registerExample(&Example{
 			CategoryType: application,
 			Rules: []Rule{
 				{
-					Name:      "allow-SlytherinWeb-to-Slytherin",
+					Name:      "allow-Slytherin-to-SlytherinWeb",
 					ID:        11218,
 					Source:    sly,
 					Dest:      sly,
@@ -1671,7 +1671,7 @@ var ExampleHogwartsScopeAnd = registerExample(&Example{
 					Direction: string(nsx.RuleDirectionIN),
 				},
 				{
-					Name:      "allow-Slytherin-to-SlytherinApp",
+					Name:      "allow-SlytherinApp-to-Slytherin",
 					ID:        11219,
 					Source:    sly,
 					Dest:      sly,

@@ -171,9 +171,9 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 		scopeDNF := getDNFSrcOrDst(config, rule, groupToDNF, rule.Scope.IsExclude,
 			false, false, rule.Scope.Groups, nil)
 		if isInbound {
-			srcDNF = srcDstAndScope(rule.Dst.IsAllGroups, &dstDNF, &scopeDNF)
+			dstDNF = srcDstAndScope(rule.Dst.IsAllGroups, &dstDNF, &scopeDNF)
 		} else { // outbound
-			dstDNF = srcDstAndScope(rule.Src.IsAllGroups, &srcDNF, &scopeDNF)
+			srcDNF = srcDstAndScope(rule.Src.IsAllGroups, &srcDNF, &scopeDNF)
 		}
 	}
 	for _, srcConjunction := range srcDNF {
