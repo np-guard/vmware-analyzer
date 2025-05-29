@@ -232,6 +232,13 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 		inferHints:      true,
 	},
+	{
+		name:            "ExampleHogwartsScopeAnd",
+		exData:          data.ExampleHogwartsScopeAnd,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
 }
 
 var vmsByIpsTests = []synthesisTest{
@@ -825,7 +832,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-var runTestMode = OutputComparison
+var runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)

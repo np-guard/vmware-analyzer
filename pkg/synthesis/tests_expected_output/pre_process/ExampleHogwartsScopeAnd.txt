@@ -1,0 +1,15 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src                                  |Dst                  |Connection
+0        |10218   |allow  |(group = Gryffindor and group = App) |(group = Gryffindor) |All Connections
+1        |11218   |allow  |(group = Slytherin and group = Web)  |(group = Slytherin)  |All Connections
+2        |10230   |deny   |(*)                                  |(*)                  |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src                  |Dst                                  |Connection
+0        |10219   |allow  |(group = Gryffindor) |(group = Gryffindor and group = Web) |All Connections
+1        |11219   |allow  |(group = Slytherin)  |(group = Slytherin and group = App)  |All Connections
+2        |10230   |deny   |(*)                  |(*)                                  |All Connections
+

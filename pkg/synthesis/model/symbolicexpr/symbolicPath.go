@@ -171,9 +171,9 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 		scopeDNF := getDNFSrcOrDst(config, rule, groupToDNF, rule.Scope.IsExclude,
 			false, false, rule.Scope.Groups, nil)
 		if isInbound {
-			updateSrcOrDstDNF(rule.Dst.IsAllGroups, &dstDNF, &scopeDNF)
+			srcDNF = srcDstAndScope(rule.Dst.IsAllGroups, &dstDNF, &scopeDNF)
 		} else { // outbound
-			updateSrcOrDstDNF(rule.Src.IsAllGroups, &srcDNF, &scopeDNF)
+			dstDNF = srcDstAndScope(rule.Src.IsAllGroups, &srcDNF, &scopeDNF)
 		}
 	}
 	for _, srcConjunction := range srcDNF {
@@ -185,12 +185,19 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 	return &resSymbolicPaths
 }
 
-// todo: this seems wrong!!!!!! https://github.com/np-guard/vmware-analyzer/issues/443
-func updateSrcOrDstDNF(isAllGroups bool, srcOrDstDNF, scopeDNF *DNF) {
+func srcDstAndScope(isAllGroups bool, srcOrDstDNF, scopeDNF *DNF) DNF {
 	if isAllGroups {
-		*srcOrDstDNF = *scopeDNF
+		return *scopeDNF
 	} else {
-		*srcOrDstDNF = append(*srcOrDstDNF, *scopeDNF...)
+		andRes := DNF{}
+		for _, srcOrDstTerm := range *srcOrDstDNF {
+			for _, scopeTerm := range *scopeDNF {
+				andTerm := *srcOrDstTerm.copy()
+				andTerm = append(andTerm, *scopeTerm...)
+				andRes = append(andRes, &andTerm)
+			}
+		}
+		return andRes
 	}
 }
 
