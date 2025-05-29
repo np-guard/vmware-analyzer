@@ -188,17 +188,16 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 func srcDstAndScope(isAllGroups bool, srcOrDstDNF, scopeDNF *DNF) DNF {
 	if isAllGroups {
 		return *scopeDNF
-	} else {
-		andRes := DNF{}
-		for _, srcOrDstTerm := range *srcOrDstDNF {
-			for _, scopeTerm := range *scopeDNF {
-				andTerm := *srcOrDstTerm.copy()
-				andTerm = append(andTerm, *scopeTerm...)
-				andRes = append(andRes, &andTerm)
-			}
-		}
-		return andRes
 	}
+	andRes := DNF{}
+	for _, srcOrDstTerm := range *srcOrDstDNF {
+		for _, scopeTerm := range *scopeDNF {
+			andTerm := *srcOrDstTerm.copy()
+			andTerm = append(andTerm, *scopeTerm...)
+			andRes = append(andRes, &andTerm)
+		}
+	}
+	return andRes
 }
 
 // given details of Src/Dst returns symbolic representation DNF
