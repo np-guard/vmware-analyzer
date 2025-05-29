@@ -1,0 +1,32 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name |VMs
+App        |Slytherin-App, Gryffindor-App
+Gryffindor |Gryffindor-Web, Gryffindor-App
+Slytherin  |Slytherin-Web, Slytherin-App
+Web        |Slytherin-Web, Gryffindor-Web
+
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+Web, App, DB
+
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                  |Dst                                  |Connection
+0                            |10218   |(group = Gryffindor) |(group = Gryffindor and group = App) |All Connections
+1                            |11218   |(group = Slytherin)  |(group = Slytherin and group = Web)  |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                                  |Dst                  |Connection
+0                            |10219   |(group = Gryffindor and group = Web) |(group = Gryffindor) |All Connections
+1                            |11219   |(group = Slytherin and group = App)  |(group = Slytherin)  |All Connections
+
