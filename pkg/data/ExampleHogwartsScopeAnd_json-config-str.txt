@@ -1,0 +1,78 @@
+
+-------------------------------------------------------------------
+VMs:
+VM Name        |VM ID          |VM Addresses
+Gryffindor-App |Gryffindor-App |
+Gryffindor-Web |Gryffindor-Web |
+Slytherin-App  |Slytherin-App  |
+Slytherin-Web  |Slytherin-Web  |
+
+
+-------------------------------------------------------------------
+Segments:
+Type |overlay/vlan |Segment Name |Segment ID |Segment CIDRs |VLAN IDs |VMs
+
+
+
+-------------------------------------------------------------------
+Segments ports:
+Segment Name |Port Name |Port UID |VM Name
+
+
+
+-------------------------------------------------------------------
+Groups per VMs:
+VM             |Groups
+Gryffindor-App |App, Gryffindor
+Gryffindor-Web |Gryffindor, Web
+Slytherin-App  |App, Slytherin
+Slytherin-Web  |Slytherin, Web
+
+
+-------------------------------------------------------------------
+Groups definitions:
+Group Name |VMs
+App        |Slytherin-App, Gryffindor-App
+Gryffindor |Gryffindor-Web, Gryffindor-App
+Slytherin  |Slytherin-Web, Slytherin-App
+Web        |Slytherin-Web, Gryffindor-Web
+
+
+-------------------------------------------------------------------
+DFW:
+original rules:
+ruleID |ruleName                          |src        |dst        |services |action              |direction |scope |sec-policy                     |Category
+10218  |allow-Gryffindor-to-GryffindorApp |Gryffindor |Gryffindor |         |jump_to_application |IN        |App   |GryffindorWeb-to-GryffindorApp |Environment
+10219  |allow-GryffindorWeb-to-Gryffindor |Gryffindor |Gryffindor |         |jump_to_application |OUT       |Web   |GryffindorWeb-to-GryffindorApp |Environment
+11218  |allow-Slytherin-to-SlytherinApp   |Slytherin  |Slytherin  |         |jump_to_application |IN        |App   |SlytherinWeb-to-SlytherinApp   |Environment
+11219  |allow-SlytherinWeb-to-Slytherin   |Slytherin  |Slytherin  |         |jump_to_application |OUT       |Web   |SlytherinWeb-to-SlytherinApp   |Environment
+10230  |default-deny-rule                 |ANY        |ANY        |ANY      |deny                |IN_OUT    |ANY   |Default-L3-Section             |Application
+
+
+-------------------------------------------------------------------
+
+-------------------------------------------------------------------
+IP Ranges info:
+Total |Internal |External
+      |         |
+
+
+-------------------------------------------------------------------
+External Endpoints:
+External EP |Rule Blocks
+
+
+
+-------------------------------------------------------------------
+Internal Endpoints:
+Internal IP |Segment Name |VMs
+
+
+
+-------------------------------------------------------------------
+Rule Blocks info:
+Rule Block |External Endpoints |VMs
+
+
+
+-------------------------------------------------------------------
