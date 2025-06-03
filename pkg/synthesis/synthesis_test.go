@@ -232,6 +232,13 @@ var groupsByVmsTests = []synthesisTest{
 		noHint:          true,
 		inferHints:      true,
 	},
+	{
+		name:            "ExampleHogwartsScopeAnd",
+		exData:          data.ExampleHogwartsScopeAnd,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
 }
 
 var vmsByIpsTests = []synthesisTest{

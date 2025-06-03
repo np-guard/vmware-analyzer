@@ -1,0 +1,138 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Gryffindor) dst: (group = Gryffindor and group = App) conn: All Connections'
+        nsx-id: "10218"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Gryffindor
+              operator: Exists
+            - key: group__App
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Gryffindor and group = Web) dst: (group = Gryffindor) conn: All Connections'
+        nsx-id: "10219"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    egress:
+        - to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Gryffindor
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Gryffindor
+              operator: Exists
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Slytherin) dst: (group = Slytherin and group = Web) conn: All Connections'
+        nsx-id: "11218"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Slytherin
+              operator: Exists
+            - key: group__Web
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = Slytherin and group = App) dst: (group = Slytherin) conn: All Connections'
+        nsx-id: "11219"
+    creationTimestamp: null
+    name: policy-3
+    namespace: default
+spec:
+    egress:
+        - to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__Slytherin
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__Slytherin
+              operator: Exists
+            - key: group__App
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace default
+        nsx-id: "10230"
+    creationTimestamp: null
+    name: default-deny-for-default
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

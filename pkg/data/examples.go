@@ -1588,6 +1588,71 @@ var ExampleHogwartsSimpler = registerExample(&Example{
 	DisjointGroupsTags: disjointHousesAndFunctionality,
 })
 
+var ExampleHogwartsScopeAnd = registerExample(&Example{
+	Name: "ExampleHogwartsScopeAnd",
+	VMs: []string{SlyWeb, slyApp,
+		GryWeb, gryApp},
+	GroupsByVMs: simpleHogwartsGroups,
+	Policies: []Category{
+		{
+			Name:         "GryffindorWeb-to-GryffindorApp",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:      "allow-Gryffindor-to-GryffindorApp",
+					ID:        10218,
+					Source:    gry,
+					Dest:      gry,
+					Scope:     app,
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow-GryffindorWeb-to-Gryffindor",
+					ID:        10219,
+					Source:    gry,
+					Dest:      gry,
+					Scope:     web,
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         "SlytherinApp-to-SlytherinWeb",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:      "allow-Slytherin-to-SlytherinWeb",
+					ID:        11218,
+					Source:    sly,
+					Dest:      sly,
+					Scope:     web,
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionIN),
+				},
+				{
+					Name:      "allow-SlytherinApp-to-Slytherin",
+					ID:        11219,
+					Source:    sly,
+					Dest:      sly,
+					Scope:     app,
+					Action:    Allow,
+					Direction: string(nsx.RuleDirectionOUT),
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var hogwartsAppToHousesPolicy = []Category{
