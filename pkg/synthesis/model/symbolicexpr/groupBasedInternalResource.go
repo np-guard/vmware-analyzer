@@ -123,32 +123,31 @@ func debugMsg(group, text string) {
 	logging.Debugf("group's %s defining expression %s ", group, text)
 }
 
-// GetDNFFromExpr returns the DNF corresponding to an expression - supported in this stage:
-// either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
-// gets here only if expression is non-nil and of length > 1
+// GetDNFFromExpr returns the DNF corresponding to an expression []Expression
+// its nodes in odd indexes contains a Condition or a NestedExpression
+// and in even indexes contains a ConjunctionOperator; it must be of odd size and has at most 5 elements
+// It is evaluated from left to right
 func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collector.Expression, group string) DNF {
 	exprVal := *expr
-	const nonTrivialExprLength = 3
-	condTag1 := getDNFsForExprElement(config, isExcluded, group, exprVal[0])
-	if condTag1 == nil {
-		return nil
-	}
-	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
-		return condTag1
-	} else if len(*expr) == nonTrivialExprLength {
-		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getDNFsForExprElement(config, isExcluded, group, exprVal[2])
-		if orOrAnd == nil || condTag2 == nil {
-			return nil
+	var exprDnf = DNF{}
+	var lastConjunction *nsx.ConjunctionOperatorConjunctionOperator
+	for i, curExprItem := range exprVal {
+		if i%2 == 0 { // condition or nested expression
+			newExpr := getDNFsForExprElement(config, isExcluded, group, curExprItem)
+			if lastConjunction == nil { // first time
+				exprDnf = newExpr
+			} else if *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorAND { // And
+				exprDnf = andDNFs(exprDnf, newExpr)
+			} else if *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorOR { // Or
+				exprDnf = append(exprDnf, newExpr...)
+			} else {
+				debugMsg(group, "is not supported")
+			}
+		} else { // Operator
+			lastConjunction = getConjunctionOperator(isExcluded, curExprItem, group)
 		}
-		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
-			return andDNFs(condTag1, condTag2)
-		}
-		return append(condTag1, condTag2...)
 	}
-	// len not 1 neither 3
-	debugMsg(group, "is not supported")
-	return nil
+	return exprDnf
 }
 
 // ANDing two DNFs
