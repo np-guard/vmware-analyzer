@@ -142,7 +142,7 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 			return nil
 		}
 		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
-			return andConjunctions(condTag1, condTag2)
+			return andDNFs(condTag1, condTag2)
 		}
 		return append(condTag1, condTag2...)
 	}
@@ -152,7 +152,7 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 }
 
 // ANDing two DNFs
-func andConjunctions(dnf1, dnf2 DNF) DNF {
+func andDNFs(dnf1, dnf2 DNF) DNF {
 	res := DNF{}
 	for _, term1 := range dnf1 {
 		for _, term2 := range dnf2 {

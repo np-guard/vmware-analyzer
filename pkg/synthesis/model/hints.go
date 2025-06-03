@@ -26,8 +26,8 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool,
 			continue
 		}
 		// todo: not all groups are in cache https://github.com/np-guard/vmware-analyzer/issues/436
-		if conjs, exists := groupToDNF[name]; exists {
-			if symbolicexpr.TermsOnlyIPBlockTerms(conjs) {
+		if dnfs, exists := groupToDNF[name]; exists {
+			if symbolicexpr.TermsOnlyIPBlockTerms(dnfs) {
 				fmt.Printf("skipping OnlyIPBlock %v\n", name)
 				continue
 			}
