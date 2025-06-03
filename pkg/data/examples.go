@@ -1279,79 +1279,66 @@ var ExampleDenyPassSimple = registerExample(&Example{
 // Dumbledore1 can talk to all but Slytherin
 // Dumbledore2 can talk to all but Gryffindor
 var ExampleHintsDisjoint = registerExample(&Example{
-	Name:               "ExampleHintsDisjoint",
-	VMs:                exampleHintsDisjointVMs,
-	GroupsByVMs:        exampleHintsDisjointGroupsByVMs,
-	Policies:           HintsDisjointPolicy,
+	Name: "ExampleHintsDisjoint",
+	VMs:  []string{sly, huf, gry, Dum1, Dum2},
+	GroupsByVMs: map[string][]string{
+		sly:    {sly},
+		huf:    {huf},
+		gry:    {gry},
+		Dum1:   {Dum1},
+		Dum2:   {Dum2},
+		notSly: {huf, gry, Dum1, Dum2},
+	},
+	Policies: []Category{
+		{
+			Name:         "From-Dumbledore-connection",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:                 "Dumb1-Not-Sly",
+					ID:                   newRuleID,
+					Source:               Dum1,
+					Dest:                 notSly,
+					DestinationsExcluded: true,
+					Services:             []string{AnyStr},
+					Action:               Drop,
+				},
+				{
+					Name:     "Dumb2-Not-Gryf",
+					ID:       newRuleID + 1,
+					Source:   Dum2,
+					Dest:     gry,
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+				{
+					Name:     "Dumb1-To-All",
+					ID:       newRuleID + 2,
+					Source:   Dum1,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "Dumb2-To-All",
+					ID:       newRuleID + 3,
+					Source:   Dum2,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
 	DisjointGroupsTags: disjointHouses2Dum,
 })
-
-var ExampleHintsDisjointNoGivenHints = registerExample(&Example{
-	Name:        "ExampleHintsDisjointNoGivenHints",
-	VMs:         exampleHintsDisjointVMs,
-	GroupsByVMs: exampleHintsDisjointGroupsByVMs,
-	Policies:    HintsDisjointPolicy,
-})
-
-var exampleHintsDisjointVMs = []string{sly, huf, gry, Dum1, Dum2}
-
-var exampleHintsDisjointGroupsByVMs = map[string][]string{
-	sly:    {sly},
-	huf:    {huf},
-	gry:    {gry},
-	Dum1:   {Dum1},
-	Dum2:   {Dum2},
-	notSly: {huf, gry, Dum1, Dum2},
-}
-
-var HintsDisjointPolicy = []Category{
-	{
-		Name:         "From-Dumbledore-connection",
-		CategoryType: application,
-		Rules: []Rule{
-			{
-				Name:                 "Dumb1-Not-Sly",
-				ID:                   newRuleID,
-				Source:               Dum1,
-				Dest:                 notSly,
-				DestinationsExcluded: true,
-				Services:             []string{AnyStr},
-				Action:               Drop,
-			},
-			{
-				Name:     "Dumb2-Not-Gryf",
-				ID:       newRuleID + 1,
-				Source:   Dum2,
-				Dest:     gry,
-				Services: []string{AnyStr},
-				Action:   Drop,
-			},
-			{
-				Name:     "Dumb1-To-All",
-				ID:       newRuleID + 2,
-				Source:   Dum1,
-				Dest:     AnyStr,
-				Services: []string{AnyStr},
-				Action:   Allow,
-			},
-			{
-				Name:     "Dumb2-To-All",
-				ID:       newRuleID + 3,
-				Source:   Dum2,
-				Dest:     AnyStr,
-				Services: []string{AnyStr},
-				Action:   Allow,
-			},
-		},
-	},
-	{
-		Name:         defaultL3,
-		CategoryType: application,
-		Rules: []Rule{
-			DefaultDenyRule(denyRuleIDEnv),
-		},
-	},
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1393,149 +1380,125 @@ var hogwartsBidimensionalGroups = map[string][]string{
 	app: {slyApp, gryApp, hufApp},
 	db:  {slyDB, gryDB, hufDB}}
 
-var ExampleHogwartsBasic = Example{
-	Name:               "ExampleHogwarts",
-	VMs:                ExampleHogwartsVMs,
-	GroupsByVMs:        hogwartsBidimensionalGroups,
-	Policies:           ExampleHogwartsPolicies,
-	DisjointGroupsTags: ExampleHogwartsDisjointGroup,
-}
+var ExampleHogwarts = registerExample(&Example{
+	Name: "ExampleHogwarts",
+	VMs: []string{SlyWeb, slyApp, slyDB, HufWeb, hufApp, hufDB,
+		GryWeb, gryApp, gryDB, Dum1, Dum2},
+	GroupsByVMs: hogwartsBidimensionalGroups,
+	Policies: []Category{
+		{
+			Name:         "Gryffindor-to-Gryffindor-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Gryffindor-to-Gryffindor",
+					ID:     10218,
+					Source: gry,
+					Dest:   gry,
+					Action: JumpToApp,
+					Conn:   netset.AllTCPTransport(),
+				},
+			},
+		},
+		{
+			Name:         "Hufflepuff-to-Hufflepuff-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:   "allow-Hufflepuff-to-Hufflepuff",
+					ID:     10219,
+					Source: huf,
+					Dest:   AnyStr,
+					Scope:  huf,
+					Action: JumpToApp,
+					//nolint:mnd // these are the port numbers for the test
+					Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
+					Direction: string(nsx.RuleDirectionIN),
+				},
+			},
+		},
+		{
+			Name:         "Slytherin-to-Slytherin-allow",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:     "allow-Slytherin-to-Slytherin",
+					ID:       10220,
+					Source:   sly,
+					Dest:     sly,
+					Services: []string{AnyStr},
+					Action:   JumpToApp,
+				},
+			},
+		},
+		{
+			Name:         "Dumbledore-connection",
+			CategoryType: environment,
+			Rules: []Rule{
+				{
+					Name:     "allow-Dumbledore-to-all",
+					ID:       10221,
+					Source:   dum,
+					Dest:     gry,
+					Services: []string{AnyStr},
+					Action:   JumpToApp,
+				},
+				{
+					Name:     "default-deny-env",
+					ID:       10300,
+					Source:   AnyStr,
+					Dest:     AnyStr,
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+			},
+		},
 
-var ExampleHogwarts = registerExample(getExampleHogwarts(false))
-
-func getExampleHogwarts(forInfer bool) *Example {
-	res := &ExampleHogwartsBasic
-	if forInfer {
-		res.Name = "ExampleHogwartsInfer"
-	}
-	return res
-}
-
-var ExampleHogwartsVMs = []string{SlyWeb, slyApp, slyDB, HufWeb, hufApp, hufDB,
-	GryWeb, gryApp, gryDB, Dum1, Dum2}
-
-var ExampleHogwartsPolicies = []Category{
-	{
-		Name:         "Gryffindor-to-Gryffindor-allow",
-		CategoryType: environment,
-		Rules: []Rule{
-			{
-				Name:   "allow-Gryffindor-to-Gryffindor",
-				ID:     10218,
-				Source: gry,
-				Dest:   gry,
-				Action: JumpToApp,
-				Conn:   netset.AllTCPTransport(),
+		{
+			Name:         "Intra-App-Policy",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:     "Client-Access",
+					ID:       10400,
+					Source:   AnyStr,
+					Dest:     web,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "Web-To-App-Access",
+					ID:       10401,
+					Source:   web,
+					Dest:     app,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "App-To-DB-Access",
+					ID:       10405,
+					Source:   app,
+					Dest:     db,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
 			},
 		},
 	},
-	{
-		Name:         "Hufflepuff-to-Hufflepuff-allow",
-		CategoryType: environment,
-		Rules: []Rule{
-			{
-				Name:   "allow-Hufflepuff-to-Hufflepuff",
-				ID:     10219,
-				Source: huf,
-				Dest:   AnyStr,
-				Scope:  huf,
-				Action: JumpToApp,
-				//nolint:mnd // these are the port numbers for the test
-				Conn:      netset.NewUDPTransport(netp.MinPort, netp.MinPort, 300, 320),
-				Direction: string(nsx.RuleDirectionIN),
-			},
-		},
+	DisjointGroupsTags: [][]string{
+		{sly, huf, gry, dum},
+		{web, app, db},
+		{web, dum},
+		{app, dum},
+		{db, dum},
 	},
-	{
-		Name:         "Slytherin-to-Slytherin-allow",
-		CategoryType: environment,
-		Rules: []Rule{
-			{
-				Name:     "allow-Slytherin-to-Slytherin",
-				ID:       10220,
-				Source:   sly,
-				Dest:     sly,
-				Services: []string{AnyStr},
-				Action:   JumpToApp,
-			},
-		},
-	},
-	{
-		Name:         "Dumbledore-connection",
-		CategoryType: environment,
-		Rules: []Rule{
-			{
-				Name:     "allow-Dumbledore-to-all",
-				ID:       10221,
-				Source:   dum,
-				Dest:     gry,
-				Services: []string{AnyStr},
-				Action:   JumpToApp,
-			},
-			{
-				Name:     "default-deny-env",
-				ID:       10300,
-				Source:   AnyStr,
-				Dest:     AnyStr,
-				Services: []string{AnyStr},
-				Action:   Drop,
-			},
-		},
-	},
-
-	{
-		Name:         "Intra-App-Policy",
-		CategoryType: application,
-		Rules: []Rule{
-			{
-				Name:     "Client-Access",
-				ID:       10400,
-				Source:   AnyStr,
-				Dest:     web,
-				Services: []string{AnyStr},
-				Action:   Allow,
-			},
-			{
-				Name:     "Web-To-App-Access",
-				ID:       10401,
-				Source:   web,
-				Dest:     app,
-				Services: []string{AnyStr},
-				Action:   Allow,
-			},
-			{
-				Name:     "App-To-DB-Access",
-				ID:       10405,
-				Source:   app,
-				Dest:     db,
-				Services: []string{AnyStr},
-				Action:   Allow,
-			},
-		},
-	},
-	{
-		Name:         defaultL3,
-		CategoryType: application,
-		Rules: []Rule{
-			DefaultDenyRule(denyRuleIDEnv),
-		},
-	},
-}
-
-var ExampleHogwartsDisjointGroup = [][]string{
-	{sly, huf, gry, dum},
-	{web, app, db},
-	{web, dum},
-	{app, dum},
-	{db, dum},
-}
-
-var ExampleHogwartsNoGivenHints = registerExample(&Example{
-	Name:               "ExampleHogwartsNoGivenHints",
-	VMs:                ExampleHogwartsVMs,
-	GroupsByVMs:        hogwartsBidimensionalGroups,
-	Policies:           ExampleHogwartsPolicies,
-	DisjointGroupsTags: [][]string{},
 })
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2499,104 +2462,96 @@ func createExampleAppWithGroups2() *Example {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var vmsAppWithGroupsAndSegments = []string{"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"}
-var vmsAddressesWithGroupsAndSegments = map[string]string{
-	"New-VM-1":            "192.168.1.1",
-	"New-VM-2":            "192.168.1.3",
-	"New-VM-3":            "192.168.0.1",
-	"New-VM-4":            "192.168.0.2",
-	"New Virtual Machine": "192.168.1.2",
-}
-var segmentsByVMsAddressesWithGroupsAndSegments = map[string][]string{
-	"T1-192-168-0-0": {"New-VM-3", "New-VM-4"},
-	"T1-192-168-1-0": {"New-VM-1", "New-VM-2", "New Virtual Machine"},
-}
-var segmentsBlockAppWithGroupsAndSegments = map[string]string{
-	"T1-192-168-0-0": "192.168.0.0/24",
-	"T1-192-168-1-0": "192.168.1.0/24",
-}
-var segmentsT1GWsAppWithGroupsAndSegments = map[string]string{
-	"T1-192-168-0-0": "T1-workloads",
-	"T1-192-168-1-0": "T1-workloads",
-}
-var groupsByVMsAppWithGroupsAndSegments = map[string][]string{
-	"research-app":         {"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
-	"research-seg-1":       {"New-VM-1", "New-VM-3", "New-VM-4"},
-	"foo-app":              {"New-VM-3", "New-VM-4"},
-	"bar-app":              {"New-VM-1", "New-VM-2", "New Virtual Machine"},
-	"foo-backend":          {"New-VM-4"},
-	"foo-frontend":         {"New-VM-3"},
-	"research-test-expr-2": {"New-VM-1"},
-}
-var policiesAppWithGroupsAndSegments = []Category{
-	{
-		Name:         "foo-app",
-		CategoryType: "Application",
-		Rules: []Rule{
-			{
-				Name:     "foo-allow-http-to-backend",
-				ID:       1027,
-				Source:   "foo-frontend",
-				Dest:     "foo-backend",
-				Services: []string{"/infra/services/HTTP"},
-				Action:   Allow,
-			},
-			{
-				Name:     "default-deny-foo-app",
-				ID:       1028,
-				Source:   "foo-app",
-				Dest:     "foo-app",
-				Services: []string{AnyStr},
-				Action:   Drop,
-			},
-		},
-	},
-	{
-		Name:         "New Policy",
-		CategoryType: "Application",
-		Rules: []Rule{
-			{
-				Name:     "allow-smb-to-foo-frontend",
-				ID:       1025,
-				Source:   "research-test-expr-2",
-				Dest:     "foo-frontend",
-				Services: []string{"/infra/services/SMB"},
-				Action:   Allow,
-			},
-			{
-				Name:     "allow-bar-app-https",
-				ID:       1024,
-				Source:   "bar-app",
-				Dest:     "bar-app",
-				Services: []string{"/infra/services/HTTPS"},
-				Action:   Allow,
-			},
-		},
-	},
-	{
-		Name:         "Default Layer3 Section",
-		CategoryType: "Application",
-		Rules: []Rule{
-			{
-				Name:     "deny-research-app",
-				ID:       1021,
-				Source:   "research-app",
-				Dest:     "research-app",
-				Services: []string{AnyStr},
-				Action:   Drop,
-			},
-			DefaultDenyRule(2),
-		},
-	},
-}
-
 var ExampleAppWithGroupsAndSegments = registerExample(&Example{
-	Name:          "ExampleAppWithGroupsAndSegments",
-	VMs:           vmsAppWithGroupsAndSegments,
-	VMsAddress:    vmsAddressesWithGroupsAndSegments,
-	SegmentsByVMs: segmentsByVMsAddressesWithGroupsAndSegments,
-	SegmentsBlock: segmentsBlockAppWithGroupsAndSegments,
-	SegmentsT1GWs: segmentsT1GWsAppWithGroupsAndSegments,
-	GroupsByVMs:   groupsByVMsAppWithGroupsAndSegments,
-	Policies:      policiesAppWithGroupsAndSegments,
+	Name: "ExampleAppWithGroupsAndSegments",
+	VMs:  []string{"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
+	VMsAddress: map[string]string{
+		"New-VM-1":            "192.168.1.1",
+		"New-VM-2":            "192.168.1.3",
+		"New-VM-3":            "192.168.0.1",
+		"New-VM-4":            "192.168.0.2",
+		"New Virtual Machine": "192.168.1.2",
+	},
+	SegmentsByVMs: map[string][]string{
+		"T1-192-168-0-0": {"New-VM-3", "New-VM-4"},
+		"T1-192-168-1-0": {"New-VM-1", "New-VM-2", "New Virtual Machine"},
+	},
+	SegmentsBlock: map[string]string{
+		"T1-192-168-0-0": "192.168.0.0/24",
+		"T1-192-168-1-0": "192.168.1.0/24",
+	},
+	SegmentsT1GWs: map[string]string{
+		"T1-192-168-0-0": "T1-workloads",
+		"T1-192-168-1-0": "T1-workloads",
+	},
+	GroupsByVMs: map[string][]string{
+		"research-app":         {"New-VM-1", "New-VM-2", "New-VM-3", "New-VM-4", "New Virtual Machine"},
+		"research-seg-1":       {"New-VM-1", "New-VM-3", "New-VM-4"},
+		"foo-app":              {"New-VM-3", "New-VM-4"},
+		"bar-app":              {"New-VM-1", "New-VM-2", "New Virtual Machine"},
+		"foo-backend":          {"New-VM-4"},
+		"foo-frontend":         {"New-VM-3"},
+		"research-test-expr-2": {"New-VM-1"},
+	},
+	Policies: []Category{
+		{
+			Name:         "foo-app",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "foo-allow-http-to-backend",
+					ID:       1027,
+					Source:   "foo-frontend",
+					Dest:     "foo-backend",
+					Services: []string{"/infra/services/HTTP"},
+					Action:   Allow,
+				},
+				{
+					Name:     "default-deny-foo-app",
+					ID:       1028,
+					Source:   "foo-app",
+					Dest:     "foo-app",
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+			},
+		},
+		{
+			Name:         "New Policy",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "allow-smb-to-foo-frontend",
+					ID:       1025,
+					Source:   "research-test-expr-2",
+					Dest:     "foo-frontend",
+					Services: []string{"/infra/services/SMB"},
+					Action:   Allow,
+				},
+				{
+					Name:     "allow-bar-app-https",
+					ID:       1024,
+					Source:   "bar-app",
+					Dest:     "bar-app",
+					Services: []string{"/infra/services/HTTPS"},
+					Action:   Allow,
+				},
+			},
+		},
+		{
+			Name:         "Default Layer3 Section",
+			CategoryType: "Application",
+			Rules: []Rule{
+				{
+					Name:     "deny-research-app",
+					ID:       1021,
+					Source:   "research-app",
+					Dest:     "research-app",
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+				DefaultDenyRule(2),
+			},
+		},
+	},
 })
