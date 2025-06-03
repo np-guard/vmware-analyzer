@@ -103,8 +103,8 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-// return  DNF which is a symbolic presentation of the expression element
-func getConjunctionsForExprElement(config *configuration.Config, isExcluded bool, group string,
+// return DNF which is a symbolic presentation of the expression element
+func getDNFsForExprElement(config *configuration.Config, isExcluded bool, group string,
 	elem collector.ExpressionElement) DNF {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
@@ -129,7 +129,7 @@ func debugMsg(group, text string) {
 func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collector.Expression, group string) DNF {
 	exprVal := *expr
 	const nonTrivialExprLength = 3
-	condTag1 := getConjunctionsForExprElement(config, isExcluded, group, exprVal[0])
+	condTag1 := getDNFsForExprElement(config, isExcluded, group, exprVal[0])
 	if condTag1 == nil {
 		return nil
 	}
@@ -137,7 +137,7 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 		return condTag1
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getConjunctionsForExprElement(config, isExcluded, group, exprVal[2])
+		condTag2 := getDNFsForExprElement(config, isExcluded, group, exprVal[2])
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
