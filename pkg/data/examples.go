@@ -1,7 +1,6 @@
 package data
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/np-guard/models/pkg/netp"
@@ -55,7 +54,6 @@ var allExamples = map[int]*Example{}
 var examplesCount = 0
 
 func registerExample(e *Example) *Example {
-	fmt.Printf("examplesCount is %v example.Name is %v\n", examplesCount, e.Name)
 	allExamples[examplesCount] = e
 	examplesCount++
 	return e
