@@ -53,20 +53,20 @@ func TestTagTerms(t *testing.T) {
 }
 
 func TestSymbolicPaths(t *testing.T) {
-	conjSrc, conjDst, conjEmpty := Term{}, Term{}, Term{}
+	termSrc, termDst, termEmpty := Term{}, Term{}, Term{}
 	for i := 1; i <= 3; i++ {
 		atomic := NewDummyGroupTerm(fmt.Sprintf("str%v", i), false)
-		conjSrc = *conjSrc.add(*atomic)
+		termSrc = *termSrc.add(*atomic)
 		negateAtomic := atomic.negate().(groupAtomicTerm)
-		conjDst = *conjDst.add(negateAtomic)
+		termDst = *termDst.add(negateAtomic)
 	}
-	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTCPTransport()}
+	conjSymbolicPath := SymbolicPath{Src: termSrc, Dst: termDst, Conn: netset.AllTCPTransport()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.String())
 	require.Equal(t, "src: (group = str1 and group = str2 and group = str3) dst: "+
 		"(group != str1 and group != str2 and group != str3) conn: TCP",
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
-	println("conjEmpty", conjEmpty.String())
-	require.Equal(t, emptySet, conjEmpty.String(), "empty conjunction not as expected")
+	println("termEmpty", termEmpty.String())
+	require.Equal(t, emptySet, termEmpty.String(), "empty conjunction not as expected")
 	// tests removeRedundant
 	slytherin, gryffindor := "Slytherin", "Gryffindor"
 	atomicSly := NewDummyGroupTerm(slytherin, false)
