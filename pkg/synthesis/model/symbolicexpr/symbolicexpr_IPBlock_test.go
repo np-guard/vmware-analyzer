@@ -90,11 +90,11 @@ func TestIpBlockTerm(t *testing.T) {
 
 func TestIpBlockWithConj(t *testing.T) {
 	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, ipBlockTerm3, ipAddrSingleTerm := getIPBlocksTerms()
-	conjAllIPBlockTermOnly := &Conjunction{allIPBlockTautology}
-	conjIPBlockTerm1 := &Conjunction{ipBlockTerm1}
-	conjIPBlockTerm2Only := &Conjunction{ipBlockTerm2}
-	conjIPBlockTerm3 := &Conjunction{ipBlockTerm3}
-	conjIPAddrSingleTerm := &Conjunction{ipAddrSingleTerm}
+	conjAllIPBlockTermOnly := &Term{allIPBlockTautology}
+	conjIPBlockTerm1 := &Term{ipBlockTerm1}
+	conjIPBlockTerm2Only := &Term{ipBlockTerm2}
+	conjIPBlockTerm3 := &Term{ipBlockTerm3}
+	conjIPAddrSingleTerm := &Term{ipAddrSingleTerm}
 	fmt.Println("conjAllIPBlockTermOnly is", conjAllIPBlockTermOnly)
 	fmt.Println("conjIPBlockTerm1 is", conjIPBlockTerm1)
 	fmt.Println("conjIPBlockTerm2 is", conjIPBlockTerm2Only)
@@ -212,7 +212,7 @@ func TestInternalIPTerms(t *testing.T) {
 func TestProcessTautologyWithExternals(t *testing.T) {
 	// tautology with external terms
 	allIPBlockTautology, ipBlockTerm1, ipBlockTerm2, _, _ := getIPBlocksTerms()
-	Conjunction1 := Conjunction{ipBlockTerm1, allIPBlockTautology}
+	Conjunction1 := Term{ipBlockTerm1, allIPBlockTautology}
 	Conj1AfterProcess := Conjunction1.processTautology(true)
 	fmt.Printf("Conjunction1 is %v\n", Conjunction1.String())
 	fmt.Printf("Conjunction1 after processTautology is\n%v\n\n", str(Conj1AfterProcess))
@@ -220,7 +220,7 @@ func TestProcessTautologyWithExternals(t *testing.T) {
 	require.Equal(t, true, Conj1AfterProcess[0].hasExternalIPBlockTerm())
 	require.Equal(t, true, Conj1AfterProcess[1].isAllGroup())
 
-	Conjunction2 := Conjunction{allIPBlockTautology, ipBlockTerm1}
+	Conjunction2 := Term{allIPBlockTautology, ipBlockTerm1}
 	Conj2AfterProcess := Conjunction2.processTautology(true)
 	fmt.Printf("Conjunction2 is %v\n", Conjunction2.String())
 	fmt.Printf("Conjunction2 after processTautology is\n%v\n\n", str(Conj2AfterProcess))
@@ -228,7 +228,7 @@ func TestProcessTautologyWithExternals(t *testing.T) {
 	require.Equal(t, true, Conj2AfterProcess[0].hasExternalIPBlockTerm())
 	require.Equal(t, true, Conj2AfterProcess[1].isAllGroup())
 
-	Conjunction3 := Conjunction{ipBlockTerm2, allIPBlockTautology, ipBlockTerm1}
+	Conjunction3 := Term{ipBlockTerm2, allIPBlockTautology, ipBlockTerm1}
 	Conj3AfterProcess := Conjunction3.processTautology(true)
 	fmt.Printf("Conjunction3 is %v\n", Conjunction3.String())
 	fmt.Printf("Conjunction3 after processTautology is\n%v\n\n", str(Conj3AfterProcess))
@@ -236,7 +236,7 @@ func TestProcessTautologyWithExternals(t *testing.T) {
 	require.Equal(t, true, Conj3AfterProcess[0].hasExternalIPBlockTerm())
 	require.Equal(t, true, Conj3AfterProcess[1].isAllGroup())
 
-	Conjunction4 := Conjunction{ipBlockTerm2, ipBlockTerm1}
+	Conjunction4 := Term{ipBlockTerm2, ipBlockTerm1}
 	Conj4AfterProcess := Conjunction4.processTautology(true)
 	fmt.Printf("Conjunction4 is %v\n\n", Conjunction4.String())
 	fmt.Printf("Conjunction4 after processTautology is\n%v\n\n", str(Conj4AfterProcess))
@@ -245,7 +245,7 @@ func TestProcessTautologyWithExternals(t *testing.T) {
 	require.Equal(t, false, Conj4AfterProcess[0].isAllGroup())
 }
 
-func str(cs []*Conjunction) string {
+func str(cs DNF) string {
 	res := make([]string, len(cs))
 	for i, conj := range cs {
 		res[i] = conj.String()

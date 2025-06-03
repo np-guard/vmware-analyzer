@@ -97,21 +97,21 @@ type atomic interface {
 	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }
 
-// Conjunction a DNF Conjunction of Atomics
-type Conjunction []atomic
+// Term - ANDing []atomic
+type Term []atomic
+
+// DNF of []*Term; namely ORing the terms
+type DNF []*Term
 
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst
 type SymbolicPath struct {
-	Src  Conjunction
-	Dst  Conjunction
+	Src  Term
+	Dst  Term
 	Conn *netset.TransportSet
 }
 
+// SymbolicPaths disjunction of SymbolicPaths
 type SymbolicPaths []*SymbolicPath
-
-// Atomics map from Atomics string to *groupAtomicTerm
-// todo: to use for cashing
-type Atomics map[string]atomic
 
 type Hints struct {
 	GroupsDisjoint [][]string

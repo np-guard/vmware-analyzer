@@ -159,25 +159,25 @@ func computeAllowGivenAllowHigherDeny(isInbound bool, allowPath, denyPath Symbol
 
 // ConvertFWRuleToSymbolicPaths given a rule, converts its src, dst and Conn to SymbolicPaths
 func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, rule *dfw.FwRule,
-	groupToConjunctions map[string][]*Conjunction) *SymbolicPaths {
+	groupToDNF map[string]DNF) *SymbolicPaths {
 	resSymbolicPaths := SymbolicPaths{}
 	externalRelevantSrc := isInbound
 	externalRelevantDst := !isInbound
-	srcConjunctions := getConjunctionsSrcOrDst(config, rule, groupToConjunctions, rule.Src.IsExclude, externalRelevantSrc,
+	srcDNF := getDNFSrcOrDst(config, rule, groupToDNF, rule.Src.IsExclude, externalRelevantSrc,
 		rule.Src.IsAllGroups, rule.Src.Groups, rule.Src.Blocks)
-	dstConjunctions := getConjunctionsSrcOrDst(config, rule, groupToConjunctions, rule.Dst.IsExclude, externalRelevantDst,
+	dstDNF := getDNFSrcOrDst(config, rule, groupToDNF, rule.Dst.IsExclude, externalRelevantDst,
 		rule.Dst.IsAllGroups, rule.Dst.Groups, rule.Dst.Blocks)
-	if !rule.Scope.IsAllGroups { // do not add *any* to Conjunction
-		scopeConjunctions := getConjunctionsSrcOrDst(config, rule, groupToConjunctions, rule.Scope.IsExclude,
+	if !rule.Scope.IsAllGroups { // do not add *any* to Term
+		scopeDNF := getDNFSrcOrDst(config, rule, groupToDNF, rule.Scope.IsExclude,
 			false, false, rule.Scope.Groups, nil)
 		if isInbound {
-			updateSrcOrDstConj(rule.Dst.IsAllGroups, &dstConjunctions, &scopeConjunctions)
+			updateSrcOrDstDNF(rule.Dst.IsAllGroups, &dstDNF, &scopeDNF)
 		} else { // outbound
-			updateSrcOrDstConj(rule.Src.IsAllGroups, &srcConjunctions, &scopeConjunctions)
+			updateSrcOrDstDNF(rule.Src.IsAllGroups, &srcDNF, &scopeDNF)
 		}
 	}
-	for _, srcConjunction := range srcConjunctions {
-		for _, dstConjunction := range dstConjunctions {
+	for _, srcConjunction := range srcDNF {
+		for _, dstConjunction := range dstDNF {
 			resSymbolicPaths = append(resSymbolicPaths, &SymbolicPath{Src: *srcConjunction,
 				Dst: *dstConjunction, Conn: rule.Conn})
 		}
@@ -185,26 +185,28 @@ func ConvertFWRuleToSymbolicPaths(config *configuration.Config, isInbound bool, 
 	return &resSymbolicPaths
 }
 
-func updateSrcOrDstConj(isAllGroups bool, srcOrDstConjunctions, scopeConjunctions *[]*Conjunction) {
+// todo: this seems wrong!!!!!! https://github.com/np-guard/vmware-analyzer/issues/443
+func updateSrcOrDstDNF(isAllGroups bool, srcOrDstDNF, scopeDNF *DNF) {
 	if isAllGroups {
-		*srcOrDstConjunctions = *scopeConjunctions
+		*srcOrDstDNF = *scopeDNF
 	} else {
-		*srcOrDstConjunctions = append(*srcOrDstConjunctions, *scopeConjunctions...)
+		*srcOrDstDNF = append(*srcOrDstDNF, *scopeDNF...)
 	}
 }
 
-func getConjunctionsSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
-	groupToConjunctions map[string][]*Conjunction, isExclude, isExternalRelevant,
-	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res []*Conjunction) {
+// given details of Src/Dst returns symbolic representation DNF
+func getDNFSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
+	groupToDNF map[string]DNF, isExclude, isExternalRelevant,
+	isAllGroups bool, groups []*collector.Group, ruleBlocks []*topology.RuleIPBlock) (res DNF) {
 	ipExternalBlockConjunctions, ipInternalBlockConjunctions, isTautology :=
-		getConjunctionForIPBlock(ruleBlocks, isExclude)
+		getDNFForIPBlock(ruleBlocks, isExclude)
 	// todo add tests for all switch cases https://github.com/np-guard/vmware-analyzer/issues/402
 	// group is defined either by ip blocks or in other manners (tags, specific vms)
 	// group defined by IP blocks
 	if isTautology || len(ipExternalBlockConjunctions) > 0 || len(ipInternalBlockConjunctions) > 0 {
 		switch {
 		case isExclude && isTautology:
-			return []*Conjunction{}
+			return DNF{}
 		case !isExclude && isTautology: // block is 0.0.0.0; relevant in any case (also if !isExternalRelevant)
 			return ipExternalBlockConjunctions
 		default:
@@ -217,11 +219,11 @@ func getConjunctionsSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 	// group not defined by IP blocks
 	switch {
 	case isExclude && isAllGroups:
-		return []*Conjunction{}
+		return DNF{}
 	case isAllGroups && !isExclude:
-		res = append(res, &Conjunction{allGroup{}}) // if "Any" group then this is the only relevant internal resource
+		res = append(res, &Term{allGroup{}}) // if "Any" group then this is the only relevant internal resource
 	default:
-		res = append(res, getConjunctionForGroups(config, isExclude, groups, groupToConjunctions, rule.RuleID)...)
+		res = append(res, getDNFForGroups(config, isExclude, groups, groupToDNF, rule.RuleID)...)
 	}
 	if len(res) == 0 {
 		fmt.Printf("debug")
@@ -232,10 +234,10 @@ func getConjunctionsSrcOrDst(config *configuration.Config, rule *dfw.FwRule,
 // divide tautology to internal and external components
 func (path *SymbolicPath) processTautology(isInbound bool) *SymbolicPaths {
 	resPaths := SymbolicPaths{}
-	newSrc := path.Src.processTautology(isInbound)  // inbound (ingress): external source relevant
-	newDst := path.Dst.processTautology(!isInbound) // !inbound (egress): external dst relevant
-	for _, src := range newSrc {
-		for _, dst := range newDst {
+	dnfSrc := path.Src.processTautology(isInbound)  // inbound (ingress): external source relevant
+	dnfDst := path.Dst.processTautology(!isInbound) // !inbound (egress): external dst relevant
+	for _, src := range dnfSrc {
+		for _, dst := range dnfDst {
 			newPath := SymbolicPath{Src: *src, Dst: *dst, Conn: path.Conn}
 			resPaths = append(resPaths, &newPath)
 		}

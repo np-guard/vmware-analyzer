@@ -136,11 +136,11 @@ func (ni *NamespacesInfo) createUDNs() (res []*udnv1.UserDefinedNetwork) {
 
 const apiVersion = "v1" // for both pods and namespaces
 
-// GetConjunctionNamespaces() returns the namspaces of a Conjunction
-// since the Conjunction is abstract, we:
+// GetConjunctionNamespaces() returns the namspaces of a Term
+// since the Term is abstract, we:
 // 1. obtain the list of VMs using the atom labels
 // 2. find the namespaces of the VMs
-func (ni *NamespacesInfo) GetConjunctionNamespaces(conj symbolicexpr.Conjunction) []string {
+func (ni *NamespacesInfo) GetConjunctionNamespaces(conj symbolicexpr.Term) []string {
 	if cachedRes, ok := ni.cacheConjNamespaces[conj.String()]; ok {
 		return cachedRes
 	}
@@ -181,7 +181,7 @@ func (ni *NamespacesInfo) GetConjunctionNamespaces(conj symbolicexpr.Conjunction
 		return slices.Index(ni.Namespaces, n1) - slices.Index(ni.Namespaces, n2)
 	})
 	resStr := common.StringifiedSliceToStrings(res)
-	logging.Debug2f("input Conjunction: %s, result namespaces: %v", conj.String(), resStr)
+	logging.Debug2f("input Term: %s, result namespaces: %v", conj.String(), resStr)
 	ni.cacheConjNamespaces[conj.String()] = resStr
 	return resStr
 }

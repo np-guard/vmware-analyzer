@@ -15,48 +15,48 @@ func (groupBasedInternalResource) getInternalBlock() *netset.IPBlock {
 	return nil
 }
 
-// Evaluates group and translates it into []*Conjunction
-// If group has no expr or evaluation expr fails then uses the group names in  Conjunction
-func getConjunctionForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
-	groupToConjunctions map[string][]*Conjunction, ruleID int) []*Conjunction {
-	res := []*Conjunction{}
+// Evaluates group and translates it into DNF
+// If group has no expr or evaluation expr fails then uses the group names in the DNF
+func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*collector.Group,
+	groupToDNF map[string]DNF, ruleID int) DNF {
+	res := DNF{}
 	for _, group := range groups {
 		key := group.Name()
 		if isExclude {
 			key = "not-" + key
 		}
 		// todo: treat negation properly
-		if cachedGroupConj, ok := groupToConjunctions[key]; ok {
-			res = append(res, cachedGroupConj...)
+		if cachedGroupDNF, ok := groupToDNF[key]; ok {
+			res = append(res, cachedGroupDNF...)
 			continue
 		}
 		// not in cache
-		// default: Conjunction defined via group only
-		groupConj := []*Conjunction{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
+		// default: Term defined via group only
+		groupDNF := DNF{{groupAtomicTerm{group: group, atomicTerm: atomicTerm{neg: isExclude}}}}
 		synthesisUseGroup := fmt.Sprintf("group %s, referenced by FW rule with ID %d, "+
 			"synthesis will be based only on its name", group.Name(), ruleID)
 		// if group has a tag based supported expression then considers the tags
 		if len(group.Expression) > 0 {
-			tagConj := GetConjunctionFromExpr(config, isExclude, &group.Expression, group.Name())
-			if tagConj != nil {
-				groupConj = tagConj
+			tagTerm := GetDNFFromExpr(config, isExclude, &group.Expression, group.Name())
+			if tagTerm != nil {
+				groupDNF = tagTerm
 			} else {
 				logging.Debugf("for %s", synthesisUseGroup)
 			}
 		} else {
 			logging.Debugf("No expression is attached to %s", synthesisUseGroup)
 		}
-		groupToConjunctions[key] = groupConj
-		res = append(res, groupConj...)
+		groupToDNF[key] = groupDNF
+		res = append(res, groupDNF...)
 	}
 	return res
 }
 
-// evaluates symbolic Conjunctions from a given Expression
+// evaluates symbolic DNF from a given Expression
 //////////////////////////////////////////////////////////
 
-// return the tag corresponding to a given condition
-func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) []atomic {
+// returns atomic tagAtomicTerm corresponding to a given condition
+func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) atomic {
 	// assumption: cond is of a tag over VMs
 	if cond.MemberType == nil || *cond.MemberType != nsx.ConditionMemberTypeVirtualMachine ||
 		cond.Key == nil || *cond.Key != nsx.ConditionKeyTag ||
@@ -73,7 +73,7 @@ func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group st
 	}
 	tagAtomicTerm := tagAtomicTerm{tag: &nsx.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
 	var atomicRes atomic = tagAtomicTerm
-	return []atomic{atomicRes}
+	return atomicRes
 }
 
 // returns the *conjunctionOperatorConjunctionOperator corresponding to a ConjunctionOperator  - non nested "Or" or "And"
@@ -103,15 +103,16 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-func getTermForExprElement(config *configuration.Config, isExcluded bool, elem collector.ExpressionElement,
-	group string) []atomic {
+// return DNF which is a symbolic presentation of the expression element
+func getDNFsForExprElement(config *configuration.Config, isExcluded bool, group string,
+	elem collector.ExpressionElement) DNF {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
 	switch {
 	case okCond:
-		return getAtomicsForCondition(isExcluded, cond, group)
+		return DNF{{getAtomicsForCondition(isExcluded, cond, group)}}
 	case okPath:
-		return getAtomicsForPath(config, isExcluded, path, group)
+		return getDNFOfPath(config, isExcluded, path, group)
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
@@ -122,66 +123,59 @@ func debugMsg(group, text string) {
 	logging.Debugf("group's %s defining expression %s ", group, text)
 }
 
-// GetConjunctionFromExpr returns the []*Conjunction corresponding to an expression - supported in this stage:
+// GetDNFFromExpr returns the DNF corresponding to an expression - supported in this stage:
 // either a single condition or two conditions with ConjunctionOperator in which the condition(s) refer to a tag of a VM
 // gets here only if expression is non-nil and of length > 1
-func GetConjunctionFromExpr(config *configuration.Config,
-	isExcluded bool, expr *collector.Expression, group string) []*Conjunction {
-	const nonTrivialExprLength = 3
+func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collector.Expression, group string) DNF {
 	exprVal := *expr
-	condTag1 := getTermForExprElement(config, isExcluded, exprVal[0], group)
+	const nonTrivialExprLength = 3
+	condTag1 := getDNFsForExprElement(config, isExcluded, group, exprVal[0])
 	if condTag1 == nil {
 		return nil
 	}
 	if len(exprVal) == 1 { // single condition of a tag equal or not equal a value
-		return orAtomicToConjunction(condTag1)
+		return condTag1
 	} else if len(*expr) == nonTrivialExprLength {
 		orOrAnd := getConjunctionOperator(isExcluded, exprVal[1], group)
-		condTag2 := getTermForExprElement(config, isExcluded, exprVal[2], group)
+		condTag2 := getDNFsForExprElement(config, isExcluded, group, exprVal[2])
 		if orOrAnd == nil || condTag2 == nil {
 			return nil
 		}
 		if *orOrAnd == nsx.ConjunctionOperatorConjunctionOperatorAND {
-			return andAtomicToConjunction(condTag1, condTag2)
+			return andDNFs(condTag1, condTag2)
 		}
-		return orAtomicToConjunction(append(condTag1, condTag2...))
+		return append(condTag1, condTag2...)
 	}
 	// len not 1 neither 3
 	debugMsg(group, "is not supported")
 	return nil
 }
 
-func orAtomicToConjunction(atomics []atomic) []*Conjunction {
-	res := make([]*Conjunction, len(atomics))
-	for i, thisAtomic := range atomics {
-		res[i] = &Conjunction{thisAtomic}
-	}
-	return res
-}
-
-// ANDing a cartesian products of two []atomic
-func andAtomicToConjunction(atomics1, atomics2 []atomic) []*Conjunction {
-	res := []*Conjunction{}
-	for _, atomic1 := range atomics1 {
-		for _, atomic2 := range atomics2 {
-			res = append(res, &Conjunction{atomic1, atomic2})
+// ANDing two DNFs
+func andDNFs(dnf1, dnf2 DNF) DNF {
+	res := DNF{}
+	for _, term1 := range dnf1 {
+		for _, term2 := range dnf2 {
+			var andTerms = *term1.copy()
+			andTerms = append(andTerms, *term2...)
+			res = append(res, &andTerms)
 		}
 	}
 	return res
 }
 
-// return the []atomic corresponding to a given condition
-func getAtomicsForPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
-	group string) []atomic {
-	res := []atomic{}
+// returns the DNF corresponding to a given condition on []path
+func getDNFOfPath(config *configuration.Config, isExcluded bool, pathExpr *collector.PathExpression,
+	group string) DNF {
+	res := DNF{}
 	for _, path := range pathExpr.Paths {
 		groupOfPath, isGroup := config.PathToGroupsMap[path]
 		segmentOfPath, isSegment := config.PathToSegmentsMap[path]
 		switch {
 		case isGroup:
-			res = append(res, groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
+			res = append(res, &Term{groupAtomicTerm{group: groupOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		case isSegment:
-			res = append(res, SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}})
+			res = append(res, &Term{SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		default:
 			debugMsg(group, fmt.Sprintf("group %s includes a path %s which is not currently supported "+
 				"(currently supported: group or segment) ", group, path))

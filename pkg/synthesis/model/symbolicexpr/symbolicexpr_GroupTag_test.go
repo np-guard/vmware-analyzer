@@ -53,28 +53,28 @@ func TestTagTerms(t *testing.T) {
 }
 
 func TestSymbolicPaths(t *testing.T) {
-	conjSrc, conjDst, conjEmpty := Conjunction{}, Conjunction{}, Conjunction{}
+	termSrc, termDst, termEmpty := Term{}, Term{}, Term{}
 	for i := 1; i <= 3; i++ {
 		atomic := NewDummyGroupTerm(fmt.Sprintf("str%v", i), false)
-		conjSrc = *conjSrc.add(*atomic)
+		termSrc = *termSrc.add(*atomic)
 		negateAtomic := atomic.negate().(groupAtomicTerm)
-		conjDst = *conjDst.add(negateAtomic)
+		termDst = *termDst.add(negateAtomic)
 	}
-	conjSymbolicPath := SymbolicPath{Src: conjSrc, Dst: conjDst, Conn: netset.AllTCPTransport()}
+	conjSymbolicPath := SymbolicPath{Src: termSrc, Dst: termDst, Conn: netset.AllTCPTransport()}
 	fmt.Printf("\nconjSymbolicPath:\n%v\n", conjSymbolicPath.String())
 	require.Equal(t, "src: (group = str1 and group = str2 and group = str3) dst: "+
 		"(group != str1 and group != str2 and group != str3) conn: TCP",
 		conjSymbolicPath.String(), "conjSymbolicPath not as expected")
-	println("conjEmpty", conjEmpty.String())
-	require.Equal(t, emptySet, conjEmpty.String(), "empty conjunction not as expected")
+	println("termEmpty", termEmpty.String())
+	require.Equal(t, emptySet, termEmpty.String(), "empty conjunction not as expected")
 	// tests removeRedundant
 	slytherin, gryffindor := "Slytherin", "Gryffindor"
 	atomicSly := NewDummyGroupTerm(slytherin, false)
 	atomicNegSly := NewDummyGroupTerm(slytherin, true)
 	atomicGry := NewDummyGroupTerm(gryffindor, false)
 	atomicNegGry := NewDummyGroupTerm(gryffindor, true)
-	src := Conjunction{atomicGry, atomicNegSly}
-	dst := Conjunction{atomicSly, atomicNegGry}
+	src := Term{atomicGry, atomicNegSly}
+	dst := Term{atomicSly, atomicNegGry}
 	path := SymbolicPath{src, dst, netset.AllTCPTransport()}
 	fmt.Printf("path is %v\n", path.String())
 	disjoint := [][]string{{slytherin, gryffindor}}
@@ -95,7 +95,7 @@ func TestSymbolicPaths(t *testing.T) {
 // src: (tag = src1) dst: (tag = dst1 and tag != dst2) All connection
 // src: (tag = src1) dst: (tag = dst2) ICMP, TCP
 func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
-	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
+	conjSrc1, conjDst1, conjSrc2, conjDst2 := Term{}, Term{}, Term{}, Term{}
 	atomic1 := NewTagTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomic1)
 	atomicDst1 := NewTagTerm("dst1", false)
@@ -123,7 +123,7 @@ func TestComputeAllowGivenDenySingleTermEach1(t *testing.T) {
 // Output allow paths:
 // src: (tag = src1) dst: (tag = dst1) UDP
 func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
-	conjSrc1, conjDst1, conjSrc2, conjDst2 := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
+	conjSrc1, conjDst1, conjSrc2, conjDst2 := Term{}, Term{}, Term{}, Term{}
 	atomic1 := NewTagTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomic1)
 	atomicDst1 := NewTagTerm("dst1", false)
@@ -157,7 +157,7 @@ func TestComputeAllowGivenDenySingleTermEach2(t *testing.T) {
 // Output allow paths:
 // src: (group = src1) dst: (group = dst1) TCP src port TCP src-ports: 51-65535
 func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
-	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
+	conjSrc1, conjDst1 := Term{}, Term{}
 	atomic1 := NewDummyGroupTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomic1)
 	atomicDst1 := NewDummyGroupTerm("dst1", false)
@@ -180,7 +180,7 @@ func TestComputeAllowGivenDenySingleTermEach3(t *testing.T) {
 // src: (s1 = src1) dst: (d1 = dst2) TCP
 // Output allow paths: empty set
 func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
-	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
+	conjSrc1, conjDst1 := Term{}, Term{}
 	atomic1 := NewDummyGroupTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomic1)
 	atomicDst1 := NewDummyGroupTerm("dst1", false)
@@ -216,7 +216,7 @@ func TestComputeAllowGivenDenySingleTermEach4(t *testing.T) {
 // src: (group = src1 and group = src2 and group = src3)
 // dst: (group = dst1 and group = str2 and group = dst3 and group != dst3`)
 func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
-	conjAllowSrc, conjAllowDst, conjDenySrc, conjDenyDst := Conjunction{}, Conjunction{}, Conjunction{}, Conjunction{}
+	conjAllowSrc, conjAllowDst, conjDenySrc, conjDenyDst := Term{}, Term{}, Term{}, Term{}
 	for i := 1; i <= 3; i++ {
 		atomicAllowSrc := NewDummyGroupTerm(fmt.Sprintf("src%v", i), false)
 		conjAllowSrc = *conjAllowSrc.add(*atomicAllowSrc)
@@ -265,14 +265,14 @@ func TestComputeAllowGivenDenyThreeTermsEach(t *testing.T) {
 // src: (*) dst: (group != dst2`)
 // src: (*) dst: (group != dst3`)
 func TestComputeAllowGivenDenyAllowAllGroup(t *testing.T) {
-	conjDenySrc, conjDenyDst := Conjunction{}, Conjunction{}
+	conjDenySrc, conjDenyDst := Term{}, Term{}
 	for i := 1; i <= 3; i++ {
 		atomicDenySrc := NewDummyGroupTerm(fmt.Sprintf("src%v`", i), false)
 		conjDenySrc = *conjDenySrc.add(*atomicDenySrc)
 		atomicDenyDst := NewDummyGroupTerm(fmt.Sprintf("dst%v`", i), false)
 		conjDenyDst = *conjDenyDst.add(*atomicDenyDst)
 	}
-	allGroupConj := Conjunction{allGroup{}}
+	allGroupConj := Term{allGroup{}}
 	allowPath := SymbolicPath{Src: allGroupConj, Dst: allGroupConj, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllUDPTransport()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
@@ -294,14 +294,14 @@ func TestComputeAllowGivenDenyAllowAllGroup(t *testing.T) {
 // src: * dst: *
 // Output allow paths: empty
 func TestComputeAllowGivenDenyDenyAllGroup(t *testing.T) {
-	conjAllowSrc, conjAllowDst := Conjunction{}, Conjunction{}
+	conjAllowSrc, conjAllowDst := Term{}, Term{}
 	for i := 1; i <= 3; i++ {
 		atomicAllowSrc := NewDummyGroupTerm(fmt.Sprintf("src%v", i), false)
 		conjAllowSrc = *conjAllowSrc.add(*atomicAllowSrc)
 		atomicAllowDst := NewDummyGroupTerm(fmt.Sprintf("dst%v", i), false)
 		conjAllowDst = *conjAllowDst.add(*atomicAllowDst)
 	}
-	allGroupConj := Conjunction{allGroup{}}
+	allGroupConj := Term{allGroup{}}
 	allowPath := SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: allGroupConj, Dst: allGroupConj, Conn: netset.AllTransports()}
 	fmt.Printf("symbolicAllow is %s\nsymbolicDeny is %s\n", allowPath.String(), denyPath.String())
@@ -343,14 +343,14 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 		if i < 2 {
 			atomicAllowSrc := NewDummyGroupTerm(fmt.Sprintf("t%v", 2*i), false)
 			atomicAllowDst := NewDummyGroupTerm(fmt.Sprintf("t%v", 2*i+1), false)
-			conjAllowSrc := Conjunction{atomicAllowSrc}
-			conjAllowDst := Conjunction{atomicAllowDst}
+			conjAllowSrc := Term{atomicAllowSrc}
+			conjAllowDst := Term{atomicAllowDst}
 			allowPaths = append(allowPaths, &SymbolicPath{Src: conjAllowSrc, Dst: conjAllowDst, Conn: netset.AllTCPTransport()})
 		}
 		atomicDenySrc := NewDummyGroupTerm(fmt.Sprintf("s%v", 2*i), false)
 		atomicDenyDst := NewDummyGroupTerm(fmt.Sprintf("s%v", 2*i+1), false)
-		conjDenySrc := Conjunction{atomicDenySrc}
-		conjDenyDst := Conjunction{atomicDenyDst}
+		conjDenySrc := Term{atomicDenySrc}
+		conjDenyDst := Term{atomicDenyDst}
 		denyPaths = append(denyPaths, &SymbolicPath{Src: conjDenySrc, Dst: conjDenyDst, Conn: netset.AllTransports()})
 	}
 	fmt.Printf("allowPaths:\n%v\ndenyPaths:\n%v\n", allowPaths.String(), denyPaths.String())
@@ -383,12 +383,12 @@ func TestComputeAllowGivenDenies(t *testing.T) {
 // (group = src1) dst: (d1 = dst1)
 // Output allow paths: (group = str1) dst: (d1 != dst1)
 func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
-	conjSrc1, conjDst1 := Conjunction{}, Conjunction{}
+	conjSrc1, conjDst1 := Term{}, Term{}
 	atomicSrc1 := NewDummyGroupTerm("src1", false)
 	conjSrc1 = *conjSrc1.add(*atomicSrc1)
 	atomicDst1 := NewDummyGroupTerm("dst1", false)
 	conjDst1 = *conjDst1.add(*atomicDst1)
-	allowPath := SymbolicPath{Src: conjSrc1, Dst: Conjunction{allGroup{}}, Conn: netset.AllTransports()}
+	allowPath := SymbolicPath{Src: conjSrc1, Dst: Term{allGroup{}}, Conn: netset.AllTransports()}
 	denyPath := SymbolicPath{Src: conjSrc1, Dst: conjDst1, Conn: netset.AllTransports()}
 	allowWithDeny := ComputeAllowGivenDenies(true, &SymbolicPaths{&allowPath}, &SymbolicPaths{&denyPath},
 		&Hints{GroupsDisjoint: [][]string{}})
@@ -413,7 +413,7 @@ func TestAllowDenyOptimizeEmptyPath(t *testing.T) {
 // path2 is implied by path3 and path5, is not implied by path4
 // path5 is implied by path3 but not by path2
 func TestSymbolicPathsImplied(t *testing.T) {
-	conj1, conj2, conj3 := Conjunction{}, Conjunction{}, Conjunction{}
+	conj1, conj2, conj3 := Term{}, Term{}, Term{}
 	for i := 1; i <= 3; i++ {
 		atomicAllow := NewDummyGroupTerm(fmt.Sprintf("str%v", i), false)
 		if i < 2 {
@@ -449,8 +449,8 @@ func TestSymbolicPathsImplied(t *testing.T) {
 func TestAllGroupAndTautology(t *testing.T) {
 	var myAllGroup = allGroup{}
 	var myTautology = tautology{}
-	allGroupConj := Conjunction{myAllGroup}
-	tautologyConj := Conjunction{myTautology}
+	allGroupConj := Term{myAllGroup}
+	tautologyConj := Term{myTautology}
 	require.Equal(t, true, allGroupConj.isAllGroup())
 	require.Equal(t, false, allGroupConj.isTautology())
 	require.Equal(t, true, allGroupConj.hasTagOrGroupOrInternalIPTerm())
@@ -463,8 +463,8 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, tautologyConj.isEmpty(emptyHints))
 	require.Equal(t, false, allGroupConj.isEmpty(emptyHints))
 
-	allGroupConjNeg := Conjunction{myAllGroup.negate()}
-	tautologyConjNeg := Conjunction{myTautology.negate()}
+	allGroupConjNeg := Term{myAllGroup.negate()}
+	tautologyConjNeg := Term{myTautology.negate()}
 	require.Equal(t, true, tautologyConjNeg.isEmpty(emptyHints))
 	require.Equal(t, false, allGroupConjNeg.isEmpty(emptyHints))
 	require.Equal(t, false, allGroupConjNeg.isAllGroup())
@@ -474,17 +474,17 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, tautologyConjNeg.hasTagOrGroupOrInternalIPTerm())
 	require.Equal(t, false, tautologyConjNeg.hasExternalIPBlockTerm())
 	atomicTag := NewTagTerm("myTag", false)
-	conjTag := Conjunction{}
+	conjTag := Term{}
 	conjTag = *conjTag.add(atomicTag)
 	atomicGroup := NewDummyGroupTerm("group1", false)
-	conjGroup := Conjunction{}
+	conjGroup := Term{}
 	conjGroup = *conjGroup.add(*atomicGroup)
-	conjGroupTag := Conjunction{}
+	conjGroupTag := Term{}
 	conjGroupTag = *conjGroupTag.add(atomicTag)
 	conjGroupTag = *conjGroupTag.add(atomicGroup)
 	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
-	ipBlockConj := Conjunction{ipBlockTerm}
+	ipBlockConj := Term{ipBlockTerm}
 
 	// tautology is a superset of all
 	require.Equal(t, true, tautologyConj.isSuperset(&allGroupConj, emptyHints))
@@ -516,7 +516,7 @@ func TestAllGroupAndTautology(t *testing.T) {
 	require.Equal(t, false, allGroupConj.disjoint(&conjGroupTag, emptyHints))
 }
 
-func getTagGroupConj() (conjTag, conjGroup, conjGroupTag Conjunction) {
+func getTagGroupConj() (conjTag, conjGroup, conjGroupTag Term) {
 	atomicTag := NewTagTerm("myTag", false)
 	conjTag = *conjTag.add(atomicTag)
 	atomicGroup := NewDummyGroupTerm("group1", false)
@@ -530,7 +530,7 @@ func TestIPConjWithInternalResourceConj(t *testing.T) {
 	conjTag, conjGroup, conjGroupTag := getTagGroupConj()
 	ipBlock, _ := netset.IPBlockFromCidr("1.2.3.0/8")
 	ipBlockTerm := NewIPBlockTerm(&topology.IPBlock{Block: ipBlock, OriginalIP: "1.2.3.0/8"})
-	ipBlockConj := Conjunction{ipBlockTerm}
+	ipBlockConj := Term{ipBlockTerm}
 	emptyHints := &Hints{GroupsDisjoint: [][]string{}}
 
 	// conj with ipBlock is disjoint to conj with tag or group terms

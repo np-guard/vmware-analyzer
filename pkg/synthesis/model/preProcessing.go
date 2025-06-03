@@ -17,30 +17,30 @@ import (
 // PreProcessing convert policy from spec to symbolicPolicy struct
 func PreProcessing(config *configuration.Config,
 	categoriesSpecs []*dfw.CategorySpec) (categoryToPolicy map[collector.DfwCategory]*SymbolicPolicy,
-	groupToConjunctions map[string][]*symbolicexpr.Conjunction) {
+	groupToDNF map[string]symbolicexpr.DNF) {
 	categoryToPolicy = map[collector.DfwCategory]*SymbolicPolicy{}
-	groupToConjunctions = map[string][]*symbolicexpr.Conjunction{} // caching groups' Conjunctions
+	groupToDNF = map[string]symbolicexpr.DNF{} // caching groups' DNFs
 	for _, category := range categoriesSpecs {
 		categoryPolicy := SymbolicPolicy{}
 		if len(category.EvaluatedRules.OutboundRules)+len(category.EvaluatedRules.InboundRules) == 0 {
 			continue
 		}
 		categoryPolicy.Inbound = append(categoryPolicy.Inbound, convertRulesToSymbolicPaths(config, true,
-			category.EvaluatedRules.InboundRules, category.Category, groupToConjunctions)...)
+			category.EvaluatedRules.InboundRules, category.Category, groupToDNF)...)
 		categoryPolicy.Outbound = append(categoryPolicy.Outbound, convertRulesToSymbolicPaths(config, false,
-			category.EvaluatedRules.OutboundRules, category.Category, groupToConjunctions)...)
+			category.EvaluatedRules.OutboundRules, category.Category, groupToDNF)...)
 
 		categoryToPolicy[category.Category] = &categoryPolicy
 	}
-	return categoryToPolicy, groupToConjunctions
+	return categoryToPolicy, groupToDNF
 }
 
 func convertRulesToSymbolicPaths(config *configuration.Config, isInbound bool,
 	rules []*dfw.EvaluatedFWRule, category collector.DfwCategory,
-	groupToConjunctions map[string][]*symbolicexpr.Conjunction) []*SymbolicRule {
+	groupToDNF map[string]symbolicexpr.DNF) []*SymbolicRule {
 	res := make([]*SymbolicRule, len(rules))
 	for i, rule := range rules {
-		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(config, isInbound, rule.RuleObj, groupToConjunctions)
+		ruleSymbolicPaths := symbolicexpr.ConvertFWRuleToSymbolicPaths(config, isInbound, rule.RuleObj, groupToDNF)
 		res[i] = &SymbolicRule{OrigRule: rule.RuleObj, OrigRuleCategory: category, OrigSymbolicPaths: ruleSymbolicPaths}
 	}
 	return res

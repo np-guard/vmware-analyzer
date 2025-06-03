@@ -1,18 +1,18 @@
 package model
 
 import (
-	"fmt"
 	"sort"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
 
 // todo: make more efficient https://github.com/np-guard/vmware-analyzer/issues/436
 func inferDisjointGroups(groups []*collector.Group, inferHints bool,
-	groupToConjunctions map[string][]*symbolicexpr.Conjunction) *symbolicexpr.Hints {
+	groupToDNF map[string]symbolicexpr.DNF) *symbolicexpr.Hints {
 	if !inferHints {
 		return &symbolicexpr.Hints{}
 	}
@@ -26,13 +26,13 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool,
 			continue
 		}
 		// todo: not all groups are in cache https://github.com/np-guard/vmware-analyzer/issues/436
-		if conjs, exists := groupToConjunctions[name]; exists {
-			if symbolicexpr.ConjunctionsOnlyIPBlockTerms(conjs) {
-				fmt.Printf("skipping OnlyIPBlock %v\n", name)
+		if dnfs, exists := groupToDNF[name]; exists {
+			if symbolicexpr.TermsOnlyIPBlockTerms(dnfs) {
+				logging.Debugf("skipping OnlyIPBlock %v\n", name)
 				continue
 			}
 		} else {
-			fmt.Printf("did not find #%v# in groupToConjunctions\n", name)
+			logging.Debugf("did not find #%v# in groupToDNF\n", name)
 		}
 		nameToGroup[name] = group
 		names = append(names, name)

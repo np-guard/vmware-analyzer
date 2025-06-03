@@ -130,7 +130,7 @@ func (a *absToNXS) addNewRule(categoryType string) *data.Rule {
 	return &category.Rules[len(category.Rules)-1]
 }
 
-func (a *absToNXS) createGroup(con symbolicexpr.Conjunction) string {
+func (a *absToNXS) createGroup(con symbolicexpr.Term) string {
 	vms := slices.Clone(a.allVMs)
 	for _, atom := range con {
 		switch {

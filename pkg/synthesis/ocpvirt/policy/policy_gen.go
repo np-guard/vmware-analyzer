@@ -128,7 +128,7 @@ func policyDescriptionFromSymbolicPath(path *symbolicexpr.SymbolicPath, isAdmin 
 	return path.String()
 }
 
-func (np *PolicyGenerator) createSelector(con symbolicexpr.Conjunction) *policySelector {
+func (np *PolicyGenerator) createSelector(con symbolicexpr.Term) *policySelector {
 	if con == nil {
 		return newEmptyPolicySelector()
 	}
