@@ -97,10 +97,10 @@ type atomic interface {
 	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }
 
-// Term of []atomic
+// Term - ANDing []atomic
 type Term []atomic
 
-// DNF of []*Term
+// DNF of []*Term; namely ORing the terms
 type DNF []*Term
 
 // SymbolicPath all path from a Src VM satisfying Src to Dst VM satisfying Dst

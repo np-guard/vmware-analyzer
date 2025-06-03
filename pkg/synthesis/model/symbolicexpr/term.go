@@ -338,8 +338,8 @@ func (t *Term) processTautology(externalRelevant bool) DNF {
 	return DNF{&termWOTautology, &allExtrenalTerms}
 }
 
-// hasOnlyIPBlockTerms returns true if all terms in Term c are based on IPBlocks
-func (t *Term) hasOnlyIPBlockTerms() bool {
+// dnfHasOnlyIPBlockTerms returns true if all terms in Term c are based on IPBlocks
+func (t *Term) dnfHasOnlyIPBlockTerms() bool {
 	for _, item := range *t {
 		if item.GetExternalBlock() == nil && item.getInternalBlock() == nil {
 			return false
@@ -350,7 +350,7 @@ func (t *Term) hasOnlyIPBlockTerms() bool {
 
 func TermsOnlyIPBlockTerms(dnf DNF) bool {
 	for _, term := range dnf {
-		if !term.hasOnlyIPBlockTerms() {
+		if !term.dnfHasOnlyIPBlockTerms() {
 			return false
 		}
 	}
