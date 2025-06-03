@@ -1,12 +1,12 @@
 package model
 
 import (
-	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"sort"
 	"strings"
 
 	"github.com/np-guard/vmware-analyzer/internal/common"
 	"github.com/np-guard/vmware-analyzer/pkg/collector"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
 
