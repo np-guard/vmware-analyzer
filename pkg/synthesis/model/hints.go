@@ -1,7 +1,7 @@
 package model
 
 import (
-	"fmt"
+	"github.com/np-guard/vmware-analyzer/pkg/logging"
 	"sort"
 	"strings"
 
@@ -28,11 +28,11 @@ func inferDisjointGroups(groups []*collector.Group, inferHints bool,
 		// todo: not all groups are in cache https://github.com/np-guard/vmware-analyzer/issues/436
 		if dnfs, exists := groupToDNF[name]; exists {
 			if symbolicexpr.TermsOnlyIPBlockTerms(dnfs) {
-				fmt.Printf("skipping OnlyIPBlock %v\n", name)
+				logging.Debugf("skipping OnlyIPBlock %v\n", name)
 				continue
 			}
 		} else {
-			fmt.Printf("did not find #%v# in groupToDNF\n", name)
+			logging.Debugf("did not find #%v# in groupToDNF\n", name)
 		}
 		nameToGroup[name] = group
 		names = append(names, name)
