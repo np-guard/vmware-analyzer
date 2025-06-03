@@ -1286,13 +1286,6 @@ var ExampleHintsDisjoint = registerExample(&Example{
 	DisjointGroupsTags: disjointHouses2Dum,
 })
 
-var ExampleHintsDisjointNoGivenHints = registerExample(&Example{
-	Name:        "ExampleHintsDisjointNoGivenHints",
-	VMs:         exampleHintsDisjointVMs,
-	GroupsByVMs: exampleHintsDisjointGroupsByVMs,
-	Policies:    HintsDisjointPolicy,
-})
-
 var exampleHintsDisjointVMs = []string{sly, huf, gry, Dum1, Dum2}
 
 var exampleHintsDisjointGroupsByVMs = map[string][]string{
@@ -1529,14 +1522,6 @@ var ExampleHogwartsDisjointGroup = [][]string{
 	{app, dum},
 	{db, dum},
 }
-
-var ExampleHogwartsNoGivenHints = registerExample(&Example{
-	Name:               "ExampleHogwartsNoGivenHints",
-	VMs:                ExampleHogwartsVMs,
-	GroupsByVMs:        hogwartsBidimensionalGroups,
-	Policies:           ExampleHogwartsPolicies,
-	DisjointGroupsTags: [][]string{},
-})
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
