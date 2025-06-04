@@ -103,16 +103,19 @@ func getConjunctionOperator(isExcluded bool, elem collector.ExpressionElement,
 	return &retOp
 }
 
-// return DNF which is a symbolic presentation of the expression element
-func getDNFsForExprElement(config *configuration.Config, isExcluded bool, group string,
+// return DNF which is a symbolic presentation of the operand: nsx's condition, path or nested expression
+func getDNFsForOperands(config *configuration.Config, isExcluded bool, group string,
 	elem collector.ExpressionElement) DNF {
 	cond, okCond := elem.(*collector.Condition)
 	path, okPath := elem.(*collector.PathExpression)
+	nestedExpr, okNested := elem.(*collector.NestedExpression)
 	switch {
 	case okCond:
 		return DNF{{getAtomicsForCondition(isExcluded, cond, group)}}
 	case okPath:
 		return getDNFOfPath(config, isExcluded, path, group)
+	case okNested:
+		return getDNFOfNested(config, isExcluded, nestedExpr, group)
 	default:
 		debugMsg(group, fmt.Sprintf("includes a component is of type %T which is not supported", elem))
 		return nil
@@ -133,13 +136,13 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 	var lastConjunction *nsx.ConjunctionOperatorConjunctionOperator
 	for i, curExprItem := range exprVal {
 		if i%2 == 0 { // condition or nested expression
-			newExpr := getDNFsForExprElement(config, isExcluded, group, curExprItem)
+			operand := getDNFsForOperands(config, isExcluded, group, curExprItem)
 			if lastConjunction == nil { // first time
-				exprDnf = newExpr
+				exprDnf = operand
 			} else if *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorAND { // And
-				exprDnf = andDNFs(exprDnf, newExpr)
+				exprDnf = andDNFs(exprDnf, operand)
 			} else if *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorOR { // Or
-				exprDnf = append(exprDnf, newExpr...)
+				exprDnf = append(exprDnf, operand...)
 			} else {
 				debugMsg(group, "is not supported")
 			}
@@ -153,6 +156,12 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 // ANDing two DNFs
 func andDNFs(dnf1, dnf2 DNF) DNF {
 	res := DNF{}
+	if len(dnf1) == 0 {
+		return dnf2
+	}
+	if len(dnf2) == 0 {
+		return dnf1
+	}
 	for _, term1 := range dnf1 {
 		for _, term2 := range dnf2 {
 			var andTerms = *term1.copy()
@@ -176,9 +185,26 @@ func getDNFOfPath(config *configuration.Config, isExcluded bool, pathExpr *colle
 		case isSegment:
 			res = append(res, &Term{SegmentTerm{segment: segmentOfPath, atomicTerm: atomicTerm{neg: isExcluded}}})
 		default:
-			debugMsg(group, fmt.Sprintf("group %s includes a path %s which is not currently supported "+
-				"(currently supported: group or segment) ", group, path))
+			debugMsg(group, fmt.Sprintf("includes a path %s which is not currently supported ", path))
 		}
 	}
 	return res
+}
+
+// returns the DNF corresponding to a given nested expression
+// nested-expression has conjunction expressions AND at odd indices
+func getDNFOfNested(config *configuration.Config, isExcluded bool, nestedExpr *collector.NestedExpression,
+	group string) DNF {
+	exprVal := nestedExpr.Expressions
+	var exprDnf = DNF{}
+	for i, curExprItem := range exprVal {
+		if i%2 == 0 { // condition
+			exprDnf = andDNFs(exprDnf, getDNFsForOperands(config, isExcluded, group, curExprItem))
+		} else { // must be AND Operator
+			if *getConjunctionOperator(isExcluded, curExprItem, group) != nsx.ConjunctionOperatorConjunctionOperatorAND {
+				debugMsg(group, fmt.Sprintf("contains an illegal nested expression %s", nestedExpr.String()))
+			}
+		}
+	}
+	return exprDnf
 }
