@@ -137,13 +137,14 @@ func GetDNFFromExpr(config *configuration.Config, isExcluded bool, expr *collect
 	for i, curExprItem := range exprVal {
 		if i%2 == 0 { // condition or nested expression
 			operand := getDNFsForOperands(config, isExcluded, group, curExprItem)
-			if lastConjunction == nil { // first time
+			switch {
+			case lastConjunction == nil: // first time
 				exprDnf = operand
-			} else if *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorAND { // And
+			case *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorAND:
 				exprDnf = andDNFs(exprDnf, operand)
-			} else if *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorOR { // Or
+			case *lastConjunction == nsx.ConjunctionOperatorConjunctionOperatorOR:
 				exprDnf = append(exprDnf, operand...)
-			} else {
+			default:
 				debugMsg(group, "is not supported")
 			}
 		} else { // Operator
@@ -200,10 +201,9 @@ func getDNFOfNested(config *configuration.Config, isExcluded bool, nestedExpr *c
 	for i, curExprItem := range exprVal {
 		if i%2 == 0 { // condition
 			exprDnf = andDNFs(exprDnf, getDNFsForOperands(config, isExcluded, group, curExprItem))
-		} else { // must be AND Operator
-			if *getConjunctionOperator(isExcluded, curExprItem, group) != nsx.ConjunctionOperatorConjunctionOperatorAND {
-				debugMsg(group, fmt.Sprintf("contains an illegal nested expression %s", nestedExpr.String()))
-			}
+		} else if *getConjunctionOperator(isExcluded, curExprItem, group) !=
+			nsx.ConjunctionOperatorConjunctionOperatorAND { // must be AND Operator
+			debugMsg(group, fmt.Sprintf("contains an illegal nested expression %s", nestedExpr.String()))
 		}
 	}
 	return exprDnf
