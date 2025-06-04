@@ -233,8 +233,8 @@ var ExampleHogwartsNestedExpr = registerExample(&Example{
 				{
 					Name:     "allow2",
 					ID:       9197,
-					Source:   gry,
-					Dest:     sly,
+					Source:   web,
+					Dest:     app,
 					Services: []string{AnyStr},
 					Action:   Allow,
 				},

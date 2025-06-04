@@ -7,7 +7,7 @@ Priority |Rule Id |Action |Src                              |Dst                
 0        |9195    |allow  |(tag = Slytherin and tag = DB)   |(tag = Gryffindor and tag = Web) |All Connections
 0        |9195    |allow  |(tag = Slytherin and tag = DB)   |(tag = Slytherin and tag = DB)   |All Connections
 1        |9196    |deny   |(tag = Slytherin)                |(tag = Gryffindor)               |All Connections
-2        |9197    |allow  |(tag = Gryffindor)               |(tag = Slytherin)                |All Connections
+2        |9197    |allow  |(tag = Web)                      |(tag = App)                      |All Connections
 3        |10230   |deny   |(*)                              |(*)                              |All Connections
 
 
@@ -18,6 +18,6 @@ Priority |Rule Id |Action |Src                              |Dst                
 0        |9195    |allow  |(tag = Slytherin and tag = DB)   |(tag = Gryffindor and tag = Web) |All Connections
 0        |9195    |allow  |(tag = Slytherin and tag = DB)   |(tag = Slytherin and tag = DB)   |All Connections
 1        |9196    |deny   |(tag = Slytherin)                |(tag = Gryffindor)               |All Connections
-2        |9197    |allow  |(tag = Gryffindor)               |(tag = Slytherin)                |All Connections
+2        |9197    |allow  |(tag = Web)                      |(tag = App)                      |All Connections
 3        |10230   |deny   |(*)                              |(*)                              |All Connections
 
