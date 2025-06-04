@@ -424,6 +424,14 @@ var groupsOfNonVMsTests = []synthesisTest{
 		noHint:          false,
 		inferHints:      false,
 	},
+	// simple nested expression
+	{
+		name:            "ExampleGroup4",
+		exData:          data.ExampleGroup4,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
 }
 
 var liveNsxTest = synthesisTest{
@@ -832,7 +840,7 @@ const (
 )
 
 // to generate output results change runTestMode:
-var runTestMode = OutputComparison
+var runTestMode = OutputGeneration
 
 func compareOrRegenerateOutputDirPerTest(t *testing.T, actualDir, expectedDir, testName string) {
 	actualFiles, err := os.ReadDir(actualDir)

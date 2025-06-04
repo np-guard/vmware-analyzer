@@ -1,0 +1,15 @@
+category: Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+symbolic inbound rules:
+Priority |Rule Id |Action |Src                       |Dst                            |Connection
+0        |1004    |allow  |(tag = backend)           |(group = research-test-expr-2) |TCP dst-ports: 445
+0        |1004    |allow  |(tag = foo and tag = bar) |(group = research-test-expr-2) |TCP dst-ports: 445
+1        |1003    |deny   |(*)                       |(*)                            |All Connections
+
+
+symbolic outbound rules:
+Priority |Rule Id |Action |Src                       |Dst                            |Connection
+0        |1004    |allow  |(tag = backend)           |(group = research-test-expr-2) |TCP dst-ports: 445
+0        |1004    |allow  |(tag = foo and tag = bar) |(group = research-test-expr-2) |TCP dst-ports: 445
+1        |1003    |deny   |(*)                       |(*)                            |All Connections
+
