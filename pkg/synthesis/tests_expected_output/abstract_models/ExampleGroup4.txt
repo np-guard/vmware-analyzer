@@ -5,7 +5,7 @@ Abstract Model Details
 Groups' definition
 ~~~~~~~~~~~~~~~~~~
 Group Name        |Expression
-nested-expr-group |((Tag Of VirtualMachine EQUALS foo) AND (Tag Of VirtualMachine EQUALS bar) OR (Tag Of VirtualMachine EQUALS backend))
+nested-expr-group |(((Tag Of VirtualMachine EQUALS foo)) AND ((Tag Of VirtualMachine EQUALS bar)) OR (Tag Of VirtualMachine EQUALS backend))
 
 
 Group Name           |VMs

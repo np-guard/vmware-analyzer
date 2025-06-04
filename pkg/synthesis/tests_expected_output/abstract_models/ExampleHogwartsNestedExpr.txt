@@ -11,7 +11,7 @@ Gryffindor                 |((Tag Of VirtualMachine EQUALS Gryffindor))
 Hufflepuff                 |((Tag Of VirtualMachine EQUALS Hufflepuff))
 Slytherin                  |((Tag Of VirtualMachine EQUALS Slytherin))
 Web                        |((Tag Of VirtualMachine EQUALS Web))
-hogwarts-nested-expr-group |((Tag Of VirtualMachine EQUALS Slytherin) AND (Tag Of VirtualMachine EQUALS DB) OR (Tag Of VirtualMachine EQUALS Gryffindor) AND (Tag Of VirtualMachine EQUALS Web))
+hogwarts-nested-expr-group |(((Tag Of VirtualMachine EQUALS Slytherin)) AND ((Tag Of VirtualMachine EQUALS DB)) OR ((Tag Of VirtualMachine EQUALS Gryffindor)) AND ((Tag Of VirtualMachine EQUALS Web)))
 
 
 Disjoint Groups' (hints)
