@@ -1,0 +1,43 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name                 |Expression
+App                        |((Tag Of VirtualMachine EQUALS App))
+DB                         |((Tag Of VirtualMachine EQUALS DB))
+Gryffindor                 |((Tag Of VirtualMachine EQUALS Gryffindor))
+Hufflepuff                 |((Tag Of VirtualMachine EQUALS Hufflepuff))
+Slytherin                  |((Tag Of VirtualMachine EQUALS Slytherin))
+Web                        |((Tag Of VirtualMachine EQUALS Web))
+hogwarts-nested-expr-group |(((Tag Of VirtualMachine EQUALS Slytherin)) AND ((Tag Of VirtualMachine EQUALS DB)) OR ((Tag Of VirtualMachine EQUALS Gryffindor)) AND ((Tag Of VirtualMachine EQUALS Web)))
+
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+Provided by user
+Slytherin, Hufflepuff, Gryffindor, Dumbledore
+Web, App, DB
+
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                              |Dst                               |Connection
+0                            |9195    |(tag = Gryffindor and tag = Web) |(tag = Gryffindor and tag = Web)  |All Connections
+0                            |9195    |(tag = Gryffindor and tag = Web) |(tag = Slytherin and tag = DB)    |All Connections
+0                            |9195    |(tag = Slytherin and tag = DB)   |(tag = Gryffindor and tag = Web)  |All Connections
+0                            |9195    |(tag = Slytherin and tag = DB)   |(tag = Slytherin and tag = DB)    |All Connections
+1                            |9197    |(tag = Web and tag != Slytherin) |(tag = App)                       |All Connections
+1                            |9197    |(tag = Web)                      |(tag = App and tag != Gryffindor) |All Connections
+
+outbound rules
+Original allow rule priority |Rule id |Src                              |Dst                               |Connection
+0                            |9195    |(tag = Gryffindor and tag = Web) |(tag = Gryffindor and tag = Web)  |All Connections
+0                            |9195    |(tag = Gryffindor and tag = Web) |(tag = Slytherin and tag = DB)    |All Connections
+0                            |9195    |(tag = Slytherin and tag = DB)   |(tag = Gryffindor and tag = Web)  |All Connections
+0                            |9195    |(tag = Slytherin and tag = DB)   |(tag = Slytherin and tag = DB)    |All Connections
+1                            |9197    |(tag = Web and tag != Slytherin) |(tag = App)                       |All Connections
+1                            |9197    |(tag = Web)                      |(tag = App and tag != Gryffindor) |All Connections
+

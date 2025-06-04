@@ -177,3 +177,76 @@ var ExampleGroup4 = registerExample(&Example{
 		},
 	},
 })
+
+var ExampleHogwartsNestedExpr = registerExample(&Example{
+	Name:         "ExampleHogwartsNestedExpr",
+	GroupsByExpr: twoScopeGroupsByExpr,
+	GroupByNestedExpr: map[string]ExampleExpr{
+		"hogwarts-nested-expr-group": {
+			Cond1: &ExampleNestedExpr{
+				expr: ExampleExpr{
+					Cond1: &ExampleCond{
+						Tag: nsx.Tag{Tag: sly},
+					},
+					Op: And,
+					Cond2: &ExampleCond{
+						Tag: nsx.Tag{Tag: db},
+					},
+				},
+			},
+			Op: Or,
+			Cond2: &ExampleNestedExpr{
+				expr: ExampleExpr{
+					Cond1: &ExampleCond{
+						Tag: nsx.Tag{Tag: gry},
+					},
+					Op: And,
+					Cond2: &ExampleCond{
+						Tag: nsx.Tag{Tag: web},
+					},
+				},
+			},
+		},
+	},
+	VMsTags: vmsHousesTags,
+	Policies: []Category{
+		{
+			Name:         "app-rules",
+			CategoryType: application,
+			Rules: []Rule{
+				{
+					Name:     "allow1",
+					ID:       9195,
+					Source:   "hogwarts-nested-expr-group",
+					Dest:     "hogwarts-nested-expr-group",
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+				{
+					Name:     "deny1",
+					ID:       9196,
+					Source:   sly,
+					Dest:     gry,
+					Services: []string{AnyStr},
+					Action:   Drop,
+				},
+				{
+					Name:     "allow2",
+					ID:       9197,
+					Source:   web,
+					Dest:     app,
+					Services: []string{AnyStr},
+					Action:   Allow,
+				},
+			},
+		},
+		{
+			Name:         defaultL3,
+			CategoryType: application,
+			Rules: []Rule{
+				DefaultDenyRule(denyRuleIDEnv),
+			},
+		},
+	},
+	DisjointGroupsTags: disjointHousesAndFunctionality,
+})

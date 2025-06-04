@@ -1,0 +1,32 @@
+
+Abstract Model Details
+=======================
+
+Groups' definition
+~~~~~~~~~~~~~~~~~~
+Group Name        |Expression
+nested-expr-group |(((Tag Of VirtualMachine EQUALS foo)) AND ((Tag Of VirtualMachine EQUALS bar)) OR (Tag Of VirtualMachine EQUALS backend))
+
+
+Group Name           |VMs
+nested-expr-group    |New-VM-4, New-VM-2
+no-group-vms-group   |New-VM-1, New-VM-3
+research-test-expr-2 |New Virtual Machine
+
+
+Disjoint Groups' (hints)
+~~~~~~~~~~~~~~~~~~~~~~~~
+no disjoint groups' hints provided by user
+
+Allow Only Rules
+~~~~~~~~~~~~~~~~~
+inbound rules
+Original allow rule priority |Rule id |Src                       |Dst                            |Connection
+0                            |1004    |(tag = backend)           |(group = research-test-expr-2) |TCP dst-ports: 445
+0                            |1004    |(tag = foo and tag = bar) |(group = research-test-expr-2) |TCP dst-ports: 445
+
+outbound rules
+Original allow rule priority |Rule id |Src                       |Dst                            |Connection
+0                            |1004    |(tag = backend)           |(group = research-test-expr-2) |TCP dst-ports: 445
+0                            |1004    |(tag = foo and tag = bar) |(group = research-test-expr-2) |TCP dst-ports: 445
+

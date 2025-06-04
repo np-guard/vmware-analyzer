@@ -424,6 +424,22 @@ var groupsOfNonVMsTests = []synthesisTest{
 		noHint:          false,
 		inferHints:      false,
 	},
+	// simple nested expression
+	{
+		name:            "ExampleGroup4",
+		exData:          data.ExampleGroup4,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
+	// another, a bit more interesting, nested expression example
+	{
+		name:            "ExampleHogwartsNestedExpr",
+		exData:          data.ExampleHogwartsNestedExpr,
+		synthesizeAdmin: false,
+		noHint:          false,
+		inferHints:      false,
+	},
 }
 
 var liveNsxTest = synthesisTest{

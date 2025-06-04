@@ -463,7 +463,11 @@ var toImplementFunc = func(exprKind string) string {
 func (e *NestedExpression) String() string {
 	exprStr := make([]string, len(e.Expressions))
 	for i, subExpr := range e.Expressions {
-		exprStr[i] = subExpr.String()
+		if i%2 == 0 {
+			exprStr[i] = "(" + subExpr.String() + ")"
+		} else {
+			exprStr[i] = subExpr.String()
+		}
 	}
 	return strings.Join(exprStr, common.Space)
 }
