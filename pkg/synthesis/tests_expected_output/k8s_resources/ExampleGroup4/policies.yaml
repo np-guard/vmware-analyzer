@@ -1,0 +1,146 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = foo and tag = bar) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-0
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__foo
+              operator: Exists
+            - key: tag__bar
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = backend) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-1
+    namespace: default
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: tag__backend
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = foo and tag = bar) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-2
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: tag__foo
+                      operator: Exists
+                    - key: tag__bar
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = backend) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
+        nsx-id: "1004"
+    creationTimestamp: null
+    name: policy-3
+    namespace: default
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: tag__backend
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace default
+        nsx-id: "1003"
+    creationTimestamp: null
+    name: default-deny-for-default
+    namespace: default
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
