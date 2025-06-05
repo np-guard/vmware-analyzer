@@ -26,5 +26,8 @@ func newCommandGenerate() *cobra.Command {
 	c.PersistentFlags().StringSliceVar(&args.OutputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
 	c.PersistentFlags().Var(&args.EndpointsMapping, endpointsMappingFlag, endpointsMappingHelp+common.AllEndpointsStr)
 	c.PersistentFlags().Var(&args.SegmentsMapping, segmentsMappingFlag, segmentsMappingHelp+common.AllSegmentOptionsStr)
+	c.PersistentFlags().Var(&args.PolicyOptimizationLevel, policyOptimizationLevelFlag,
+		policyOptimizationLevelHelp+common.AllPolicyOptimizationLevelsStr)
+
 	return c
 }

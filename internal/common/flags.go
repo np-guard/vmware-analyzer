@@ -179,3 +179,42 @@ func (e *LogLevel) Type() string {
 func (e *LogLevel) SetDefault() {
 	*e = LogLevelFatal // quiet mode by default
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+type PolicyOptimizationLevel string
+
+const (
+	PolicyOptimizationLevelNone     PolicyOptimizationLevel = "none"
+	PolicyOptimizationLevelModerate PolicyOptimizationLevel = "moderate"
+	PolicyOptimizationLevelMax      PolicyOptimizationLevel = "max"
+)
+
+var allPolicyOptimizationLevels = []*PolicyOptimizationLevel{
+	PointerTo(PolicyOptimizationLevelNone),
+	PointerTo(PolicyOptimizationLevelModerate),
+	PointerTo(PolicyOptimizationLevelMax),
+}
+var AllPolicyOptimizationLevelsStr = JoinStringifiedSlice(allPolicyOptimizationLevels, CommaSeparator)
+
+func (e *PolicyOptimizationLevel) String() string {
+	return string(*e)
+}
+
+func (e *PolicyOptimizationLevel) Set(v string) error {
+	switch v {
+	case string(PolicyOptimizationLevelNone), string(PolicyOptimizationLevelModerate), string(PolicyOptimizationLevelMax):
+		*e = PolicyOptimizationLevel(v)
+		return nil
+	default:
+		return fmt.Errorf(errPrefix, AllLogLevelOptionsStr)
+	}
+}
+
+func (e *PolicyOptimizationLevel) Type() string {
+	return enumFlagType
+}
+
+func (e *PolicyOptimizationLevel) SetDefault() {
+	*e = PolicyOptimizationLevelMax
+}

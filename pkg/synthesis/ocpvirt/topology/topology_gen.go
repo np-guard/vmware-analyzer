@@ -27,7 +27,7 @@ func NewNetworkTopologyGenerator(synthModel *model.AbstractModelSyn, options *co
 	return &NetworkTopologyGenerator{
 		synthModel:     synthModel,
 		options:        options,
-		NamespacesInfo: newNamespacesInfo(synthModel),
+		NamespacesInfo: newNamespacesInfo(synthModel, options),
 	}
 }
 

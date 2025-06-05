@@ -29,6 +29,7 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithSegmentsMapping(args.SegmentsMapping.String()),
 		runner.WithEndpointsMapping(args.EndpointsMapping.String()),
 		runner.WithInferHints(args.InferDisjointHints),
+		runner.WithPolicyOptimizationLevel(args.PolicyOptimizationLevel.String()),
 	)
 	if err != nil {
 		return err

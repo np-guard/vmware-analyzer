@@ -96,12 +96,15 @@ func (synTest *synthesisTest) options() *config.SynthesisOptions {
 		CreateDNSPolicy: false,
 		FilterVMs:       synTest.filter,
 	}
+	// set default values for all enum flags
+	// TODO: Add this as test arg options?
 	res.EndpointsMapping.SetDefault()
 	res.SegmentsMapping.SetDefault()
+	res.PolicyOptimizationLevel.SetDefault()
 	return res
 }
-func (synTest *synthesisTest) outputParams() common.OutputParameters {
-	return common.OutputParameters{Format: "txt", VMs: synTest.filter}
+func (synTest *synthesisTest) outputParams() *common.OutputParameters {
+	return &common.OutputParameters{Format: "txt", VMs: synTest.filter}
 }
 
 var groupsByVmsTests = []synthesisTest{

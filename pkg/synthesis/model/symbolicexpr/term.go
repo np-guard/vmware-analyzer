@@ -16,7 +16,7 @@ func (t *Term) String() string {
 	return "(" + common.JoinStringifiedSlice(*t, " and ") + ")"
 }
 
-func (t *Term) add(atom atomic) *Term {
+func (t *Term) add(atom Atomic) *Term {
 	// tautology is the only term that refers to both internals and externals; thus treated differently and added unless
 	// already exists
 	if t.contains(atom) && !atom.IsTautology() || (atom.IsTautology() && t.hasTautology()) {
@@ -114,7 +114,7 @@ func (t *Term) removeRedundant(hints *Hints) Term {
 
 // atomic atom is a redundant in Term c, if it is a superset of one of c's terms; this applies to tagTerm and
 // groupTerm; as to ipBlockTerm - there is at most one such term which is not redundant by design
-func atomRedundantInTerm(atom atomic, t *Term, hints *Hints) bool {
+func atomRedundantInTerm(atom Atomic, t *Term, hints *Hints) bool {
 	if len(*t) == 0 { // nil Term is equiv to tautology
 		return false
 	}
@@ -221,7 +221,7 @@ func (t *Term) areTermsNotSameType(other *Term) bool {
 // syntactically:
 // if atom is a tagTerm or a groupTerm, then if the Term c contains the atom literally
 // if atom is an IPBlock, if there is already an IPBlock in c that atom is a superset of it.
-func (t *Term) contains(atom atomic) bool {
+func (t *Term) contains(atom Atomic) bool {
 	if atom.IsTautology() || (t.hasTagOrGroupOrInternalIPTerm() && atom.IsAllGroups()) {
 		return true
 	}
@@ -239,7 +239,7 @@ func (t *Term) contains(atom atomic) bool {
 	return false
 }
 
-func (t *Term) contradicts(atom atomic, hints *Hints) bool {
+func (t *Term) contradicts(atom Atomic, hints *Hints) bool {
 	for _, atomicTerm := range *t {
 		if atomicTerm.disjoint(atom, hints) {
 			return true
@@ -284,7 +284,7 @@ func (t *Term) isSuperset(other *Term, hints *Hints) bool {
 // this is the case if each of c's term is a superset of atom
 // e.g.,  1.2.1.0/8 is a superset of 1.2.1.0/16;
 // given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
-func termSupersetOfAtom(t *Term, atom atomic, hints *Hints) bool {
+func termSupersetOfAtom(t *Term, atom Atomic, hints *Hints) bool {
 	if len(*t) == 0 { // nil Term is equiv to tautology
 		return false
 	}
@@ -320,7 +320,7 @@ func (t *Term) processTautology(externalRelevant bool) DNF {
 	if tautIndex == -1 { // no tautology in Term? nothing to do here
 		return resOrig
 	}
-	var atomicsWOTautology []atomic
+	var atomicsWOTautology []Atomic
 	atomicsWOTautology = append(atomicsWOTautology, (*t)[:tautIndex]...)
 	atomicsWOTautology = append(atomicsWOTautology, (*t)[tautIndex+1:]...)
 	var termWOTautology Term = atomicsWOTautology

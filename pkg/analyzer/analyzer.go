@@ -33,7 +33,7 @@ func computeConnectivity(c *configuration.Config, vmsFilter []string) connectivi
 	return res
 }
 
-func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params common.OutputParameters) (
+func NSXConnectivityFromResourcesContainer(resources *collector.ResourcesContainerModel, params *common.OutputParameters) (
 	*configuration.Config,
 	connectivity.ConnMap,
 	string,

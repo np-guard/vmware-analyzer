@@ -36,13 +36,14 @@ type InputArgs struct {
 	OutputFilter []string
 
 	// synthesis args
-	SynthesisDir       string
-	SynthesizeAdmin    bool
-	CreateDNSPolicy    bool
-	DisjointHints      []string
-	InferDisjointHints bool
-	EndpointsMapping   Endpoints
-	SegmentsMapping    Segments
+	SynthesisDir            string
+	SynthesizeAdmin         bool
+	CreateDNSPolicy         bool
+	DisjointHints           []string
+	InferDisjointHints      bool
+	EndpointsMapping        Endpoints
+	SegmentsMapping         Segments
+	PolicyOptimizationLevel PolicyOptimizationLevel
 }
 
 func (args *InputArgs) SetDefault() {
@@ -51,4 +52,5 @@ func (args *InputArgs) SetDefault() {
 	args.LogLevel.SetDefault()
 	args.EndpointsMapping.SetDefault()
 	args.SegmentsMapping.SetDefault()
+	args.PolicyOptimizationLevel.SetDefault()
 }

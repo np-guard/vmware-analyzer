@@ -146,7 +146,7 @@ func (r *Runner) runAnalyzer() error {
 		return nil
 	}
 
-	params := common.OutputParameters{
+	params := &common.OutputParameters{
 		Format:   r.args.OutputFormat,
 		FileName: r.args.OutputFile,
 		VMs:      r.args.OutputFilter,
@@ -172,8 +172,7 @@ func (r *Runner) runLint() error {
 	if r.args.Cmd != common.CmdLint {
 		return nil
 	}
-
-	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, common.OutputParameters{Color: r.args.Color})
+	config, err := configuration.ConfigFromResourcesContainer(r.nsxResources, &common.OutputParameters{Color: r.args.Color})
 	if err != nil {
 		return err
 	}
@@ -191,14 +190,15 @@ func (r *Runner) runSynthesis() error {
 		hints.GroupsDisjoint[i] = strings.Split(hint, common.CommaSeparator)
 	}
 	opts := &synth_config.SynthesisOptions{
-		Hints:            hints,
-		InferHints:       r.args.InferDisjointHints,
-		SynthesizeAdmin:  r.args.SynthesizeAdmin,
-		Color:            r.args.Color,
-		CreateDNSPolicy:  r.args.CreateDNSPolicy,
-		FilterVMs:        r.args.OutputFilter,
-		EndpointsMapping: r.args.EndpointsMapping,
-		SegmentsMapping:  r.args.SegmentsMapping,
+		Hints:                   hints,
+		InferHints:              r.args.InferDisjointHints,
+		SynthesizeAdmin:         r.args.SynthesizeAdmin,
+		Color:                   r.args.Color,
+		CreateDNSPolicy:         r.args.CreateDNSPolicy,
+		FilterVMs:               r.args.OutputFilter,
+		EndpointsMapping:        r.args.EndpointsMapping,
+		SegmentsMapping:         r.args.SegmentsMapping,
+		PolicyOptimizationLevel: r.args.PolicyOptimizationLevel,
 	}
 	k8sResources, err := ocpvirt.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {
@@ -483,6 +483,17 @@ func WithSegmentsMapping(segments string) RunnerOption {
 func WithInferHints(inferHints bool) RunnerOption {
 	return func(r *Runner) error {
 		r.args.InferDisjointHints = inferHints
+		return nil
+	}
+}
+
+func WithPolicyOptimizationLevel(optLevel string) RunnerOption {
+	return func(r *Runner) error {
+		var optLevelValue common.PolicyOptimizationLevel
+		if err := optLevelValue.Set(optLevel); err != nil {
+			return err
+		}
+		r.args.PolicyOptimizationLevel = optLevelValue
 		return nil
 	}
 }

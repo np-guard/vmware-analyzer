@@ -42,6 +42,7 @@ const (
 	disableInsecureSkipVerifyFlag = "disable-insecure-skip-verify"
 	endpointsMappingFlag          = "endpoints-mapping"
 	segmentsMappingFlag           = "segments-mapping"
+	policyOptimizationLevelFlag   = "policy-optimization-level"
 	logLevelFlag                  = "log-level"
 
 	resourceInputFileHelp = "file path input JSON of NSX resources (instead of collecting from NSX host)"
@@ -72,7 +73,8 @@ const (
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
 	inferDisjointHintsFlagHelp = "automatic inference of NSX groups/tags that are always disjoint, " +
 		"needed for an effective and sound synthesis process"
-	endpointsMappingHelp = "flag to set target endpoints for synthesis;  must be one of "
-	segmentsMappingHelp  = "flag to set target mapping from segments; must be one of "
-	logLevelHelp         = "flag to set log level" + mustBeOneOf
+	endpointsMappingHelp        = "flag to set target endpoints for synthesis;  must be one of "
+	segmentsMappingHelp         = "flag to set target mapping from segments; must be one of "
+	logLevelHelp                = "flag to set log level" + mustBeOneOf
+	policyOptimizationLevelHelp = "flag to set policy optimization level" + mustBeOneOf
 )

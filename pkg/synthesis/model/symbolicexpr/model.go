@@ -75,12 +75,12 @@ type noGroup struct {
 type allExternal struct {
 }
 
-// atomic interface for atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
+// Atomic interface for Atomic expression - implemented by groupAtomicTerm, tagAtomicTerm, ipBlockAtomic,
 // tautology and contradiction
-type atomic interface {
+type Atomic interface {
 	name() string                      // name of group/tag/...
 	String() string                    // full expression e.g. "group = slytherin"
-	negate() atomic                    // negation of the atomic term todo: once tag scope is supported will return []atomic
+	negate() Atomic                    // negation of the atomic term todo: once tag scope is supported will return []atomic
 	isNegation() bool                  // is term negation
 	IsTautology() bool                 // is term tautology (0.0.0.0/0)?
 	IsContradiction() bool             // is term contradiction (negation of tautology)?
@@ -88,17 +88,17 @@ type atomic interface {
 	IsNoGroup() bool                   // term is false for any internal resource (noGroup, contradiction)?
 	IsSegment() bool                   // term is segmentTerm
 	IsAllExternal() bool               // term is allExternal
-	isNegateOf(atomic) bool            // is the term negation of the other given term
+	isNegateOf(Atomic) bool            // is the term negation of the other given term
 	isInternalOnly() bool              // is the atom internal, not including tautology
 	AsSelector() (string, bool)        // for the usage of policy synthesis
-	disjoint(atomic, *Hints) bool      // based on hints
-	supersetOf(atomic, *Hints) bool    // super set of nsx satisfying atom, given Hints based on hints
+	disjoint(Atomic, *Hints) bool      // based on hints
+	supersetOf(Atomic, *Hints) bool    // super set of nsx satisfying atom, given Hints based on hints
 	GetExternalBlock() *netset.IPBlock // gets block for ipBlockTerm; nil otherwise
 	getInternalBlock() *netset.IPBlock // gets block for internalIPTerm; nil otherwise
 }
 
 // Term - ANDing []atomic
-type Term []atomic
+type Term []Atomic
 
 // DNF of []*Term; namely ORing the terms
 type DNF []*Term
