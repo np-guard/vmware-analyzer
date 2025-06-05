@@ -346,7 +346,7 @@ func (r *NSXMigrationReconciler) nsxMigration(cr *nsxv1alpha1.NSXMigration, ctx 
 		runner.WithNSXUser(conn.user),
 		runner.WithNSXPassword(conn.password),
 		runner.WithDisableInsecureSkipVerify(!conn.insecureSkipVerify),
-		runner.WithSynth(true),
+		runner.WithCmd("generate"),
 	)
 	if err != nil {
 		return err

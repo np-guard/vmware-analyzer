@@ -911,7 +911,7 @@ func testDNSPolicySynthesis(t *testing.T, useAdmin bool, exData *data.Example) {
 	runnerObj, err := runner.NewRunnerWithOptionsList(
 		runner.WithNSXResources(rc),
 		runner.WithHighVerbosity(true),
-		runner.WithSynth(true),
+		runner.WithCmd(common.CmdGenerate),
 		runner.WithSynthDNSPolicies(true),
 		runner.WithSynthesisDir(actualOutputDir),
 		runner.WithSynthAdminPolicies(useAdmin),

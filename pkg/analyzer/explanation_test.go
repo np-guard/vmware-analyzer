@@ -503,6 +503,7 @@ func (r *rulesTest) runTest(t *testing.T) {
 	require.Nil(t, err)
 
 	runnerObj, err := runner.NewRunnerWithOptionsList(
+		runner.WithCmd(common.CmdAnalyze),
 		runner.WithNSXResources(rc),
 		runner.WithHighVerbosity(true),
 		runner.WithAnalysisExplain(true),

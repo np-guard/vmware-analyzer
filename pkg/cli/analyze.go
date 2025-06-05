@@ -13,14 +13,14 @@ func newCommandAnalyze() *cobra.Command {
 		Example: `  # Analyze NSX configuration 
 	nsxanalyzer analyze -r config.json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runCommand(args, cmdAnalyze)
+			return runCommand(args, common.CmdAnalyze)
 		},
 	}
 
-	c.PersistentFlags().StringVarP(&args.outputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
-	c.PersistentFlags().VarP(&args.outputFormat, outputFormatFlag, outputFormantShortFlag, outputFormatHelp+common.AllFormatsStr)
-	c.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
-	c.PersistentFlags().BoolVarP(&args.explain, explainFlag, "e", false, explainHelp)
-	c.PersistentFlags().StringVar(&args.topologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)
+	c.PersistentFlags().StringVarP(&args.OutputFile, outputFileFlag, outputFileShortFlag, "", outputFileHelp)
+	c.PersistentFlags().VarP(&args.OutputFormat, outputFormatFlag, outputFormantShortFlag, outputFormatHelp+common.AllFormatsStr)
+	c.PersistentFlags().StringSliceVar(&args.OutputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
+	c.PersistentFlags().BoolVarP(&args.Explain, explainFlag, "e", false, explainHelp)
+	c.PersistentFlags().StringVar(&args.TopologyDumpFile, topologyDumpFileFlag, "", topologyDumpFileHelp)
 	return c
 }
