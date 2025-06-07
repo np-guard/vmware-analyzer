@@ -16,7 +16,7 @@ func (ag allGroup) name() string {
 }
 
 // noGroups is the negation of allGroup
-func (allGroup) negate() atomic {
+func (allGroup) negate() Atomic {
 	return noGroup{}
 }
 
@@ -42,7 +42,7 @@ func (allGroup) IsNoGroup() bool {
 }
 
 // allGroup is negation of noGroup
-func (allGroup) isNegateOf(atom atomic) bool {
+func (allGroup) isNegateOf(atom Atomic) bool {
 	_, isNoGroup := atom.(noGroup)
 	return isNoGroup
 }
@@ -51,12 +51,12 @@ func (allGroup) AsSelector() (string, bool) {
 }
 
 // allGroup disjoint to ipBlockTerm which presents external address
-func (allGroup) disjoint(atom atomic, hints *Hints) bool {
+func (allGroup) disjoint(atom Atomic, hints *Hints) bool {
 	return atom.GetExternalBlock() != nil
 }
 
 // allGroup is superSet of any groupTerm and of any tagTerm
-func (allGroup) supersetOf(atom atomic, hints *Hints) bool {
+func (allGroup) supersetOf(atom Atomic, hints *Hints) bool {
 	return atom.isInternalOnly()
 }
 

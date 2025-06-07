@@ -12,7 +12,7 @@ func (t tautology) name() string {
 	return t.String()
 }
 
-func (tautology) negate() atomic {
+func (tautology) negate() Atomic {
 	return contradiction{}
 }
 
@@ -37,7 +37,7 @@ func (tautology) IsNoGroup() bool {
 }
 
 // tautology is negation of contradiction
-func (tautology) isNegateOf(atom atomic) bool {
+func (tautology) isNegateOf(atom Atomic) bool {
 	_, isContradict := atom.(contradiction)
 	return isContradict
 }
@@ -46,12 +46,12 @@ func (tautology) AsSelector() (string, bool) {
 }
 
 // tautology is not disjoint to any atomic term
-func (tautology) disjoint(atomic, *Hints) bool {
+func (tautology) disjoint(Atomic, *Hints) bool {
 	return false
 }
 
 // tautology is a superset of everything
-func (tautology) supersetOf(atom atomic, hints *Hints) bool {
+func (tautology) supersetOf(atom Atomic, hints *Hints) bool {
 	return true
 }
 

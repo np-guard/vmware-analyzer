@@ -56,7 +56,7 @@ func getDNFForGroups(config *configuration.Config, isExclude bool, groups []*col
 //////////////////////////////////////////////////////////
 
 // returns atomic tagAtomicTerm corresponding to a given condition
-func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) atomic {
+func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group string) Atomic {
 	// assumption: cond is of a tag over VMs
 	if cond.MemberType == nil || *cond.MemberType != nsx.ConditionMemberTypeVirtualMachine ||
 		cond.Key == nil || *cond.Key != nsx.ConditionKeyTag ||
@@ -72,7 +72,7 @@ func getAtomicsForCondition(isExcluded bool, cond *collector.Condition, group st
 		neg = !neg
 	}
 	tagAtomicTerm := tagAtomicTerm{tag: &nsx.Tag{Tag: *cond.Value}, atomicTerm: atomicTerm{neg: neg}}
-	var atomicRes atomic = tagAtomicTerm
+	var atomicRes Atomic = tagAtomicTerm
 	return atomicRes
 }
 

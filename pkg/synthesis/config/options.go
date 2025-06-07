@@ -6,16 +6,17 @@ import (
 )
 
 type SynthesisOptions struct {
-	Hints            *symbolicexpr.Hints
-	InferHints       bool
-	SynthesizeAdmin  bool
-	Color            bool
-	CreateDNSPolicy  bool
-	FilterVMs        []string
-	EndpointsMapping common.Endpoints
-	SegmentsMapping  common.Segments
+	Hints                   *symbolicexpr.Hints
+	InferHints              bool
+	SynthesizeAdmin         bool
+	Color                   bool
+	CreateDNSPolicy         bool
+	FilterVMs               []string
+	EndpointsMapping        common.Endpoints
+	SegmentsMapping         common.Segments
+	PolicyOptimizationLevel common.PolicyOptimizationLevel
 }
 
-func (options SynthesisOptions) OutputOption() common.OutputParameters {
-	return common.OutputParameters{Color: options.Color, VMs: options.FilterVMs}
+func (options *SynthesisOptions) OutputOption() *common.OutputParameters {
+	return &common.OutputParameters{Color: options.Color, VMs: options.FilterVMs}
 }

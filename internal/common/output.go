@@ -8,8 +8,8 @@ type OutputParameters struct {
 	Color    bool
 }
 
-func DefaultOutputParameters() OutputParameters {
+func DefaultOutputParameters() *OutputParameters {
 	var outformat OutFormat
 	outformat.SetDefault()
-	return OutputParameters{Format: outformat}
+	return &OutputParameters{Format: outformat}
 }

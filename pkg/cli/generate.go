@@ -14,17 +14,20 @@ func newCommandGenerate() *cobra.Command {
 		Example: `  # Generate OCP-Virt netpol resources
 	nsxanalyzer generate -r config.json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runCommand(args, cmdGenerate)
+			return runCommand(args, common.CmdGenerate)
 		},
 	}
 
-	c.PersistentFlags().StringVarP(&args.synthesisDir, synthesisDirFlag, "d", "", synthesisDirHelp)
-	c.PersistentFlags().BoolVar(&args.synthesizeAdmin, synthesizeAdminPoliciesFlag, false, synthesizeAdminPoliciesHelp)
-	c.PersistentFlags().BoolVar(&args.createDNSPolicy, createDNSPolicyFlag, false, createDNSPolicyHelp)
-	c.PersistentFlags().BoolVar(&args.inferDisjointHints, inferDisjointHintsFlag, false, inferDisjointHintsFlagHelp)
-	c.PersistentFlags().StringArrayVar(&args.disjointHints, disjointHintsFlag, nil, disjointHintsHelp)
-	c.PersistentFlags().StringSliceVar(&args.outputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
-	c.PersistentFlags().Var(&args.endpointsMapping, endpointsMappingFlag, endpointsMappingHelp+common.AllEndpointsStr)
-	c.PersistentFlags().Var(&args.segmentsMapping, segmentsMappingFlag, segmentsMappingHelp+common.AllSegmentOptionsStr)
+	c.PersistentFlags().StringVarP(&args.SynthesisDir, synthesisDirFlag, "d", "", synthesisDirHelp)
+	c.PersistentFlags().BoolVar(&args.SynthesizeAdmin, synthesizeAdminPoliciesFlag, false, synthesizeAdminPoliciesHelp)
+	c.PersistentFlags().BoolVar(&args.CreateDNSPolicy, createDNSPolicyFlag, false, createDNSPolicyHelp)
+	c.PersistentFlags().BoolVar(&args.InferDisjointHints, inferDisjointHintsFlag, false, inferDisjointHintsFlagHelp)
+	c.PersistentFlags().StringArrayVar(&args.DisjointHints, disjointHintsFlag, nil, disjointHintsHelp)
+	c.PersistentFlags().StringSliceVar(&args.OutputFilter, outputFilterFlag, nil, outputFilterFlagHelp)
+	c.PersistentFlags().Var(&args.EndpointsMapping, endpointsMappingFlag, endpointsMappingHelp+common.AllEndpointsStr)
+	c.PersistentFlags().Var(&args.SegmentsMapping, segmentsMappingFlag, segmentsMappingHelp+common.AllSegmentOptionsStr)
+	c.PersistentFlags().Var(&args.PolicyOptimizationLevel, policyOptimizationLevelFlag,
+		policyOptimizationLevelHelp+common.AllPolicyOptimizationLevelsStr)
+
 	return c
 }

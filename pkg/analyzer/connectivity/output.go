@@ -6,7 +6,7 @@ import (
 	"github.com/np-guard/vmware-analyzer/internal/common"
 )
 
-func (c ConnMap) GenConnectivityOutput(params common.OutputParameters) (res string, err error) {
+func (c ConnMap) GenConnectivityOutput(params *common.OutputParameters) (res string, err error) {
 	filteredConn := c.filter(params.VMs)
 	var g common.Graph
 	switch params.Format {

@@ -5,39 +5,12 @@ import "github.com/np-guard/vmware-analyzer/internal/common"
 var args = newInArgs()
 
 type inArgs struct {
-	resourceInputFile         string
-	host                      string
-	user                      string
-	password                  string
-	resourceDumpFile          string
-	topologyDumpFile          string
-	synthesisDir              string
-	synthesizeAdmin           bool
-	anonymize                 bool
-	logFile                   string
-	outputFile                string
-	outputFormat              common.OutFormat
-	quiet                     bool
-	verbose                   bool
-	explain                   bool
-	outputFilter              []string
-	color                     bool
-	createDNSPolicy           bool
-	disjointHints             []string
-	inferDisjointHints        bool
-	disableInsecureSkipVerify bool
-	endpointsMapping          common.Endpoints
-	segmentsMapping           common.Segments
-	logLevel                  common.LogLevel
+	common.InputArgs
 }
 
 func newInArgs() *inArgs {
 	res := &inArgs{}
-	// init enum flags with default values
-	res.outputFormat.SetDefault()
-	res.segmentsMapping.SetDefault()
-	res.endpointsMapping.SetDefault()
-	res.logLevel.SetDefault()
+	res.SetDefault()
 	return res
 }
 
@@ -69,6 +42,7 @@ const (
 	disableInsecureSkipVerifyFlag = "disable-insecure-skip-verify"
 	endpointsMappingFlag          = "endpoints-mapping"
 	segmentsMappingFlag           = "segments-mapping"
+	policyOptimizationLevelFlag   = "policy-optimization-level"
 	logLevelFlag                  = "log-level"
 
 	resourceInputFileHelp = "file path input JSON of NSX resources (instead of collecting from NSX host)"
@@ -99,7 +73,8 @@ const (
 		" (example: \"--" + disjointHintsFlag + " frontend,backend --" + disjointHintsFlag + " app,web,db\")"
 	inferDisjointHintsFlagHelp = "automatic inference of NSX groups/tags that are always disjoint, " +
 		"needed for an effective and sound synthesis process"
-	endpointsMappingHelp = "flag to set target endpoints for synthesis;  must be one of "
-	segmentsMappingHelp  = "flag to set target mapping from segments; must be one of "
-	logLevelHelp         = "flag to set log level" + mustBeOneOf
+	endpointsMappingHelp        = "flag to set target endpoints for synthesis;  must be one of "
+	segmentsMappingHelp         = "flag to set target mapping from segments; must be one of "
+	logLevelHelp                = "flag to set log level" + mustBeOneOf
+	policyOptimizationLevelHelp = "flag to set policy optimization level" + mustBeOneOf
 )

@@ -182,9 +182,44 @@ metadata:
     name: policy-6
     namespace: default
 spec:
+    egress:
+        - to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
+                matchExpressions:
+                    - key: tag__Gryffindor
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: tag__Slytherin
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (tag = Slytherin) dst: (tag != Gryffindor) conn: All Connections'
+        nsx-id: "9205"
+    creationTimestamp: null
+    name: policy-7
+    namespace: default
+spec:
     ingress:
         - from:
-            - podSelector:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - default
+              podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: Exists

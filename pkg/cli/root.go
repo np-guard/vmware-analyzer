@@ -19,7 +19,7 @@ and generation of k8s network policies`,
 and generation of k8s network policies. It uses REST API calls from NSX manager. `,
 		Version: version.VersionCore,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			if args.quiet && args.verbose {
+			if args.Quiet && args.Verbose {
 				return errors.New("-q and -v cannot be specified together")
 			}
 			return nil
@@ -28,17 +28,17 @@ and generation of k8s network policies. It uses REST API calls from NSX manager.
 
 	// define any flags and configuration settings
 
-	c.PersistentFlags().StringVarP(&args.resourceInputFile, resourceInputFileFlag, "r", "", resourceInputFileHelp)
-	c.PersistentFlags().StringVar(&args.host, hostFlag, "", hostHelp)
-	c.PersistentFlags().StringVar(&args.user, userFlag, "", userHelp)
-	c.PersistentFlags().StringVar(&args.password, passwordFlag, "", passwordHelp)
-	c.PersistentFlags().BoolVarP(&args.quiet, quietFlag, "q", false, quietHelp)
-	c.PersistentFlags().BoolVarP(&args.verbose, verboseFlag, "v", false, verboseHelp)
-	c.PersistentFlags().BoolVar(&args.color, colorFlag, false, colorHelp)
-	c.PersistentFlags().StringVar(&args.logFile, logFileFlag, "", logFileHelp)
-	c.PersistentFlags().BoolVar(&args.disableInsecureSkipVerify, disableInsecureSkipVerifyFlag, false, disableInsecureSkipVerifyHelp)
-	c.PersistentFlags().StringVar(&args.resourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
-	c.PersistentFlags().Var(&args.logLevel, logLevelFlag, logLevelHelp+common.AllLogLevelOptionsStr)
+	c.PersistentFlags().StringVarP(&args.ResourceInputFile, resourceInputFileFlag, "r", "", resourceInputFileHelp)
+	c.PersistentFlags().StringVar(&args.Host, hostFlag, "", hostHelp)
+	c.PersistentFlags().StringVar(&args.User, userFlag, "", userHelp)
+	c.PersistentFlags().StringVar(&args.Password, passwordFlag, "", passwordHelp)
+	c.PersistentFlags().BoolVarP(&args.Quiet, quietFlag, "q", false, quietHelp)
+	c.PersistentFlags().BoolVarP(&args.Verbose, verboseFlag, "v", false, verboseHelp)
+	c.PersistentFlags().BoolVar(&args.Color, colorFlag, false, colorHelp)
+	c.PersistentFlags().StringVar(&args.LogFile, logFileFlag, "", logFileHelp)
+	c.PersistentFlags().BoolVar(&args.DisableInsecureSkipVerify, disableInsecureSkipVerifyFlag, false, disableInsecureSkipVerifyHelp)
+	c.PersistentFlags().StringVar(&args.ResourceDumpFile, resourceDumpFileFlag, "", resourceDumpFileHelp)
+	c.PersistentFlags().Var(&args.LogLevel, logLevelFlag, logLevelHelp+common.AllLogLevelOptionsStr)
 
 	// add sub-commands
 	c.AddCommand(newCommandCollect())

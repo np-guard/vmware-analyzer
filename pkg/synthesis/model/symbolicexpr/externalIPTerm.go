@@ -73,7 +73,7 @@ func (ipBlockTerm externalIPTerm) GetExternalBlock() *netset.IPBlock {
 }
 
 // negate an externalIPTerm; if it has the OrigIP component then uses neg; otherwise complement the IP block
-func (ipBlockTerm externalIPTerm) negate() atomic {
+func (ipBlockTerm externalIPTerm) negate() Atomic {
 	if ipBlockTerm.OriginalIP != "" { // orig block from rule
 		return &externalIPTerm{IPBlock: &topology.IPBlock{Block: ipBlockTerm.Block, OriginalIP: ipBlockTerm.OriginalIP},
 			atomicTerm: atomicTerm{neg: !ipBlockTerm.neg}}
@@ -84,7 +84,7 @@ func (ipBlockTerm externalIPTerm) negate() atomic {
 }
 
 // returns true iff otherAt is negation of tagTerm; either syntactically or semantically
-func (ipBlockTerm externalIPTerm) isNegateOf(otherAtom atomic) bool {
+func (ipBlockTerm externalIPTerm) isNegateOf(otherAtom Atomic) bool {
 	otherBlock := otherAtom.GetExternalBlock()
 	if otherBlock == nil {
 		return false
@@ -93,7 +93,7 @@ func (ipBlockTerm externalIPTerm) isNegateOf(otherAtom atomic) bool {
 }
 
 // returns true iff ipBlocks otherAt and otherAtom are disjoint
-func (ipBlockTerm externalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+func (ipBlockTerm externalIPTerm) disjoint(otherAtom Atomic, hints *Hints) bool {
 	block := ipBlockTerm.GetExternalBlock()
 	otherBlock := otherAtom.GetExternalBlock()
 	if otherBlock == nil {
@@ -103,7 +103,7 @@ func (ipBlockTerm externalIPTerm) disjoint(otherAtom atomic, hints *Hints) bool 
 }
 
 // returns true iff ipBlock tagTerm is superset of ipBlock otherAtom
-func (ipBlockTerm externalIPTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (ipBlockTerm externalIPTerm) supersetOf(otherAtom Atomic, hints *Hints) bool {
 	if otherAtom.GetExternalBlock() == nil {
 		return false
 	}

@@ -69,7 +69,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-2
     namespace: seg-8
 spec:
     ingress:
@@ -97,7 +97,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-3
     namespace: seg-9-10
 spec:
     ingress:
@@ -125,7 +125,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-4
     namespace: seg_1
 spec:
     ingress:
@@ -153,7 +153,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-5
     namespace: seg_2-3
 spec:
     ingress:
@@ -181,7 +181,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-6
     namespace: seg_4-5
 spec:
     ingress:
@@ -209,7 +209,7 @@ metadata:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-7
     namespace: default
 spec:
     ingress:
@@ -301,7 +301,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-9
+    name: policy-10
     namespace: seg-8
 spec:
     ingress:
@@ -329,7 +329,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-9
+    name: policy-11
     namespace: seg-9-10
 spec:
     ingress:
@@ -357,7 +357,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-9
+    name: policy-12
     namespace: seg_1
 spec:
     ingress:
@@ -385,7 +385,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-9
+    name: policy-13
     namespace: seg_2-3
 spec:
     ingress:
@@ -413,7 +413,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-9
+    name: policy-14
     namespace: seg_4-5
 spec:
     ingress:
@@ -441,7 +441,7 @@ metadata:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-9
+    name: policy-15
     namespace: default
 spec:
     ingress:
@@ -679,7 +679,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-18
+    name: policy-19
     namespace: seg-8
 spec:
     ingress:
@@ -708,7 +708,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-18
+    name: policy-20
     namespace: seg-9-10
 spec:
     ingress:
@@ -737,7 +737,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-18
+    name: policy-21
     namespace: seg_1
 spec:
     ingress:
@@ -766,7 +766,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-18
+    name: policy-22
     namespace: seg_2-3
 spec:
     ingress:
@@ -795,7 +795,7 @@ metadata:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-18
+    name: policy-23
     namespace: seg_4-5
 spec:
     ingress:
@@ -884,7 +884,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-26
     namespace: seg-8
 spec:
     ingress:
@@ -910,7 +910,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-27
     namespace: seg-9-10
 spec:
     ingress:
@@ -936,7 +936,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-28
     namespace: seg_1
 spec:
     ingress:
@@ -962,7 +962,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-29
     namespace: seg_2-3
 spec:
     ingress:
@@ -988,7 +988,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-30
     namespace: seg_4-5
 spec:
     ingress:
@@ -1014,7 +1014,7 @@ metadata:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-31
     namespace: default
 spec:
     ingress:

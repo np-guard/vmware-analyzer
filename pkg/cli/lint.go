@@ -1,6 +1,10 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
+)
 
 func newCommandLint() *cobra.Command {
 	c := &cobra.Command{
@@ -9,7 +13,7 @@ func newCommandLint() *cobra.Command {
 		Example: `  # Lint NSX DFW 
 	nsxanalyzer lint -r config.json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runCommand(args, cmdLint)
+			return runCommand(args, common.CmdLint)
 			// return nil
 		},
 	}

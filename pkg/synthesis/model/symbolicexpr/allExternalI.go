@@ -43,12 +43,12 @@ func (allExternal) GetExternalBlock() *netset.IPBlock {
 }
 
 // not used for allExternal
-func (allExternal) negate() atomic {
+func (allExternal) negate() Atomic {
 	return nil
 }
 
 // not used for allExternal
-func (allExternal) isNegateOf(otherAtom atomic) bool {
+func (allExternal) isNegateOf(otherAtom Atomic) bool {
 	return false
 }
 
@@ -58,12 +58,12 @@ func (allExternal) isNegation() bool {
 }
 
 // returns true iff otherAtom refers to external ips
-func (allExternal) disjoint(otherAtom atomic, hints *Hints) bool {
+func (allExternal) disjoint(otherAtom Atomic, hints *Hints) bool {
 	return otherAtom.GetExternalBlock() == nil
 }
 
 // returns true iff otherAtom refers to external ips
-func (allExt allExternal) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (allExt allExternal) supersetOf(otherAtom Atomic, hints *Hints) bool {
 	return !allExt.disjoint(otherAtom, hints)
 }
 
