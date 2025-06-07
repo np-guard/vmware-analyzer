@@ -67,7 +67,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-2
     namespace: seg_1
 spec:
     ingress:
@@ -95,7 +95,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-3
     namespace: seg_2-3
 spec:
     ingress:
@@ -123,7 +123,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-4
     namespace: seg_4-5
 spec:
     ingress:
@@ -151,7 +151,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/24 and VMs not within IPs 10.0.0.0/30) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
     creationTimestamp: null
-    name: policy-1
+    name: policy-5
     namespace: default
 spec:
     ingress:
@@ -201,7 +201,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/16 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-6
+    name: policy-7
     namespace: seg_1
 spec:
     ingress:
@@ -223,7 +223,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/16 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-6
+    name: policy-8
     namespace: seg_2-3
 spec:
     ingress:
@@ -245,7 +245,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/16 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-6
+    name: policy-9
     namespace: seg_4-5
 spec:
     ingress:
@@ -267,7 +267,7 @@ metadata:
         description: 'src: (VMs within IPs 10.0.0.0/16 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
     creationTimestamp: null
-    name: policy-6
+    name: policy-10
     namespace: default
 spec:
     ingress:
@@ -608,7 +608,7 @@ metadata:
         description: 'src: (IP addr in 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-13
+    name: policy-14
     namespace: seg_4-5
 spec:
     ingress:
@@ -659,7 +659,7 @@ metadata:
         description: 'src: (IP addr in 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-13
+    name: policy-15
     namespace: default
 spec:
     ingress:
@@ -739,7 +739,7 @@ metadata:
         description: 'src: (VMs within IPs 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-16
+    name: policy-17
     namespace: seg_4-5
 spec:
     ingress:
@@ -768,7 +768,7 @@ metadata:
         description: 'src: (VMs within IPs 172.16.10.10/16) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
     creationTimestamp: null
-    name: policy-16
+    name: policy-18
     namespace: default
 spec:
     ingress:
@@ -905,7 +905,7 @@ metadata:
         description: 'src: (IP addr in 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-20
+    name: policy-21
     namespace: seg_1
 spec:
     ingress:
@@ -981,7 +981,7 @@ metadata:
         description: 'src: (IP addr in 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-20
+    name: policy-22
     namespace: seg_2-3
 spec:
     ingress:
@@ -1057,7 +1057,7 @@ metadata:
         description: 'src: (IP addr in 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-20
+    name: policy-23
     namespace: seg_4-5
 spec:
     ingress:
@@ -1133,7 +1133,7 @@ metadata:
         description: 'src: (IP addr in 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-20
+    name: policy-24
     namespace: default
 spec:
     ingress:
@@ -1235,7 +1235,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-26
     namespace: seg_1
 spec:
     ingress:
@@ -1261,7 +1261,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-27
     namespace: seg_2-3
 spec:
     ingress:
@@ -1287,7 +1287,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-28
     namespace: seg_4-5
 spec:
     ingress:
@@ -1313,7 +1313,7 @@ metadata:
         description: 'src: (VMs within IPs 192.168.0.0/16) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
     creationTimestamp: null
-    name: policy-25
+    name: policy-29
     namespace: default
 spec:
     ingress:
