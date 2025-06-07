@@ -35,17 +35,18 @@ func (np *PolicyGenerator) addDefaultDenyNetworkPolicy() {
 	}
 }
 
+func (np *PolicyGenerator) newPolicy(namespace string, typeValue policyType, description, nsxRuleID string) *networkingv1.NetworkPolicy {
+	policyName := fmt.Sprintf("policy-%d", len(np.NetworkPolicies))
+	policy := newNetworkPolicy(policyName, namespace, description, nsxRuleID, typeValue)
+	np.NetworkPolicies = append(np.NetworkPolicies, policy)
+	logging.Debugf("added NetworkPolicy %s", policyName)
+	return policy
+}
+
 func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector *policySelector,
 	conn *netset.TransportSet, isInbound bool,
 	description, nsxRuleID string) {
 	ports := connToPolicyPort(conn)
-	policyName := fmt.Sprintf("policy-%d", len(np.NetworkPolicies))
-	newPolicyFunc := func(namespace string, typeValue policyType) *networkingv1.NetworkPolicy {
-		policy := newNetworkPolicy(policyName, namespace, description, nsxRuleID, typeValue)
-		np.NetworkPolicies = append(np.NetworkPolicies, policy)
-		logging.Debugf("added NetworkPolicy %s", policyName)
-		return policy
-	}
 	//nolint: gocritic // keep commented-out code for now
 	/*oneSameNamespace := len(srcSelector.namespaces) == 1 &&
 	len(dstSelector.namespaces) == 1 &&
@@ -58,7 +59,7 @@ func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector *policySele
 		from := srcSelector.toPolicyPeers()
 		rules := []networkingv1.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		for _, namespace := range dstSelector.namespaces {
-			policy := newPolicyFunc(namespace, ingressType)
+			policy := np.newPolicy(namespace, ingressType, description, nsxRuleID)
 			policy.Spec.Ingress = rules
 			policy.Spec.PodSelector = dstSelector.toPodSelector()
 		}
@@ -69,7 +70,7 @@ func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector *policySele
 		to := dstSelector.toPolicyPeers()
 		rules := []networkingv1.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		for _, namespace := range srcSelector.namespaces {
-			policy := newPolicyFunc(namespace, egressType)
+			policy := np.newPolicy(namespace, egressType, description, nsxRuleID)
 			policy.Spec.Egress = rules
 			policy.Spec.PodSelector = srcSelector.toPodSelector()
 		}
