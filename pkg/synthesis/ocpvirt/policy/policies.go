@@ -47,29 +47,24 @@ func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector *policySele
 	conn *netset.TransportSet, isInbound bool,
 	description, nsxRuleID string) {
 	ports := connToPolicyPort(conn)
-	//nolint: gocritic // keep commented-out code for now
-	/*oneSameNamespace := len(srcSelector.namespaces) == 1 &&
-	len(dstSelector.namespaces) == 1 &&
-	srcSelector.namespaces[0] == dstSelector.namespaces[0]*/
 	if isInbound {
-		// todo: add as optimization later (this currently does not work due to caching, it modifies the cached object)
-		/*if oneSameNamespace {
-			srcSelector.namespaces = nil
-		}*/
-		from := srcSelector.toPolicyPeers()
-		rules := []networkingv1.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 		for _, namespace := range dstSelector.namespaces {
+			from := srcSelector.toPolicyPeers(namespace)
+			if len(from) == 0 { //skip policy generation if no rules are present
+				continue
+			}
+			rules := []networkingv1.NetworkPolicyIngressRule{{From: from, Ports: ports}}
 			policy := np.newPolicy(namespace, ingressType, description, nsxRuleID)
 			policy.Spec.Ingress = rules
 			policy.Spec.PodSelector = dstSelector.toPodSelector()
 		}
 	} else {
-		/*if oneSameNamespace {
-			dstSelector.namespaces = nil
-		}*/
-		to := dstSelector.toPolicyPeers()
-		rules := []networkingv1.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 		for _, namespace := range srcSelector.namespaces {
+			to := dstSelector.toPolicyPeers(namespace)
+			if len(to) == 0 { //skip policy generation if no rules are present
+				continue
+			}
+			rules := []networkingv1.NetworkPolicyEgressRule{{To: to, Ports: ports}}
 			policy := np.newPolicy(namespace, egressType, description, nsxRuleID)
 			policy.Spec.Egress = rules
 			policy.Spec.PodSelector = srcSelector.toPodSelector()

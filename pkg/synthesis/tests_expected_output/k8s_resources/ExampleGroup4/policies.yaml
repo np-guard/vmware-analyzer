@@ -13,13 +13,7 @@ spec:
             - port: 445
               protocol: TCP
           to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__research-test-expr-2
                       operator: Exists
@@ -47,13 +41,7 @@ spec:
             - port: 445
               protocol: TCP
           to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__research-test-expr-2
                       operator: Exists
@@ -76,13 +64,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__foo
                       operator: Exists
@@ -110,13 +92,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__backend
                       operator: Exists

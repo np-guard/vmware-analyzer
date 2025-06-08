@@ -1,0 +1,721 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
+        nsx-id: "1027"
+    creationTimestamp: null
+    name: policy-0
+    namespace: T1-192-168-0-0
+spec:
+    egress:
+        - ports:
+            - port: 80
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-backend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
+        nsx-id: "1027"
+    creationTimestamp: null
+    name: policy-1
+    namespace: T1-192-168-1-0
+spec:
+    egress:
+        - ports:
+            - port: 80
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-backend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
+        nsx-id: "1027"
+    creationTimestamp: null
+    name: policy-2
+    namespace: T1-192-168-0-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+          ports:
+            - port: 80
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-backend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
+        nsx-id: "1027"
+    creationTimestamp: null
+    name: policy-3
+    namespace: T1-192-168-1-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+          ports:
+            - port: 80
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-backend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2 and group != foo-app) dst: (group = foo-frontend) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-4
+    namespace: T1-192-168-0-0
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2 and group != foo-app) dst: (group = foo-frontend) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-5
+    namespace: T1-192-168-1-0
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2) dst: (group = foo-frontend and group != foo-app) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-6
+    namespace: T1-192-168-0-0
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2) dst: (group = foo-frontend and group != foo-app) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-7
+    namespace: T1-192-168-1-0
+spec:
+    egress:
+        - ports:
+            - port: 445
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__foo-frontend
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__research-test-expr-2
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2 and group != foo-app) dst: (group = foo-frontend) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-8
+    namespace: T1-192-168-0-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2 and group != foo-app) dst: (group = foo-frontend) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-9
+    namespace: T1-192-168-1-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2) dst: (group = foo-frontend and group != foo-app) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-10
+    namespace: T1-192-168-0-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = research-test-expr-2) dst: (group = foo-frontend and group != foo-app) conn: TCP dst-ports: 445'
+        nsx-id: "1025"
+    creationTimestamp: null
+    name: policy-11
+    namespace: T1-192-168-1-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__research-test-expr-2
+                      operator: Exists
+          ports:
+            - port: 445
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__foo-frontend
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app and group != foo-app) dst: (group = bar-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-12
+    namespace: T1-192-168-0-0
+spec:
+    egress:
+        - ports:
+            - port: 443
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app and group != foo-app) dst: (group = bar-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-13
+    namespace: T1-192-168-1-0
+spec:
+    egress:
+        - ports:
+            - port: 443
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app) dst: (group = bar-app and group != foo-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-14
+    namespace: T1-192-168-0-0
+spec:
+    egress:
+        - ports:
+            - port: 443
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app) dst: (group = bar-app and group != foo-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-15
+    namespace: T1-192-168-1-0
+spec:
+    egress:
+        - ports:
+            - port: 443
+              protocol: TCP
+          to:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+    policyTypes:
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app and group != foo-app) dst: (group = bar-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-16
+    namespace: T1-192-168-0-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+          ports:
+            - port: 443
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app and group != foo-app) dst: (group = bar-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-17
+    namespace: T1-192-168-1-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+                    - key: group__foo-app
+                      operator: DoesNotExist
+          ports:
+            - port: 443
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app) dst: (group = bar-app and group != foo-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-18
+    namespace: T1-192-168-0-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+          ports:
+            - port: 443
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: 'src: (group = bar-app) dst: (group = bar-app and group != foo-app) conn: TCP dst-ports: 443'
+        nsx-id: "1024"
+    creationTimestamp: null
+    name: policy-19
+    namespace: T1-192-168-1-0
+spec:
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchExpressions:
+                    - key: kubernetes.io/metadata.name
+                      operator: In
+                      values:
+                        - T1-192-168-0-0
+                        - T1-192-168-1-0
+              podSelector:
+                matchExpressions:
+                    - key: group__bar-app
+                      operator: Exists
+          ports:
+            - port: 443
+              protocol: TCP
+    podSelector:
+        matchExpressions:
+            - key: group__bar-app
+              operator: Exists
+            - key: group__foo-app
+              operator: DoesNotExist
+    policyTypes:
+        - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace T1-192-168-0-0
+        nsx-id: "2"
+    creationTimestamp: null
+    name: default-deny-for-T1-192-168-0-0
+    namespace: T1-192-168-0-0
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    annotations:
+        description: default deny policy for namespace T1-192-168-1-0
+        nsx-id: "2"
+    creationTimestamp: null
+    name: default-deny-for-T1-192-168-1-0
+    namespace: T1-192-168-1-0
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+        - Egress

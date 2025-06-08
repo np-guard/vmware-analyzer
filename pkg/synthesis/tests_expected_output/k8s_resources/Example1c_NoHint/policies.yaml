@@ -13,13 +13,7 @@ spec:
             - port: 445
               protocol: TCP
           to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__backend
                       operator: Exists
@@ -42,13 +36,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__frontend
                       operator: Exists

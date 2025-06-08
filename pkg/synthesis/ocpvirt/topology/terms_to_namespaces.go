@@ -9,6 +9,9 @@ import (
 	"github.com/np-guard/vmware-analyzer/pkg/synthesis/model/symbolicexpr"
 )
 
+// the main function in thie file is GetConjunctionNamespaces() , which returns
+// the relevant namespaces to consider for policy generation, given an input symbolic conjunction expression
+
 func (ni *NamespacesInfo) symbolicAtomToNamespaces(atom symbolicexpr.Atomic) []*Namespace {
 	if atom.IsTautology() || atom.IsAllGroups() {
 		return ni.Namespaces // all namespaces

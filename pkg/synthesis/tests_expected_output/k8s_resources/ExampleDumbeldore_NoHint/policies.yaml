@@ -10,13 +10,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector: {}
+            - podSelector: {}
     podSelector:
         matchExpressions:
             - key: group__DumbledoreAll
@@ -36,13 +30,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__DumbledoreAll
                       operator: Exists
@@ -62,13 +50,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__Slytherin
                       operator: DoesNotExist
@@ -91,13 +73,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__DumbledoreNoSly
                       operator: Exists

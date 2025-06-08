@@ -10,13 +10,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: Exists
@@ -43,13 +37,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Gryffindor
                       operator: Exists
@@ -76,13 +64,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: Exists
@@ -109,13 +91,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Gryffindor
                       operator: Exists
@@ -142,13 +118,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: Exists
@@ -175,13 +145,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Slytherin
                       operator: Exists
@@ -208,13 +172,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Gryffindor
                       operator: Exists
@@ -241,13 +199,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Gryffindor
                       operator: Exists
@@ -274,13 +226,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__App
                       operator: Exists
@@ -305,13 +251,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__App
                       operator: Exists
@@ -336,13 +276,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Web
                       operator: Exists
@@ -367,13 +301,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: tag__Web
                       operator: Exists
