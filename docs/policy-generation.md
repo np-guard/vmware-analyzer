@@ -228,7 +228,7 @@ For both `moderate` and `max` optimization levels those policies would not have 
 
 
 ```
-$ nsxanalyzer generate -r pkg/data/json/ExampleAppWithGroupsAndSegments.json   --policy-optimization-level none
+$ nsxanalyzer generate -r pkg/data/json/ExampleAppWithGroupsAndSegments.json   --policy-optimization-level moderate
 ```
 
 
@@ -261,25 +261,28 @@ $ nsxanalyzer generate -r pkg/data/json/ExampleAppWithGroupsAndSegments.json   -
 ```
 
 ```
-INFO        generated 11 network policies
+INFO        generated 10 network policies
 
 Policies details:
 NAMESPACE      |NAME                            |POD-SELECTOR
 T1-192-168-0-0 |default-deny-for-T1-192-168-0-0 |{}
 T1-192-168-0-0 |policy-0                        |{Key:group__foo-frontend,Operator:Exists}
 T1-192-168-0-0 |policy-1                        |{Key:group__foo-backend,Operator:Exists}
-T1-192-168-0-0 |policy-4                        |{Key:group__foo-frontend,Operator:Exists}
+T1-192-168-0-0 |policy-3                        |{Key:group__foo-frontend,Operator:Exists}
 T1-192-168-1-0 |default-deny-for-T1-192-168-1-0 |{}
 T1-192-168-1-0 |policy-2                        |{Key:group__foo-app,Operator:DoesNotExist},{Key:group__research-test-expr-2,Operator:Exists}
-T1-192-168-1-0 |policy-3                        |{Key:group__research-test-expr-2,Operator:Exists}
-T1-192-168-1-0 |policy-5                        |{Key:group__bar-app,Operator:Exists},{Key:group__foo-app,Operator:DoesNotExist}
+T1-192-168-1-0 |policy-4                        |{Key:group__bar-app,Operator:Exists},{Key:group__foo-app,Operator:DoesNotExist}
+T1-192-168-1-0 |policy-5                        |{Key:group__bar-app,Operator:Exists}
 T1-192-168-1-0 |policy-6                        |{Key:group__bar-app,Operator:Exists}
-T1-192-168-1-0 |policy-7                        |{Key:group__bar-app,Operator:Exists}
-T1-192-168-1-0 |policy-8                        |{Key:group__bar-app,Operator:Exists},{Key:group__foo-app,Operator:DoesNotExist}
+T1-192-168-1-0 |policy-7                        |{Key:group__bar-app,Operator:Exists},{Key:group__foo-app,Operator:DoesNotExist}
 ```
 
 The `max` optimization level generates the smallest number of network policies.
 The risk is that some policies should be defined across namespaces that are not reflected by the state of VMs mapped to namespaces.
-In this example the policy with selector `{Key:group__foo-app,Operator:DoesNotExist},{Key:group__foo-frontend,Operator:Exists}` is not generated, because there are no actual
-VMs in a common namespace that satisfy this expression.
+In this example the policy with selector `{Key:group__foo-app,Operator:DoesNotExist},{Key:group__foo-frontend,Operator:Exists}` is not generated, because there are no actual VMs in a common namespace that satisfy this expression.
+
+Additionally, policy `policy-3` from the `moderate` run is not generated for ths `max` optimization level, this time because of the rule peers. 
+The rule peers expression is `(group = foo-frontend and group != foo-app)`, for which the same optimization infers an empty set of relevant namespaces.
+Thus, the policy has no rules and therefore it is not generated.
+
 

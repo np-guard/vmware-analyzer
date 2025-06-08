@@ -33,18 +33,16 @@ func (selector *policySelector) string() string {
 		selector.cidrs, selector.namespaces, policy_utils.LabelSelectorString(selector.pods))
 }
 
-func (selector *policySelector) namespaceLabelSelector(isAdmin bool, policyNamespace string) (
+func (selector *policySelector) namespaceLabelSelector(policyNamespace string) (
 	selectorRes *metav1.LabelSelector, discard bool) {
 	switch {
-	case !isAdmin && len(selector.namespaces) == 1 && selector.namespaces[0] == policyNamespace:
+	case len(selector.namespaces) == 1 && selector.namespaces[0] == policyNamespace:
 		return nil, false // no need for a namespace selector if the peers are in the same namespace of the policy resource
 	case len(selector.namespaces) > 0:
 		return &metav1.LabelSelector{MatchExpressions: []metav1.LabelSelectorRequirement{
 			{Key: namespaceNameKey, Operator: metav1.LabelSelectorOpIn, Values: selector.namespaces}}}, false
-	case isAdmin:
-		return &metav1.LabelSelector{}, false
 	default:
-		return nil, true // todo: should not create rules entry for empty namespaces list..
+		return nil, true // should not create rules entry for empty namespaces list
 	}
 }
 
@@ -76,7 +74,7 @@ func (selector *policySelector) toPolicyPeers(policyNamespace string) []networki
 		}
 		return res
 	}
-	nsSelector, discard := selector.namespaceLabelSelector(false, policyNamespace)
+	nsSelector, discard := selector.namespaceLabelSelector(policyNamespace)
 	res := []networkingv1.NetworkPolicyPeer{{PodSelector: selector.pods, NamespaceSelector: nsSelector}}
 	if selector.isTautology() {
 		res = append(res, networkingv1.NetworkPolicyPeer{IPBlock: &networkingv1.IPBlock{CIDR: netset.CidrAll}})
