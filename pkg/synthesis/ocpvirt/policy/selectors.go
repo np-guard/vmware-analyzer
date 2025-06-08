@@ -33,7 +33,8 @@ func (selector *policySelector) string() string {
 		selector.cidrs, selector.namespaces, policy_utils.LabelSelectorString(selector.pods))
 }
 
-func (selector *policySelector) namespaceLabelSelector(isAdmin bool, policyNamespace string) (selectorRes *metav1.LabelSelector, discard bool) {
+func (selector *policySelector) namespaceLabelSelector(isAdmin bool, policyNamespace string) (
+	selectorRes *metav1.LabelSelector, discard bool) {
 	switch {
 	case !isAdmin && len(selector.namespaces) == 1 && selector.namespaces[0] == policyNamespace:
 		return nil, false // no need for a namespace selector if the peers are in the same namespace of the policy resource

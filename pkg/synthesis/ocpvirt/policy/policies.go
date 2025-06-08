@@ -50,7 +50,7 @@ func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector *policySele
 	if isInbound {
 		for _, namespace := range dstSelector.namespaces {
 			from := srcSelector.toPolicyPeers(namespace)
-			if len(from) == 0 { //skip policy generation if no rules are present
+			if len(from) == 0 { // skip policy generation if no rules are present
 				continue
 			}
 			rules := []networkingv1.NetworkPolicyIngressRule{{From: from, Ports: ports}}
@@ -61,7 +61,7 @@ func (np *PolicyGenerator) addNetworkPolicy(srcSelector, dstSelector *policySele
 	} else {
 		for _, namespace := range srcSelector.namespaces {
 			to := dstSelector.toPolicyPeers(namespace)
-			if len(to) == 0 { //skip policy generation if no rules are present
+			if len(to) == 0 { // skip policy generation if no rules are present
 				continue
 			}
 			rules := []networkingv1.NetworkPolicyEgressRule{{To: to, Ports: ports}}
