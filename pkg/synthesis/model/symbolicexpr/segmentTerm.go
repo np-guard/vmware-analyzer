@@ -29,16 +29,16 @@ func (segment SegmentTerm) AsSelector() (string, bool) {
 	return fmt.Sprintf("in_Segment__%s", segment.name()), segment.neg
 }
 
-func (segment SegmentTerm) negate() atomic {
+func (segment SegmentTerm) negate() Atomic {
 	return SegmentTerm{segment: segment.segment, atomicTerm: atomicTerm{neg: !segment.neg}}
 }
 
-func (segment SegmentTerm) isNegateOf(otherAtom atomic) bool {
+func (segment SegmentTerm) isNegateOf(otherAtom Atomic) bool {
 	return isNegateOf(segment, otherAtom)
 }
 
 // returns true iff otherAtom is disjoint to internalIP as given by hints
-func (segment SegmentTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+func (segment SegmentTerm) disjoint(otherAtom Atomic, hints *Hints) bool {
 	// if otherAtom is also an IP Block, then check explicit disjointness
 	if isIPDisjoint(segment.getInternalBlock(), otherAtom) {
 		return true
@@ -47,7 +47,7 @@ func (segment SegmentTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 }
 
 // returns true iff internalIP is superset of otherAtom as given by hints
-func (segment SegmentTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (segment SegmentTerm) supersetOf(otherAtom Atomic, hints *Hints) bool {
 	// if otherAtom is also an IP Block, then check explicit containment
 	if isIPSuperset(segment.getInternalBlock(), otherAtom) {
 		return true

@@ -10,13 +10,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector: {}
+            - podSelector: {}
     podSelector: {}
     policyTypes:
         - Ingress
@@ -33,13 +27,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__Slytherin
                       operator: DoesNotExist
@@ -62,13 +50,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__Gryffindor
                       operator: DoesNotExist
@@ -91,13 +73,7 @@ metadata:
 spec:
     egress:
         - to:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector:
+            - podSelector:
                 matchExpressions:
                     - key: group__Hufflepuff
                       operator: DoesNotExist

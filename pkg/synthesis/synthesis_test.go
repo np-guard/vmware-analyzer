@@ -96,12 +96,15 @@ func (synTest *synthesisTest) options() *config.SynthesisOptions {
 		CreateDNSPolicy: false,
 		FilterVMs:       synTest.filter,
 	}
+	// set default values for all enum flags
+	// TODO: Add this as test arg options?
 	res.EndpointsMapping.SetDefault()
 	res.SegmentsMapping.SetDefault()
+	res.PolicyOptimizationLevel.SetDefault()
 	return res
 }
-func (synTest *synthesisTest) outputParams() common.OutputParameters {
-	return common.OutputParameters{Format: "txt", VMs: synTest.filter}
+func (synTest *synthesisTest) outputParams() *common.OutputParameters {
+	return &common.OutputParameters{Format: "txt", VMs: synTest.filter}
 }
 
 var groupsByVmsTests = []synthesisTest{
@@ -911,7 +914,7 @@ func testDNSPolicySynthesis(t *testing.T, useAdmin bool, exData *data.Example) {
 	runnerObj, err := runner.NewRunnerWithOptionsList(
 		runner.WithNSXResources(rc),
 		runner.WithHighVerbosity(true),
-		runner.WithSynth(true),
+		runner.WithCmd(common.CmdGenerate),
 		runner.WithSynthDNSPolicies(true),
 		runner.WithSynthesisDir(actualOutputDir),
 		runner.WithSynthAdminPolicies(useAdmin),
@@ -945,5 +948,53 @@ func TestDNSPolicy(t *testing.T) {
 	}
 	for _, test := range dnsTests {
 		testDNSPolicySynthesis(t, test.useAdmin, test.exData)
+	}
+}
+
+func testOptimizationLevel(t *testing.T, level string, exData *data.Example) {
+	rc, err := data.ExamplesGeneration(exData, false)
+	require.Nil(t, err)
+	levelName := "_" + level
+	testDirName := filepath.Join("optimization_level_tests", exData.Name+levelName)
+
+	expectedOutputDir := filepath.Join(getTestsDirExpectedOut(), testDirName)
+	actualOutputDir := filepath.Join(getTestsDirActualOut(), testDirName)
+
+	runnerObj, err := runner.NewRunnerWithOptionsList(
+		runner.WithNSXResources(rc),
+		runner.WithHighVerbosity(true),
+		runner.WithCmd(common.CmdGenerate),
+		runner.WithSynthesisDir(actualOutputDir),
+		runner.WithPolicyOptimizationLevel(level),
+	)
+	require.Nil(t, err)
+	_, err = runnerObj.Run()
+	require.Nil(t, err)
+	compareOrRegenerateOutputDirPerTest(t,
+		filepath.Join(actualOutputDir, resources.K8sResourcesDir),
+		filepath.Join(expectedOutputDir, resources.K8sResourcesDir),
+		testDirName)
+}
+
+func TestOptimizationLevel(t *testing.T) {
+	optimizationLevelTests := []struct {
+		exData *data.Example
+		level  string
+	}{
+		{
+			exData: data.ExampleAppWithGroupsAndSegments,
+			level:  "none",
+		},
+		{
+			exData: data.ExampleAppWithGroupsAndSegments,
+			level:  "moderate",
+		},
+		{
+			exData: data.ExampleAppWithGroupsAndSegments,
+			level:  "max",
+		},
+	}
+	for _, test := range optimizationLevelTests {
+		testOptimizationLevel(t, test.level, test.exData)
 	}
 }

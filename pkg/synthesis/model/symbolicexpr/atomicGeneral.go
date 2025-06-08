@@ -32,13 +32,13 @@ func (atomicTerm atomicTerm) isNegation() bool {
 // thus each derive member function calls the common code
 //  1. the base class is implemented as an interface
 //  2. the receiver of the methods of the base class are given to the method as first argument.
-func isNegateOf(atom, otherAtom atomic) bool {
+func isNegateOf(atom, otherAtom Atomic) bool {
 	return atom.String() == otherAtom.negate().String()
 }
 
 // returns true iff otherAtom is disjoint to atom as given by hints
 // todo: could e.g. groups and tags have the same name????
-func disjoint(atom, otherAtom atomic, hints *Hints) bool {
+func disjoint(atom, otherAtom Atomic, hints *Hints) bool {
 	atomBlock := atom.GetExternalBlock()
 	otherAtomBlock := otherAtom.GetExternalBlock()
 	switch {
@@ -60,12 +60,12 @@ func disjoint(atom, otherAtom atomic, hints *Hints) bool {
 // term1 is not negated while term2 is
 // e.g., given that Slytherin and Hufflepuff are disjoint, group != Hufflepuff is a superset of group = Slytherin
 // if in the same Clause, we can rid group != Hufflepuff
-func supersetOf(atom, otherAtom atomic, hints *Hints) bool {
+func supersetOf(atom, otherAtom Atomic, hints *Hints) bool {
 	return hints.disjoint(atom.name(), otherAtom.name()) && atom.isNegation() && !otherAtom.isNegation()
 }
 
 // return equalSignConst or nonEqualSignConst for atom
-func eqSign(atom atomic) string {
+func eqSign(atom Atomic) string {
 	equalSign := equalSignConst
 	if atom.isNegation() {
 		equalSign = nonEqualSignConst

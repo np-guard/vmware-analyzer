@@ -8,7 +8,7 @@ require (
 	github.com/np-guard/vmware-analyzer v1.0.0
 	github.com/onsi/ginkgo/v2 v2.21.0
 	github.com/onsi/gomega v1.35.1
-	k8s.io/apimachinery v0.33.0
+	k8s.io/apimachinery v0.33.1
 	k8s.io/client-go v0.32.1
 	//k8s.io/apimachinery v0.31.0
 	//k8s.io/client-go v0.31.0
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/go-logr/logr v1.4.2
-	k8s.io/api v0.33.0
+	k8s.io/api v0.33.1
 )
 
 require (
@@ -55,10 +55,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/np-guard/models v0.5.7 // indirect
-	github.com/openshift/api v0.0.0-20231120222239-b86761094ee3 // indirect
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20250401100458-11f2a0cbdced // indirect
-	github.com/pborman/uuid v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.19.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
@@ -102,8 +100,8 @@ require (
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
-	kubevirt.io/api v1.0.0-alpha.0 // indirect
-	kubevirt.io/containerized-data-importer-api v1.55.0 // indirect
+	kubevirt.io/api v1.6.0-alpha.0 // indirect
+	kubevirt.io/containerized-data-importer-api v1.60.3-0.20241105012228-50fbed985de9 // indirect
 	kubevirt.io/controller-lifecycle-operator-sdk/api v0.0.0-20220329064328-f3cc58c6ed90 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.30.3 // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect

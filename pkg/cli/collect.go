@@ -1,6 +1,10 @@
 package cli
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+
+	"github.com/np-guard/vmware-analyzer/internal/common"
+)
 
 func newCommandCollect() *cobra.Command {
 	c := &cobra.Command{
@@ -10,11 +14,11 @@ func newCommandCollect() *cobra.Command {
 		Example: `  # Collect NSX configuration and store as JSON file
 	nsxanalyzer collect -f config.json`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return runCommand(args, cmdCollect)
+			return runCommand(args, common.CmdCollect)
 		},
 	}
 
 	// add flags
-	c.PersistentFlags().BoolVar(&args.anonymize, anonymizeFlag, false, anonymizeHelp)
+	c.PersistentFlags().BoolVar(&args.Anonymize, anonymizeFlag, false, anonymizeHelp)
 	return c
 }

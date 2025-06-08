@@ -29,17 +29,17 @@ func (tagTerm tagAtomicTerm) AsSelector() (string, bool) {
 }
 
 // negate an tagAtomicTerm expression
-func (tagTerm tagAtomicTerm) negate() atomic {
+func (tagTerm tagAtomicTerm) negate() Atomic {
 	return tagAtomicTerm{tag: tagTerm.tag, atomicTerm: atomicTerm{neg: !tagTerm.neg}}
 }
 
 // returns true iff otherAt is negation of tagTerm
-func (tagTerm tagAtomicTerm) isNegateOf(otherAtom atomic) bool {
+func (tagTerm tagAtomicTerm) isNegateOf(otherAtom Atomic) bool {
 	return isNegateOf(tagTerm, otherAtom)
 }
 
 // returns true iff otherAt is disjoint to otherAtom as given by hints
-func (tagTerm tagAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
+func (tagTerm tagAtomicTerm) disjoint(otherAtom Atomic, hints *Hints) bool {
 	if otherAtom.GetExternalBlock() != nil {
 		return true // otherAtom is an IPBlock; external IP block is disjoint to tag terms referring to VMs
 	}
@@ -47,7 +47,7 @@ func (tagTerm tagAtomicTerm) disjoint(otherAtom atomic, hints *Hints) bool {
 }
 
 // returns true iff tagTerm is superset of otherAtom as given by hints
-func (tagTerm tagAtomicTerm) supersetOf(otherAtom atomic, hints *Hints) bool {
+func (tagTerm tagAtomicTerm) supersetOf(otherAtom Atomic, hints *Hints) bool {
 	return supersetOf(tagTerm, otherAtom, hints)
 }
 

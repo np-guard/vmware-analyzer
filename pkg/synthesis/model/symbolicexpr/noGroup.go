@@ -16,7 +16,7 @@ func (ng noGroup) name() string {
 }
 
 // allGroup is the negation of noGroup
-func (noGroup) negate() atomic {
+func (noGroup) negate() Atomic {
 	return allGroup{}
 }
 
@@ -42,7 +42,7 @@ func (noGroup) IsNoGroup() bool {
 }
 
 // noGroup is negation of allGroup
-func (noGroup) isNegateOf(atom atomic) bool {
+func (noGroup) isNegateOf(atom Atomic) bool {
 	_, isAllGroup := atom.(allGroup)
 	return isAllGroup
 }
@@ -51,12 +51,12 @@ func (noGroup) AsSelector() (string, bool) {
 }
 
 // noGroup disjoint to tagTerm and to groupTerm
-func (noGroup) disjoint(atom atomic, hints *Hints) bool {
+func (noGroup) disjoint(atom Atomic, hints *Hints) bool {
 	return atom.isInternalOnly()
 }
 
 // noGroup is not a superset of anything
-func (noGroup) supersetOf(atom atomic, hints *Hints) bool {
+func (noGroup) supersetOf(atom Atomic, hints *Hints) bool {
 	return false
 }
 

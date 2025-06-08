@@ -74,13 +74,7 @@ metadata:
 spec:
     ingress:
         - from:
-            - namespaceSelector:
-                matchExpressions:
-                    - key: kubernetes.io/metadata.name
-                      operator: In
-                      values:
-                        - default
-              podSelector: {}
+            - podSelector: {}
     podSelector: {}
     policyTypes:
         - Ingress

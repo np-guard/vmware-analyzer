@@ -35,7 +35,7 @@ func (e *Example) syncJSONWithExample() error {
 	if err != nil {
 		return err
 	}
-	exampleConfig, err = configuration.ConfigFromResourcesContainer(rc, common.OutputParameters{})
+	exampleConfig, err = configuration.ConfigFromResourcesContainer(rc, &common.OutputParameters{})
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (e *Example) syncJSONWithExample() error {
 	if err != nil {
 		return err
 	}
-	jsonConfig, err = configuration.ConfigFromResourcesContainer(rcFromJSON, common.OutputParameters{})
+	jsonConfig, err = configuration.ConfigFromResourcesContainer(rcFromJSON, &common.OutputParameters{})
 	if err != nil {
 		return err
 	}

@@ -34,7 +34,8 @@ func (o *Observations) ConfigAsJSON() (res *JSONResults, err error) {
 	}
 
 	// connectivity
-	if res.Connectivity, err = o.r.analyzedConnectivity.GenConnectivityOutput(common.OutputParameters{Format: common.JSONFormat}); err != nil {
+	if res.Connectivity, err = o.r.analyzedConnectivity.GenConnectivityOutput(
+		&common.OutputParameters{Format: common.JSONFormat}); err != nil {
 		return nil, err
 	}
 

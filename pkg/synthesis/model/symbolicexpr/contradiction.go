@@ -12,7 +12,7 @@ func (c contradiction) name() string {
 	return c.String()
 }
 
-func (contradiction) negate() atomic {
+func (contradiction) negate() Atomic {
 	return tautology{}
 }
 
@@ -37,7 +37,7 @@ func (contradiction) IsNoGroup() bool {
 }
 
 // contradiction negates tautology
-func (contradiction) isNegateOf(atom atomic) bool {
+func (contradiction) isNegateOf(atom Atomic) bool {
 	return atom.IsTautology()
 }
 func (contradiction) AsSelector() (string, bool) {
@@ -45,12 +45,12 @@ func (contradiction) AsSelector() (string, bool) {
 }
 
 // contradiction is disjoint to any no-contradiction
-func (c contradiction) disjoint(atomic, *Hints) bool {
+func (c contradiction) disjoint(Atomic, *Hints) bool {
 	return !c.IsContradiction()
 }
 
 // contradiction, which is the empty set, is not a superset of anything
-func (c contradiction) supersetOf(atom atomic, hints *Hints) bool {
+func (c contradiction) supersetOf(atom Atomic, hints *Hints) bool {
 	return false
 }
 
