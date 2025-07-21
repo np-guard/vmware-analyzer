@@ -12,7 +12,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.33.3
 	k8s.io/apimachinery v0.33.3
-	kubevirt.io/api v1.6.0-beta.0
+	kubevirt.io/api v1.6.0-rc.0
 	sigs.k8s.io/network-policy-api v0.1.5
 )
 
@@ -33,7 +33,7 @@ require (
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/apiextensions-apiserver v0.32.1 // indirect
+	k8s.io/apiextensions-apiserver v0.32.5 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
 	kubevirt.io/containerized-data-importer-api v1.60.3-0.20241105012228-50fbed985de9 // indirect
