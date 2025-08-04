@@ -12,7 +12,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.33.3
 	k8s.io/apimachinery v0.33.3
-	kubevirt.io/api v1.6.0-rc.0
+	kubevirt.io/api v1.6.0
 	sigs.k8s.io/network-policy-api v0.1.5
 )
 
