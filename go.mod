@@ -8,7 +8,7 @@ require (
 	github.com/np-guard/models v0.5.7
 	github.com/ovn-org/ovn-kubernetes/go-controller v0.0.0-20250401100458-11f2a0cbdced
 	github.com/spf13/cobra v1.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.33.3
 	k8s.io/apimachinery v0.33.3
