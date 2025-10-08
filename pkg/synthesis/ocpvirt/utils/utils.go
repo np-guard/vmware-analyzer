@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -57,7 +58,7 @@ func K8sAnalyzer(k8sDir, outfile, format string) (bool, error) {
 	if analyzerExecPath == "" {
 		return false, nil
 	}
-	cmd := exec.Command(analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
+	cmd := exec.CommandContext(context.Background(), analyzerExecPath, "list", "--dirpath", k8sDir, "--file", outfile, "--output", format)
 	logging.Debug2f("%s", cmd.String())
 	return true, cmd.Run()
 }
