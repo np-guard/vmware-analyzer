@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (VMs within IPs 192.168.10.5) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -30,7 +29,6 @@ metadata:
     annotations:
         description: 'src: (VMs within IPs 192.168.10.5) dst: (group = backend) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -56,7 +54,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

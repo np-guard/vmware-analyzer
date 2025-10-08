@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (*) dst: (tag = Slytherin and tag != DB) conn: All Connections'
         nsx-id: "9198"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -26,7 +25,6 @@ metadata:
     annotations:
         description: 'src: (tag = Gryffindor) dst: (tag = Slytherin and tag != DB) conn: All Connections'
         nsx-id: "9199"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -51,7 +49,6 @@ metadata:
     annotations:
         description: 'src: (*) dst: (tag = Gryffindor and tag != DB) conn: All Connections'
         nsx-id: "9200"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -73,7 +70,6 @@ metadata:
     annotations:
         description: 'src: (*) dst: (tag != Hufflepuff) conn: All Connections'
         nsx-id: "9201"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -93,7 +89,6 @@ metadata:
     annotations:
         description: 'src: (*) dst: (tag = DB) conn: All Connections'
         nsx-id: "9201"
-    creationTimestamp: null
     name: policy-4
     namespace: default
 spec:
@@ -113,7 +108,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: none
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

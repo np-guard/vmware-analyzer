@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
@@ -17,7 +16,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
@@ -32,7 +30,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
@@ -47,7 +44,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
@@ -61,7 +57,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__10.0.0.0-16: "true"
         VMs_within_IPs__10.0.0.0-20: "true"
@@ -75,7 +70,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__default-group: "true"
     name: vm6
@@ -87,7 +81,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__default-group: "true"
     name: vm7
@@ -99,7 +92,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__172.16.10.10-16: "true"
         group__default-group: "true"
@@ -112,7 +104,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__192.168.0.0-16: "true"
         group__default-group: "true"
@@ -125,7 +116,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         VMs_within_IPs__192.168.0.0-16: "true"
         group__default-group: "true"
@@ -138,7 +128,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__real-group: "true"
     name: vm-no-address1
@@ -150,7 +139,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__real-group: "true"
     name: vm-no-address2

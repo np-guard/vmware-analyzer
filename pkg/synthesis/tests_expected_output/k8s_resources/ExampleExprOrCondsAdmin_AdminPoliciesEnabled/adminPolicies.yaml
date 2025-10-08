@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: '(allow: (src: (*) dst: (tag = Slytherin) conn: All Connections)'
         nsx-id: "9198"
-    creationTimestamp: null
     name: admin-policy-0
 spec:
     ingress:
@@ -38,7 +37,6 @@ metadata:
     annotations:
         description: '(allow: (src: (*) dst: (tag != DB) conn: All Connections)'
         nsx-id: "9198"
-    creationTimestamp: null
     name: admin-policy-1
 spec:
     ingress:
@@ -72,7 +70,6 @@ metadata:
     annotations:
         description: '(allow: (src: (tag = Gryffindor) dst: (tag = Slytherin) conn: All Connections)'
         nsx-id: "9199"
-    creationTimestamp: null
     name: admin-policy-2
 spec:
     egress:
@@ -109,7 +106,6 @@ metadata:
     annotations:
         description: '(allow: (src: (tag = Gryffindor) dst: (tag != DB) conn: All Connections)'
         nsx-id: "9199"
-    creationTimestamp: null
     name: admin-policy-3
 spec:
     egress:
@@ -146,7 +142,6 @@ metadata:
     annotations:
         description: '(allow: (src: (*) dst: (tag = Gryffindor) conn: All Connections)'
         nsx-id: "9200"
-    creationTimestamp: null
     name: admin-policy-4
 spec:
     ingress:
@@ -180,7 +175,6 @@ metadata:
     annotations:
         description: '(allow: (src: (*) dst: (tag != DB) conn: All Connections)'
         nsx-id: "9200"
-    creationTimestamp: null
     name: admin-policy-5
 spec:
     ingress:
@@ -214,7 +208,6 @@ metadata:
     annotations:
         description: '(allow: (src: (*) dst: (tag = Hufflepuff) conn: All Connections)'
         nsx-id: "9201"
-    creationTimestamp: null
     name: admin-policy-6
 spec:
     egress:
@@ -248,7 +241,6 @@ metadata:
     annotations:
         description: '(allow: (src: (*) dst: (tag != DB) conn: All Connections)'
         nsx-id: "9201"
-    creationTimestamp: null
     name: admin-policy-7
 spec:
     egress:
@@ -282,7 +274,6 @@ metadata:
     annotations:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
-    creationTimestamp: null
     name: admin-policy-8
 spec:
     egress:
@@ -313,7 +304,6 @@ metadata:
     annotations:
         description: '(deny: (src: (*) dst: (*) conn: All Connections)'
         nsx-id: "10300"
-    creationTimestamp: null
     name: admin-policy-9
 spec:
     ingress:

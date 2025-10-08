@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (group = foo-app) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -30,7 +29,6 @@ metadata:
     annotations:
         description: 'src: (segment seg1) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-1
     namespace: seg1
 spec:
@@ -62,7 +60,6 @@ metadata:
     annotations:
         description: 'src: (group = foo-app) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -88,7 +85,6 @@ metadata:
     annotations:
         description: 'src: (segment seg1) dst: (group = research-test-expr-2) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -120,7 +116,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg1
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg1
     namespace: seg1
 spec:
@@ -135,7 +130,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

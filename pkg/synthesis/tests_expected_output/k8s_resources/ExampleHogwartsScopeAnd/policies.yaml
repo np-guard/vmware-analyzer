@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (group = Gryffindor) dst: (group = Gryffindor and group = App) conn: All Connections'
         nsx-id: "10218"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -29,7 +28,6 @@ metadata:
     annotations:
         description: 'src: (group = Gryffindor and group = Web) dst: (group = Gryffindor) conn: All Connections'
         nsx-id: "10219"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -54,7 +52,6 @@ metadata:
     annotations:
         description: 'src: (group = Slytherin) dst: (group = Slytherin and group = Web) conn: All Connections'
         nsx-id: "11218"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -79,7 +76,6 @@ metadata:
     annotations:
         description: 'src: (group = Slytherin and group = App) dst: (group = Slytherin) conn: All Connections'
         nsx-id: "11219"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -104,7 +100,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "10230"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

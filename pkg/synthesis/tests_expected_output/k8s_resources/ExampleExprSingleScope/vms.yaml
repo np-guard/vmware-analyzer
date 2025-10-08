@@ -1,13 +1,11 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Hufflepuff
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Hufflepuff: "true"
                 tag__Hufflepuff: "true"
@@ -20,13 +18,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Gryffindor
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor: "true"
                 tag__Gryffindor: "true"
@@ -39,13 +35,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Dumbledore
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Dumbledore: "true"
                 tag__Dumbledore: "true"

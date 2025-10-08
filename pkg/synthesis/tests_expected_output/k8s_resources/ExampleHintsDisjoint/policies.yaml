@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin) conn: All Connections'
         nsx-id: "9200"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -27,7 +26,6 @@ metadata:
     annotations:
         description: 'src: (group = Dumbledore1) dst: (group = Not Slytherin) conn: All Connections'
         nsx-id: "9200"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -50,7 +48,6 @@ metadata:
     annotations:
         description: 'src: (group = Dumbledore2) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -73,7 +70,6 @@ metadata:
     annotations:
         description: 'src: (group = Dumbledore2) dst: (group != Gryffindor) conn: All Connections'
         nsx-id: "9201"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -96,7 +92,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "10230"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

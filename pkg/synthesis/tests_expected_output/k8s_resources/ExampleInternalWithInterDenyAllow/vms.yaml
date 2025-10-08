@@ -1,13 +1,11 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm1
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__10.0.0.0-16: "true"
                 VMs_within_IPs__10.0.0.0-20: "true"
@@ -23,13 +21,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm2
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__10.0.0.0-16: "true"
                 VMs_within_IPs__10.0.0.0-20: "true"
@@ -44,13 +40,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm3
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__10.0.0.0-16: "true"
                 VMs_within_IPs__10.0.0.0-20: "true"
@@ -65,13 +59,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm4
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__10.0.0.0-16: "true"
                 VMs_within_IPs__10.0.0.0-20: "true"
@@ -85,13 +77,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm5
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__10.0.0.0-16: "true"
                 VMs_within_IPs__10.0.0.0-20: "true"
@@ -105,13 +95,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm6
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__default-group: "true"
         spec:
@@ -123,13 +111,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm7
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__default-group: "true"
         spec:
@@ -141,13 +127,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm8
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__172.16.10.10-16: "true"
                 group__default-group: "true"
@@ -160,13 +144,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm9
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__192.168.0.0-16: "true"
                 group__default-group: "true"
@@ -179,13 +161,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm10
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 VMs_within_IPs__192.168.0.0-16: "true"
                 group__default-group: "true"
@@ -198,13 +178,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm-no-address1
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__real-group: "true"
         spec:
@@ -216,13 +194,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: vm-no-address2
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__real-group: "true"
         spec:

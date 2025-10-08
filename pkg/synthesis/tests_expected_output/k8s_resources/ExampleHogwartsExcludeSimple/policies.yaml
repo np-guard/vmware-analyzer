@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (*) dst: (*) conn: All Connections'
         nsx-id: "10218"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -21,7 +20,6 @@ metadata:
     annotations:
         description: 'src: (group = Slytherin) dst: (group != Slytherin) conn: TCP,UDP'
         nsx-id: "10220"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -44,7 +42,6 @@ metadata:
     annotations:
         description: 'src: (group = Gryffindor) dst: (group != Gryffindor) conn: TCP,UDP'
         nsx-id: "10221"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -67,7 +64,6 @@ metadata:
     annotations:
         description: 'src: (group = Hufflepuff) dst: (group != Hufflepuff) conn: TCP,UDP'
         nsx-id: "10222"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -90,7 +86,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "10230"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

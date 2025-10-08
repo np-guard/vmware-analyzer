@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: Admin Network Policy To Allow Egress Access To DNS Server
         nsx-id: none
-    creationTimestamp: null
     name: egress-dns-policy
 spec:
     egress:

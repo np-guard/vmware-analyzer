@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: TCP'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -31,7 +30,6 @@ metadata:
     annotations:
         description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -56,7 +54,6 @@ metadata:
     annotations:
         description: 'src: (group = Dumbledore) dst: (group = Web and group = Gryffindor) conn: All Connections'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -81,7 +78,6 @@ metadata:
     annotations:
         description: 'src: (group = Gryffindor) dst: (group = Web and group = Gryffindor) conn: TCP'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -108,7 +104,6 @@ metadata:
     annotations:
         description: 'src: (group = Hufflepuff) dst: (group = Web and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-4
     namespace: default
 spec:
@@ -137,7 +132,6 @@ metadata:
     annotations:
         description: 'src: (group = Slytherin) dst: (group = Web and group = Slytherin) conn: All Connections'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-5
     namespace: default
 spec:
@@ -162,7 +156,6 @@ metadata:
     annotations:
         description: 'src: (group = Dumbledore) dst: (group = Web and group = Gryffindor) conn: All Connections'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-6
     namespace: default
 spec:
@@ -187,7 +180,6 @@ metadata:
     annotations:
         description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: TCP'
         nsx-id: "10401"
-    creationTimestamp: null
     name: policy-7
     namespace: default
 spec:
@@ -216,7 +208,6 @@ metadata:
     annotations:
         description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections'
         nsx-id: "10401"
-    creationTimestamp: null
     name: policy-8
     namespace: default
 spec:
@@ -243,7 +234,6 @@ metadata:
     annotations:
         description: 'src: (group = Web and group = Gryffindor) dst: (group = App and group = Gryffindor) conn: TCP'
         nsx-id: "10401"
-    creationTimestamp: null
     name: policy-9
     namespace: default
 spec:
@@ -272,7 +262,6 @@ metadata:
     annotations:
         description: 'src: (group = Web and group = Hufflepuff) dst: (group = App and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10401"
-    creationTimestamp: null
     name: policy-10
     namespace: default
 spec:
@@ -303,7 +292,6 @@ metadata:
     annotations:
         description: 'src: (group = Web and group = Slytherin) dst: (group = App and group = Slytherin) conn: All Connections'
         nsx-id: "10401"
-    creationTimestamp: null
     name: policy-11
     namespace: default
 spec:
@@ -330,7 +318,6 @@ metadata:
     annotations:
         description: 'src: (group = App and group = Gryffindor) dst: (group = DB and group = Gryffindor) conn: TCP'
         nsx-id: "10405"
-    creationTimestamp: null
     name: policy-12
     namespace: default
 spec:
@@ -359,7 +346,6 @@ metadata:
     annotations:
         description: 'src: (group = App and group = Slytherin) dst: (group = DB and group = Slytherin) conn: All Connections'
         nsx-id: "10405"
-    creationTimestamp: null
     name: policy-13
     namespace: default
 spec:
@@ -386,7 +372,6 @@ metadata:
     annotations:
         description: 'src: (group = App and group = Gryffindor) dst: (group = DB and group = Gryffindor) conn: TCP'
         nsx-id: "10405"
-    creationTimestamp: null
     name: policy-14
     namespace: default
 spec:
@@ -415,7 +400,6 @@ metadata:
     annotations:
         description: 'src: (group = App and group = Hufflepuff) dst: (group = DB and group = Hufflepuff) conn: UDP dst-ports: 300-320'
         nsx-id: "10405"
-    creationTimestamp: null
     name: policy-15
     namespace: default
 spec:
@@ -446,7 +430,6 @@ metadata:
     annotations:
         description: 'src: (group = App and group = Slytherin) dst: (group = DB and group = Slytherin) conn: All Connections'
         nsx-id: "10405"
-    creationTimestamp: null
     name: policy-16
     namespace: default
 spec:
@@ -473,7 +456,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "10230"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:
