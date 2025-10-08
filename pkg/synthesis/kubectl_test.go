@@ -1,6 +1,7 @@
 package synthesis
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -299,8 +300,8 @@ func (ctl *kubectlFile) createCmdFile(fileName string) error {
 // ////////////////////////////////////////////////////////////////////////
 func runCmdFile(fileName string, arg ...string) error {
 	//nolint:gosec //its a safe run
-	return exec.Command("bash", append([]string{fileName}, arg...)...).Run()
+	return exec.CommandContext(context.Background(), "bash", append([]string{fileName}, arg...)...).Run()
 }
 func hasKubectl() bool {
-	return exec.Command("kubectl", "get", "pods").Run() == nil
+	return exec.CommandContext(context.Background(), "kubectl", "get", "pods").Run() == nil
 }

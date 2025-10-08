@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package common
 
 import (
+	"context"
 	"fmt"
 	"maps"
 	"os"
@@ -62,7 +63,8 @@ func OutputGraph(g Graph, fileName string, format OutFormat) (res string, err er
 		if err != nil {
 			return "", err
 		}
-		bts, err := exec.Command("dot", "-T"+format.String(), dotFile).Output() //nolint:gosec // running the dot command
+		bts, err := exec.CommandContext(context.Background(), "dot", "-T"+format.String(), //nolint:gosec // its a safe run
+			dotFile).Output()
 		if err != nil {
 			return "", err
 		}
