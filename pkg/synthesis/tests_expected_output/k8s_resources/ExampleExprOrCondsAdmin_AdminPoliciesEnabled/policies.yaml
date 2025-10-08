@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: none
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

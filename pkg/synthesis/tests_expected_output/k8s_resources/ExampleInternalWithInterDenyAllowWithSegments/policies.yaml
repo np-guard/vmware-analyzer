@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-0
     namespace: seg_2-3
 spec:
@@ -40,7 +39,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-1
     namespace: seg-6-7
 spec:
@@ -68,7 +66,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-2
     namespace: seg-8
 spec:
@@ -96,7 +93,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-3
     namespace: seg-9-10
 spec:
@@ -124,7 +120,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-4
     namespace: seg_1
 spec:
@@ -152,7 +147,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-5
     namespace: seg_2-3
 spec:
@@ -174,7 +168,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-6
     namespace: seg_4-5
 spec:
@@ -202,7 +195,6 @@ metadata:
     annotations:
         description: 'src: (segment seg_2-3 and not in segment seg_1) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-7
     namespace: default
 spec:
@@ -230,7 +222,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-8
     namespace: seg-6-7
 spec:
@@ -266,7 +257,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-9
     namespace: seg-6-7
 spec:
@@ -288,7 +278,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-10
     namespace: seg-8
 spec:
@@ -316,7 +305,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-11
     namespace: seg-9-10
 spec:
@@ -344,7 +332,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-12
     namespace: seg_1
 spec:
@@ -372,7 +359,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-13
     namespace: seg_2-3
 spec:
@@ -400,7 +386,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-14
     namespace: seg_4-5
 spec:
@@ -428,7 +413,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-6-7 and not in segment seg_4-5) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "1007"
-    creationTimestamp: null
     name: policy-15
     namespace: default
 spec:
@@ -456,7 +440,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-16
     namespace: seg-8
 spec:
@@ -490,7 +473,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (IP addr is external) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-17
     namespace: seg-8
 spec:
@@ -637,7 +619,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-18
     namespace: seg-6-7
 spec:
@@ -666,7 +647,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-19
     namespace: seg-8
 spec:
@@ -689,7 +669,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-20
     namespace: seg-9-10
 spec:
@@ -718,7 +697,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-21
     namespace: seg_1
 spec:
@@ -747,7 +725,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-22
     namespace: seg_2-3
 spec:
@@ -776,7 +753,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-8) dst: (group != real-group) conn: All Connections'
         nsx-id: "2200"
-    creationTimestamp: null
     name: policy-23
     namespace: seg_4-5
 spec:
@@ -805,7 +781,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-24
     namespace: seg-9-10
 spec:
@@ -839,7 +814,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-25
     namespace: seg-6-7
 spec:
@@ -865,7 +839,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-26
     namespace: seg-8
 spec:
@@ -891,7 +864,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-27
     namespace: seg-9-10
 spec:
@@ -911,7 +883,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-28
     namespace: seg_1
 spec:
@@ -937,7 +908,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-29
     namespace: seg_2-3
 spec:
@@ -963,7 +933,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-30
     namespace: seg_4-5
 spec:
@@ -989,7 +958,6 @@ metadata:
     annotations:
         description: 'src: (segment seg-9-10) dst: (IP addr in 0.0.0.0/0) conn: All Connections'
         nsx-id: "3000"
-    creationTimestamp: null
     name: policy-31
     namespace: default
 spec:
@@ -1015,7 +983,6 @@ metadata:
     annotations:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
-    creationTimestamp: null
     name: policy-32
     namespace: default
 spec:
@@ -1042,7 +1009,6 @@ metadata:
     annotations:
         description: 'src: (group = real-group and not in segment seg_4-5 and not in segment seg-8) dst: (group = real-group) conn: All Connections'
         nsx-id: "4008"
-    creationTimestamp: null
     name: policy-33
     namespace: default
 spec:
@@ -1069,7 +1035,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg-6-7
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg-6-7
     namespace: seg-6-7
 spec:
@@ -1084,7 +1049,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg-8
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg-8
     namespace: seg-8
 spec:
@@ -1099,7 +1063,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg-9-10
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg-9-10
     namespace: seg-9-10
 spec:
@@ -1114,7 +1077,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg_1
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg_1
     namespace: seg_1
 spec:
@@ -1129,7 +1091,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg_2-3
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg_2-3
     namespace: seg_2-3
 spec:
@@ -1144,7 +1105,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg_4-5
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg_4-5
     namespace: seg_4-5
 spec:
@@ -1159,7 +1119,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

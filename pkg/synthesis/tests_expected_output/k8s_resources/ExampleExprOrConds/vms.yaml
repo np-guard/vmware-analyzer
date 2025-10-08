@@ -1,13 +1,11 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Slytherin-DB
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Slytherin: "true"
                 group__Slytherin-Or-no-DB: "true"
@@ -22,13 +20,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Slytherin-Web
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor-Or-no-DB: "true"
                 group__Hufflepuff-Or-no-DB: "true"
@@ -45,13 +41,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Slytherin-App
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor-Or-no-DB: "true"
                 group__Hufflepuff-Or-no-DB: "true"
@@ -68,13 +62,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Hufflepuff-DB
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Hufflepuff: "true"
                 group__Hufflepuff-Or-no-DB: "true"
@@ -89,13 +81,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Hufflepuff-Web
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor-Or-no-DB: "true"
                 group__Hufflepuff: "true"
@@ -112,13 +102,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Hufflepuff-App
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor-Or-no-DB: "true"
                 group__Hufflepuff: "true"
@@ -135,13 +123,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Gryffindor-DB
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor: "true"
                 group__Gryffindor-Or-no-DB: "true"
@@ -156,13 +142,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Gryffindor-Web
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor: "true"
                 group__Gryffindor-Or-no-DB: "true"
@@ -179,13 +163,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: Gryffindor-App
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__Gryffindor: "true"
                 group__Gryffindor-Or-no-DB: "true"

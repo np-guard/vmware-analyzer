@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__path-group: "true"
         group__research-app: "true"
@@ -16,7 +15,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__path-group: "true"
         group__research-app: "true"
@@ -30,7 +28,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__foo-app: "true"
         group__foo-frontend: "true"
@@ -46,7 +43,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__foo-app: "true"
         group__foo-backend: "true"
@@ -62,7 +58,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__research-app: "true"
         group__research-test-expr-2: "true"

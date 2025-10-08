@@ -1,13 +1,11 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-1
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__no-group-vms-group: "true"
                 tag__bar: "true"
@@ -20,13 +18,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-2
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__nested-expr-group: "true"
                 tag__backend: "true"
@@ -39,13 +35,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-3
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__no-group-vms-group: "true"
                 tag__foo: "true"
@@ -58,13 +52,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-4
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__nested-expr-group: "true"
                 tag__bar: "true"
@@ -78,13 +70,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: NewVirtualMachine
     namespace: default
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__research-test-expr-2: "true"
         spec:

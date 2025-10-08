@@ -1,13 +1,11 @@
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-1
     namespace: T1-192-168-1-0
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__bar-app: "true"
                 group__research-app: "true"
@@ -23,13 +21,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-2
     namespace: T1-192-168-1-0
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__bar-app: "true"
                 group__research-app: "true"
@@ -43,13 +39,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-3
     namespace: T1-192-168-0-0
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__foo-app: "true"
                 group__foo-frontend: "true"
@@ -65,13 +59,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: New-VM-4
     namespace: T1-192-168-0-0
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__foo-app: "true"
                 group__foo-backend: "true"
@@ -87,13 +79,11 @@ status: {}
 apiVersion: kubevirt.io/v1
 kind: VirtualMachine
 metadata:
-    creationTimestamp: null
     name: NewVirtualMachine
     namespace: T1-192-168-1-0
 spec:
     template:
         metadata:
-            creationTimestamp: null
             labels:
                 group__bar-app: "true"
                 group__research-app: "true"

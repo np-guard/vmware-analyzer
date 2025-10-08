@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (group = Web) dst: (IP addr in 0.0.1.0/16) conn: All Connections'
         nsx-id: "10400"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -25,7 +24,6 @@ metadata:
     annotations:
         description: 'src: (group = App) dst: (IP addr in 146.2.0.0/16) conn: All Connections'
         nsx-id: "10401"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -46,7 +44,6 @@ metadata:
     annotations:
         description: 'src: (group = DB) dst: (IP addr in 220.0.1.0/28) conn: All Connections'
         nsx-id: "10405"
-    creationTimestamp: null
     name: policy-2
     namespace: default
 spec:
@@ -67,7 +64,6 @@ metadata:
     annotations:
         description: 'src: (IP addr in 122.0.0.0/8) dst: (group = Dumbledore) conn: All Connections'
         nsx-id: "10406"
-    creationTimestamp: null
     name: policy-3
     namespace: default
 spec:
@@ -88,7 +84,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "10230"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

@@ -1,7 +1,6 @@
 apiVersion: k8s.ovn.org/v1
 kind: UserDefinedNetwork
 metadata:
-    creationTimestamp: null
     name: udn-seg_a_and_b
     namespace: seg_a_and_b
 spec:
@@ -17,7 +16,6 @@ status: {}
 apiVersion: k8s.ovn.org/v1
 kind: UserDefinedNetwork
 metadata:
-    creationTimestamp: null
     name: udn-seg_c
     namespace: seg_c
 spec:

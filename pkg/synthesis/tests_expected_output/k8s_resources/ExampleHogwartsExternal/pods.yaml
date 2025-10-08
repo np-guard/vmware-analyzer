@@ -1,7 +1,6 @@
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__Slytherin: "true"
         group__Web: "true"
@@ -14,7 +13,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__App: "true"
         group__Slytherin: "true"
@@ -27,7 +25,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__DB: "true"
         group__Slytherin: "true"
@@ -40,7 +37,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__Hufflepuff: "true"
         group__Web: "true"
@@ -53,7 +49,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__App: "true"
         group__Hufflepuff: "true"
@@ -66,7 +61,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__DB: "true"
         group__Hufflepuff: "true"
@@ -79,7 +73,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__Gryffindor: "true"
         group__Web: "true"
@@ -92,7 +85,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__App: "true"
         group__Gryffindor: "true"
@@ -105,7 +97,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__DB: "true"
         group__Gryffindor: "true"
@@ -118,7 +109,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__Dumbledore: "true"
     name: Dumbledore1
@@ -130,7 +120,6 @@ status: {}
 apiVersion: v1
 kind: Pod
 metadata:
-    creationTimestamp: null
     labels:
         group__Dumbledore: "true"
     name: Dumbledore2

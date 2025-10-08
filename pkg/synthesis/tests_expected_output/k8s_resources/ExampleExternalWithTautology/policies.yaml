@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (IP addr not in 1.0.0.0/24) dst: (*) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-0
     namespace: default
 spec:
@@ -68,7 +67,6 @@ metadata:
     annotations:
         description: 'src: (*) dst: (*) conn: All Connections'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-1
     namespace: default
 spec:
@@ -85,7 +83,6 @@ metadata:
     annotations:
         description: default deny policy for namespace default
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-default
     namespace: default
 spec:

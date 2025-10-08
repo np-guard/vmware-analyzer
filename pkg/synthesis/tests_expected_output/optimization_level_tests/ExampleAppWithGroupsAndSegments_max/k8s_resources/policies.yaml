@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
         nsx-id: "1027"
-    creationTimestamp: null
     name: policy-0
     namespace: T1-192-168-0-0
 spec:
@@ -30,7 +29,6 @@ metadata:
     annotations:
         description: 'src: (group = foo-frontend) dst: (group = foo-backend) conn: TCP dst-ports: 80'
         nsx-id: "1027"
-    creationTimestamp: null
     name: policy-1
     namespace: T1-192-168-0-0
 spec:
@@ -56,7 +54,6 @@ metadata:
     annotations:
         description: 'src: (group = research-test-expr-2 and group != foo-app) dst: (group = foo-frontend) conn: TCP dst-ports: 445'
         nsx-id: "1025"
-    creationTimestamp: null
     name: policy-2
     namespace: T1-192-168-1-0
 spec:
@@ -90,7 +87,6 @@ metadata:
     annotations:
         description: 'src: (group = research-test-expr-2 and group != foo-app) dst: (group = foo-frontend) conn: TCP dst-ports: 445'
         nsx-id: "1025"
-    creationTimestamp: null
     name: policy-3
     namespace: T1-192-168-0-0
 spec:
@@ -124,7 +120,6 @@ metadata:
     annotations:
         description: 'src: (group = bar-app and group != foo-app) dst: (group = bar-app) conn: TCP dst-ports: 443'
         nsx-id: "1024"
-    creationTimestamp: null
     name: policy-4
     namespace: T1-192-168-1-0
 spec:
@@ -152,7 +147,6 @@ metadata:
     annotations:
         description: 'src: (group = bar-app) dst: (group = bar-app and group != foo-app) conn: TCP dst-ports: 443'
         nsx-id: "1024"
-    creationTimestamp: null
     name: policy-5
     namespace: T1-192-168-1-0
 spec:
@@ -180,7 +174,6 @@ metadata:
     annotations:
         description: 'src: (group = bar-app and group != foo-app) dst: (group = bar-app) conn: TCP dst-ports: 443'
         nsx-id: "1024"
-    creationTimestamp: null
     name: policy-6
     namespace: T1-192-168-1-0
 spec:
@@ -208,7 +201,6 @@ metadata:
     annotations:
         description: 'src: (group = bar-app) dst: (group = bar-app and group != foo-app) conn: TCP dst-ports: 443'
         nsx-id: "1024"
-    creationTimestamp: null
     name: policy-7
     namespace: T1-192-168-1-0
 spec:
@@ -236,7 +228,6 @@ metadata:
     annotations:
         description: default deny policy for namespace T1-192-168-0-0
         nsx-id: "2"
-    creationTimestamp: null
     name: default-deny-for-T1-192-168-0-0
     namespace: T1-192-168-0-0
 spec:
@@ -251,7 +242,6 @@ metadata:
     annotations:
         description: default deny policy for namespace T1-192-168-1-0
         nsx-id: "2"
-    creationTimestamp: null
     name: default-deny-for-T1-192-168-1-0
     namespace: T1-192-168-1-0
 spec:

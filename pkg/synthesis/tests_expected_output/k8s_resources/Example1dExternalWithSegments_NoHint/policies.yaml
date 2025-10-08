@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: 'src: (VMs within IPs 0.0.1.0/25) dst: (VMs within IPs 0.0.1.128/25) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-0
     namespace: seg_a_and_b
 spec:
@@ -30,7 +29,6 @@ metadata:
     annotations:
         description: 'src: (VMs within IPs 0.0.1.0/25) dst: (VMs within IPs 0.0.1.128/25) conn: TCP dst-ports: 445'
         nsx-id: "1004"
-    creationTimestamp: null
     name: policy-1
     namespace: seg_a_and_b
 spec:
@@ -56,7 +54,6 @@ metadata:
     annotations:
         description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-2
     namespace: seg_a_and_b
 spec:
@@ -88,7 +85,6 @@ metadata:
     annotations:
         description: 'src: (VMs within IPs 0.0.1.128/25) dst: (segment seg_c) conn: TCP dst-ports: 443'
         nsx-id: "1005"
-    creationTimestamp: null
     name: policy-3
     namespace: seg_c
 spec:
@@ -120,7 +116,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg_a_and_b
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg_a_and_b
     namespace: seg_a_and_b
 spec:
@@ -135,7 +130,6 @@ metadata:
     annotations:
         description: default deny policy for namespace seg_c
         nsx-id: "1003"
-    creationTimestamp: null
     name: default-deny-for-seg_c
     namespace: seg_c
 spec:

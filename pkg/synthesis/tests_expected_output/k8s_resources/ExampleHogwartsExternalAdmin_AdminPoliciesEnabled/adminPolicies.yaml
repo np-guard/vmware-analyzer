@@ -4,7 +4,6 @@ metadata:
     annotations:
         description: '(jump_to_application: (src: (group = Gryffindor) dst: (IP addr in 0.0.0.0/0) conn: TCP)'
         nsx-id: "10218"
-    creationTimestamp: null
     name: admin-policy-0
 spec:
     egress:
@@ -44,7 +43,6 @@ metadata:
     annotations:
         description: '(jump_to_application: (src: (group = Hufflepuff) dst: (IP addr in 0.0.0.0/0) conn: UDP dst-ports: 300-320)'
         nsx-id: "10219"
-    creationTimestamp: null
     name: admin-policy-1
 spec:
     egress:
@@ -84,7 +82,6 @@ metadata:
     annotations:
         description: '(jump_to_application: (src: (group = Slytherin) dst: (IP addr in 0.0.0.0/0) conn: All Connections)'
         nsx-id: "10220"
-    creationTimestamp: null
     name: admin-policy-2
 spec:
     egress:
@@ -120,7 +117,6 @@ metadata:
     annotations:
         description: '(jump_to_application: (src: (IP addr in 0.0.0.0/0) dst: (group = Dumbledore) conn: All Connections)'
         nsx-id: "10221"
-    creationTimestamp: null
     name: admin-policy-3
 spec:
     ingress:
@@ -154,7 +150,6 @@ metadata:
     annotations:
         description: '(deny: (src: (*) dst: (IP addr in 0.0.0.0/0) conn: All Connections)'
         nsx-id: "10300"
-    creationTimestamp: null
     name: admin-policy-4
 spec:
     egress:
@@ -187,7 +182,6 @@ metadata:
     annotations:
         description: '(deny: (src: (*) dst: (IP addr in 0.0.0.0/0) conn: All Connections)'
         nsx-id: "10300"
-    creationTimestamp: null
     name: admin-policy-5
 spec:
     ingress:

@@ -1,7 +1,6 @@
 apiVersion: k8s.ovn.org/v1
 kind: UserDefinedNetwork
 metadata:
-    creationTimestamp: null
     name: udn-T1-192-168-0-0
     namespace: T1-192-168-0-0
 spec:
@@ -17,7 +16,6 @@ status: {}
 apiVersion: k8s.ovn.org/v1
 kind: UserDefinedNetwork
 metadata:
-    creationTimestamp: null
     name: udn-T1-192-168-1-0
     namespace: T1-192-168-1-0
 spec:
