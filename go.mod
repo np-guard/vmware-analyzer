@@ -13,7 +13,7 @@ require (
 	k8s.io/api v0.34.1
 	k8s.io/apimachinery v0.34.1
 	kubevirt.io/api v1.7.0-beta.0
-	sigs.k8s.io/network-policy-api v0.1.7
+	sigs.k8s.io/network-policy-api v0.1.8
 )
 
 require (
