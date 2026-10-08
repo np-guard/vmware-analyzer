@@ -93,16 +93,25 @@ func newNamespacesInfo(synthModel *model.AbstractModelSyn, options *config.Synth
 
 func (ni *NamespacesInfo) initNamespaces(synthModel *model.AbstractModelSyn) {
 	// create the namespaces:
+	// Default: namespace name equals NSX segment display name (legalized).
+	// With SegmentNamespaceMap, segments can be renamed and/or collapsed into one namespace.
+	nsByName := map[string]*Namespace{}
 	for _, segment := range synthModel.Segments {
-		// current convention: namespace name is equal to NSX segment name
-		namespace := &Namespace{
-			Name:           utils.ToLegalK8SString(segment.Name),
-			origNSXSegment: segment,
+		name := ni.namespaceNameForSegment(segment)
+		namespace, exists := nsByName[name]
+		if !exists {
+			namespace = &Namespace{
+				Name:           name,
+				origNSXSegment: segment,
+			}
+			nsByName[name] = namespace
+			ni.Namespaces = append(ni.Namespaces, namespace)
+		} else {
+			ni.warnCollapsedSegmentCIDR(namespace, segment)
 		}
 		for _, vm := range segment.VMs {
 			ni.vmNamespace[vm] = namespace
 		}
-		ni.Namespaces = append(ni.Namespaces, namespace)
 	}
 	// for VMs w/o segments - add the default namespace
 	if len(ni.vms) == 0 || len(ni.vms) > len(ni.vmNamespace) {
@@ -114,6 +123,43 @@ func (ni *NamespacesInfo) initNamespaces(synthModel *model.AbstractModelSyn) {
 		}
 		ni.Namespaces = append(ni.Namespaces, defaultNamespace)
 	}
+}
+
+// namespaceNameForSegment returns the Kubernetes namespace name for an NSX segment.
+// Precedence:
+//  1. SegmentNamespaceMap entry for the segment display name (segment.Name)
+//  2. TargetNamespace global default (all segments)
+//  3. ToLegalK8SString(segment.Name)
+// Mapped / target values are legalized with ToLegalK8SString.
+func (ni *NamespacesInfo) namespaceNameForSegment(segment *topology.Segment) string {
+	if ni.options != nil {
+		if mapped, ok := ni.options.SegmentNamespaceMap[segment.Name]; ok && mapped != "" {
+			return utils.ToLegalK8SString(mapped)
+		}
+		if ni.options.TargetNamespace != "" {
+			return utils.ToLegalK8SString(ni.options.TargetNamespace)
+		}
+	}
+	return utils.ToLegalK8SString(segment.Name)
+}
+
+func (ni *NamespacesInfo) warnCollapsedSegmentCIDR(namespace *Namespace, segment *topology.Segment) {
+	if namespace.origNSXSegment == nil || segment == nil {
+		return
+	}
+	prevCIDR, prevErr := namespace.getSegmentCIDR()
+	nextBlock := segment.Block
+	if prevErr != nil || nextBlock == nil {
+		return
+	}
+	nextCIDRs := nextBlock.ToCidrList()
+	if len(nextCIDRs) != 1 || nextCIDRs[0] == prevCIDR {
+		return
+	}
+	logging.Debugf(
+		"segments %q and %q both map to namespace %q but have different CIDRs (%s vs %s); UDN uses the first segment CIDR",
+		namespace.origNSXSegment.Name, segment.Name, namespace.Name, prevCIDR, nextCIDRs[0],
+	)
 }
 
 func (ni *NamespacesInfo) createNamespaces() (res []*core.Namespace) {

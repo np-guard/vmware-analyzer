@@ -52,10 +52,53 @@ this should be done by proper labeling of the new `VM`.
 will still be relevant to maintain in the conversion to network policies.
 
 #### Labeling mechanism
-All `VMs'` pods are assumed to be in namespace `default`.
 Each `VM`'s  pod is granted labels reflecting the `NSX's` `tags` and `groups`.
 `Group: DB`  will be synthesized to `label` `group__DB: "true"`;
 `Tag: DB`  will be synthesized to `label` `tag__DB: "true"`.
+
+#### Namespaces and NSX segments
+NSX segment display names are **not** OpenShift projects. By default, synthesis still creates one
+Kubernetes `Namespace` (and optional primary UDN) per NSX segment, named after the segment
+(`ToLegalK8SString(segment.Name)`), and places workloads and NetworkPolicies there.
+Peer `namespaceSelector` values on `kubernetes.io/metadata.name` use those same names.
+
+In real OpenShift Virtualization migrations (especially with a primary UDN), many VLAN segments
+often land in a **single** project. Use either a global target namespace or a per-segment map
+so Namespace, UDN, workload `metadata.namespace`, and NetworkPolicy peer selectors stay consistent:
+
+```bash
+# Global: all segments → one Kubernetes namespace (typical single-project UDN lab)
+nsxanalyzer generate -r config.json -d out/ \
+  --segments-mapping udns \
+  --target-namespace tom-testing
+
+# Per-segment map (overrides --target-namespace for listed segments)
+nsxanalyzer generate -r config.json -d out/ \
+  --segment-namespace-map Seg-Web=tom-testing,Seg-Database=other-ns
+
+# Or a YAML/JSON file:
+# Seg-Web: tom-testing
+# Seg-Database: other-ns
+nsxanalyzer generate -r config.json -d out/ \
+  --segment-namespace-map-file segment-ns.yaml
+```
+
+Runner API:
+
+```go
+runner.WithTargetNamespace("tom-testing")
+// or per-segment:
+runner.WithSegmentNamespaceMap(map[string]string{
+    "Seg-Web": "tom-testing",
+    "Seg-Database": "other-ns",
+})
+// or: runner.WithSegmentNamespaceMapFile("segment-ns.yaml")
+```
+
+Precedence for each segment: per-segment map entry → `--target-namespace` → legalized segment name.
+Map **keys** are NSX segment display names (as in the abstract model / segment `Name`).
+Values / target namespace are legalized like other K8s names. Multiple segments in the same
+target emit one Namespace/UDN and share workloads there.
 
 #### Policy synthesis
 To preserve the original intent of the policy, the synthesized policy prioritizes referencing non-ephemeral features.

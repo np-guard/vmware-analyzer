@@ -44,6 +44,12 @@ type InputArgs struct {
 	EndpointsMapping        Endpoints
 	SegmentsMapping         Segments
 	PolicyOptimizationLevel PolicyOptimizationLevel
+	// TargetNamespace is a global Kubernetes namespace for all NSX segments when set.
+	TargetNamespace string
+	// SegmentNamespaceMap maps NSX segment display names to target Kubernetes namespaces.
+	SegmentNamespaceMap map[string]string
+	// SegmentNamespaceMapFile is an optional YAML/JSON file with the same mapping.
+	SegmentNamespaceMapFile string
 }
 
 func (args *InputArgs) SetDefault() {

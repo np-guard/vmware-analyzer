@@ -199,6 +199,8 @@ func (r *Runner) runSynthesis() error {
 		EndpointsMapping:        r.args.EndpointsMapping,
 		SegmentsMapping:         r.args.SegmentsMapping,
 		PolicyOptimizationLevel: r.args.PolicyOptimizationLevel,
+		TargetNamespace:         r.args.TargetNamespace,
+		SegmentNamespaceMap:     r.args.SegmentNamespaceMap,
 	}
 	k8sResources, err := ocpvirt.NSXToK8sSynthesis(r.nsxResources, r.parsedConfig, opts)
 	if err != nil {
@@ -476,6 +478,45 @@ func WithSegmentsMapping(segments string) RunnerOption {
 			return err
 		}
 		r.args.SegmentsMapping = segmentsValue
+		return nil
+	}
+}
+
+// WithTargetNamespace sets a global Kubernetes namespace for all NSX segments.
+// Per-segment maps from WithSegmentNamespaceMap / WithSegmentNamespaceMapFile override it.
+func WithTargetNamespace(ns string) RunnerOption {
+	return func(r *Runner) error {
+		r.args.TargetNamespace = ns
+		return nil
+	}
+}
+
+// WithSegmentNamespaceMap sets an explicit NSX segment display name → Kubernetes namespace map.
+// Multiple segments may map to the same namespace. Unmapped segments use TargetNamespace
+// if set, otherwise the legalized segment name. Merges into any map already set (e.g. from a file).
+func WithSegmentNamespaceMap(m map[string]string) RunnerOption {
+	return func(r *Runner) error {
+		if len(m) == 0 {
+			return nil
+		}
+		r.args.SegmentNamespaceMap = synth_config.MergeSegmentNamespaceMaps(r.args.SegmentNamespaceMap, m)
+		return nil
+	}
+}
+
+// WithSegmentNamespaceMapFile loads a YAML/JSON segment → namespace map and merges it.
+// Prefer calling this before WithSegmentNamespaceMap so inline flags override the file.
+func WithSegmentNamespaceMapFile(path string) RunnerOption {
+	return func(r *Runner) error {
+		if path == "" {
+			return nil
+		}
+		m, err := synth_config.LoadSegmentNamespaceMapFile(path)
+		if err != nil {
+			return err
+		}
+		r.args.SegmentNamespaceMapFile = path
+		r.args.SegmentNamespaceMap = synth_config.MergeSegmentNamespaceMaps(r.args.SegmentNamespaceMap, m)
 		return nil
 	}
 }

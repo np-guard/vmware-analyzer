@@ -42,6 +42,9 @@ const (
 	disableInsecureSkipVerifyFlag = "disable-insecure-skip-verify"
 	endpointsMappingFlag          = "endpoints-mapping"
 	segmentsMappingFlag           = "segments-mapping"
+	targetNamespaceFlag           = "target-namespace"
+	segmentNamespaceMapFlag       = "segment-namespace-map"
+	segmentNamespaceMapFileFlag   = "segment-namespace-map-file"
 	policyOptimizationLevelFlag   = "policy-optimization-level"
 	logLevelFlag                  = "log-level"
 
@@ -75,6 +78,15 @@ const (
 		"needed for an effective and sound synthesis process"
 	endpointsMappingHelp        = "flag to set target endpoints for synthesis;  must be one of "
 	segmentsMappingHelp         = "flag to set target mapping from segments; must be one of "
+	targetNamespaceHelp         = "global Kubernetes namespace for all NSX segments " +
+		"(example: tom-testing). Preferred for single-project UDN labs. " +
+		"Per-segment --" + segmentNamespaceMapFlag + " entries override this"
+	segmentNamespaceMapHelp     = "map individual NSX segment display names to Kubernetes namespaces " +
+		"(example: Seg-Web=tom-testing,Seg-Database=other-ns). " +
+		"Overrides --" + targetNamespaceFlag + " for listed segments; " +
+		"unmapped segments use --" + targetNamespaceFlag + " if set, else the legalized segment name"
+	segmentNamespaceMapFileHelp = "YAML/JSON file mapping NSX segment display names to Kubernetes namespaces " +
+		"(example keys: Seg-Web, Seg-Database). Merged with --" + segmentNamespaceMapFlag + "; flag values override the file"
 	logLevelHelp                = "flag to set log level" + mustBeOneOf
 	policyOptimizationLevelHelp = "flag to set policy optimization level" + mustBeOneOf
 )
