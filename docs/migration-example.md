@@ -2,6 +2,12 @@
 
 This section details simple walkthrough for micro-segmentation migration automaion from NSX to OCP-Virt with `nsxanalyzer`.
 
+> **Note:** NSX segments are not OpenShift projects. If several segments should land in one
+> project/UDN (common in lab and migration setups), pass `--target-namespace tom-testing`
+> (or `--segment-namespace-map` / `--segment-namespace-map-file` for per-segment control)
+> during `generate` so namespaces, UDNs, workloads, and NetworkPolicy peer selectors stay
+> aligned. See [synthesis.md](synthesis.md).
+
 ### Source: NSX 
 
 Following segments connected by T1-Gateway:

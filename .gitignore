@@ -37,6 +37,9 @@ pkg/nsx
 *_old.go
 out/
 
+# Local NSX dumps used for ad-hoc container testing (not for commit)
+testdata/nsx-export/
+
 # empty files to be edited for testing:
 pkg/data/json/userResources.json
 cmd/examples/input/resources.json

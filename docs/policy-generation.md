@@ -180,7 +180,13 @@ The flag `--policy-optimization-level` has various options: `none / moderate / m
 **Involved optimizations description:**
 
 The original NSX groups and their symbolic expressions are defined globally and not per `namespaces` that exist in OCP-Virt.
-The generated k8s policies define migrated expressions over label-selectors, for which namespace scope is required. 
+The generated k8s policies define migrated expressions over label-selectors, for which namespace scope is required.
+
+By default each NSX segment becomes a Kubernetes namespace. That is often wrong for OpenShift Virtualization
+(many segments → one project/UDN). Use `--target-namespace` (global) or
+`--segment-namespace-map` / `--segment-namespace-map-file` (per-segment) so policy
+`metadata.namespace` and peer `namespaceSelector` values match the target project; see [synthesis.md](synthesis.md).
+
 The tool defines 3 levels of such migration with regard to namespaces applied, through the flag `--policy-optimization-level`.
 For the `none` option, all namespaces are considered, for any original NSX symbolic group expression.
 For the `moderate` option, the namespaces considered are the union of namespaces inferred as relevant for the terms in the NSX symbolic group expression.

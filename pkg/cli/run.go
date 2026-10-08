@@ -28,6 +28,9 @@ func runCommand(args *inArgs, cmd string) error {
 		runner.WithDisableInsecureSkipVerify(args.DisableInsecureSkipVerify),
 		runner.WithSegmentsMapping(args.SegmentsMapping.String()),
 		runner.WithEndpointsMapping(args.EndpointsMapping.String()),
+		runner.WithTargetNamespace(args.TargetNamespace),
+		runner.WithSegmentNamespaceMapFile(args.SegmentNamespaceMapFile),
+		runner.WithSegmentNamespaceMap(args.SegmentNamespaceMap),
 		runner.WithInferHints(args.InferDisjointHints),
 		runner.WithPolicyOptimizationLevel(args.PolicyOptimizationLevel.String()),
 	)

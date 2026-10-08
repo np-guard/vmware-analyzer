@@ -137,17 +137,28 @@ Examples:
         nsxanalyzer generate -r config.json
 
 Flags:
-      --create-dns-policy                  flag to create a policy allowing access to target env dns pod (default false)
-      --disjoint-hint stringArray          comma separated list of NSX groups/tags that are always disjoint in their VM members, needed for an effective and sound synthesis process, can specify more than one hint (example: "--disjoint-hint frontend,backend --disjoint-hint app,web,db")
-      --endpoints-mapping string           flag to set target endpoints for synthesis;  must be one of vms,pods,both (default "both")
-  -h, --help                               help for generate
-      --hints-inference                    automatic inference of NSX groups/tags that are always disjoint, needed for an effective and sound synthesis process
-      --output-filter strings              filter the analysis/synthesis results by vm names, can specify more than one (example: "vm1,vm2")
-      --policy-optimization-level string   flag to set policy optimization level; must by one of: none,moderate,max (default "max")
-      --segments-mapping string            flag to set target mapping from segments; must be one of pod-network,udns (default "udns")
-  -d, --synthesis-dir string               run synthesis; specify directory path to store target synthesis resources
-      --synthesize-admin-policies          include admin network policies in policy synthesis (default false)
+      --create-dns-policy                        flag to create a policy allowing access to target env dns pod (default false)
+      --disjoint-hint stringArray                comma separated list of NSX groups/tags that are always disjoint in their VM members, needed for an effective and sound synthesis process, can specify more than one hint (example: "--disjoint-hint frontend,backend --disjoint-hint app,web,db")
+      --endpoints-mapping string                 flag to set target endpoints for synthesis;  must be one of vms,pods,both (default "both")
+  -h, --help                                     help for generate
+      --hints-inference                          automatic inference of NSX groups/tags that are always disjoint, needed for an effective and sound synthesis process
+      --output-filter strings                    filter the analysis/synthesis results by vm names, can specify more than one (example: "vm1,vm2")
+      --policy-optimization-level string         flag to set policy optimization level; must by one of: none,moderate,max (default "max")
+      --segment-namespace-map stringToString     map individual NSX segment display names to Kubernetes namespaces (overrides --target-namespace)
+      --segment-namespace-map-file string        YAML/JSON file with the same segment→namespace map
+      --segments-mapping string                  flag to set target mapping from segments; must be one of pod-network,udns (default "udns")
+  -d, --synthesis-dir string                     run synthesis; specify directory path to store target synthesis resources
+      --synthesize-admin-policies                include admin network policies in policy synthesis (default false)
+      --target-namespace string                  global Kubernetes namespace for all NSX segments (e.g. tom-testing)
 ```
+
+NSX segments are not OpenShift namespaces. For single-project UDN labs, set a global target:
+
+```
+$ nsxanalyzer generate -r config.json -d out/ --target-namespace tom-testing
+```
+
+Or map segments individually with `--segment-namespace-map` / `--segment-namespace-map-file`.
 
 ## Example k8s network policy synthesis
 
