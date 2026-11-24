@@ -1,3 +1,6 @@
+> [!WARNING]  
+> This repo is no longer being maintained
+
 # vmware-analyzer
 
 ## About vmware-analyzer
